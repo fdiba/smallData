@@ -107,7 +107,7 @@ function createPie(cwidth){
 		//.attr('width', width)
 		//.attr('height', height)
 		.append('g')
-		.attr('transform', 'translate(' + (cwidth/2+75) +  ',' + (height/2+20) + ')');
+		.attr('transform', 'translate(' + (cwidth/2+45) +  ',' + (height/2+20) + ')');
 
 	var donutWidth = 75;
 
@@ -126,19 +126,20 @@ function createPie(cwidth){
 	  	.attr('d', arc)
 	  	.attr('fill', function(d, i) { 
 	    	return color(d.data.label);
-		});
+		})
+		.each(function(d) { this._current = d; });
 
-	
+	var tooltip = d3.select('.tooltip');
 
 	path.on('mouseover', function(d) {
 
 		var total = d3.sum(countries.map(function(d) {
-	    	return d.count;
+	    	//return d.count;
+	    	return (d.enabled) ? d.count : 0;  
 	  	}));
 		
 		var percent = Math.round(1000 * d.data.count / total) / 10;
 		
-		var tooltip = d3.select('.tooltip');
 		tooltip.select('.label').html(d.data.label);
 		tooltip.select('.count').html(d.data.count); 
 		tooltip.select('.percent').html(percent + '%'); 
@@ -146,15 +147,19 @@ function createPie(cwidth){
 
 	});
 
+	/*path.on('mousemove', function(d) {
+	  	tooltip.style('top', (d3.event.pageY - 120) + 'px')
+	    	.style('left', (d3.event.pageX - 100) + 'px');
+	});*/
+
 	path.on('mouseout', function(d) {
-		var tooltip = d3.select('.tooltip');
 		tooltip.style('display', 'none');
 	}); 
 
-	addLegend(color);
+	addLegend(color, pie, path, arc);
 
 }
-function addLegend(color){
+function addLegend(color, pie, path, arc){
 
 	var legendRectSize = 18;
 	var legendSpacing = 4;
@@ -173,15 +178,55 @@ function addLegend(color){
 	    var xPos = -2 * legendRectSize;
 	    var yPos = i * height - offset;
 
-	    return 'translate(' + (xPos+420) + ',' + (yPos+200) + ')';
+	    return 'translate(' + (xPos+390) + ',' + (yPos+200) + ')';
 		});
 
 	legend.append('rect')
 		.attr('width', legendRectSize)
 	  	.attr('height', legendRectSize)
-	  	.attr('stroke-width', '2')
+	  	.style('stroke-width', '2')
+	  	.style('cursor', 'pointer')
 	  	.style('fill', color)
-	  	.style('stroke', color);
+	  	.style('stroke', color)
+	  	.on('click', function(label) {
+
+	  		var rect = d3.select(this);
+  			var enabled = true;
+
+  			var totalEnabled = d3.sum(countries.map(function(d) {
+    			return (d.enabled) ? 1 : 0;
+  			}));
+
+  			if (rect.attr('class') === 'disabled') {
+			    rect.attr('class', '');
+			} else {
+			    if (totalEnabled < 2) return;
+			    rect.attr('class', 'disabled');
+			    enabled = false;
+			}
+
+			//var pie = d3.layout.pie();
+			pie.value(function(d) {
+		    	if (d.label === label) d.enabled = enabled;
+		    	return (d.enabled) ? d.count : 0;
+		  	});
+
+		  	path = path.data(pie(countries));
+
+
+		  	path.transition()
+			    .duration(750)
+			    .attrTween('d', function(d) {
+			
+					var interpolate = d3.interpolate(this._current, d);
+					this._current = interpolate(0);
+					return function(t) {
+			        	return arc(interpolate(t));
+			      	};
+			    });
+
+
+	  	});
 
 	legend.append('text')
   		.attr('x', legendRectSize + legendSpacing)
@@ -191,9 +236,10 @@ function addLegend(color){
 
 
 }
-function ctry(label, count){
+function ctry(label, count, isEnabled){
 	this.label = label;
 	this.count = count;
+	this.enabled = isEnabled;
 }
 function editCountriesArray(data, key){
 
@@ -221,11 +267,11 @@ function editCountriesArray(data, key){
 			}
 
 			//if(!hasBeenIndexed)countries.push([country, 1]);
-			if(!hasBeenIndexed)countries.push(new ctry(country, 1));
+			if(!hasBeenIndexed)countries.push(new ctry(country, 1, true));
 
 		} else {
 			//countries.push([country, 1]);
-			countries.push(new ctry(country, 1));
+			countries.push(new ctry(country, 1, true));
 		}
 	}
 }
