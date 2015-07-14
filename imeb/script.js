@@ -3,6 +3,8 @@ var years = [];
 var selectedYear = 1973;
 var countries = []; //used for charts
 
+addTooltip();
+
 d3.csv("data/smallData.csv", function(data){
 
 	console.log(data);
@@ -15,7 +17,7 @@ d3.csv("data/smallData.csv", function(data){
 
 	}
 
-	var width = 600,
+	var width = 700,
 		height = 400,
         barWidth = 150,
         barHeight = 20,
@@ -26,7 +28,10 @@ d3.csv("data/smallData.csv", function(data){
     .domain([0, names.length*.33, names.length*.66, names.length])
     .range(['#B58929','#C61C6F', '#268BD2', '#85992C']);*/
 
-	var chart = d3.select('#chart').append('svg')
+	var chart = d3.select('#chart').style('position', 'relative')
+		.attr('width', width)
+		.attr('height', height)
+		.append('svg')
 		.style('background', '#FDF6E3')
 		.attr('width', width)
         .attr('height', height)
@@ -55,7 +60,38 @@ d3.csv("data/smallData.csv", function(data){
     displayCountries();
     createPie(width);
 
+    
+
 });
+function addTooltip(){
+
+	var tooltip = d3.select('#chart')         
+  		.append('div')
+  		.attr('class', 'tooltip')
+  		.style('background', '#eee')
+  		//.style('box-shadow', '0 0 5px #999999')
+  		.style('position', 'absolute')
+  		.style('left', '580px')
+  		.style('top', '20px')
+  		.style('font-size', '12px')
+  		.style('text-align', 'center')
+  		.style('width', '80px')
+  		.style('padding', '10px')
+  		.style('line-height', '1.1em')
+  		.style('display', 'none')
+  		.style('z-index', '10');       
+  		            
+
+	tooltip.append('div')                  
+  		.attr('class', 'label')
+  		.text('wooot');           
+
+	tooltip.append('div')                 
+  		.attr('class', 'count');             
+
+	tooltip.append('div')                    
+  		.attr('class', 'percent'); 
+}
 function createPie(cwidth){
 
 	var width = 360;
@@ -92,6 +128,29 @@ function createPie(cwidth){
 	    	return color(d.data.label);
 		});
 
+	
+
+	path.on('mouseover', function(d) {
+
+		var total = d3.sum(countries.map(function(d) {
+	    	return d.count;
+	  	}));
+		
+		var percent = Math.round(1000 * d.data.count / total) / 10;
+		
+		var tooltip = d3.select('.tooltip');
+		tooltip.select('.label').html(d.data.label);
+		tooltip.select('.count').html(d.data.count); 
+		tooltip.select('.percent').html(percent + '%'); 
+		tooltip.style('display', 'block');
+
+	});
+
+	path.on('mouseout', function(d) {
+		var tooltip = d3.select('.tooltip');
+		tooltip.style('display', 'none');
+	}); 
+
 	addLegend(color);
 
 }
@@ -114,7 +173,7 @@ function addLegend(color){
 	    var xPos = -2 * legendRectSize;
 	    var yPos = i * height - offset;
 
-	    return 'translate(' + (xPos+380) + ',' + (yPos+200) + ')';
+	    return 'translate(' + (xPos+420) + ',' + (yPos+200) + ')';
 		});
 
 	legend.append('rect')
