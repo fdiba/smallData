@@ -1,5 +1,7 @@
 var names = [];
 var years = [];
+var selectedYear = 1973;
+var countries = []; //used for charts
 
 d3.csv("data/smallData.csv", function(data){
 
@@ -8,29 +10,8 @@ d3.csv("data/smallData.csv", function(data){
 	for(key in data) {
 
 		names.push(data[key].name);
-
-		if(years.length>0){
-
-			var hasBeenAdded = false;
-
-			var str = data[key].year;
-			
-
-			for(var j=0; j<years.length; j++){
-
-				var n = years[j].search(str);
-				if(n>=0) {
-					hasBeenAdded = true;
-					break;
-				}
-			}
-
-			if(!hasBeenAdded)years.push(data[key].year);
-
-
-		} else {
-			years.push(data[key].year);
-		}
+		editYearsArray(data, key);
+		editCountriesArray(data, key);
 
 	}
 
@@ -70,9 +51,64 @@ d3.csv("data/smallData.csv", function(data){
     	.text(function(d,i) { return data[i].name; });
 
     createMenu(years);
+    displayCountries();
 
 });
+function editCountriesArray(data, key){
 
+	if(data[key].year == selectedYear){
+
+		var country = data[key].country;
+
+		if(countries.length>0){
+
+			var hasBeenIndexed = false;
+
+			for(var i=0; i<countries.length; i++){
+
+				var pos = countries[i][0].search(country);
+
+				if(pos>-1) {
+
+					hasBeenIndexed = true;
+					countries[i][1]++;
+					break;
+				
+				}
+
+			}
+
+			if(!hasBeenIndexed)countries.push([country, 1]);
+
+		} else {
+			countries.push([country, 1]);
+		}
+	}
+}
+function editYearsArray(data, key){
+
+	var year = data[key].year;
+
+	if(years.length>0){
+
+		var hasBeenIndexed = false;
+
+		for(var i=0; i<years.length; i++){
+
+			var pos = years[i].search(year);
+
+			if(pos>-1) {
+				hasBeenIndexed = true;
+				break;
+			}
+		}
+
+		if(!hasBeenIndexed)years.push(year);
+
+	} else {
+		years.push(year);
+	}
+}
 function createMenu(years){
 
 	for(var i=0; i<years.length; i++){
@@ -85,4 +121,19 @@ function createMenu(years){
 			.text(function () { return years[i]; });
 
 	}
+}
+function displayCountries(){
+
+	for(var i=0; i<countries.length; i++){
+
+		d3.select('.container').append('div')
+			//.text(function () { return objects.length; });
+			//.style('display', 'inline-block')
+			//.style('background-color', 'teal')
+			//.style('padding-right', '5px')
+			.text(countries[i][0]+" "+countries[i][1]);
+
+	}
+
+	
 }
