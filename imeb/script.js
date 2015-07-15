@@ -239,10 +239,6 @@ function ctry(label, count, state){
 	this.count = count;
 	this.enabled = state;
 }
-function edition(label, state){
-	this.label = label;
-	this.enabled = state;
-}
 function editCountriesArray(data, key){
 
 	if(data[key].year == selectedYear){
@@ -287,7 +283,7 @@ function editYearsArray(data, key){
 
 		for(var i=0; i<years.length; i++){
 
-			var pos = years[i].label.search(year);
+			var pos = years[i].search(year);
 
 			if(pos>-1) {
 				hasBeenIndexed = true;
@@ -295,10 +291,10 @@ function editYearsArray(data, key){
 			}
 		}
 
-		if(!hasBeenIndexed)years.push(new edition(year, true));
+		if(!hasBeenIndexed)years.push(year);
 
 	} else {
-		years.push(new edition(year, true));
+		years.push(year);
 	}
 }
 function createMenu(years){
@@ -306,8 +302,6 @@ function createMenu(years){
 	var colors = d3.scale.category20c();
 
 	for(var i=0; i<years.length; i++){
-
-		var label = years[i].label;
 
 		var c = colors(i);
 
@@ -327,22 +321,26 @@ function createMenu(years){
 			.style('width', '55px')
 			.on('click', function() {
 
-				d3.select(this).attr('class', 'disabled '+i);
+				var value = this.innerHTML;
 
-				//reset array years with i
+				if(value.search(selectedYear)!=0){
 
-				//update all btn based on array years
+					console.log(value);
 
-				//update data
+					d3.selectAll('.selected').attr('class', '');
+					d3.select(this).attr('class', 'selected');
+					
+					//update data
+
+					selectedYear = value;
+
+				}
 
 			})
-			.text(function () { return label; });
+			.text(function () { return years[i]; });
 
-		if(label == selectedYear) {
-
-			years[i].enabled = false;
-			btn.attr('class', 'disabled '+i);
-
+		if(years[i] == selectedYear) {
+			btn.attr('class', 'selected');
 		}
 
 	}

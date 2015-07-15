@@ -1,7 +1,7 @@
 rect.disabled {
   fill: transparent !important;
 }
-div.disabled {
+div.selected {
   background: none !important;
   color : #333 !important;
 }
