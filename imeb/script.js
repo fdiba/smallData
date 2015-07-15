@@ -34,31 +34,9 @@ d3.csv("data/smallData.csv", function(data){
 		.attr('width', width)
         .attr('height', height)
 
-    var bar = chart.selectAll('rect').data(names)
-		.enter().append('g')
-		.attr("transform", function(d, i) { return "translate(0," + i*(barHeight+barOffset) + ")"; });
-
-    bar.append('rect')
-    	.style('fill', function(d,i) { return colors(i); })
-       	.attr('x', '0')
-       	.attr('y', '0')
-       	.attr('width', barWidth)
-       	.attr('height', barHeight);
-    
-    bar.append('text')
-    	.attr('x', '10')
-    	.attr('y', '0')
-    	.attr('dy', '15')
-    	//.style('fill', 'white')
-    	.style('font-family', 'sans-serif')
-    	.style('font-size', '10px')
-    	.text(function(d,i) { return data[i].name; });
-
     createMenu(years);
-    displayCountries();
+    displayListingBasedOnSelection(data);
     createPie(width);
-
-    
 
 });
 function addTooltip(){
@@ -96,7 +74,7 @@ function createPie(cwidth){
 	var height = 360;
 	var radius = Math.min(width, height) / 2; 
 
-	var color = d3.scale.category20b();
+	var color = d3.scale.category20c();
 	//var color = d3.scale.category20c();
 
 	var svg = d3.select('svg')
@@ -105,7 +83,8 @@ function createPie(cwidth){
 		//.attr('width', width)
 		//.attr('height', height)
 		.append('g')
-		.attr('transform', 'translate(' + (cwidth/2+45) +  ',' + (height/2+20) + ')');
+		//donut position
+		.attr('transform', 'translate(' + (cwidth/2+15) +  ',' + (height/2+20) + ')');
 
 	var donutWidth = 75;
 
@@ -176,7 +155,7 @@ function addLegend(color, pie, path, arc){
 	    var xPos = -2 * legendRectSize;
 	    var yPos = i * height - offset;
 
-	    return 'translate(' + (xPos+390) + ',' + (yPos+200) + ')';
+	    return 'translate(' + (xPos+360) + ',' + (yPos+200) + ')';
 		});
 
 	legend.append('rect')
@@ -325,7 +304,7 @@ function createMenu(years){
 
 				if(value.search(selectedYear)!=0){
 
-					console.log(value);
+					//console.log(value);
 
 					d3.selectAll('.selected').attr('class', '');
 					d3.select(this).attr('class', 'selected');
@@ -345,16 +324,39 @@ function createMenu(years){
 
 	}
 }
-function displayCountries(){
+function displayListingBasedOnSelection(data){
 
-	for(var i=0; i<countries.length; i++){
+	var colors = d3.scale.category20b();
 
-		d3.select('.container').append('div')
+	var hasBeenFound = false;
+
+	console.log(data[0].name);
+
+	for(var i=0; i<data.length; i++){
+
+		if(data[i].year.search(selectedYear)==0){
+
+			hasBeenFound = true;
+
+			d3.select('.container').append('div')
 			//.text(function () { return objects.length; });
-			//.style('display', 'inline-block')
-			//.style('background-color', 'teal')
-			//.style('padding-right', '5px')
-			.text(countries[i].label+" "+countries[i].count);
+			.style('font-size', '12px')
+			.style('width', '690px')
+			.style('color', 'white')
+			.style('background-color', colors(i))
+			.style('padding', '0 5px')
+			.style('margin', '5px 0')
+			.text(data[i].name+" "+data[i].firstName+" | "+data[i].country+" | "+data[i].award);
+
+
+		} else {
+
+			//WARNING LIST NEEDS TO BE IN ORDER BASED ON YEAR !
+			if(hasBeenFound) break;
+
+		}
+
+		
 
 	}
 }
