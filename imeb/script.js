@@ -10,11 +10,9 @@ d3.csv("data/smallData.csv", function(data){
 	console.log(data);
 
 	for(key in data) {
-
 		names.push(data[key].name);
 		editYearsArray(data, key);
 		editCountriesArray(data, key);
-
 	}
 
 	var width = 700,
@@ -236,10 +234,14 @@ function addLegend(color, pie, path, arc){
 
 
 }
-function ctry(label, count, isEnabled){
+function ctry(label, count, state){
 	this.label = label;
 	this.count = count;
-	this.enabled = isEnabled;
+	this.enabled = state;
+}
+function edition(label, state){
+	this.label = label;
+	this.enabled = state;
 }
 function editCountriesArray(data, key){
 
@@ -285,7 +287,7 @@ function editYearsArray(data, key){
 
 		for(var i=0; i<years.length; i++){
 
-			var pos = years[i].search(year);
+			var pos = years[i].label.search(year);
 
 			if(pos>-1) {
 				hasBeenIndexed = true;
@@ -293,22 +295,55 @@ function editYearsArray(data, key){
 			}
 		}
 
-		if(!hasBeenIndexed)years.push(year);
+		if(!hasBeenIndexed)years.push(new edition(year, true));
 
 	} else {
-		years.push(year);
+		years.push(new edition(year, true));
 	}
 }
 function createMenu(years){
 
+	var colors = d3.scale.category20c();
+
 	for(var i=0; i<years.length; i++){
 
-		d3.select('.container').append('div')
+		var label = years[i].label;
+
+		var c = colors(i);
+
+		var btn = d3.select('.container').append('div')
 			//.text(function () { return objects.length; });
 			.style('display', 'inline-block')
 			//.style('background-color', 'teal')
-			.style('padding-right', '5px')
-			.text(function () { return years[i]; });
+			.style('background-color', c)
+			.style('border', '2px solid ' + c)
+			.style('text-align', 'center')
+			.style('font-size', '12px')
+			.style('cursor', 'pointer')
+			
+			.style('color', '#fff')
+			.style('padding', '0 5px')
+			.style('margin-right', '5px')
+			.style('width', '55px')
+			.on('click', function() {
+
+				d3.select(this).attr('class', 'disabled '+i);
+
+				//reset array years with i
+
+				//update all btn based on array years
+
+				//update data
+
+			})
+			.text(function () { return label; });
+
+		if(label == selectedYear) {
+
+			years[i].enabled = false;
+			btn.attr('class', 'disabled '+i);
+
+		}
 
 	}
 }

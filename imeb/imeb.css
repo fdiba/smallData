@@ -1,3 +1,7 @@
 rect.disabled {
   fill: transparent !important;
 }
+div.disabled {
+  background: none !important;
+  color : #333 !important;
+}
