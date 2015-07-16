@@ -10,6 +10,8 @@
 	<div class="container">
 		<h2>IMEB</h2>
 		<div id="chart"></div>
+		<div id="nav"></div>
+		<div id="awards"></div>
 	</div>
 	<?php include_once("../footer.php") ?>
 	<!--<script src="d3.min.js"></script>-->

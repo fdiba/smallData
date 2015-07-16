@@ -1,37 +1,41 @@
+var table = [];
 var names = [];
 var years = [];
 var selectedYear = 1973;
-var countries = []; //used for charts
+var countries = [];
+
+var sceneWidth = 700, sceneHeight = 400;
+
 
 addTooltip();
 
 d3.csv("data/smallData.csv", function(data){
 
 	console.log(data);
+	table = data;
 
 	for(key in data) {
 		names.push(data[key].name);
-		editYearsArray(data, key);
-		editCountriesArray(data, key);
+		setYearsArray(data, key);
+		setCountriesArray(data, key);
 	}
 
-	var width = 700,
-		height = 400,
-        barWidth = 150,
+	var barWidth = 150,
         barHeight = 20,
         barOffset = 5;
 
 	var chart = d3.select('#chart').style('position', 'relative')
-		.attr('width', width)
-		.attr('height', height)
+		.attr('width', sceneWidth)
+		.attr('height', sceneHeight)
 		.append('svg')
-		.style('background', '#FDF6E3')
-		.attr('width', width)
-        .attr('height', height)
+		.attr('id', 'firstPie')
+		.attr('width', sceneWidth)
+        .attr('height', sceneHeight)
+        .style('background', '#FDF6E3')
 
     createMenu(years);
     displayListingBasedOnSelection(data);
-    createPie(width);
+    createPie(sceneWidth);
 
 });
 function addTooltip(){
@@ -63,13 +67,13 @@ function addTooltip(){
 	tooltip.append('div')                    
   		.attr('class', 'percent'); 
 }
-function createPie(cwidth){
+function createPie(sWidth){
 
 	var width = 360;
 	var height = 360;
 	var radius = Math.min(width, height) / 2; 
 
-	var colors = d3.scale.category20c();
+	var colors = d3.scale.category20();
 
 	var svg = d3.select('svg')
 	//var svg = d3.select('#chart')
@@ -78,7 +82,7 @@ function createPie(cwidth){
 		//.attr('height', height)
 		.append('g')
 		//donut position
-		.attr('transform', 'translate(' + (cwidth/2+15) +  ',' + (height/2+20) + ')');
+		.attr('transform', 'translate(' + (sWidth/2+15) +  ',' + (height/2+20) + ')');
 
 	var donutWidth = 75;
 
@@ -213,7 +217,7 @@ function ctry(label, count, state){
 	this.color = 'pink';
 	this.enabled = state;
 }
-function editCountriesArray(data, key){
+function setCountriesArray(data, key){
 
 	if(data[key].year == selectedYear){
 	//if(data[key].year == selectedYear || data[key].year != selectedYear){
@@ -245,13 +249,13 @@ function editCountriesArray(data, key){
 		}
 	}
 
-	var colors = d3.scale.category20c();
+	var colors = d3.scale.category20();
 	for (var k=0; k<countries.length; k++){
 		countries[k].color = colors(k);
 	}
 
 }
-function editYearsArray(data, key){
+function setYearsArray(data, key){
 
 	var year = data[key].year;
 
@@ -283,7 +287,7 @@ function createMenu(years){
 
 		var c = colors(i);
 
-		var btn = d3.select('.container').append('div')
+		var btn = d3.select('#nav').append('div')
 			//.text(function () { return objects.length; });
 			.style('display', 'inline-block')
 			//.style('background-color', 'teal')
@@ -312,6 +316,17 @@ function createMenu(years){
 
 					selectedYear = value;
 
+					resetVariables();
+
+					for(var j=0; j<table.length; j++)setCountriesArray(table, j);
+					d3.select('#awards').selectAll("*").remove();
+					displayListingBasedOnSelection(table);
+					//console.log(countries.length);
+
+					//TODO animate it
+					d3.select('#firstPie').selectAll("*").remove();
+					createPie(sceneWidth);
+
 				}
 
 			})
@@ -322,6 +337,11 @@ function createMenu(years){
 		}
 
 	}
+}
+function resetVariables(){
+
+	countries = [];
+
 }
 function displayListingBasedOnSelection(data){
 
@@ -345,8 +365,7 @@ function displayListingBasedOnSelection(data){
 
 			hasBeenFound = true;
 
-			d3.select('.container').append('div')
-			//.text(function () { return objects.length; });
+			d3.select('#awards').append('div')			
 			.style('font-size', '12px')
 			.style('width', '690px')
 			.style('color', 'white')
@@ -362,8 +381,5 @@ function displayListingBasedOnSelection(data){
 			if(hasBeenFound) break;
 
 		}
-
-		
-
 	}
 }
