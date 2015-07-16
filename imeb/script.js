@@ -21,11 +21,6 @@ d3.csv("data/smallData.csv", function(data){
         barHeight = 20,
         barOffset = 5;
 
-    var colors = d3.scale.category20c();
-    /*var colors = d3.scale.linear()
-    .domain([0, names.length*.33, names.length*.66, names.length])
-    .range(['#B58929','#C61C6F', '#268BD2', '#85992C']);*/
-
 	var chart = d3.select('#chart').style('position', 'relative')
 		.attr('width', width)
 		.attr('height', height)
@@ -74,8 +69,7 @@ function createPie(cwidth){
 	var height = 360;
 	var radius = Math.min(width, height) / 2; 
 
-	var color = d3.scale.category20c();
-	//var color = d3.scale.category20c();
+	var colors = d3.scale.category20c();
 
 	var svg = d3.select('svg')
 	//var svg = d3.select('#chart')
@@ -102,7 +96,7 @@ function createPie(cwidth){
 	  	.append('path')
 	  	.attr('d', arc)
 	  	.attr('fill', function(d, i) { 
-	    	return color(d.data.label);
+	    	return colors(d.data.label);
 		})
 		.each(function(d) { this._current = d; });
 
@@ -133,17 +127,17 @@ function createPie(cwidth){
 		tooltip.style('display', 'none');
 	}); 
 
-	addLegend(color, pie, path, arc);
+	addLegend(colors, pie, path, arc);
 
 }
-function addLegend(color, pie, path, arc){
+function addLegend(colors, pie, path, arc){
 
 	var legendRectSize = 18;
 	var legendSpacing = 4;
 
 	var svg = d3.select('svg');
 	var legend = svg.selectAll('.legend')
-		.data(color.domain())
+		.data(colors.domain())
 		.enter()
 		.append('g')
 	  	.attr('class', 'legend')
@@ -151,7 +145,7 @@ function addLegend(color, pie, path, arc){
 	  	.attr('transform', function(d, i) {
 	    
 	    var height = legendRectSize + legendSpacing;
-	    var offset =  height * color.domain().length / 2;
+	    var offset =  height * colors.domain().length / 2;
 	    var xPos = -2 * legendRectSize;
 	    var yPos = i * height - offset;
 
@@ -163,8 +157,8 @@ function addLegend(color, pie, path, arc){
 	  	.attr('height', legendRectSize)
 	  	.style('stroke-width', '2')
 	  	.style('cursor', 'pointer')
-	  	.style('fill', color)
-	  	.style('stroke', color)
+	  	.style('fill', colors)
+	  	.style('stroke', colors)
 	  	.on('click', function(label) {
 
 	  		var rect = d3.select(this);
@@ -216,6 +210,7 @@ function addLegend(color, pie, path, arc){
 function ctry(label, count, state){
 	this.label = label;
 	this.count = count;
+	this.color = 'pink';
 	this.enabled = state;
 }
 function editCountriesArray(data, key){
@@ -243,14 +238,18 @@ function editCountriesArray(data, key){
 
 			}
 
-			//if(!hasBeenIndexed)countries.push([country, 1]);
 			if(!hasBeenIndexed)countries.push(new ctry(country, 1, true));
 
 		} else {
-			//countries.push([country, 1]);
 			countries.push(new ctry(country, 1, true));
 		}
 	}
+
+	var colors = d3.scale.category20c();
+	for (var k=0; k<countries.length; k++){
+		countries[k].color = colors(k);
+	}
+
 }
 function editYearsArray(data, key){
 
@@ -278,7 +277,7 @@ function editYearsArray(data, key){
 }
 function createMenu(years){
 
-	var colors = d3.scale.category20c();
+	var colors = d3.scale.category20b();
 
 	for(var i=0; i<years.length; i++){
 
@@ -326,15 +325,23 @@ function createMenu(years){
 }
 function displayListingBasedOnSelection(data){
 
-	var colors = d3.scale.category20b();
-
 	var hasBeenFound = false;
-
-	console.log(data[0].name);
 
 	for(var i=0; i<data.length; i++){
 
 		if(data[i].year.search(selectedYear)==0){
+
+			var country = data[i].country;
+
+			for(var j=0; j<countries.length; j++){
+
+				if(country.search(countries[j].label) == 0){
+
+					color = countries[j].color;
+					break;
+
+				}
+			}
 
 			hasBeenFound = true;
 
@@ -343,10 +350,10 @@ function displayListingBasedOnSelection(data){
 			.style('font-size', '12px')
 			.style('width', '690px')
 			.style('color', 'white')
-			.style('background-color', colors(i))
+			.style('background-color', color)
 			.style('padding', '0 5px')
 			.style('margin', '5px 0')
-			.text(data[i].name+" "+data[i].firstName+" | "+data[i].country+" | "+data[i].award);
+			.text(data[i].name+" "+data[i].firstName+" | "+country+" | "+data[i].award);
 
 
 		} else {
