@@ -4,10 +4,9 @@ var years = [];
 var selectedYear = 1973;
 var countries = [];
 
-var sceneWidth = 700, sceneHeight = 400;
+var sceneWidth = 400, sceneHeight = 400;
 
-
-addTooltip();
+addTooltip(sceneWidth, sceneHeight);
 
 d3.csv("data/smallData.csv", function(data){
 
@@ -24,65 +23,66 @@ d3.csv("data/smallData.csv", function(data){
         barHeight = 20,
         barOffset = 5;
 
-	var chart = d3.select('#chart').style('position', 'relative')
+	var chart = d3.select('#pie01').style('position', 'relative')
 		.attr('width', sceneWidth)
 		.attr('height', sceneHeight)
 		.append('svg')
 		.attr('id', 'firstPie')
 		.attr('width', sceneWidth)
         .attr('height', sceneHeight)
-        .style('background', '#FDF6E3')
+        .style('background', '#FDF6E3');
 
     createMenu(years);
     displayListingBasedOnSelection(data);
-    createPie(sceneWidth);
+    createPie(sceneWidth, sceneHeight);
 
 });
-function addTooltip(){
+function addTooltip(sWidth, sHeight){
 
-	var tooltip = d3.select('#chart')         
+	var padding = 10;
+	var width = 80;
+	var margin = 20;
+
+	var tooltip = d3.select('#charts')         
   		.append('div')
-  		.attr('class', 'tooltip')
+  		.attr('id', 'tooltip01')
   		.style('background', '#eee')
   		//.style('box-shadow', '0 0 5px #999999')
   		.style('position', 'absolute')
-  		.style('left', '580px')
-  		.style('top', '20px')
+  		.style('top', '70px')
+  		.style('left', padding+'px')
+  		//.style('left', (sWidth-(width+padding*2+margin))+"px")
+  		//.style('top', '20px')
   		.style('font-size', '12px')
   		.style('text-align', 'center')
-  		.style('width', '80px')
+  		.style('width', width+'px')
   		.style('padding', '10px')
   		.style('line-height', '1.1em')
-  		.style('display', 'none')
+  		//.style('display', 'none')
   		.style('z-index', '10');       
   		            
 
-	tooltip.append('div')                  
-  		.attr('class', 'label')
-  		.text('wooot');           
+	tooltip.append('div').attr('class', 'label');
 
-	tooltip.append('div')                 
-  		.attr('class', 'count');             
+	tooltip.append('div').attr('class', 'count');             
 
-	tooltip.append('div')                    
-  		.attr('class', 'percent'); 
+	tooltip.append('div').attr('class', 'percent'); 
 }
-function createPie(sWidth){
+function createPie(sWidth, sHeight){
 
-	var width = 360;
-	var height = 360;
+	var padding = 20;
+	var width = sWidth-padding*2;
+	var height = sHeight-padding*2;
 	var radius = Math.min(width, height) / 2; 
 
 	var colors = d3.scale.category20();
 
-	var svg = d3.select('svg')
-	//var svg = d3.select('#chart')
-		//.append('svg')
+	var svg = d3.select('#firstPie')
 		//.attr('width', width)
 		//.attr('height', height)
 		.append('g')
 		//donut position
-		.attr('transform', 'translate(' + (sWidth/2+15) +  ',' + (height/2+20) + ')');
+		.attr('transform', 'translate(' + (sWidth/2) +  ',' + (height/2+padding) + ')');
 
 	var donutWidth = 75;
 
@@ -92,6 +92,7 @@ function createPie(sWidth){
 
 	var pie = d3.layout.pie()
   		.value(function(d) { return d.count; })
+  		//do not sort it because of animation
   		.sort(null);
 
   	var path = svg.selectAll('path')
@@ -104,7 +105,7 @@ function createPie(sWidth){
 		})
 		.each(function(d) { this._current = d; });
 
-	var tooltip = d3.select('.tooltip');
+	var tooltip = d3.select('#tooltip01');
 
 	path.on('mouseover', function(d) {
 
@@ -123,18 +124,18 @@ function createPie(sWidth){
 	});
 
 	/*path.on('mousemove', function(d) {
-	  	tooltip.style('top', (d3.event.pageY - 120) + 'px')
-	    	.style('left', (d3.event.pageX - 100) + 'px');
+	  	tooltip.style('top', (d3.event.pageY - 0) + 'px')
+	    	.style('left', (d3.event.pageX - 0) + 'px');
 	});*/
 
 	path.on('mouseout', function(d) {
 		tooltip.style('display', 'none');
 	}); 
 
-	addLegend(colors, pie, path, arc);
+	addLegend(colors, pie, path, arc, sWidth, sHeight);
 
 }
-function addLegend(colors, pie, path, arc){
+function addLegend(colors, pie, path, arc, sWidth, sHeight){
 
 	var legendRectSize = 18;
 	var legendSpacing = 4;
@@ -153,7 +154,7 @@ function addLegend(colors, pie, path, arc){
 	    var xPos = -2 * legendRectSize;
 	    var yPos = i * height - offset;
 
-	    return 'translate(' + (xPos+360) + ',' + (yPos+200) + ')';
+	    return 'translate(' + (xPos+sWidth/2) + ',' + (yPos+sHeight/2) + ')';
 		});
 
 	legend.append('rect')
@@ -325,7 +326,7 @@ function createMenu(years){
 
 					//TODO animate it
 					d3.select('#firstPie').selectAll("*").remove();
-					createPie(sceneWidth);
+					createPie(sceneWidth, sceneHeight);
 
 				}
 
@@ -341,6 +342,11 @@ function createMenu(years){
 function resetVariables(){
 
 	countries = [];
+	//TODO use it to use the same color for each country
+	/*for(var i=0; i<countries.length;i++){
+		countries[i].count = 0;
+		countries[i].enabled = true;
+	}*/
 
 }
 function displayListingBasedOnSelection(data){

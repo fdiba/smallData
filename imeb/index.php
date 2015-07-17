@@ -9,7 +9,11 @@
 <body>
 	<div class="container">
 		<h2>IMEB</h2>
-		<div id="chart"></div>
+		<div id="charts">
+			<div id="pie01"></div>
+			<div id="pie02"></div>
+			<div id="pie03"></div>
+		</div>
 		<div id="nav"></div>
 		<div id="awards"></div>
 	</div>
