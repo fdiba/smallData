@@ -6,6 +6,7 @@ var countries = [];
 
 var sceneWidth = 400, sceneHeight = 400;
 
+editTitle(selectedYear);
 addTooltip(sceneWidth, sceneHeight);
 
 d3.csv("data/smallData.csv", function(data){
@@ -49,7 +50,7 @@ function addTooltip(sWidth, sHeight){
   		.style('background', '#eee')
   		//.style('box-shadow', '0 0 5px #999999')
   		.style('position', 'absolute')
-  		.style('top', '70px')
+  		.style('top', '150px')
   		.style('left', padding+'px')
   		//.style('left', (sWidth-(width+padding*2+margin))+"px")
   		//.style('top', '20px')
@@ -316,6 +317,7 @@ function createMenu(years){
 					//update data
 
 					selectedYear = value;
+					editTitle(selectedYear);
 
 					resetVariables();
 
@@ -349,6 +351,9 @@ function resetVariables(){
 	}*/
 
 }
+function editTitle(slYear){
+	d3.select('h1').text('Concours Internationaux de Bourges ' + slYear);
+}
 function displayListingBasedOnSelection(data){
 
 	var hasBeenFound = false;
@@ -373,7 +378,7 @@ function displayListingBasedOnSelection(data){
 
 			d3.select('#awards').append('div')			
 			.style('font-size', '12px')
-			.style('width', '690px')
+			.style('width', sceneWidth-10+'px')
 			.style('color', 'white')
 			.style('background-color', color)
 			.style('padding', '0 5px')

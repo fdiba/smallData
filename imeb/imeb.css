@@ -1,7 +1,26 @@
 rect.disabled {
   fill: transparent !important;
 }
+#charts{
+	padding: 10px 0 0 0;
+}
+#nav{
+	padding: 10px 0;
+}
 div.selected {
   background: none !important;
   color : #333 !important;
+}
+div.tPie {
+	width : 400px;
+	/*color: #CB4B19;*/
+	background: #E7E0CB;
+	margin: 0 0 1px 0;
+}
+div.tPie {
+  text-align: center;
+  font-weight: normal;
+  font-size: .6em;
+  font-family: "Exo 2", "Helvetica Neue", Helvetica, sans-serif;
+  /*font-style : italic;*/
 }

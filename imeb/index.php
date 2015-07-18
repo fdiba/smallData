@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>fonds IMEB - small data project</title>
-	<?php include_once("../analyticstracking.php") ?>
+	<title>Concours Internationaux de Bourges</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" href="main.css">
 	<link rel="stylesheet" href="imeb.css">
+	<?php include_once("../analyticstracking.php") ?>
 </head>
 <body>
 	<div class="container">
-		<h2>IMEB</h2>
+		<h1>Concours Internationaux de Bourges</h1>
+		<h2>Oeuvres primées</h2>
 		<div id="charts">
-			<div id="pie01"></div>
-			<div id="pie02"></div>
-			<div id="pie03"></div>
+			<div id="pie01"><div class="tPie">Pays</div></div>
+			<div id="pie02"><div class="tPie">Studio</div></div>
+			<div id="pie03"><div class="tPie">Catégorie</div></div>
 		</div>
 		<div id="nav"></div>
 		<div id="awards"></div>
