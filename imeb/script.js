@@ -1,8 +1,10 @@
 var table = [];
-var names = [];
 var years = [];
+
 var selectedYear = 1973;
+
 var countries = [];
+var categories = [];
 
 var sceneWidth = 400, sceneHeight = 400;
 
@@ -15,29 +17,38 @@ d3.csv("data/smallData.csv", function(data){
 	table = data;
 
 	for(key in data) {
-		names.push(data[key].name);
+		
 		setYearsArray(data, key);
-		setCountriesArray(data, key);
+
+		setArray(data, key, countries, 0);
+		setArray(data, key, categories, 1);
+	
 	}
 
 	var barWidth = 150,
         barHeight = 20,
         barOffset = 5;
 
-	var chart = d3.select('#pie01').style('position', 'relative')
+    createSvg('#pie01', 'firstPie');
+    createSvg('#pie02', 'secondPie');
+	createSvg('#pie03', 'thirdPie');
+
+    createMenu(years);
+
+    createPie(sceneWidth, sceneHeight);
+
+    displayListingBasedOnSelection(data);
+});
+function createSvg(divName, idName){
+	d3.select(divName).style('position', 'relative')
 		.attr('width', sceneWidth)
 		.attr('height', sceneHeight)
 		.append('svg')
-		.attr('id', 'firstPie')
+		.attr('id', idName)
 		.attr('width', sceneWidth)
         .attr('height', sceneHeight)
         .style('background', '#FDF6E3');
-
-    createMenu(years);
-    displayListingBasedOnSelection(data);
-    createPie(sceneWidth, sceneHeight);
-
-});
+}
 function addTooltip(sWidth, sHeight){
 
 	var padding = 10;
@@ -134,7 +145,6 @@ function createPie(sWidth, sHeight){
 	}); 
 
 	addLegend(colors, pie, path, arc, sWidth, sHeight);
-
 }
 function addLegend(colors, pie, path, arc, sWidth, sHeight){
 
@@ -210,50 +220,59 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight){
   		.attr('y', legendRectSize - legendSpacing)
   		//.text(function(d) { return d.toUpperCase(); });
   		.text(function(d) { return d; });
-
-
 }
-function ctry(label, count, state){
+function obj(label, count, state){
 	this.label = label;
 	this.count = count;
 	this.color = 'pink';
 	this.enabled = state;
 }
-function setCountriesArray(data, key){
+function setArray(data, key, array, propertyId){
 
 	if(data[key].year == selectedYear){
-	//if(data[key].year == selectedYear || data[key].year != selectedYear){
 
-		var country = data[key].country;
+		var value = '';
 
-		if(countries.length>0){
+		switch(propertyId){
+		case 0:
+			value = data[key].country;
+			break;
+		case 1:
+			value = data[key].category;
+			break;
+		default:
+			value = 'default';
+			break;
+		}
+
+		if(array.length>0){
 
 			var hasBeenIndexed = false;
 
-			for(var i=0; i<countries.length; i++){
+			for(var i=0; i<array.length; i++){
 
-				var pos = countries[i].label.search(country);
+				var pos = array[i].label.search(value);
 
 				if(pos>-1) {
 
 					hasBeenIndexed = true;
-					countries[i].count++;
+					array[i].count++;
 					break;
 				
 				}
 
 			}
 
-			if(!hasBeenIndexed)countries.push(new ctry(country, 1, true));
+			if(!hasBeenIndexed)array.push(new obj(value, 1, true));
 
 		} else {
-			countries.push(new ctry(country, 1, true));
+			array.push(new obj(value, 1, true));
 		}
 	}
 
 	var colors = d3.scale.category20();
-	for (var k=0; k<countries.length; k++){
-		countries[k].color = colors(k);
+	for (var k=0; k<array.length; k++){
+		array[k].color = colors(k);
 	}
 
 }
@@ -321,7 +340,11 @@ function createMenu(years){
 
 					resetVariables();
 
-					for(var j=0; j<table.length; j++)setCountriesArray(table, j);
+					for(var j=0; j<table.length; j++) {
+						setArray(table, j, countries, 0);
+						setArray(table, j, categories, 1);
+					}
+					
 					d3.select('#awards').selectAll("*").remove();
 					displayListingBasedOnSelection(table);
 					//console.log(countries.length);
@@ -344,6 +367,8 @@ function createMenu(years){
 function resetVariables(){
 
 	countries = [];
+	categories = [];
+
 	//TODO use it to use the same color for each country
 	/*for(var i=0; i<countries.length;i++){
 		countries[i].count = 0;
@@ -371,6 +396,9 @@ function displayListingBasedOnSelection(data){
 					color = countries[j].color;
 					break;
 
+				} else {
+					//WARNING SHOULD NEVER HAPPENED
+					color = 'blue';
 				}
 			}
 
