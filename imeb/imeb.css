@@ -5,9 +5,12 @@ rect.disabled {
 	padding: 10px 0 0 0;
 	/*background: red;*/
 }
-#nav{
+#nav {
 	padding: 10px 0;
 	clear: both;
+}
+#nav div {
+	margin: 0 0 2px 0;
 }
 #pie01, #pie02, #pie03{
 	float: left;
@@ -18,7 +21,7 @@ div.selected {
   color : #333 !important;
 }
 div.tPie {
-	width : 400px;
+	width : 394px;
 	/*color: #CB4B19;*/
 	background: #E7E0CB;
 	margin: 0 0 1px 0;

@@ -48,10 +48,13 @@ h2 {
 p {
   margin-bottom: .5em;
 } 
-
+footer {
+  height: 10px;
+  clear: both;
+}
 .container {
   width: 80%;
-  max-width: 1300px;
+  max-width: 1200px;
   margin: 0 auto;
   margin-top:30px;
 }

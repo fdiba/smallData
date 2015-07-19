@@ -7,7 +7,9 @@ var countries = [];
 var categories = [];
 var studios = [];
 
-var sceneWidth = 400, sceneHeight = 400;
+var countryDivs = [];
+
+var sceneWidth = 394, sceneHeight = 400;
 
 editTitle(selectedYear);
 addTooltip(sceneWidth, sceneHeight);
@@ -176,14 +178,13 @@ function createPie(sWidth, sHeight, svgId, array){
 
 	addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array);
 }
-var test = ['Allemagne', 'lola'];
 function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 
 	var legendRectSize = 18;
 	var legendSpacing = 4;
 
 	var labels = [];
-	for(var i=0; i<array.length; i++)labels.push(array[i].label);
+	for(var i=0; i<array.length; i++) labels.push(array[i].label);
 
 	var svg = d3.select(svgId);
 	var legend = svg.selectAll('.legend')
@@ -364,8 +365,6 @@ function createMenu(years){
 
 		var c = colors(i);
 
-
-
 		var btn = d3.select('#nav').append('div')
 			//.text(function () { return objects.length; });
 			.style('display', 'inline-block')
@@ -379,7 +378,7 @@ function createMenu(years){
 			.style('color', '#fff')
 			.style('padding', '0 5px')
 			.style('margin-right', '5px')
-			.style('width', '55px')
+			.style('width', '25px')
 			.on('click', function() {
 
 				var value = this.innerHTML;
@@ -447,6 +446,7 @@ function editTitle(slYear){
 function displayListingBasedOnSelection(data){
 
 	var hasBeenFound = false;
+	countryDivs = [];
 
 	for(var i=0; i<data.length; i++){
 
@@ -469,23 +469,53 @@ function displayListingBasedOnSelection(data){
 
 			hasBeenFound = true;
 
+			var divAlreadyExist = false;
+			var id = -1;
+
+			for(var k=0; k<countryDivs.length; k++){
+
+				if(country.search(countryDivs[k]) == 0){
+
+					divAlreadyExist = true;
+					id = k;
+					break;
+				}
+
+			}
+
+
 			var cat = data[i].category;
 			var award = data[i].award;
 			if(award.search('M')==0)award="Mention";
-
+			if(country=='')country = "Inconnu";
 
 			var str = data[i].name+" "+data[i].firstName+" | "+country+" | "+award;
 			if(cat!='')str += " | "+cat;
 
-			d3.select('#awards').append('div')
-			.style('font-size', '12px')
-			/*.style('width', sceneWidth-10+'px')*/
-			.style('color', 'white')
-			.style('background-color', color)
-			.style('padding', '0 5px')
-			.style('margin', '5px 0')
-			.text(str);
 
+			if(divAlreadyExist){
+
+				d3.select('#ctry'+id)
+				.append('p')
+				.text(str);
+
+			} else {
+
+				d3.select('#awards').append('div')
+				.attr('id', 'ctry'+countryDivs.length)
+				.style('font-size', '12px')
+				.style('color', 'white')
+				.style('background-color', color)
+				.style('padding', '5px 5px 1px 5px')
+				.style('margin', '0 0 1px 0')
+				.style('line-height', '1em')
+				.append('p')
+
+				.text(str);
+
+				countryDivs.push(country);
+
+			}
 
 		} else {
 
