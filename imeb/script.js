@@ -14,7 +14,7 @@ addTooltip(sceneWidth, sceneHeight);
 
 d3.csv("data/smallData.csv", function(data){
 
-	console.log(data);
+	//console.log(data);
 	table = data;
 
 	for(key in data) {
@@ -94,8 +94,17 @@ function createPie(sWidth, sHeight, svgId, array){
 	var height = sHeight-padding*2;
 	var radius = Math.min(width, height) / 2; 
 
-	//var colors = d3.scale.category20c();
 	var colors = d3.scale.category20();
+
+	var max = array.length-1;
+
+	/*var colors = d3.scale.linear()
+		.domain([0, max*.25, max*.5, max*.75, max])
+		.range(['#6abfeb', '#b9d3c3', '#f7e998', '#f4bcac', '#f495b3']);*/
+
+	var colors = d3.scale.linear()
+		.domain([0, max*.25, max*.5, max*.75, max])
+		.range(['#5dbf8c', '#8ecb84', '#bad97a', '#dab470', '#f08f67']);
 
 	var svg = d3.select(svgId)
 		//.attr('width', width)
@@ -111,7 +120,10 @@ function createPie(sWidth, sHeight, svgId, array){
 		.outerRadius(radius);
 
 	var pie = d3.layout.pie()
-  		.value(function(d) { return d.count; })
+  		.value(function(d) {
+  			//console.log(d.count);
+  			return d.count;
+  		})
   		//do not sort it because of animation
   		.sort(null);
 
@@ -126,9 +138,14 @@ function createPie(sWidth, sHeight, svgId, array){
 	  	.append('path')
 	  	.attr('d', arc)
 	  	.attr('fill', function(d, i) { 
-	    	return colors(d.data.label);
+	  		//console.log(d.data.label);
+	  		return colors(i);
+	    	//return colors(d.data.label);
 		})
-		.each(function(d) { this._current = d; });
+		.each(function(d) {
+			//console.log(d);
+			this._current = d;
+		});
 
 	var tooltip = d3.select('#tooltip01');
 
@@ -159,14 +176,19 @@ function createPie(sWidth, sHeight, svgId, array){
 
 	addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array);
 }
+var test = ['Allemagne', 'lola'];
 function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 
 	var legendRectSize = 18;
 	var legendSpacing = 4;
 
+	var labels = [];
+	for(var i=0; i<array.length; i++)labels.push(array[i].label);
+
 	var svg = d3.select(svgId);
 	var legend = svg.selectAll('.legend')
-		.data(colors.domain())
+		.data(labels)
+		//.data(colors.domain())
 		.enter()
 		.append('g')
 	  	.attr('class', 'legend')
@@ -174,20 +196,22 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 	  	.attr('transform', function(d, i) {
 	    
 		    var height = legendRectSize + legendSpacing;
-		    var offset =  height * colors.domain().length / 2;
+		    var offset =  height * labels.length / 2;
 		    var xPos = -2 * legendRectSize;
 		    var yPos = i * height - offset;
 
 		    return 'translate(' + (xPos+sWidth/2) + ',' + (yPos+sHeight/2) + ')';
 		});
 
+	var color = function(d, i) { return array[i].color};
+
 	legend.append('rect')
 		.attr('width', legendRectSize)
 	  	.attr('height', legendRectSize)
 	  	.style('stroke-width', '2')
 	  	.style('cursor', 'pointer')
-	  	.style('fill', colors)
-	  	.style('stroke', colors)
+	  	.style('fill', color)
+	  	.style('stroke', color)
 	  	.on('click', function(label) {
 
 	  		var rect = d3.select(this);
@@ -249,6 +273,7 @@ function setArray(data, key, array, propertyId){
 		switch(propertyId){
 		case 0:
 			value = data[key].country;
+			if(value=='')value="Inconnu";
 			break;
 		case 1:
 			value = data[key].category;
@@ -288,10 +313,16 @@ function setArray(data, key, array, propertyId){
 		}
 	}
 
-	var colors = d3.scale.category20();
-	for (var k=0; k<array.length; k++){
-		array[k].color = colors(k);
-	}
+	//var colors = d3.scale.category20();
+
+	//TODO IN DOUBLE
+	var max = array.length-1;
+
+	var colors = d3.scale.linear()
+		.domain([0, max*.25, max*.5, max*.75, max])
+		.range(['#5dbf8c', '#8ecb84', '#bad97a', '#dab470', '#f08f67']);
+
+	for (var k=0; k<array.length; k++) array[k].color = colors(k);
 
 }
 function setYearsArray(data, key){
@@ -320,11 +351,20 @@ function setYearsArray(data, key){
 }
 function createMenu(years){
 
-	var colors = d3.scale.category20b();
+	/*var colors = d3.scale.category20b()
+		.domain([0, years.length]);*/
+
+	var max = years.length-1;
+
+	var colors = d3.scale.linear()
+		.domain([0, max*.25, max*.5, max*.75, max])
+		.range(['#5dbf8c', '#8ecb84', '#bad97a', '#dab470', '#f08f67']);
 
 	for(var i=0; i<years.length; i++){
 
 		var c = colors(i);
+
+
 
 		var btn = d3.select('#nav').append('div')
 			//.text(function () { return objects.length; });
@@ -423,7 +463,7 @@ function displayListingBasedOnSelection(data){
 
 				} else {
 					//WARNING SHOULD NEVER HAPPENED
-					color = 'blue';
+					color = 'black';
 				}
 			}
 
