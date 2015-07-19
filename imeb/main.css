@@ -56,7 +56,7 @@ p {
   margin-top:30px;
 }
  
-@media all and (max-width: 500px) {
+@media all and (max-width: 450px) {
   h2 {
     padding-left: 10px;
     text-align: center;

@@ -1,7 +1,7 @@
 var table = [];
 var years = [];
 
-var selectedYear = 1973;
+var selectedYear = 2009;
 
 var countries = [];
 var categories = [];
@@ -27,6 +27,8 @@ d3.csv("data/smallData.csv", function(data){
 	
 	}
 
+	years.reverse();
+
 	var barWidth = 150,
         barHeight = 20,
         barOffset = 5;
@@ -41,6 +43,7 @@ d3.csv("data/smallData.csv", function(data){
     createPie(sceneWidth, sceneHeight, '#secondPie', studios);
     createPie(sceneWidth, sceneHeight, '#thirdPie', categories);
 
+    d3.select('#pie01').append('div').attr('id', 'awards');	
     displayListingBasedOnSelection(data);
 });
 function createSvg(divName, idName){
@@ -426,14 +429,22 @@ function displayListingBasedOnSelection(data){
 
 			hasBeenFound = true;
 
-			d3.select('#awards').append('div')			
+			var cat = data[i].category;
+			var award = data[i].award;
+			if(award.search('M')==0)award="Mention";
+
+
+			var str = data[i].name+" "+data[i].firstName+" | "+country+" | "+award;
+			if(cat!='')str += " | "+cat;
+
+			d3.select('#awards').append('div')
 			.style('font-size', '12px')
-			.style('width', sceneWidth-10+'px')
+			/*.style('width', sceneWidth-10+'px')*/
 			.style('color', 'white')
 			.style('background-color', color)
 			.style('padding', '0 5px')
 			.style('margin', '5px 0')
-			.text(data[i].name+" "+data[i].firstName+" | "+country+" | "+data[i].award);
+			.text(str);
 
 
 		} else {

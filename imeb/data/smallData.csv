@@ -1,8 +1,8 @@
-name,firstName,country,title,description,duration,year,category,genre,award
+name,firstName,country,title,studio,duration,year,category,genre,award
 RUDNIK,Eugeniusz,Pologne,Mobile,,0:11:40,1973,,,1
 APPLETON,Jon,USA,Stereopticon,,0:08:15,1973,,,2
 KENNELL,Richard,USA,Fantasia and fugue (pour bande),,0:11:30,1973,,,3
-SCHRADER,Barry,USA,Four pieuce from bestiary,,0:24:33,1973,,,4
+SCHRADER,Barry,USA,Four pieces from bestiary,,0:24:33,1973,,,4
 GOETHALS,Lucien,Belgique,Contrapuntos,,0:09:50,1973,,,M
 KOLMAN,Peter,Tchéquie,Lentement mais pas trop,,0:10:35,1973,,,M
 PONGRACZ,Zoltan,Hongrie,Mariphonia,,0:08:07,1974,,,1
@@ -11,3 +11,767 @@ RUDNIK,Eugeniusz,Pologne,Ostinato,,0:16:10,1974,,,3
 KUPPER,Léo,Belgique,Innominé,,0:30:00,1974,,,4
 BERNARD,Pierre,France,Jérémie,,0:20:00,1974,,,M
 MAZUREK,Bohdan,Pologne,Epizodes,,0:08:15,1974,,,M
+ASUAR,José Vicente,Chili,Guararia repano,,0:14:21,1975,,,1
+KOLMAN,Peter,Tchéquie,E 15,,0:11:50,1975,,,2
+KUSNIR,Eduardo,Argentine,La panaderia,,0:09:30,1975,,,3
+NIELSON,Lewis,USA,Traveler,,0:09:00,1975,,,4
+BERGER,Roman,Pologne,Epitaph für Nikolaus Kopernikus,,0:19:20,1975,,,M
+GREENHAM,,Danemark,Relativity,,0:10:00,1975,,,M
+GUIOT,Dominique,France,L'oiseau du Paradis,,0:13:00,1975,,,M
+HEIDSIECK,Bernard,France,Vaduz,,0:11:54,1975,,,M
+KIMMEL,Walter,USA,American retrospective: nixon a just and lasting piece,,0:10:24,1975,,,M
+PATACHICH,Ivan,Hongrie,Funzione acustico,,0:10:37,1975,,,M
+ROSS,Harris,Nlle Zélande,To a child,,0:12:00,1975,,,M
+ZOBL,Wilhelm,Autriche,"Andere die welt, sie braucht es",,0:15:00,1975,,,M
+BODY,Jack,Nlle Zélande,Musik Dari Jalan,,0:08:20,1976,,,1
+KATZER,Georg,Allemagne,RONDO,,0:10:00,1976,,,2
+ROZMANN,Akos,Hongrie,Impulsioni,,0:11:00,1976,,,3
+PLAIN,Gérald,USA,ripsnorter,,0:10:00,1976,,,4
+DHOMONT,Francis,France,Syntagmes,,0:10:05,1976,,,M
+PIGNON,Paul,Gde Bretagne,Microhabitat,,0:17:00,1976,,,M
+RIMMER,John,Nlle Zélande,Where sea meets sky part 1,,0:08:38,1976,,,M
+ROLNICK,Neil,USA,Empty mirro,,0:10:00,1976,,,M
+VIERA,Julio,Argentine,Mutacion,,0:09:32,1976,,,M
+VOIGTLAENDER,Lothar,Allemagne,Meditations sur le temps,,0:12:40,1976,,,M
+DASHOW,James,USA,Whispers out of time,,0:11:17,1977,Analogique,,1
+SMALLEY,Denis,Gde Bretagne,Darkness after time's colours,,0:13:48,1977,Analogique,,2
+BEYLS,Peter,Belgique,It always takes a short time,,0:16:22,1977,Analogique,,M
+KOBLITZ,David,USA,Wonders of the invisible world,,0:08:00,1977,Analogique,,M
+KREIGER,Arthur,USA,Dance for Sarah,,0:08:30,1977,Analogique,,M
+SCHUBERT,Mark,USA,Merchants,,0:11:40,1977,Analogique,,M
+CRISTIANSEN,Svend,Danemark,Urvaerk,,0:12:00,1977,Analogique,,M
+FREEDMAN,Hal,USA,"Skelelemedania (pour voix, électronic live et bande)",,0:23:00,1977,Mixte,,2
+DASHOW,James,USA,Mappings (pour violoncelle etdispositif électronique),,0:16:58,1977,Mixte,,M
+ORTON,Richard,Gde Bretagne,Ambience,,0:10:40,1977,Mixte,,M
+VOIGTLAENDER,Lothar,Allemagne,"3 Elektronische studien (pour chant, piano et bande)",,0:09:40,1977,Mixte,,M
+TRUAX,Barry,Canada,Sonic landscape n°3,,0:15:30,1977,Numérique,,1
+APPLETON,Jon,USA,Mussems song,,0:08:10,1977,Numérique,,M
+MELBY,John,USA,… of quiet desperation,,0:08:44,1977,Numérique,,M
+RAMPAZZI,Tera,Italie,With the light pen,,0:08:30,1977,Numérique,,M
+FISCHER,Martin,Autriche,Unter dem pflasterstein liegt der strand,,0:11:53,1977,Programme,,M
+KELLER,Max,Suisse,Sicher sein…,,0:23:24,1977,Programme,,M
+KREIGER,Arthur,USA,Thème et variations,,0:09:10,1978,Analogique,,2
+ENSTROM,Rolf,Suède,Sequence in blue,,0:09:10,1978,Analogique,,M
+RUDNIK,Eugeniusz,Pologne,4 poèmes (pour bande magnétique),,0:12:00,1978,Analogique,,M
+DESCHENES,Marcelle,Canada,MOll (opéra-lilliput pour 6 roches molles),,0:23:00,1978,Mixte,,1
+PATACHICH,Ivan,Hongrie,Metamorfosis per marimbafono e magnetofon,,0:08:34,1978,Mixte,,2
+ZWEDBERG,Tommy,Suède,Face the music (pour trompette et bande),,0:10:00,1978,Mixte,,M
+RAMPAZZI,Tera,Italie,Computer dances,,0:11:10,1978,Numérique,,M
+SCHOTTSTAEDT,William,USA,Sandcastle,,0:09:10,1978,Numérique,,M
+PARMERUD,Ake,Suède,Narheter,,0:19:45,1978,Programme,,1
+WISHART,Trevor,Gde Bretagne,Red bird,,0:45:00,1978,Programme,,2
+SZEKELY,Yvan,Hongrie,Folkronic,,0:18:50,1978,Programme,,M
+ASCIONE,Patrick,France,Métamorphone d'un jaune citron,,0:14:00,1979,Analogique,,2AE
+VINAO,Alejandro,Argentine,Una orquesta imaginaria,,0:18:00,1979,Analogique,,2AE
+DHOMONT,Francis,France,Mais laisserons nous mourir Arianna ?,,0:15:22,1979,Analogique,,M
+DONSKOY,Liliane,France,La légende des merveilles du monde,,0:16:52,1979,Analogique,,M
+MANDOLINI,Ricardo,Argentine,Fabulas,,0:09:35,1979,Analogique,,M
+RYCHLIK,Josef,Pologne,le rêve d'Eurydice,,0:08:33,1979,Analogique,,M
+ORELLANA,Joaquin,Guatemala,Rupestre en el futuro,,0:25:00,1979,Analogique,,M
+BENTLEY,Andrew,Gde Bretagne,Portrait (pour chœur et bande),,0:09:00,1979,Mixte,,2AE
+RADOVANOVIC,Vladan,Serbie,Audiospacial (pour choeur et bande),,0:16:32,1979,Mixte,,2AE
+COULOMBE St MARCOUX ,Micheline,Canada,Miroirs,,0:10:30,1979,Mixte,,M
+KUBO,Mayako,Japon,Iterum meditemur (pour trombone et bande),,0:14:30,1979,Mixte,,M
+SEGERS,Jean,Belgique,Study for horn and tape,,0:08:05,1979,Mixte,,M
+MELBY,John,USA,Chor der steine,,0:09:35,1979,Numérique,,1
+HEIFETZ,Robin Julian,USA,For anders lunberg : mardrom 29 30 10,,0:11:54,1979,Numérique,,2
+ARFIB,Daniel,France,Le souffle du doux,,0:10:30,1979,Numérique,,M
+MAC NABB,Michael,USA,Dreamsong,,0:09:10,1979,Numérique,,M
+UNGVARY,Tamas,Suède,Akonel n°3,,0:10:00,1979,Numérique,,M
+MERILAINEN,Usko,Finlande,Ku-gu-ku,,0:15:50,1979,Programme,,2
+BRAUNINGER,Jurgen,Allemagne,Panta rhei,,0:11:40,1979,Programme,,M
+MAZUREK,Bohdan,Pologne,Daisy story,,0:19:19,1979,Programme,,M
+WESTERKAMP,Hildegard,Canada,Fantasie for horns,,0:13:00,1979,Programme,,M
+DAOUST,Yves,Canada,Quatuor,,0:18:00,1980,Analogique,,1
+PARMERUD,Ake,Suède,Time's imaginary eye,,0:19:45,1980,Analogique,,2
+HARRISON,Jonty,Gde Bretagne,Pair / Impaire,,0:11:52,1980,Analogique,,M
+DAOUST,Yves,Canada,Quatuor,,0:18:00,1980,Analogique,,Prix CIME
+CLAPAUD,Charles,France,Mouvements et formes,,00:16:28,1980,Analogique,,M
+KEANE,David,Canada,In Memorian: Hugh Le Cain,,0:16:30,1980,Analogique,,M
+MANDOLINI,Ricardo,Argentine,"Fabulas , II parte",,0:10:23,1980,Analogique,,M
+MATICIC,Janes,Yougoslavie,Fusions,,0:11:13,1980,Analogique,,M
+DAOUST,Yves,Canada,Quatuor,,0:18:00,1980,Euphonies,,Euphonies
+BARROSO,Sergio,Canada,Yantra IX (pour saxophone et bande),,0:16:00,1980,Mixte,,2AE
+NEMESCU,Octavian,Roumanie,Concentrique (pour ensemble variable et bande),,0:16:10,1980,Mixte,,2AE
+ZVONAR,Richard,USA,3 for 5,,0:23:00,1980,Mixte,,M
+HARRISON,Jonty,Gde Bretagne,A Vent (pour hautbois et bande),,0:19:25,1980,Mixte,,M
+ROLNICK,Neil,USA,Wondrous love,,0:10:00,1980,Mixte,,M
+RISSET,Jean-Claude,France,Songes,,0:09:10,1980,Numérique,,1
+RAMPAZZI,Tera,Italie,Atmen noch,,0:15:05,1980,Numérique,,2
+PICHE Jean,,Canada,Aange (for voices and tape),,0:15:06,1980,Numérique,,Mention
+TRUAX Barry,,Canada,Arras (for four computer-synthesized soundtracks),,0:10:00,1980,Numérique,,Mention
+LORA TOTINO Arrigo,,Italie,Trio prosodico II,,0:21:45,1980,Programme,,Mention
+SIKORA Elzbieta,,France,The waste land,,0:24:35,1980,Programme,,Mention
+VINAO Alejandro,,Argentine,Go,,0:13:20,1981,Analogique,,1er Prix
+OBST Michael,,Allemagne,Metal drop music,,0:08:10,1981,Analogique,,2ème Prix
+SZIGETI Istvan,,Hongrie,Souvenir de K,,0:12:10,1981,Analogique,,Prix CIM
+NEWELL Andrew,,USA,The thin edge of the wedge,,0:12:28,1981,Analogique,,Mention
+PIGNON Paul,,Gde Bretagne,Mechanical cartoons,,0:10:10,1981,Analogique,,Mention
+PONGRACZ Zoltan,,Hongrie,Madrigal,,0:10:15,1981,Analogique,,Mention
+RUDNIK Eugeniusz,,Pologne,Triptyque à la mémoire de Franco l'Evangelisti,,0:13:30,1981,Analogique,,Mention
+SIKORA Elzbieta,,France,Lettres A.M.,,0:14:52,1981,Analogique,,Mention
+SZEREMETA Ryszard,,Pologne,Points,,0:10:00,1981,Analogique,,Mention
+HARRISON Jonty,,Gde Bretagne,Eq (pour saxophone et bande),,00:14:50,1981,Mixte,,1er Prix
+MAGDIC Josip,,Yougoslavie,"Music for clarinet, saz and electronics",,0:12:33,1981,Mixte,,2ème Prix
+HEIFETZ Robin Julian,,USA,Harbinger,,0:10:37,1981,Mixte,,Mention
+MELBY John,,USA,"Accelerazioni (for flute and computer-synthesized, tape)",,0:08:38,1981,Mixte,,Mention
+VOIGTLAENDER Lothar,,Allemagne,Variation und collage,,0:08:00,1981,Mixte,,Mention
+DASHOW James,,USA,Conditional Assemblies,,0:19:05,1981,Numérique,,2ème Prix ex-aequo
+LOY Gareth,,USA,Nekyia,,0:10:00,1981,Numérique,,2ème Prix ex-aequo
+GRAZIANI Mauro,,Italie,Winter leaves,,0:08:40,1981,Numérique,,Mention
+WIENEKE Paul,,USA,A garden for orpheus,,0:12:40,1981,Numérique,,Mention
+DHOMONT Francis,,France/Canada,Sous le regard d'un soleil noir,,0:51:30,1981,Programme,,1er Prix
+DOYLE Roger,,Irlande,Rapid eye movement,,0:30:00,1981,Programme,,1ère Mention
+KOSK Patrick,,Finlande,Trance Dance,,0:16:22,1981,Programme,,2e Mention
+SIREN Pekka,,Finlande,The genesis of Kazan (pour bande et vidéo),,0:24:05,1981,Programme,,Mention
+RODER Klaus,,Allemagne,Mr. Frankenstein's babies,,0:10:42,1982,Analogique,,1er Prix ex-aequo
+MANDOLINI Ricardo,,Argentine,Cancion de madera y agua,,0:08:24,1982,Analogique,,2ème Prix
+MAZUREK Bohdan,,Pologne,6 electronci preludes,,0:14:55,1982,Analogique,,Mention
+CONDON GARCIA Fernando,,Uruguay,Suiana Wanka,,0:05:45,1982,Analogique,,Prix CIM
+KOSK Patrick,,Finlande,Transmissions in a… (system of coordinates),,0:17:22,1982,Analogique,,Mention
+KRUIT Rob,,Pays Bas,Unknown roads,,0:14:10,1982,Analogique,,Mention
+MARCHAL Alain,,France,Los,,0:08:40,1982,Analogique,,Mention
+SIREN Pekka,,Finlande,Kasaanin synty,,0:24:00,1982,Art Visuel,,2ème Prix
+WEIDENAAR Reynold,,USA,Wavelines II,,0:08:00,1982,Art Visuel,,Mention
+LENFANT Patrick,,France,Alternances (pour flûte et synthétiseur),,0:13:00,1982,Mixte,,2ème Prix ex-aequo
+NEMESCU Octavian,,Roumanie,Combinaisons en cercle (pour ensemble et bande),,0:11:45,1982,Mixte,,2ème Prix ex-aequo
+DE MAREZ OYENS Tera,,Pays Bas,Charon's Gift,,,1982,Mixte,,Mention
+FORT Bernard,,France,Le tombeau de William Byrd,,0:25:28,1982,Mixte,,Mention
+LANZA Alcides,,Canada,"AcufenosS V (for trumpet, piano, electronic and computer sounds)",,0:12:30,1982,Mixte,,Mention
+PERRON Serge,,Canada,Fusion(for piano and tape),,0:08:20,1982,Mixte,,Mention
+SUESSE Ulrich,,Allemagne,"Oboe (for oboe, 2 tapes and live-electronics)",,0:21:40,1982,Mixte,,Mention
+CHAFE Chris,,USA,Solera,,0:12:05,1982,Numérique,,2ème Prix ex-aequo
+LANCINO Thierry,,France,Static arches,,0:14:00,1982,Numérique,,2ème Prix ex-aequo
+MAC NABB Michael,,USA,Love in the asylum,,0:14:00,1982,Numérique,,2ème Prix ex-aequo
+MELBY John,,USA,Layers (for computer-synthesized tape),,0:09:42,1982,Numérique,,Mention
+VAGGIONE Horacio,,Argent./France,Octuor,,0:09:30,1982,Numérique,,Mention
+POORT Hans,,Pays Bas,The medium is the matter,,0:14:02,1982,Programme,,2ème Prix
+KUCHARZYK Henry,,Canada,Targeting,,0:12:25,1982,Programme,,Mention
+OBST Michael,,Allemagne,Inside-(infinite chambers),,0:26:18,1983,Analogique,,1er Prix ex-aequo
+SMALLEY Denis,,Gde Bretagne,Vortex,,0:15:42,1983,Analogique,,Prix CIME
+SMALLEY Denis,,Gde Bretagne,Vortex,,0:15:42,1983,Analogique,,1er Prix ex-aequo
+CARL Gene,,USA,What the river said,,0:23:33,1983,Analogique,,1ère Mention
+HARRISON Jonty,,Gde Bretagne,Klang,,0:09:00,1983,Analogique,,2ème Prix
+GIORDANI Eugenio,,Italie,Voicings (pour bande),,0:16:30,1983,Analogique,,Mention
+MAC LEAN Barton,,USA,The electric sinfonia,,0:09:20,1983,Analogique,,Mention
+WATERS Simon,,Gde Bretagne,Dangerous liaisons,,0:12:50,1983,Analogique,,Mention
+WEIDENAAR Reynold,,USA,Love of line of light and shadow : the brooklyn bridge,,0:10:24,1983,Art Visuel,,1ère Mention
+UEHARA Kazuo,,Japon,Sound work I,,0:10:00,1983,Art Visuel,,3e Mention
+KERSHAW David,,Gde Bretagne,Opus I,,0:10:00,1983,Art Visuel,,Mention
+DAVIDOW Joseph,,USA,Music for two flutes and tape,,0:11:30,1983,Mixte,,2ème Prix
+DUMITRESCU Iancu,,Roumanie,"Ursa Mare (pour synthé,2bassons, piano, percus.,4 contrebasses)",,0:16:00,1983,Mixte,,Mention
+MOTZ Wolfgang,,Allemagne,Sotto pressioneE (pour deux hautbois et bande),,0:08:22,1983,Mixte,,Mention
+PATACHICH Ivan,,Hongrie,Alterego per percussioni / solo / e nastro,,0:10:15,1983,Mixte,,Mention
+CLARKE John Michael,,Gde Bretagne,Soundings,,0:09:40,1983,Mixte,,Prix CIM
+BARRIERE Jean-Baptiste,,France,Chreode I,,0:09:30,1983,Numérique,,2ème Prix
+GRAZIANI Mauro,,Italie,The licent God,,0:09:40,1983,Numérique,,Mention
+GRAZIANI Mauro,,Italie,Landing,,0:08:40,1983,Numérique,,Mention
+JENKS Alden,,USA,Nagasaki,,0:26:00,1983,Programme,,2ème Prix
+NISHIOKA Tatsuhiko,,Japon,The conqueror worm,,0:10:00,1983,Programme,,Mention
+ALEJANDRO Edesio,,Cuba,Tres de dos,,0:22:10,1984,Analogique,,1er Prix ex-aequo
+PINERA Juan,,Cuba,Tres de dos,,0:22:10,1984,Analogique,,1er Prix ex-aequo
+DHOMONT Francis,,France/Canada,Points de fuite,,0:13:20,1984,Analogique,,2ème Prix
+MANDOLINI Ricardo,,Argentine,De mi huian los pajaros,,0:08:52,1984,Analogique,,Prix CNM
+PARMERUD Ake,,Suède,Kren,,0:17:40,1984,Analogique,,1er Prix ex-aequo
+DOLDEN Paul,,Canada,The melting voice through mazes running,,0:20:40,1984,Analogique,,Mention
+PLOMPEN Peter,,Pays Bas,Triptiek,,00:25:22,1984,Analogique,,Mention
+SMILEY Pril,,USA,Forthy three (43),,0:12:00,1984,Analogique,,Mention
+BLOMQVIST Anders,,Suède,Jaguar revisisted,,0:15:30,1984,Art Visuel,,2ème Prix
+THOMPSON Robert Scott,,USA,Ulster commentary,,0:15:00,1984,Art Visuel,,Mention
+SOUSTER Tim,,Gde Bretagne,"The transistor radio of saint narcissus (for flugelhorn, live, et tape",,0:24:00,1984,Mixte,,1er Prix
+DESJARDINS André-Luc,,Canada,Manu Militari (pour tuba et bande),,0:23:45,1984,Mixte,,2ème Prix
+WYATT Scott,,USA,All for one(pour percussion et bande),,0:10:45,1984,Mixte,,Mention
+CHAFE Chris,,USA,In a word (pour violoncelle et bande),,0:10:00,1984,Mixte,,Mention
+PERERA Ronald,,USA,Tolling (pour deux pianos et bande),,0:08:15,1984,Mixte,,Mention
+VINAO Alejandro,,Argentine,"Triple concerto (pour flûte, piano, violoncelle et bande)",,0:27:00,1984,Mixte,,Mention
+PATACHICH Ivan,,Hongrie,Ludi spaziali (per piano-forte e nastro),,0:10:30,1984,Mixte,,Prix CIME ex-aequo
+WYATT Scott,,USA,All for one(pour percussion et bande),,0:10:45,1984,Mixte,,Prix CIME ex-aequo
+MOWITZ Ira,,USA,A la mémoire d'un ami,,0:13:05,1984,Numérique,,1er Prix
+BERGER Jonathan,,USA,A pockeful of posies,,0:09:23,1984,Numérique,,2ème Prix
+KARPEN Richard,,USA,Mu song,,0:19:00,1984,Numérique,,Mention
+PARMERUD Ake,,Suède,Out of sight,,0:13:00,1984,Numérique,,Mention
+BRNCIC Gabriel,,Espagne,Chile fertil provincia…,,0:23:40,1984,Programme,,1er Prix
+RUDNIK Eugeniusz,,Pologne,Homo ludens (ballet radiophonique),,0:43:30,1984,Programme,,2ème Prix
+BRUYNEL Ton,,Pays Bas,Adieu petit prince,,0:18:50,1984,Programme,,Mention
+ORE Cécilie,,Norvège,Im-mobile,,0:09:00,1985,Art Visuel,,Mention
+CELONA John,,USA,Possible orchestras (at the 21 st harmonic),,0:12:00,1985,Electroa.,,Prix
+OBST Michael,,Allemagne,Kristallwelt part 1,,0:12:10,1985,Electroa.,,Prix
+BERENGUER José Manuel,,Espagne,Musica en la noche (étude de stage),,0:12:55,1985,Electroa.,,Mention
+NEMESCU Octavian,,Roumanie,Naturel-culturel,,0:20:00,1985,Electroa.,,Mention
+PETERSEN Tracy,,USA,Digital tantra Ii,,0:09:25,1985,Electroa.,,Mention
+KOSK Patrick,,Finlande,Nebula prospekt,,0:09:57,1985,Electroa.,,Prix CIME ex-aequo
+NEMESCU Octavian,,Roumanie,Naturel-culturel,,0:20:00,1985,Electroa.,,Prix CIME ex-aequo
+EMMERSON Simon,,Gde Bretagne,Time past IV (pour bande et soprano),,0:12:30,1985,Mixte,,Prix
+RAI Takayuki,,Japon,Transparency (pour harpe et bande),,0:08:10,1985,Mixte,,Prix
+ALVAREZ Javier,,Mexique,Temazcal,,0:08:00,1985,Mixte,,Mention
+MAC DONALD Alistaire,,Gde Bretagne,Stiriae,,0:12:30,1985,Mixte,,Prix CNMex-aequo
+YVANEZ Roland,,France,ables (pour bande et épinette amplifiée),,0:15:00,1985,Mixte,,Mention
+BEYLS Peter,,Belgique,A quiet disturbance,,0:14:30,1985,Numérique,,Prix CNMex-aequo
+VOIGTLAENDER Lothar,,Allemagne,Maikafer flieg,,0:09:45,1985,Programme,,Prix
+MANDOLINI Ricardo,,Argentine,Charly,,0:08:30,1985,Programme,,Mention
+DOLDEN Paul,,Canada,Veils : studies in textural transformations,,0:28:28,1986,Electroa.,,2ème Prix
+WHITE Frances,,USA,Ogni pensiero vola,,0:14:00,1986,Electroa.,,aucun
+JONES David Evan,,USA,Scritto,,0:08:05,1986,Electroa.,,Mention
+KATZER Georg,,Allemagne,Steine-lied (chant des pierres),,0:09:40,1986,Electroa.,,Mention
+LORRAIN Denis,,France,…Black it stood as night,,0:14:19,1986,Electroa.,,Mention
+RIMMER John,,Nlle Zélande,Fleeting images,,0:12:14,1986,Electroa.,,Prix CIME ex-aequo
+NORMANDEAU Robert,,Canada,Matrechka,,0:13:40,1986,Electroa.,,Prix FNME ex-aequo
+SCHEIDT Daniel,,Canada,A DIGITAL ECLOGUE (un dialogue numérique),,0:15:00,1986,Live,,Mention
+SCHRYER Claude,,Canada,A digital eclogue (un dialogue numérique),,0:15:00,1986,Live,,Mention
+SCHRYER Claude,,Canada,A kindred spirit (pour ensemble instrumental et bande),,0:16:00,1986,Mixte,,2ème Prix ex-aequo
+VAGGIONE Horacio,,Argent./France,Thema (pour saxophone basse et bande),,0:10:06,1986,Mixte,,2ème Prix ex-aequo
+SZEREMETA Ryszard,,Pologne,Amphora,,0:16:40,1986,Mixte,,Mention
+ALVAREZ Javier,,Mexique,Luz caterpilar(pour piano & bande),,0:13:00,1986,Mixte,,Mention
+TOSI Daniel,,France,Scordatura 14 (pour quintette à cordes et bande),,0:16:30,1986,Mixte,,Mention
+RUDOW Adelberg Vivian,,USA,With love (pour violoncelle et bande),,0:16:12,1986,Programme,,1er Prix
+BRUYNEL Ton,,Pays Bas,Chicharras,,0:15:00,1986,Programme,,2ème Prix ex-aequo
+DOROBISZ Patrick,,France,Souprematika (séquence 3 de la symphonie des Machines ),,0:08:51,1986,Programme,,2ème Prix ex-aequo
+BERENGUER José Manuel,,Espagne,La perla estranya I (étude de stage),,0:14:00,1986,Programme,,Mention
+DOHERTY Douglas,,Gde Bretagne,Lament,,0:14:10,1986,Programme,,Mention
+HARRISON Jonty,,Gde Bretagne,Lament,,0:14:10,1986,Programme,,Mention
+KATZER Georg,,Allemagne,La mécanique et les agents de l'érosion,,0:11:07,1986,Programme,,Mention 1ère
+KATZER Georg,,Allemagne,La mécanique et les agents de l'érosion,,0:11:07,1986,Programme,,Prix CIME ex-aequo
+DE CLERCQ Eric,,Pays Bas,De Dwang (compulsion),,0:09:45,1986,Programme,,Prix FNME ex-aequo
+VAN HELVERT Hans,,Pays Bas,De Dwang (compulsion),,0:09:45,1986,Programme,,Prix FNME ex-aequo
+LEVINE Josh,,USA,Tel,,0:30:47,1987,Electroa.,,1er Prix
+BERGER Jonathan,,USA,Meteora,,0:08:51,1987,Electroa.,,2ème Prix
+CZINK Andrew,,,Shadeless Peopled,,0:09:40,1987,Electroa.,,Mention
+HARLEY James,,Canada,Voyage,,0:14:55,1987,Electroa.,,Mention
+KARPEN Richard,,USA,Eclipse,,0:20:00,1987,Electroa.,,Mention
+UNGVARY Tamas,,Suède,Gipsy children's giant dance qith ili Fourier,,0:18:00,1987,Electroa.,,Mention
+MINJARD Jean-François,,France,Les espaces du temps,,0:22:20,1987,Electroa.,,Mention
+RAI Takayuki,,Japon,5 inventions accompanied by computeur (for clari. cello and piano),,0:16:00,1987,Live,,Mention
+TAYLOR Joseph,,USA,No user-serviceable parts inside,,0:12:00,1987,Live,,Mention
+SCHWEIZER Frank,,Allemagne,Streichquartett n° 11,,00:14:00,1987,Live,,Mention 1ère
+D'ESCRIVAN Julio,,Venezuela,Sin ti por el alma adentro (pour flûte et bande),,0:11:00,1987,Mixte,,1er Prix
+KAEGI Werner,,Suisse,Ritournelles II (pour soprano et ordinateur),,0:15:48,1987,Mixte,,2ème Prix
+ARCURI Serge,,Canada,Chronaxie (pour percussions et bande),,0:12:14,1987,Mixte,,Mention
+KERGOMARD Henri,,France,Hapsis (pour violoncelle et bande),,0:07:15,1987,Mixte,,Prix CNM
+KARPEN Richard,,USA,Exchange (pour flûte et bande),,0:13:00,1987,Mixte,,Prix Bregman
+ALBRIGHT William,,,Sphaera (pour piano et bande),,0:12:45,1987,Mixte,,Mention
+LIPPE Cort,,USA,Music for bass clarinet and tape,,0:10:00,1987,Mixte,,Mention
+ALVAREZ Javier,,Mexique,Papaloth (pour piano et bande),,0:13:07,1987,Mixte,,Prix CIME
+VAUGHAN Michael,,Gde Bretagne,It moves… it moves not (pourshakuhachi et bande),,0:13:30,1987,Mixte,,Mention
+DYETT Kim,,Nlle Zélande,Wallpapermusic,,0:26:40,1987,Programme,,1er Prix
+GUTTMAN Ben,,Israël,Different attitudes,,0:11:41,1987,Programme,,2ème Prix
+FERREYRA Béatriz,,Argent./France,A.U.F.O. Forest,,0:14:00,1987,Programme,,Mention
+GUNES Betin,,Turquie,Bilimde Hersey Varder,,0:08:30,1987,Programme,,Mention
+PAYNE Maggi,,USA,Àirwaves (realitites),,0:10:30,1987,Programme,,Mention
+OLSSON Justice,,France,Moon over Sandra,,00:14:00,1987,Programme,,Mention
+GOBEIL Gilles,,Canada,Rivages,,0:08:40,1988,Electroa.,,Mention
+PARMERUD Ake,,Suède,Repulse,,0:10:11,1988,Electroa.,,1er Prix ex-aequo
+NORMANDEAU Robert,,Canada,Rumers (Place Ransbeck),,0:12:30,1988,Electroa.,,2ème Prix ex-aequo
+TAUBE Heinrich,,USA,Tremens,,0:13:00,1988,Electroa.,,Mention
+POULARD Gabriel,,France,La mémoires des pierres,,0:13:53,1988,Electroa.,,2ème Prix ex-aequo
+DOLDEN Paul,,Canada,In the natural doorway I crouch,,0:15:00,1988,Electroa.,,1er Prix ex-aequo
+CAHEN Roland,,France,Murs et Murmures,,0:20:30,1988,Electroa.,,Mention
+BEYLS Peter,,Belgique,The headless Horseman,,0:24:00,1988,Live,,Mention
+DENIS Jean-François,,Canada,Trajectoir,,0:08:10,1988,Live,,Mention
+PONGRACZ Zoltan,,Hongrie,Constrastes polaires et successifs,,0:07:15,1988,Magistère,,Magistère
+DHOMONT Francis,,France/Canada,Chiaroscuro,,0:17:38,1988,Magistère,,Magistère
+KAUFMANN Dieter,,Autriche,Le voyage au Paradis,,0:20:00,1988,Magistère,,Magistère
+VAGGIONE Horacio,,Argent./France,Tar (pour clarinette basse et bande),,0:09:33,1988,Mixte,,2ème Prix
+LEWIS Andrew,,Gde Bretagne,Storm song (pour piano et bande),,0:14:25,1988,Mixte,,Mention
+PARMERUD Ake,,Suède,Yan (for percussion et bande),,0:14:55,1988,Mixte,,1er Prix
+TAKENAKA Yasuhiro,,Japon,Memory of the universe (pour percussions et bande),,0:16:50,1988,Mixte,,Mention
+DESJARDIN André-Luc,,Canada,Là où mène le monde,,0:17:50,1988,Mixte,,Mention
+AIKMAN James,,USA,Tragoida/Komoidia,,0:09:05,1988,Programme,,1er Prix
+TRANQUILLINO Armando,,USA,Tragoida / Komoidia,,0:09:05,1988,Programme,,1er Prix
+KLEIN Judy,,USA,From the journals of Felix Bosonnet,,0:09:15,1988,Programme,,Mention
+LAKOMY Reinhard,,Allemagne,Morgen kommt der weihnachtsmann (le père noël vient demain),,0:09:48,1988,Programme,,Mention
+MOORE Adrian,,Gde Bretagne,Credo Epochula,,0:10:30,1988,Programme,,Mention
+VOIGTLAENDER Lothar,,Allemagne,Berlin report,,0:10:50,1988,Programme,,Mention
+MANDOLINI Ricardo,,Argentine,Microrreflexiones,,0:18:14,1988,Programme,,2ème Prix
+NORMANDEAU Robert,,Canada,La chambre blanche,,0:24:12,1988,Programme,,Mention
+POETTE Jean-Christophe,,France,La cinquième saison,,0:08:00,1988,Résidence,,Résidence
+BILLAUDEAUBruno,,France,Cage d'escalier,,0:08:07,1988,Résidence,,Résidence
+RUDOLF Robert,,Tchéquie,Something to say (pour trompette et bande),,0:08:16,1988,Résidence,,Résidence
+FREEDMAN Elliot,,Canada,The Griffith Observer,,0:08:24,1988,Résidence,,Résidence
+LEE Brent,,Canada,Deliberate disguises,,0:12:40,1988,Résidence,,Résidence
+STRATOUDAKIS Constantin,,Grèce,Ultimate effort,,0:13:00,1988,Résidence,,Résidence
+D'ESCRIVAN Julio,,Venezuela,Salto Mortal,,0:08:04,1989,Electroa.,,2ème Prix ex-aequo
+PINTER Gyula,,Hongrie,Shrinking times,,0:09:28,1989,Electroa.,,Mention
+LEWIS Andrew,,Gde Bretagne,Arrivals,,0:11:50,1989,Electroa.,,2ème Prix ex-aequo
+DE LAUBIER Serge,,France,Sonnerie de l'arc de cercle,,0:15:00,1989,Electroa.,,Mention
+BILLAUDEAU Bruno,,France,Suite animalière,,0:15:47,1989,Electroa.,,Mention
+RAI Takayuki,,Japon,4 inventions (for piano and signal processing computer DMX 1010),,0:15:21,1989,Live,,2ème Prix
+GAIGNE Pascal,,France,Traversées,,0:16:00,1989,Live,,Mention
+AGAM Orram,,France,Spermanence,,0:16:30,1989,Live,,Mention
+KROPFL Francisco,,Argentine,Orillas,,0:10:10,1989,Magistère,,Magistère
+KUPPER Léo,,Belgique,Litanéa,,0:18:07,1989,Magistère,,Magistère
+BIANCHI Frederick,,USA,For string quartet and tape,,0:09:30,1989,Mixte,,Mention
+ALVAREZ Javier,,Mexique,Acuerdor pro differencia (pour harpe et bane),,0:11:11,1989,Mixte,,Mention
+GOBEIL Gilles,,Canada,Voix Blanche (pour ondes Martenot et bande),,0:12:56,1989,Mixte,,2ème Prix
+KARPEN Richard,,USA,Il Nome (pour soprano et bande),,0:14:28,1989,Mixte,,1er Prix
+MARTINEZ FIGUEROLA Alejandro,,Espagne,"Cancion I, de otono",,0:11:15,1989,Programme,,Mention
+MAC DONALD Alistaire,,Gde Bretagne,Busk,,0:14:51,1989,Programme,,2ème Prix
+VIRGO Nicholas,,Gde Bretagne,Busk,,0:14:51,1989,Programme,,2ème Prix
+CALON Christian,,Canada/France,minuit,,0:20:53,1989,Programme,,1er Prix
+BRANT Emily,,USA,Tuneless circles,,0:09:25,1989,Résidence,,Résidence
+JUSTEL Elsa,,Argentine,Ichihualasto ou la vallée de la lune (étude de stage),,0:09:35,1989,Résidence,,Résidence
+IOANNIDIS Lazaros,,Canada,Flower of age : the graduation of discobole the lesser,,0:10:21,1989,Résidence,,Résidence
+FREEDMAN Elliot,,Canada,Through windows of vulnerability,,0:11:08,1989,Résidence,,Résidence
+PHILIPPI Ronald,,Belgique,Konstruktie Iv,,0:12:00,1989,Résidence,,Résidence
+BLACKFORD Phillip,,USA,Gyuto : resonances of the divine,,0:24:00,1989,Résidence,,Résidence
+LOPEZ LOPEZ José Manuel,,Espagne,Quête,,0:07:48,1990,Electroa.,,Mention
+CAESAR Rodolfo,,Brésil,Introducao a pedra,,0:08:50,1990,Electroa.,,Mention
+ARZOUMAN David,,USA,Onze,,0:10:01,1990,Electroa.,,Mention
+SAITTA Carmelo,,Argentine,La maga o el angel de la noche,,0:10:20,1990,Electroa.,,2ème Prix
+SBACCO Franco,,Italie,Spessori e densita variabili…,,0:12:10,1990,Electroa.,,Mention
+DOLDEN Paul,,Canada,Below the walls of Jericho,,0:14:33,1990,Electroa.,,1er Prix
+DAL FARRA Ricardo,,Argentine,Egt,,0:09:25,1990,Live,,Mention
+ROWE Robert,,USA,"Flood gate (pour violon, piano et ordinateur interactif)",,0:10:45,1990,Live,,1er Prix
+BILLAUDEAU Bruno,,France,Piqure d'insecte (pour saxophone et bande),,0:11:48,1990,Live,,Mention
+UDUMAN Sohrab,,Gde Bretagne,Refrains (pour trombone et bande),,00:08:59,1990,Mixte,,Mention
+JONES David Evan,,USA,Still lif ein wookd & metal,,0:09:20,1990,Mixte,,Mention
+OLESZKOWICZ Jan,,Pologne,Scontra (pour violon et bande),,0:12:10,1990,Mixte,,Mention
+KLEINSASSER William,,USA,"Reflective image (for oboe, soprano saxophone and 2 channel tape)",,0:12:30,1990,Mixte,,Mention
+WHITE Frances,,USA,Still life with piano,,0:15:30,1990,Mixte,,2ème Prix ex-aequo
+JOHNSEN Kjell,,Norvège,Mura-Iki (pour flûte et bande),,"0,014722",1990,Mixte,,2ème Prix ex-aequo
+VALVERDE Gabriel,,Argentine,Cumulos,,0:10:10,1990,Programme,,2ème Prix
+KARSKY Michel,,France,Les douze (1ère partie),,0:15:55,1990,Programme,,Mention
+WHITE Frances,,USA,Valdrada,,0:16:40,1990,Programme,,1er Prix
+HAMADACHE Kamal,,France,Peine à la peine n'ajoute pas,,0:06:38,1990,Résidence,,Résidence
+PENROSE Christopher,,USA,lesion' or lesion,,0:09:20,1990,Résidence,,Résidence
+RHYS Paul,,Gde Bretagne,Ebb and flow,,0:11:00,1990,Résidence,,Résidence
+TREMBLAY Marc,,Canada,L'argent .. Toujours l'argent !,,0:11:21,1990,Résidence,,Résidence
+CSONT Istvan,,Hongrie,Awaking (the first awakingthe second water),,0:15:10,1990,Résidence,,Résidence
+CAMPS Jean-Christophe,,France,Carnet de voyage,,"1,559722",1990,Résidence,,Résidence
+BAHN Curtis,,USA,Vocable vamp,,0:08:45,1991,Electroa.,,Mention
+GARZON Eleazar,,Argentine,Espejo Humeante II,,0:08:50,1991,Electroa.,,Mention
+RODRIGUE Mario,,Canada,Cristaux liquides,,0:09:15,1991,Electroa.,,Mention
+ARZOUMAN David,,USA,Précipitation,,0:10:25,1991,Electroa.,,2ème Prix ex-aequo
+CAESAR Rodolfo,,Brésil,Canto,,0:13:40,1991,Electroa.,,Mention
+LEWIS Andrew,,Gde Bretagne,Time and fire,,0:13:50,1991,Electroa.,,2ème Prix ex-aequo
+PARMERUD Ake,,Suède,Alias,,00:14:00,1991,Electroa.,,1er Prix
+JENTZCH Wilfried,,Allemagne,PI mi A di NO (pour piano et bande),,0:11:57,1991,Live,,Mention
+TRUAX Barry,,Canada,Riverrun (for four computer- synthesized soundtracks),,0:18:50,1991,Magistère,,Magistère
+PARMEGIANI Bernard,,France,Exercisme 3,,0:23:56,1991,Magistère,,Magistère
+DI SCIPIO Agostino,,Italie,"Event (pour flûte basse, clarinette basse et ordinateur)",,0:10:20,1991,Mixte,,Mention
+DE MAN Roderik,,Pays Bas,Chordis Canam (pour clavecin et bande),,0:10:24,1991,Mixte,,2ème Prix ex-aequo
+VAUGHAN Michael,,Gde Bretagne,Ensphered (pour saxophone soprano et bande),,0:11:20,1991,Mixte,,2ème Prix ex-aequo
+LIPPE Cort,,USA,Music for harp and tape,,0:16:00,1991,Mixte,,1er Prix
+GRATZER Carlos,,Argentine,Failles fluorescentes (pour saxophone et bande),,0:16:38,1991,Mixte,,Mention
+TAKENAKA Yasuhiro,,Japon,The memory of Hiroshima - war and prayer-,,0:14:50,1991,Programme,,Mention
+DOYLE Roger,,Irlande,The room of rhetoric,,0:17:55,1991,Programme,,Mention
+WARREN Alicyn,,USA,Longing for the light,,0:20:00,1991,Programme,,2ème Prix
+ROY Stéphane,,Canada,Janvier - quête de chaleurs,,0:20:34,1991,Programme,,Mention
+OLSSON Justice,,France,Up !,,0:23:07,1991,Programme,,1er Prix
+DI LISCIA Oscar Pablo,,Argentine,Dialogo con mi anciano ( pourguitare et bande),,0:06:00,1991,Résidence,,Résidence
+MALLIA John Philip,,USA,Diffraction (pour flûte et bande),,0:07:20,1991,Résidence,,Résidence
+GIRAUDON François,,France,Passages,,0:11:00,1991,Résidence,,Résidence
+MOORE Adrian,,Gde Bretagne,Prelude to Autonomy (pour violon et bande),,0:12:50,1991,Résidence,,Résidence
+POTVIN Yves,,Canada,Trim assassia,,0:16:40,1991,Résidence,,Résidence
+DUTRIAUX Stéphane,,France,Le contre-ciel,,0:17:00,1991,Résidence,,Résidence
+BLACKFORD Phillip,,USA,Interiors… inward turns the ivory key,,0:18:48,1991,Résidence,,Résidence
+PONGRACZ Zoltan,,Hongrie,Mariphonia,,0:08:07,1992,Euphonies,,Euphonies
+BODY Jack,,Nlle Zélande,Musik Dari Jalan,,0:08:20,1992,Euphonies,,Euphonies
+HARRISON Jonty,,Gde Bretagne,Klang,,0:09:00,1992,Euphonies,,Euphonies
+RISSET Jean-Claude,,France,Songes,,0:09:10,1992,Euphonies,,Euphonies
+KUSNIR Eduardo,,Argent./Vene.,La panaderia,,0:09:30,1992,Euphonies,,Euphonies
+VOIGTLAENDER Lothar,,Allemagne,Maikafer flieg,,0:09:45,1992,Euphonies,,Euphonies
+KATZER Georg,,Allemagne,RONDO,,0:10:00,1992,Euphonies,,Euphonies
+VAGGIONE Horacio,,Argent./France,Thema (pour saxophone basse et bande),,0:10:06,1992,Euphonies,,Euphonies
+RODER Klaus,,Allemagne,Mr. Frankenstein's babies,,0:10:42,1992,Euphonies,,Euphonies
+RUDNIK Eugeniusz,,Pologne,Mobile,,0:11:40,1992,Euphonies,,Euphonies
+ALVAREZ Javier,,Mexique,Papaloth (pour piano et bande),,0:13:07,1992,Euphonies,,Euphonies
+VINAO Alejandro,,Argentine,Go,,0:13:20,1992,Euphonies,,Euphonies
+SMALLEY Denis,,Gde Bretagne,Darkness after time's colours,,0:13:48,1992,Euphonies,,Euphonies
+PARMERUD Ake,,Suède,Kren,,0:17:40,1992,Euphonies,,Euphonies
+DESCHENES Marcelle,,Canada,MOll (opéra-lilliput pour 6 roches molles),,0:23:00,1992,Euphonies,,Euphonies
+OBST Michael,,Allemagne,Inside-(infinite chambers),,0:26:18,1992,Euphonies,,Euphonies
+DOLDEN Paul,,Canada,Veils : studies in textural transformations,,0:28:28,1992,Euphonies,,Euphonies
+LEVINE Josh,,USA,Tel,,0:30:47,1992,Euphonies,,Euphonies
+WISHART Trevor,,Gde Bretagne,Red bird,,0:45:00,1992,Euphonies,,Euphonies
+ANCAROLA SAAVEDRA Maria Francesca,,Chili,A,,0:08:32,1992,Résidence,,Résidence
+SCHWEIZER Frank,,Allemagne,Feuerwasser,,0:09:00,1992,Résidence,,Résidence
+STOLLAR Xénia,,Hongrie,Magic round,,0:09:58,1992,Résidence,,Résidence
+CASEY Michael,,Gde Bretagne,Glass / steel,,0:11:00,1992,Résidence,,Résidence
+LOVETT Andrew,,Gde Bretagne,The lyre of the west wing,,0:11:00,1992,Résidence,,Résidence
+LYON Eric,,USA,Paradigms I : softly through the night,,0:12:00,1992,Résidence,,Résidence
+ZHANG Xiao Fu,,Chine,Dialogue entre des mondes différents 1-ciel et terre 2-Homme et nature,,0:10:10,1993,de Studio,,Mention 2ème
+HEDMAN Jens,,Suède,Anchorings / Arrows,,0:13:17,1993,de Studio,,1er Prix
+KARLSSON Erik Michael,,Suède,ANCHORINGS / ARROWS,,0:13:17,1993,de Studio,,1er Prix
+PARMERUD Ake,,Suède,Les objets obscurs,,0:14:23,1993,de Studio,,Mention 3ème
+NORMANDEAU Robert,,Canada,Eclats de voix,,0:14:50,1993,de Studio,,Mention 1ère
+FORT Bernard,,France,L'impatience des limites,,0:18:00,1993,de Studio,,2ème Prix
+DE LAUBIER Serge,,France,Sonneries des orgues,,0:16:00,1993,Expéri.,,Mention
+ALAGNA Jan Pascal,,France,"Poême de la lune aux abois, suivi du réveil des oiseaux II",,0:18:05,1993,Expéri.,,Mention
+CEE Werner,,Allemagne,Droptrap,,0:26:00,1993,Expéri.,,2ème Prix
+CIPRIANI Alessandro,,Italie,Visibili,,0:08:30,1993,instruments,,Mention
+AMBROSINI Claudio,,Italie,Il satellite sereno,,0:12:00,1993,instruments,,Mention
+ARCURI Serge,,Canada,Errances,,00:14:00,1993,instruments,,Mention 1ère
+XU Shuya,,Chine,Taiyi II (pour flûte et bande),,0:14:16,1993,instruments,,2ème Prix
+LIFFEN David,,Gde Bretagne,Qsweeping statements,,0:11:00,1993,Programme,,Mention 3ème
+KARLSSON Erik Michael,,Suède,La disparition de l'azur,,0:12:12,1993,Programme,,1er Prix
+BJELKEBORN Thomas,,Suède,Within without,,0:12:30,1993,Programme,,Mention 2ème
+NORMANDEAU Robert,,Canada,Jeu,,0:23:55,1993,Programme,,Mention 1ère
+FORT Bernard,,France,12 Haiku pour la paix céleste,,0:40:00,1993,Programme,,2ème Prix
+CHAB Gustavo,,Argentine,Mirada Rosa,,0:07:43,1993,Résidence,,Résidence
+HYDE Joseph,,Gde Bretagne,Insu nli gh t II : september song,,0:09:15,1993,Résidence,,Résidence
+MARTINEZ Patricia E.,,Argentine,El alma al cuerpo,,0:09:31,1993,Résidence,,Résidence
+PEDROSO BALTAZAR Pedro Pablo,,Cuba,Nexos II : escenas de vida,,0:11:50,1993,Résidence,,Résidence
+WANG Miao-Wen,,Chine,Nout,,0:12:40,1993,Résidence,,Résidence
+FIELD Ambrose,,Gde Bretagne,Géosphère,,0:15:00,1993,Résidence,,Résidence
+UYLENHOET René,,Pays Bas,Wedge,,0:10:20,1994,de Studio,,1er Prix
+NUNEZ Adolfo,,Espagne,Jurel,,0:11:12,1994,de Studio,,Mention
+CAHEN Roland,,France,Rapsodie… Donc (le complexe du simple),,0:15:25,1994,de Studio,,Mention
+AVERILL Ron,,USA,Painting legs on the snake,,0:15:42,1994,de Studio,,Mention
+CALON Christian,,Canada/France,Les corps éblouis,,0:22:46,1994,de Studio,,2e Prix
+MARTUSCIELLO Elio,,Italie,Limite inferiore sinistro,,0:09:22,1994,Expéri.,,2e Prix
+MULARD Eric,,France,La loupe d'orme,,0:14:25,1994,Expéri.,,Mention
+ALLIK Kristi,,Canada,Skyharp-eulogy for an elm tree part II,,0:20:00,1994,Expéri.,,Mention
+KUCHERA-MORIN Joann,,USA,Concerto for clarinet and clarinet,,0:08:34,1994,Instruments,,Mention
+PALMER John,,Gde Bretagne,Beyond the bridge,,0:13:00,1994,Instruments,,2e Prix
+MONTAGUE Stephen,,USA/GB,String quartet n°1 in memoriam Barry Anderson & Tomasz Sikorski,,0:22:00,1994,Instruments,,1er Prix
+POLONIO Eduardo,,Espagne,Chc,,0:20:09,1994,Magistère,,Magistère
+CETTA Pablo,,Argentine,… que me hiciste mal…,,0:08:00,1994,Programme,,1er Prix
+RAPP Eduardo,,Argentine,Biosfera uno,,0:08:45,1994,Programme,,Mention
+BROBERG Jonas,,Suède,Locations,,0:08:53,1994,Programme,,Mention
+BERENGUER José Manuel,,Espagne,Ob-iectum,,0:09:00,1994,Programme,,Mention
+HYDE Joseph,,Gde Bretagne,Songlines,,0:14:20,1994,Programme,,2e Prix
+HEDAS Kim,,Suède,"Good Morning, love - it's springtime in my heart !",,0:06:06,1994,Résidence,,Résidence
+MINSBURG Raul,,Argentine,El otro espejo,,0:08:00,1994,Résidence,,Résidence
+PAMPIN Juan Carlos,,Argentine,Apocalypse was postponed due to lack of interest,,0:08:00,1994,Résidence,,Résidence
+HOFFMAN Elizabeth,,USA,Tesserae,,0:08:47,1994,Résidence,,Résidence
+ADKINS Mathew,,Gde Bretagne,Melt,,00:11:50,1994,Résidence,,Résidence
+GLINIAK Bartlomiej,,Pologne,Neumo progremodum,,0:18:30,1994,Résidence,,Résidence
+WINGATE Mark,,USA,"Klang, kar und melodie",,0:07:30,1996,Caractère,,Prix
+MICHON Alain,,France,Lutte au delà,,0:14:05,1996,Caractère,,Prix
+DI SCIPIO Agostino,,Italie,5 Piccoli ritmi,,0:06:30,1996,Expéri.,,Finaliste
+WILLIS Garnet,,Canada,Clusterflux,,0:09:40,1996,Expéri.,,Prix
+MUTSCHLER Florian,,France,Ein aleatorischer spaziergang durch die stadt,,0:18:40,1996,Expéri.,,Finaliste
+BODY Jack,,Nlle Zélande,Barbe à papa (pour quatuor à cordes),,0:08:40,1996,Instruments,,Finaliste
+CECCARELLI Luigi,,Italie,Birds (for bass clarinet and tape with bass clarinet sounds and.…),,0:09:30,1996,Instruments,,Prix
+BOSCHETTO Francesco,,Italie,Trasumanar (pour violon),,0:11:17,1996,Instruments,,Grand Prix
+NELSON Jon Christopher,,USA,The wash their ambassadors in citrus and fennel ( pour voix et bande),,0:12:40,1996,Instruments,,Prix
+TORRE Joseba,,Espagne,Tiempo de luces (pour flûte et bande),,0:13:30,1996,Instruments,,Finaliste
+SCHWEIZER Frank,,Allemagne,"Diamant (pour flûte à bec, machine à flûte à bec, ordinateur et danse)",,0:23:05,1996,Instruments,,Finaliste
+BODIN Lars Gunnar,,Suède,Best wishes from the lilac grove,,0:00:00,1996,Magistère,,Magistère
+AUSTIN Larry,,USA,Blues Ax (pour saxophone et bande),,0:18:30,1996,Magistère,,Magistère
+ROCHA ITURBIDE Manuel,,Mexique,Maoin mor,,0:09:50,1996,Programme,,Finaliste
+KARLSSON Erik Michael,,Suède,Epitaphe pour Iqb al Masih,,0:10:20,1996,Programme,,Finaliste
+BOSCHETTO Francesco,,Italie,Your heart is a red train,,0:12:25,1996,Programme,,Finaliste
+VERANDI Mario,,Argent./Italie,Figuras flamencas,,0:12:30,1996,Programme,,Prix
+HARRISON Jonty,,Gde Bretagne,Sorties,,0:15:12,1996,Programme,,Prix
+ZIMBALDO Daniel,,Argent./Espa.,Cartas desde el real hospital de lunaticos,,0:21:00,1996,Programme,,Prix
+VASSILIEV Artem,,Russie,The ways,,0:07:52,1996,Résidence,,Résidence
+POLONUER Fernando David,,Argentine,Del ser o la nada y esa desesperada busqueda,,"0,015301",1996,Résidence,,Résidence
+PRAGER Jonathan,,France,Eau de Lune,,0:10:20,1996,Résidence,,Résidence
+PRIOR David John,,Gde Bretagne,Dense,,0:10:38,1996,Résidence,,Résidence
+COUPRIE Pierre,,France,Trois fragments bleus,,0:10:40,1996,Résidence,,Résidence
+DAHLSTEDT Palle,,Suède,Gummi,,0:11:30,1996,Résidence,,Résidence
+RUOHOMAKI Jukka,,Finlande,Scratches,,0:10:27,1996,Studio,,Prix
+SHIMAZU Takehito,,Japon,Illusions Ii in desolate fields for upic,,0:10:45,1996,Studio,,Finaliste
+KARPEN Richard,,USA,Life study #4,,0:12:00,1996,Studio,,Finaliste
+VOIGTLAENDER Lothar,,Allemagne,Atemlos,,0:12:45,1996,Studio,,Grand Prix
+TUTSCHKU Hans,,Allemagne,Sieben stufen,,0:13:00,1996,Studio,,Finaliste
+KARLSSON Erik Michael,,Suède,Interiors and interplays,,0:14:55,1996,Studio,,Prix
+ZIELINSKA Lidia,,Pologne,Jako te biale Myszki,,0:08:10,1997,Caractère,,Finaliste
+MARTUSCIELLO Elio,,Italie,Proiezioni,,0:12:35,1997,Caractère,,Prix
+STARKE Ipke,,Allemagne,Die unsichtbare front,,0:16:00,1997,Caractère,,Finaliste
+CARDI Mauro,,Italie,Manao tupapau,,0:08:48,1997,Instruments,,Finaliste
+ROCHA ITURBIDE Manuel,,Mexique,Transiciones,,0:11:30,1997,Instruments,,Finaliste
+TORRE Joseba,,Espagne,Mas libre y mas cautivo,,00:14:00,1997,Instruments,,Prix
+WHITE Frances,,USA,Winter aconites,,0:15:00,1997,Instruments,,Prix
+KUSNIR Eduardo,,Argen./Vene.,Juegos 1,,0:10:55,1997,Magistère,,Magistère
+LO Yee On,,USA,Portrait of timbre as a wild wooddove,,0:10:00,1997,Programme,,Prix
+MARTUSCIELLO Elio,,Italie,"Movimento, quietudine",,0:11:14,1997,Programme,,Finaliste
+DOYLE Roger,,Irlande,Spirit levels,,0:13:40,1997,Programme,,Prix
+ANDERSON Joseph,,USA,Change's Music,,0:26:00,1997,Programme,,Grand Prix
+DODD Rose,,Gde Bretagne,Transient I,,0:07:10,1997,Résidence,,Résidence
+LAZAROV Valentin,,Bulgarie,Boou'97,,0:07:15,1997,Résidence,,Résidence
+LEFRANC Till,,France,Vie,,0:07:40,1997,Résidence,,Résidence
+BATCHELOR Peter,,Gde Bretagne,Discourse,,0:12:00,1997,Résidence,,Résidence
+SANIELEVICI Alexandre,,Canada,Marée arctique,,00:14:00,1997,Résidence,,Résidence
+MACKAY Robert,,Gde Bretagne,Sea pictures,,0:15:00,1997,Résidence,,Résidence
+LANE Cathy,,Gde Bretagne,Invisible crowds,,0:10:02,1997,Studio,,Finaliste
+LEWIS Andrew,,Gde Bretagne,Ascent,,0:11:43,1997,Studio,,Prix
+ADKINS Mathew,,Gde Bretagne,Pagan Circus,,0:14:25,1997,Studio,,Prix
+MARTUSCIELLO Elio,,Italie,Cattura magica,,0:16:00,1997,Studio,,Finaliste
+BRUMMER Ludger,,Allemagne,Phrenos,,0:18:45,1997,Studio,,Grand Prix
+VERANDI Mario,,Argent./Italie,Faces and intensities,,0:11:30,1998,Caractère,,Finaliste
+LE PRADO Cécile,,France,Ligne d'eau,,0:18:23,1998,Caractère,,Finaliste
+CASALE Emanuele,,Italie,Studio (pour cor et bande),,0:04:00,1998,Instruments,,Prix
+BIFFARELLA Gonzalo,,Argentine,Escalas y arpegios n°1 (pour piano et bane),,0:07:50,1998,Instruments,,Finaliste
+DI LISCIA Oscar Pablo,,Argentine,"Tiemps Magneticos (pour flûte, piano et bande)",,0:08:45,1998,Instruments,,Finaliste
+CIFARIELLO CIARDI Fabio,,Italie,"Games (pour contrebasse, live électronqiue et bande)",,0:13:00,1998,Instruments,,Prix
+RACOT Gilles,,France,Vifs instants (pour petit ensembe instrumental et bande),,0:16:00,1998,Instruments,,Prix
+RISSET Jean-Claude,,France,Invisible,,0:19:30,1998,Magistère,,Magistère
+KOTONSKI Wlodzimierz,,Pologne,Tierra caliente,,,1998,Magistère,,Magistère
+PRIOR David John,,Gde Bretagne,An die mateire,,0:07:30,1998,Programme,,Finaliste
+BROBERG Jonas,,Suède,Conversation in cadaques,,0:08:56,1998,Programme,,Prix
+MANGS Love,,Suède,"We, we the waves - an acoustic poem",,0:19:47,1998,Programme,,Prix
+ONTERO Teemu,,Finlande,Arhynalia Alpha,,0:04:10,1998,Résidence,,Résidence
+POUNDS Michael,,USA,Critical mass,,0:06:35,1998,Résidence,,Résidence
+VASSILIEV Artem,,Russie,Gestures (pour clarinette et instruments électroniques),,0:08:28,1998,Résidence,,Résidence
+PROKOFIEV Gabriel,,Gde Bretagne,Zhiva,,0:09:48,1998,Résidence,,Résidence
+EKEBERG Frank,,Norvège,(Dis)integration,,0:09:49,1998,Résidence,,Résidence
+KAFEJIAN Sergio,,Brésil,Entrevales,,0:09:55,1998,Résidence,,Résidence
+MANRIQUE José,,Espagne,voz oculta,,0:07:00,1998,Studio,,Prix
+ASCIONE Patrick,,France,Et puis l'oubli,,0:10:10,1998,Studio,,Finaliste
+TORO PEREZ German,,Colombie,Estudios de ruidos y campanas,,0:11:30,1998,Studio,,Finaliste
+BARRETT Natasha,,Gde Bretagne,Little animals,,0:12:50,1998,Studio,,Prix
+TUTSCHKU Hans,,Allemagne,Extremites lointaines,,0:16:24,1998,Studio,,Finaliste
+KOONCE Paul,,USA,Walkabout,,0:16:30,1998,Studio,,Prix
+GIBSON John,,USA,Thru,,0:09:00,1999,concert,non thématique,Nominé
+GRATZER CARLOS,,Argentine,Ausbruch,,0:12:40,1999,concert,non thématique,Nominé
+KAHN Frédéric,,France,"Les fleurs, ces bouquets d'agonies",,0:14:00,1999,concert,non thématique,Prix
+GOBEIL Gilles,,Canada,Derrière la porte la plus éloignée…,,0:12:00,1999,concert,thématique,Nominé
+ADKINS Mathew,,Gde Bretagne,Mapping,,0:14:25,1999,concert,thématique,Nominé
+CORCORAN Frank,,Irlande,Sweeney's Vision,,0:20:38,1999,concert,thématique,Prix
+DHERMY Jean-Louis,,France,Pnoê (pour saxophone et bande),,0:08:12,1999,Instruments,dispositif - impro.,Nominé
+BESTOR Charles,,USA,"Conversations with Myself (pour instrumentiste et électroniques en
+temps réel)",,0:20:30,1999,Instruments,dispositif - impro.,Nominé
+DE MAN Roderik,,Pays Bas,"Air to Air (pour flûte, trompette et cor basse)",,0:08:15,1999,Instruments,studio et partit°,Nominé
+KESTELLIKIAN Cyril,,France,Connivence (pour clarinette et bande),,0:10:00,1999,Instruments,studio et partit°,Nominé
+CHIN Unsuk,,Corée,Xi (pour ensemble et électronique),,0:23:00,1999,Instruments,studio et partit°,Prix
+OLOFSSON Kent,,Suède,Il Liuto d'Orfeo (pour guitare et bande),,0:25:00,1999,Instruments,studio et partit°,Prix
+SIKORA Elzbieta,,Fran./Pologne,Aquamarina,,0:09:52,1999,Magistère,,Magistère
+HINKLE-TURNER Elizabeth,,USA,Full Circle,,0:45:00,1999,multimédia,cdrom ou internet,Nominé
+TORRES Gérard,,France,Le train fantôme,,0:12:00,1999,multimédia,musique et vidéo,Nominé
+ARCHER Phil,,Gde Bretagne,Kung Fu,,0:03:40,1999,Résidence,,Résidence
+BANASZAK J. Christophe,,France,Angustia,,0:04:20,1999,Résidence,,Résidence
+STEWART Ian,,Canada,Petroglyph,,0:07:45,1999,Résidence,,Résidence
+THOMPSON Michael,,USA,Machine Werks,,0:08:00,1999,Résidence,,Résidence
+IMAI Shintaro,,Japon,Resonant waves (pour clarinette et ordinateur),,0:10:00,1999,Résidence,,Résidence
+SUBOCHEV Dmitry,,Russie,In stages of motion,,0:10:20,1999,Résidence,,Résidence
+SIEGEL Wayne,,USA,Sisters,,0:11:00,1999,spectacle,danse,Nominé
+MOONEY Edmond,,USA,Rollover,,0:12:24,1999,spectacle,danse,Nominé
+KAMIYA Teruyoshi,,Japon,Danse of stone,,0:22:45,1999,spectacle,danse,Prix
+APEL Ted,,USA,Surface Osculations,,,1999,spectacle,installation,Nominé
+KOSK Patrick,,Finlande,Ice Bice,,0:11:07,1999,,,Pierre d'Argent
+MERIT Jacky,,France,Emphase,,0:11:18,1999,,,Pierre d'Or
+FERREYRA Béatriz,,Argentine,Rio de los pajaros,,0:12:07,2000,Magistère,,Magistère
+DASHOW James,,USA/Italie,"…at other time, the distances",,0:12:40,2000,Magistère,,Magistère
+LINDGREN Iikka,,Finlande,Kaukana,,0:04:37,2000,Résidence,,Résidence
+CONGÉ Nicolas,,France,Palpalitch,,0:05:10,2000,Résidence,,Résidence
+KARATHANASIS Konstantinos,,Grèce,Piece for flute and electronics,,0:05:20,2000,Résidence,,Résidence
+STAVROPOULOS Nikos,,Grèce,Piano,,0:06:50,2000,Résidence,,Résidence
+ESCALANTE CHERNOVA Irina,,Cuba,La primavera del angel,,0:09:02,2000,Résidence,,Résidence
+LEIDER Colby,,USA,Hydraulis,,0:11:55,2000,Résidence,,Résidence
+DI SCIPIO Agostino,,Italie,5 Interzioni cicliche alle differenze sensibili (pour quatuor et ordinateur),,0:12:00,2000,Trivium A,dispositif et instru.,Mention
+CECCARELLI Luigi,,Italie,Respiri (pour cor préparé et bande),,0:18:15,2000,Trivium A,dispositif et instru.,Mention
+JODLOWSKI Pierre,,France,De front (quatuor) pour ensemble instrumental et dispositif électro,,0:23:00,2000,Trivium A,dispositif et instru.,Prix
+KAWAMOTO Hideko,,Japon,Night Ascends from the Ear like a Butterfly,,0:08:14,2000,Trivium A,esthétique formelle,Mention
+RUSCHKOWSKI André,,Allemagne,Breas,,0:08:59,2000,Trivium A,esthétique formelle,Mention
+HALAC Jose,,Arg./USA,The breaking of the Scream,,0:10:51,2000,Trivium A,esthétique formelle,Prix
+HEDMAN Jens,,Suède,Relief,,0:11:25,2000,Trivium A,esthétique formelle,Prix
+MALLIA John,,USA,Smyrna Soundscape,,0:07:10,2000,Trivium A,esthétique program.,Mention
+FIELD Ambrose,,Gde Bretagne,Expanse Hotel (Durango Mix),,0:11:00,2000,Trivium A,esthétique program.,Prix
+BLIN Frédéric,,France,Construct,,0:23:00,2000,Trivium B,danse et théâtre,Mention
+DESBAZEILLE Magali,,France,Tu penses donc je te suis,,0:18:00,2000,Trivium B,installat°ou environ.,Prix
+CANTO Siegfried,,France,Tu penses donc je te suis,,0:18:00,2000,Trivium B,installat°ou environ.,Prix
+MALBERT Alexis,,France,Projet,,,2000,Trivium B,installat°ou environ.,Mention
+DIENNET Jacques,,France,Captives II,,0:12:17,2000,Trivium B,Multimédia,Prix
+HELD Barbara,,USA,The Well,,0:26:27,2000,Trivium B,Multimédia,Mention
+SORRENTINO Juan Pablo,,Argentine,Mi Primer Cello,,0:05:47,2001,Résidence,,Résidence
+LIN Mei-Fang,,Taiwan,Interaction,,0:07:35,2001,Résidence,,Résidence
+SOSA Rogelio,,Mexique,Tenso II,,0:08:00,2001,Résidence,,Résidence
+IMPIO Paavo,,Finlande,Kaleva,,0:08:02,2001,Résidence,,Résidence
+HASNIZAM Abdul Wahid,,Malaisie,Fatihah,,0:12:18,2001,Résidence,,Résidence
+PEREZ SANTIAGO Felipe,,Mexique,Ofaniel (angel de la luna),,0:15:00,2001,Résidence,,Résidence
+PARKIN Nicholas,,Gde Bretagne,Magmas,,0:16:02,2001,Trivium A,art sonore électroa.,Prix
+WRIGHT Rob,,Gde Bretagne,Arco,,0:05:00,2001,Trivium A,avec instruments,Mention
+PINTER Gyula,,Hongrie,Les cloches de flammes roses,,0:09:50,2001,Trivium A,avec instruments,Prix
+ADKINS Mathew,,Gde Bretagne,Noumena,,0:10:45,2001,Trivium A,avec instruments,Prix
+CEE Werner,,Allemagne,Cities' drift,,0:10:02,2001,Trivium A,sans instrument,Mention
+KIM Suk-Jun,,Corée,Midong,,0:10:02,2001,Trivium A,sans instrument,Prix
+BARRETT Natasha,,Gde Bretagne,Utility of Space,,0:13:30,2001,Trivium A,sans instrument,Prix
+PAYRI Blas,,France,Paysage enseveli,,0:16:00,2001,Trivium A,sans instrument,Mention
+BEUGNIES Marc,,France,Incidences et Réflexions sur la naissance d'une étoile,,0:07:29,2001,Trivium B,art sonore électroa.,Mention
+BIASUTTI Michele,,Italie,Deep sea,,0:09:40,2001,Trivium B,art sonore électroa.,Mention
+SZIGETVARI Andrea,,Hongrie,Mandala 1,,0:13:11,2001,Trivium B,art sonore électroa.,Prix
+ROVAN Butch,,USA,…seine hohle form…,,0:11:30,2001,Trivium B,danse ou théâtre,Mention
+APEL Ted,,USA,Potential Difference,,,2001,Trivium B,installation ou envir.,Mention
+WILLIS Garnet,,Canada,Kinetoflux,,,2001,Trivium B,installation ou envir.,Mention
+HERNANDEZ Miguel,,Mexique,El Santo Cuantico,,0:09:20,2001,Trivium B,Multimédia,Prix
+SZIGETVARI Andrea,,Hongrie,The Priest and the Shell,,0:13:20,2001,Trivium B,Multimédia,Prix
+HARRISON Jonty,,Gde Bretagne,Abstracts,,0:17:00,2001,,,Pierre d'Argent
+BRUMMER Ludger,,Allemagne,Nyx,,0:28:00,2001,,,Pierre d'Or
+MANDOLINI Ricardo,,Ital./Argentine,La noche en que los peces flotaron,,0:13:00,2002,Magistère,,Magistère
+GILBERT Peter,,USA,Rituals,,0:05:15,2002,Résidence,,Résidence
+YAYA AGUILAR Ana G.,,Argentine,Patio,,0:05:22,2002,Résidence,,Résidence
+STAVROPOULOS Nikos,,Grèce,Scene II,,0:07:22,2002,Résidence,,Résidence
+BIASIOL Francesco,,Italie,Ne pas se pencher au dehors@,,0:10:00,2002,Résidence,,Résidence
+CAHILL-JONES Thomas J.,,Gde Bretagne,DeLeTE'e'UNIT,,0:10:06,2002,Résidence,,Résidence
+ADAMEK Ondrej,,Tchèquie,"Un souffle, une ombre, un rien",,0:10:55,2002,Résidence,,Résidence
+MARINONI Marco,,Italie,"To walk the night (flûte, percussion, piano, violon, violoncelle et bande)",,0:07:20,2002,Trivium A,avec instruments,Prix
+MARY Mario,,Argentine,Aarhus (pour violon et bande),,0:10:42,2002,Trivium A,avec instruments,Mention
+OLIVEIRA Joao Pedro,,Portugal,Labirinto (pour quatuor à cordes et bande),,0:11:00,2002,Trivium A,avec instruments,Prix
+DE MAN Roderik,,Pays Bas,Magnetic fields (pour orchestre et bande),,0:12:30,2002,Trivium A,avec instruments,Mention
+BEREZAN David,,Canada,Baoding,,0:07:23,2002,Trivium A,sans instrument,Prix
+NELSON Jon Christopher,,USA,Scatter,,0:08:48,2002,Trivium A,sans instrument,Prix
+MARRERO Juan-Manuel,,Espagne,Lascivia Pristina II,,0:09:34,2002,Trivium A,sans instrument,Mention
+HEDMAN Jens,,Suède,Recoil,,0:12:08,2002,Trivium A,sans instrument,Mention
+NIEHUSMANN Frank,,Allemagne,Untertagemusik nr. 1,,0:10:36,2002,Trivium B,art sonore électroa.,Mention
+LA CASA Eric / KWI Slavek,,Fran./Irlande,Vibratility. Mozaik,,0:15:50,2002,Trivium B,art sonore électroa.,Prix
+TODOROFF Todor,,Belgique,In Between,,1:15:00,2002,Trivium B,danse ou théâtre,Mention
+NUHN Ralf,,Allemagne,Staccato Death life,,0:06:20,2002,Trivium B,installation ou envir.,Prix
+BOSCH Peter / Simone SIMONS,,Pays Bas,Cantan un Huero,,0:16:12,2002,Trivium B,installation ou envir.,Mention
+JUSTEL Elsa,,Argentine,Destellos,,0:05:37,2002,Trivium B,Multimédia,Mention
+BALTAZAR Pascal,,France,Soma,,0:09:00,2002,Trivium B,Multimédia,Mention
+DESCHENES Marcelle,,Canada,Die Dyer (vidéo d'Alain Pelletier),,0:24:00,2002,Trivium B,Multimédia,Prix
+RUTZ Hanns Holger,,Allemagne,5th Residual,,0:09:12,2003,Résidence,,Résidence
+KARATHANASIS Konstantinos,,Grèce,De Ligno Chalybeque,,0:09:40,2003,Résidence,,Résidence
+BESHARSE Kari,,USA,Small Things,,0:10:30,2003,Résidence,,Résidence
+STRASSMUELLER Matthias,,Allemagne,Fusions,,0:14:25,2003,Résidence,,Résidence
+VOLODIN Alexander,,Russie,The Music of my memory,,0:16:20,2003,Résidence,,Résidence
+OZER Mehmet Can,,Turquie,Works 2001/4,,0:43:38,2003,Résidence,,Résidence
+MARTUSCIELLO Elio,,Italie,Presenti successivi,,0:11:00,2003,Trivium A,art sonore électroa.,Mention
+MOORE Adrian,,Gde Bretagne,Sea of Singularity,,0:30:00,2003,Trivium A,art sonore électroa.,Mention
+CASALE Emanuele,,Italie,5,,0:10:15,2003,Trivium A,avec instruments,Mention
+SOULIÉ Laurent,,France,Ecorce de lune,,0:16:08,2003,Trivium A,avec instruments,Prix
+ECKERT Gerald,,Allemagne,Offen-fin des terres,,0:16:20,2003,Trivium A,avec instruments,Prix
+AZGUIME Miguel,,Portugal,Derrière son double,,0:19:31,2003,Trivium A,avec instruments,Mention
+LOUFOPOULOS Apostolos,,Grèce,Erevos,,0:11:00,2003,Trivium A,sans instrument,Mention
+MARY Mario,,Argentine,Signes émergents,,0:15:00,2003,Trivium A,sans instrument,Prix
+FIELD Ambrose,,Gde Bretagne,One hell of a place to lose a cow,,0:16:33,2003,Trivium A,sans instrument,Prix
+CECCARELLI Luigi,,Italie,Live,,0:50:00,2003,Trivium B,danse ou théâtre,Prix
+"RUETSCH Christophe/BLIN Philippe /
+JODLOWSKI Pierre",,France,Mendel,,,2003,Trivium B,installation ou envir.,Mention
+SUZUKI Kotoka,,Japon,Umidi  Soni Colores,,0:15:00,2003,Trivium B,Multimédia,Prix
+BATTEY Bret,,USA,Writing on the surface,,0:15:00,2003,Trivium B,Multimédia,Mention
+CETTA Pablo,,Argentine,… que me hiciste mal…,,0:08:00,2004,Euphonie,,Euphonie
+NELSON Jon Christopher,,USA,Scatter,,0:08:48,2004,Euphonie,,Euphonie
+BROBERG Jonas,,Suède,Conversation in cadaques,,0:08:56,2004,Euphonie,,Euphonie
+CECCARELLI Luigi,,Italie,Birds (for bass clarinet and tape with bass clarinet sounds and.…),,0:09:30,2004,Euphonie,,Euphonie
+HEDMAN Jens,,Suède,Relief,,0:11:25,2004,Euphonie,,Euphonie
+LEWIS Andrew,,Gde Bretagne,Ascent,,0:11:43,2004,Euphonie,,Euphonie
+KARLSSON Erik Michael,,Suède,La disparition de l'azur,,0:12:12,2004,Euphonie,,Euphonie
+MARTUSCIELLO Elio,,Italie,Proiezioni,,0:12:35,2004,Euphonie,,Euphonie
+BARRETT Natasha,,Gde Bretagne,Utility of Space,,0:13:30,2004,Euphonie,,Euphonie
+KOONCE Paul,,USA,Walkabout,,0:16:30,2004,Euphonie,,Euphonie
+MARINI Marc,,France,Etude aux cuics et aux couacs,,0:05:13,2004,Résidence,,Résidence
+KHOSRAVI  Peiman,,Iran,Night streams,,0:06:19,2004,Résidence,,Résidence
+GUZMAN A. Edgar,,Mexique,Prometo et Epimeto,,0:07:51,2004,Résidence,,Résidence
+PARRA CANCINO Juan A.,,Chili,Tellura,,0:08:00,2004,Résidence,,Résidence
+DUGATKIN Mario,,Argentine,Y la noche se derrumba,,0:08:30,2004,Résidence,,Résidence
+KOKORAS Panayiotis,,Grèce,Slide,,0:08:40,2004,Résidence,,Résidence
+NICHOLS Charles,,USA,Posture,,0:08:54,2004,Trivium B,danse et théâtre,Mention
+JANSSEN Jos/JAXY Constantin,,PB/Allemagne,Morandi's clarinet,,0:26:00,2004,Trivium B,installation ou envir.,Mention
+ARCE-SAGARDUY Mikel,,Espagne,"""*.WAV",,,2004,Trivium B,installation ou envir.,Prix
+DUNKELMAN Stephan,,Belgique,Kajsa : 3 femmes et un promeneur,,0:07:30,2004,Trivium B,Multimédia,Prix
+KOTHMAN Keith,,USA,Interludes,,0:08:00,2004,Trivium B,Multimédia,Mention
+CAESAR Rodolfo,,Brésil,3 Clips,,0:12:00,2004,Trivium B,Multimédia,Mention
+GARRO Diego,,Italie,Pointes Précaires,,0:14:30,2004,Trivium B,Multimédia,Prix
+PARMERUD Ake,,suède,SubString Bridge,,0:09:00,2005,Magistère,,Magistère
+CEE Werner,,Allemagne,Maschinerie der polarlandschaft,,0:20:50,2005,Quadrivium,art sonore électroa.,Mention
+BURTNER Matthew,,USA,That which is bodiless is reflected in bodies,,0:12:00,2005,Quadrivium,art sonore électroa.,Mention
+TODOROFF Todor,,Belgique,Prospective II - Mes jours et mes nuits,,0:45:00,2005,Quadrivium,danse ou théâtre,Mention
+FABRE Arnaud,,France,Dropper01-dispositif orchestral,,0:22:00,2005,Quadrivium,installation ou envir.,Prix
+D'ALEO Jean-Luc,,France,Modules catalytiques,,0:20:00,2005,Quadrivium,installation ou envir.,Mention
+GIROL Paolo,,Italie,Mi sentiro con Ale,,0:08:36,2005,Quadrivium,Multimédia,Prix
+MORALES Roberto,,Mexique,Cenzontle,,0:08:08,2005,Quadrivium,Multimédia,Prix
+DE GANDARIAS,,Guatemala,Symphonies of the tropics,,0:12:57,2005,Quadrivium,Multimédia,Mention
+MURAT Valerio,,Italie,Nuvolari,,0:03:04,2005,Quadrivium,Multimédia,Mention
+HIRAYAMA Haruk,,Japon,Swallow,,0:07:45,2005,Résidence,,Résidence
+KISTERS Ludger,,Allemagne,"Takutaku-a story line, part II",,0:09:10,2005,Résidence,,Résidence
+MERCIER Maxence,,France,Séminal shaker,,0:11:00,2005,Résidence,,Résidence
+OCKERT Matthias,,Allemagne,Stretto,,0:26:55,2005,Résidence,,Résidence
+SIMIONE Didier,,France,Acousmatek,,0:08:48,2005,Résidence,,Résidence
+WILSON Benjamin,,Canada,Sediment,,0:08:23,2005,Résidence,,Résidence
+DE MAN Roderik,,Pays Bas,Cordes invisibles,,0:14:00,2005,Trivium A,avec instruments,Prix
+KAHN Frédéric,,France,les perspectives dépravées,,0:10:00,2005,Trivium A,avec instruments,Mention
+OLIVEIRA Joao Pedro,,Portugal,Iris,,0:12:30,2005,Trivium A,avec instruments,Mention
+GARRO Diego,,Italie,O que a menina ouve,,0:10:05,2005,Trivium A,esthétique formelle,Prix
+ADKINS Mathew,,Gde Bretagne,Silk to steel,,0:10:38,2005,Trivium A,esthétique formelle,Mention
+SALJIC Bojana,,Slovénie,Welcome to the dooshaland,,0:09:00,2005,Trivium A,esthétique formelle,Magistère
+CHOI kyong Mee,,Corée,Transuility,,0:07:00,2005,Trivium A,esthétique program.,Mention
+RUDY Paul,,USA,Love song,,0:15:30,2005,Trivium A,esthétique program.,Mention
+RAPP Jorge,,Argentine,"Otro tiempo, otro lugar…",,0:06:47,2006,Magistère,,Magistère
+CARLES Jose Luis,,Espagne,L'onde,,0:19:56,2006,Quadrivium,art sonore électroa.,Prix
+GUIONNET Jean-Luc,,France,Non-organic bias,,0:21:30,2006,Quadrivium,art sonore électroa.,Mention
+TREVISI Stefano,,Italie,Pensatoio : 3 cubi,,0:09:00,2006,Quadrivium,danse ou théâtre,Mention
+HOYER Ralf/STELZENBACHSusanne,,Allemagne,Glocken geigen glas II - doppelmembran,,0:20:36,2006,Quadrivium,installation ou envir.,Mention
+KLAVERDAL Stefan,,Suède,Mänskligt Mönster / Human Pattern,,0:12:42,2006,Quadrivium,Multimédia,Prix
+DUFORT Louis,,France,Cantique n°2,,0:20:00,2006,Quadrivium,Multimédia,Mention
+BISSIERES Stéphane,,France,Le complexe de swinburne,,0:05:58,2006,Résidence,,Résidence
+GENDIN Gabriel,,Argentine,Indeleble,,0:07:30,2006,Résidence,,Résidence
+SIMPSON Diana,,Gde Bretagne,Kalimba,,0:14:57,2006,Résidence,,Résidence
+STANSBIE Adam,,Gde Bretagne,Isthmus,,0:11:17,2006,Résidence,,Résidence
+MURAT Valerio,,Italie,Coppi,,0:06:50,2006,Trivium A,dispositif et instru.,Prix
+"BRANTIGAN Dan/
+WARD-BERGEMAN Michael",,USA,All of the Colors are Wrong,,0:13:03,2006,Trivium A,dispositif et instru.,Mention
+JODLOWSKI Pierre,,France,Time and Money,,0:14:47,2006,Trivium A,dispositif et instru.,Mention
+BARREIRO Daniel,,Brésil,Percursos enredados,,0:17:53,2006,Trivium A,esthétique formelle,Prix
+DEL BOCA Basilio,,Argentine,Fragotado,,0:09:34,2006,Trivium A,esthétique formelle,Prix
+FEREIRA Antonio,,Portugal,Wind speaks to stone,,0:11:04,2006,Trivium A,esthétique formelle,Mention
+ROCHA ITURBIDE Manuel,,Mexique,Purusha-Prakrti,,0:12:24,2006,Trivium A,esthétique program.,Prix
+MINSBURG Raul,,Argentine,A tu memoria,,0:08:00,2006,Trivium A,esthétique program.,Mention
+BARREIRO Daniel,,Brésil,Maresia,,0:11:50,2006,Trivium A,esthétique program.,Mention
+DOYLE Roger,,Irlande,The Ninth Set – Sector 4,,0:18:43,2007,Magistère,,Magistère
+JOHNSON Bernadette,,Suisse,La chambre du malade,,0:10:45,2007,Quadrivium,art sonore électroa.,Mention
+BATCHELOR Peter,,Grande-Bretagne,Studies On Canvas,,0:20:00,2007,Quadrivium,art sonore électroa.,Mention
+SIMAO Costa,,Portugal,Subterrâneos do Corpo,,0:26:00,2007,Quadrivium,danse ou théâtre,Prix ex æquo
+TODOROFF Todor,,Belgique,Les familiers du labyrinthe,,0:33:00,2007,Quadrivium,danse ou théâtre,Prix ex æquo
+COLLINS Lea,,Australie,gins_leap/dubb_speak Sound Design,,0:16:00,2007,Quadrivium,installation ou envir.,Mention
+KLEMOLA Sami,,Finlande,Brainwash,,installat°,2007,Quadrivium,installation ou envir.,Mention
+MAXIMIN Bérangère,,France,Encre Noire,,0:22:58,2007,Quadrivium,Multimédia,Prix
+FELLMANN Ellen,,Allemagne,Rot,,0:07:30,2007,Quadrivium,Multimédia,Mention
+LOPEZ-MONTES José,,Espagne,Ultimo estudio para satanos,,0:22:00,2007,Quadrivium,Multimédia,Mention
+JACOBS Bryan,,USA,Within Scenes of Hurt,,0:07:45,2007,Résidence,,Résidence
+RYAN Damian,,Irlande,Configurational energy landscape #3,,0:12:33,2007,Résidence,,Résidence
+UTO Yukari,,Japon,Nigero,,0:04:45,2007,Résidence,,Résidence
+CARMAN Oliver,,Grande-Bretagne,Amorphous Materials,,0:15:55,2007,Résidence,,Résidence
+GUAN Peng,,Chine,Extremer,,0:12:30,2007,Résidence,,Résidence
+CORNELIUS Gregory,,USA,Earth and Green,,0:06:30,2007,Résidence,,Résidence
+OLIVEIRA João Pedro,,Portugal,"Beyond (clarinette, violoncelle, piano et électroacoustique)",,0:10:00,2007,Trivium,dispositif et instru.,Prix
+GIROLIN Roberto,,Italie,Anakros (soprano invisible et électroacoustique),,0:10:05,2007,Trivium,dispositif et instru.,Mention
+ZDRALEK Marko,,Allemagne,Mare Crisium… Ecco mormorar l'onde (flûte à bec),,0:12:21,2007,Trivium,dispositif et instru.,Mention
+CHIARAMONTE Antonioni,,Italie,Riflessioni,,0:10:20,2007,Trivium,esthétique formelle,Prix
+WOLEK Krzysztof,,Pologne,Mobile Variations,,0:08:30,2007,Trivium,esthétique formelle,Prix
+SANSON Yoann,,France,Trompe en bataille,,0:25:00,2007,Trivium,esthétique formelle,Mention
+FRIDRIKSSON Rikhardur H.,,Islande,Brons,,0:14:01,2007,Trivium,esthétique formelle,Mention
+YOUNG John,,Grande-Bretagne,Ricordiamo Forli,,0:53:30,2007,Trivium,esthétique program.,Prix
+ZIMBALDO Daniel,,Espagne,Sonata opus 10,,0:22:30,2007,Trivium,esthétique program.,Mention
+BERNIER Nicolas,,Canada,Liaisons mécaniques,,0:10:06,2007,Trivium,esthétique program.,Mention
+BICK Andreas,,Allemagne,Frost Pattern,,,2008,Quadrivium,art sonore électroa.,Mention
+SAUZA Nahuel Hernán,,Argentine,Gestual 1,,,2008,Résidence,,Résidence
+KAFEJIAN Sergio,,Brésil,In Harmonica (for guitar and digital sounds),,,2008,Trivium,dispositif et instru.,Prix
+TREMBLAY Pierre Alexandre,,Canada,"Walk That Way. Tuesday, Turn",,,2008,Quadrivium,Multimédia,Mention
+ZHOU Yuan,,Chine,Colored Glaze for cello solo and disposal Electroacoustic,,,2008,Résidence,,Résidence
+FORGET Georges,,France,Orages d'acier,,,2008,Résidence,,Résidence
+TISSOT Gaël,,France,Affleure (pour piano et sons fixés),,,2008,Résidence,,Résidence
+HARRISON Jonty,,Gde Bretagne,Internal Combustion,,,2008,Trivium,,Mention
+MAHTANI Annie,,Gde Bretagne,Past Links,,,2008,Trivium,esthétique formelle,Mention
+KOKORAS Panayiotis,,Grèce,"Morphallaxis (for amplified flute, percussion, cello and electronics)",,,2008,Trivium,dispositif et instru.,Mention
+PALAMARES Niko,,Grèce,Higgs Kaleidoscope,,,2008,Résidence,,Résidence
+MONACCHI David,,Italie,Echoes of a Sonic Habitat,,,2008,Quadrivium,art sonore électroa.,Mention
+MURAT Valerio,,Italie,Les machines spirituelles,,,2008,Trivium,esthétique program.,Mention
+SPEK Léon,,Pays-Bas,Koru,,,2008,Quadrivium,installation ou envir.,Mention
+OLIVEIRA Joao Pedro,,Portugal,L'accordéon du Diable (pour accordéon et électroacoustique),,,2008,Magistère,,Magistère
+KLAVERDAL Stefan,,Suède,Insyn,,,2008,Quadrivium,Multimédia,Prix
+ALESSANDRINI Patricia,,USA,De  Profundis Clamavi  (for string quartet with live electronics),,,2008,Trivium,dispositif et instru.,Mention
+ELLROTT Travis,,USA,In Pieces,,,2008,Résidence,,Résidence
+PAYNE Maggi,,USA,Liquid Amber,,,2008,Quadrivium,Multimédia,Mention
+ELDAGSEN Boris,,Allemagne,Spam the musical,,0:06:29,2009,Arts Elecrtoniques,tendance netart,Mention
+SCHUBERT A lexander,,Allemagne,Nachtschatten,,0:12:00,2009,Résidence,,Résidence
+BIFFARELLA Gonzalo,,Argentine,Memoria de rituales cotidianos,,0:12:00,2009,Trivium,esthétique program.,Prix
+KASEM Maria Christina,,Argentine,Las aguas abismales,,0:13:57,2009,Trivium,esthétique formelle,Prix
+SAMARTZIS Philip,,Australie,Black habit,,0:22:16,2009,Quadrivium,art sonore électroa.,Mention
+Todoroff Todor,,Belgique,De Deux Points de vue,,0:45:00,2009,Quadrivium,danse ou théâtre,Mention
+Gauthier Thierry,,Canada,Cycles,,0:08:06,2009,Arts Elecrtoniques,tendance création,Mention
+GOBEIL Gilles,,Canada,Castalie,,0:10:34,2009,Trivium,esthétique program.,Mention
+PAYEUR Emilie,,Canada,Etude claire et nette,,0:10:10,2009,Résidence,,Résidence
+RIVAS Roque,,Chili,Mutations of matter,,0:14:00,2009,Arts Elecrtoniques,tendance performance,Prix
+LEE Zune,,Corée du Sud,A bottle of weather,,-,2009,Quadrivium,installation ou envir.,Mention
+ARANDA PENA Jesus,,Espagne,Dr. Jekyll . Confesión,,0:12:48,2009,Résidence,,Résidence
+JIMENEZ Gregorio,,Espagne,Le secret des petits sons,,0:14:52,2009,Trivium,esthétique formelle,Mention
+BOURDIER Fabien,,France,React,,0:08:00,2009,Arts Elecrtoniques,tendance création,Prix
+Lefèvre Benoît,,France,Nuit d'ébène et d'ivoire,,0:11:04,2009,Résidence,,Résidence
+Marteau Grégory,,France,Présence impalpable,,0:09:20,2009,Résidence,,Résidence
+ADKINS Mathew,,Gde Bretagne,Five Panels,,0:46:35,2009,Arts Elecrtoniques,tendance création,Mention
+HINDMARCH David,,Gde Bretagne,Trebuchet,,0:13:00,2009,Trivium,esthétique formelle,Prix
+REEDER Philip,,Gde Bretagne,Lynchpin,,0:11:11,2009,Résidence,,Résidence
+ROSAS COBIAN Michael,,Gde Bretagne,Cantaor,,0:14:00,2009,Trivium,esthétique program.,Mention
+KOKORAS Panayiotis,,Grèce,West Pole,,0:09:00,2009,Trivium,dispositif et instru.,Mention
+CHIARAMONTE Antonino,,Italie,"Cut-up& grain, Chapter 1 : life",,0:21:38,2009,Arts Elecrtoniques,tendance performance,Mention
+Dall'osto Diego,,Italie,Tone,,0:13:24,2009,Quadrivium,danse ou théâtre,Prix
+DE BONIS Valerio,,Italie,Arsi Meccanica,,0:05:17,2009,Quadrivium,art sonore électroa.,Mention
+GEMINI Giampiero,,Italie,Danza Pitagorica,,0:08:00,2009,Quadrivium,Multimédia,Mention
+UTO Yukari,,Japon,Equal,,0:08:00,2009,Arts Elecrtoniques,tendance performance,Mention
+SOLIS Hugo,,Mexique,Ojos Te Vean,,,2009,Arts Elecrtoniques,tendance netart,Mention
+BODY Jack,,Nvelle Zélande,intimate portrait n°2: sssteve,,,2009,Trivium,esthétique program.,Prix
+LILLIOS Elainie,,USA,Veiled Resonance,,0:14:10,2009,Trivium,dispositif et instru.,Prix
+MILLER Dennis,,USA,Circles and Rounds,,0:09:20,2009,Quadrivium,Multimédia,Mention
