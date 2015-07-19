@@ -5,6 +5,7 @@ var selectedYear = 1973;
 
 var countries = [];
 var categories = [];
+var studios = [];
 
 var sceneWidth = 400, sceneHeight = 400;
 
@@ -22,6 +23,7 @@ d3.csv("data/smallData.csv", function(data){
 
 		setArray(data, key, countries, 0);
 		setArray(data, key, categories, 1);
+		setArray(data, key, studios, 2);
 	
 	}
 
@@ -35,7 +37,9 @@ d3.csv("data/smallData.csv", function(data){
 
     createMenu(years);
 
-    createPie(sceneWidth, sceneHeight);
+    createPie(sceneWidth, sceneHeight, '#firstPie', countries);
+    createPie(sceneWidth, sceneHeight, '#secondPie', studios);
+    createPie(sceneWidth, sceneHeight, '#thirdPie', categories);
 
     displayListingBasedOnSelection(data);
 });
@@ -80,16 +84,17 @@ function addTooltip(sWidth, sHeight){
 
 	tooltip.append('div').attr('class', 'percent'); 
 }
-function createPie(sWidth, sHeight){
+function createPie(sWidth, sHeight, svgId, array){
 
 	var padding = 20;
 	var width = sWidth-padding*2;
 	var height = sHeight-padding*2;
 	var radius = Math.min(width, height) / 2; 
 
+	//var colors = d3.scale.category20c();
 	var colors = d3.scale.category20();
 
-	var svg = d3.select('#firstPie')
+	var svg = d3.select(svgId)
 		//.attr('width', width)
 		//.attr('height', height)
 		.append('g')
@@ -108,7 +113,12 @@ function createPie(sWidth, sHeight){
   		.sort(null);
 
   	var path = svg.selectAll('path')
-  		.data(pie(countries))
+
+  		//TODO 
+
+  		.data(pie(array))
+  		//.data(pie(countries))
+	  	
 	  	.enter()
 	  	.append('path')
 	  	.attr('d', arc)
@@ -121,7 +131,7 @@ function createPie(sWidth, sHeight){
 
 	path.on('mouseover', function(d) {
 
-		var total = d3.sum(countries.map(function(d) {
+		var total = d3.sum(array.map(function(d) {
 	    	//return d.count;
 	    	return (d.enabled) ? d.count : 0;  
 	  	}));
@@ -144,14 +154,14 @@ function createPie(sWidth, sHeight){
 		tooltip.style('display', 'none');
 	}); 
 
-	addLegend(colors, pie, path, arc, sWidth, sHeight);
+	addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array);
 }
-function addLegend(colors, pie, path, arc, sWidth, sHeight){
+function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 
 	var legendRectSize = 18;
 	var legendSpacing = 4;
 
-	var svg = d3.select('svg');
+	var svg = d3.select(svgId);
 	var legend = svg.selectAll('.legend')
 		.data(colors.domain())
 		.enter()
@@ -160,12 +170,12 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight){
 	  	.style('font-size', '12px')
 	  	.attr('transform', function(d, i) {
 	    
-	    var height = legendRectSize + legendSpacing;
-	    var offset =  height * colors.domain().length / 2;
-	    var xPos = -2 * legendRectSize;
-	    var yPos = i * height - offset;
+		    var height = legendRectSize + legendSpacing;
+		    var offset =  height * colors.domain().length / 2;
+		    var xPos = -2 * legendRectSize;
+		    var yPos = i * height - offset;
 
-	    return 'translate(' + (xPos+sWidth/2) + ',' + (yPos+sHeight/2) + ')';
+		    return 'translate(' + (xPos+sWidth/2) + ',' + (yPos+sHeight/2) + ')';
 		});
 
 	legend.append('rect')
@@ -180,7 +190,7 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight){
 	  		var rect = d3.select(this);
   			var enabled = true;
 
-  			var totalEnabled = d3.sum(countries.map(function(d) {
+  			var totalEnabled = d3.sum(array.map(function(d) {
     			return (d.enabled) ? 1 : 0;
   			}));
 
@@ -198,7 +208,7 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight){
 		    	return (d.enabled) ? d.count : 0;
 		  	});
 
-		  	path = path.data(pie(countries));
+		  	path = path.data(pie(array));
 
 
 		  	path.transition()
@@ -239,6 +249,11 @@ function setArray(data, key, array, propertyId){
 			break;
 		case 1:
 			value = data[key].category;
+			if(value=='')value="Inconnue";
+			break;
+		case 2:
+			value = data[key].studio;
+			if(value=='')value="Inconnu";
 			break;
 		default:
 			value = 'default';
@@ -343,6 +358,7 @@ function createMenu(years){
 					for(var j=0; j<table.length; j++) {
 						setArray(table, j, countries, 0);
 						setArray(table, j, categories, 1);
+						setArray(table, j, studios, 2);
 					}
 					
 					d3.select('#awards').selectAll("*").remove();
@@ -351,7 +367,12 @@ function createMenu(years){
 
 					//TODO animate it
 					d3.select('#firstPie').selectAll("*").remove();
-					createPie(sceneWidth, sceneHeight);
+					d3.select('#secondPie').selectAll("*").remove();
+					d3.select('#thirdPie').selectAll("*").remove();
+
+					createPie(sceneWidth, sceneHeight, '#firstPie', countries);
+					createPie(sceneWidth, sceneHeight, '#secondPie', studios);
+					createPie(sceneWidth, sceneHeight, '#thirdPie', categories);
 
 				}
 
@@ -367,6 +388,7 @@ function createMenu(years){
 function resetVariables(){
 
 	countries = [];
+	studios = [];
 	categories = [];
 
 	//TODO use it to use the same color for each country
