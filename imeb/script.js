@@ -11,6 +11,9 @@ var countryDivs = [];
 
 var sceneWidth = 394, sceneHeight = 400;
 
+var panorama = false;
+
+resetVariables();
 editTitle(selectedYear);
 addTooltip(sceneWidth, sceneHeight);
 
@@ -18,6 +21,8 @@ d3.csv("data/smallData.csv", function(data){
 
 	//console.log(data);
 	table = data;
+
+	years.push('Panorama');
 
 	for(key in data) {
 		
@@ -66,27 +71,10 @@ function addTooltip(sWidth, sHeight){
 
 	var tooltip = d3.select('#charts')         
   		.append('div')
-  		.attr('id', 'tooltip01')
-  		.style('background', '#eee')
-  		//.style('box-shadow', '0 0 5px #999999')
-  		.style('position', 'absolute')
-  		.style('top', '150px')
-  		.style('left', padding+'px')
-  		//.style('left', (sWidth-(width+padding*2+margin))+"px")
-  		//.style('top', '20px')
-  		.style('font-size', '12px')
-  		.style('text-align', 'center')
-  		.style('width', width+'px')
-  		.style('padding', '10px')
-  		.style('line-height', '1.1em')
-  		.style('display', 'none')
-  		.style('z-index', '10');       
-  		            
+  		.attr('id', 'tooltip');  		            
 
 	tooltip.append('div').attr('class', 'label');
-
 	tooltip.append('div').attr('class', 'count');             
-
 	tooltip.append('div').attr('class', 'percent'); 
 }
 function createPie(sWidth, sHeight, svgId, array){
@@ -149,7 +137,7 @@ function createPie(sWidth, sHeight, svgId, array){
 			this._current = d;
 		});
 
-	var tooltip = d3.select('#tooltip01');
+	var tooltip = d3.select('#tooltip');
 
 	path.on('mouseover', function(d) {
 
@@ -168,8 +156,8 @@ function createPie(sWidth, sHeight, svgId, array){
 	});
 
 	path.on('mousemove', function(d) {
-	  	tooltip.style('top', (d3.event.pageY - 60) + 'px')
-	    	.style('left', (d3.event.pageX + 5) + 'px');
+	  	tooltip.style('top', (d3.event.pageY - 70) + 'px')
+	    	.style('left', (d3.event.pageX + 15) + 'px');
 	});
 
 	path.on('mouseout', function(d) {
@@ -185,16 +173,25 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 
 	var tooBig = false;
 
-	if(array.length>7 && svgId.search('#firstPie')==0) {
+	if(panorama){
+		d3.select('#firstPie').attr('width', sceneWidth+340);
+		d3.select('#thirdPie').attr('width', sceneWidth+340);
+	} else if(array.length>7 && svgId.search('#firstPie')==0) {
 		tooBig=true;
 		d3.select('#firstPie').attr('width', sceneWidth+150);
+		d3.select('#thirdPie').attr('width', sceneWidth);
 	} else if (svgId.search('#firstPie')==0){
 		d3.select('#firstPie').attr('width', sceneWidth);
+		d3.select('#thirdPie').attr('width', sceneWidth);
 	}
 
 
 	var labels = [];
 	for(var i=0; i<array.length; i++) labels.push(array[i].label);
+
+	var idColumn = 0;
+	var columnLength;
+	var rowWidth;
 
 	var svg = d3.select(svgId);
 	var legend = svg.selectAll('.legend')
@@ -205,19 +202,41 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 	  	.attr('class', 'legend')
 	  	.style('font-size', '12px')
 	  	.attr('transform', function(d, i) {
-	    
-		    var height = legendRectSize + legendSpacing;
-		    var offset =  height * labels.length / 2;
-		    var xPos = -2 * legendRectSize;
-		    var yPos = i * height - offset;
 
-		    if(tooBig){
+		    if( (panorama  && svgId.search('#firstPie')==0) || (panorama  && svgId.search('#thirdPie')==0) ){
+
+		    	if(svgId.search('#firstPie')==0){
+		    		columnLength = 17;
+		    		rowWidth = 100;
+		    	} else {
+		    		columnLength = 11;
+		    		rowWidth = 140;
+		    	}
+
+		    	var pos = i%columnLength;
+		    	if(pos==0 && i!=0)idColumn++;
+
+		    	var height = legendRectSize + legendSpacing;
+			    var offset =  height * columnLength / 2;
+			    var xPos = -2 * legendRectSize + idColumn*rowWidth;
+			    var yPos = pos * height - offset;
+
 		    	return 'translate(' + (xPos+sWidth + 60) + ',' + (yPos+sHeight/2) + ')';
+
 		    } else {
-		    	return 'translate(' + (xPos+sWidth/2) + ',' + (yPos+sHeight/2) + ')';
+
+		    	var height = legendRectSize + legendSpacing;
+			    var offset =  height * labels.length / 2;
+			    var xPos = -2 * legendRectSize;
+			    var yPos = i * height - offset;
+
+			    if(tooBig  && svgId.search('#firstPie')==0){
+			    	return 'translate(' + (xPos+sWidth + 60) + ',' + (yPos+sHeight/2) + ')';
+			    } else {
+			    	return 'translate(' + (xPos+sWidth/2) + ',' + (yPos+sHeight/2) + ')';
+			    }
 		    }
 
-		    
 		});
 
 	var color = function(d, i) { return array[i].color};
@@ -283,7 +302,7 @@ function obj(label, count, state){
 }
 function setArray(data, key, array, propertyId){
 
-	if(data[key].year == selectedYear){
+	if(data[key].year == selectedYear  || panorama){
 
 		var value = '';
 
@@ -395,9 +414,14 @@ function createMenu(years){
 					d3.selectAll('.selected').attr('class', '');
 					d3.select(this).attr('class', 'selected');
 					
-					//update data
-
 					selectedYear = value;
+					if(selectedYear=='Panorama'){
+						panorama = true;
+					} else {
+						panorama = false;
+					}
+					
+					
 					editTitle(selectedYear);
 
 					resetVariables();
@@ -438,12 +462,6 @@ function resetVariables(){
 	studios = [];
 	categories = [];
 
-	//TODO use it to use the same color for each country
-	/*for(var i=0; i<countries.length;i++){
-		countries[i].count = 0;
-		countries[i].enabled = true;
-	}*/
-
 }
 function editTitle(slYear){
 	d3.select('h1').text('Concours Internationaux de Bourges ' + slYear);
@@ -455,7 +473,7 @@ function displayListingBasedOnSelection(data){
 
 	for(var i=0; i<data.length; i++){
 
-		if(data[i].year.search(selectedYear)==0){
+		if(data[i].year.search(selectedYear)==0 || panorama){
 
 			var country = data[i].country;
 
@@ -494,9 +512,10 @@ function displayListingBasedOnSelection(data){
 			if(award.search('M')==0)award="Mention";
 			if(country=='')country = "Inconnu";
 
-			var str = data[i].name+" "+data[i].firstName+" | "+country+" | "+award;
-			if(cat!='')str += " | "+cat;
+			var str = '';
 
+			str = data[i].name+" "+data[i].firstName+" | "+data[i].year+" | "+award;
+			if(cat!='')str += " | "+cat;
 
 			if(divAlreadyExist){
 
@@ -506,17 +525,21 @@ function displayListingBasedOnSelection(data){
 
 			} else {
 
-				d3.select('#awards').append('div')
-				.attr('id', 'ctry'+countryDivs.length)
-				.style('font-size', '12px')
-				.style('color', 'white')
-				.style('background-color', color)
-				.style('padding', '7px 5px 1px 5px')
-				.style('margin', '0 0 1px 0')
-				.style('line-height', '1em')
-				.append('p')
+				var newDiv = d3.select('#awards').append('div')
+					.attr('id', 'ctry'+countryDivs.length)
+					.style('font-size', '12px')
+					.style('color', 'white')
+					.style('background-color', color)
+					
+					.style('margin', '0 0 1px 0')
+					.style('line-height', '1em');
 
-				.text(str);
+				newDiv.style('padding', '0 0 1px 0')
+					.append('div')
+					.attr('class', 'titleC')
+					.append('p').text(country);
+
+				newDiv.append('p').text(str);
 
 				countryDivs.push(country);
 

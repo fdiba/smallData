@@ -4,6 +4,9 @@ rect.disabled {
 #awards{
 	padding: 0 0 2px 0;
 }
+#awards p{
+	padding: 0 5px;
+}
 #charts{
 	padding: 10px 0 0 0;
 	/*background: red;*/
@@ -25,9 +28,32 @@ rect.disabled {
 	float: left;
 	margin: 0 4px 0 0;
 }
+#tooltip{
+	width: 100px;
+	position: absolute;
+	font-size: 12px;
+	text-align: center;
+	line-height: 1.1em;
+	padding: 5px;
+	background: rgba(255,255,255,0.8);
+	top: 0;
+	left: 0; 
+	display: none;
+	z-index: 10;
+}
 div.selected {
   background: none !important;
   color : #333 !important;
+}
+div.titleC {
+	background: rgba(255,255,255,0.1);
+	margin: 0 0 5px 0;
+	padding: 7px 0 0 0;
+	height: 16px;
+	color : #fff;
+	text-align: center;
+	font-weight: normal;
+	font-size: 1em;
 }
 div.tPie {
 	background: #E7E0CB;
@@ -36,5 +62,4 @@ div.tPie {
 	font-weight: normal;
 	font-size: .6em;
 	font-family: "Exo 2", "Helvetica Neue", Helvetica, sans-serif;
-	/*font-style : italic;*/
 }
