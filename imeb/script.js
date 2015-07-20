@@ -79,7 +79,7 @@ function addTooltip(sWidth, sHeight){
   		.style('width', width+'px')
   		.style('padding', '10px')
   		.style('line-height', '1.1em')
-  		//.style('display', 'none')
+  		.style('display', 'none')
   		.style('z-index', '10');       
   		            
 
@@ -167,10 +167,10 @@ function createPie(sWidth, sHeight, svgId, array){
 
 	});
 
-	/*path.on('mousemove', function(d) {
-	  	tooltip.style('top', (d3.event.pageY - 0) + 'px')
-	    	.style('left', (d3.event.pageX - 0) + 'px');
-	});*/
+	path.on('mousemove', function(d) {
+	  	tooltip.style('top', (d3.event.pageY - 60) + 'px')
+	    	.style('left', (d3.event.pageX + 5) + 'px');
+	});
 
 	path.on('mouseout', function(d) {
 		tooltip.style('display', 'none');
@@ -182,6 +182,16 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 
 	var legendRectSize = 18;
 	var legendSpacing = 4;
+
+	var tooBig = false;
+
+	if(array.length>7 && svgId.search('#firstPie')==0) {
+		tooBig=true;
+		d3.select('#firstPie').attr('width', sceneWidth+150);
+	} else if (svgId.search('#firstPie')==0){
+		d3.select('#firstPie').attr('width', sceneWidth);
+	}
+
 
 	var labels = [];
 	for(var i=0; i<array.length; i++) labels.push(array[i].label);
@@ -201,7 +211,13 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 		    var xPos = -2 * legendRectSize;
 		    var yPos = i * height - offset;
 
-		    return 'translate(' + (xPos+sWidth/2) + ',' + (yPos+sHeight/2) + ')';
+		    if(tooBig){
+		    	return 'translate(' + (xPos+sWidth + 60) + ',' + (yPos+sHeight/2) + ')';
+		    } else {
+		    	return 'translate(' + (xPos+sWidth/2) + ',' + (yPos+sHeight/2) + ')';
+		    }
+
+		    
 		});
 
 	var color = function(d, i) { return array[i].color};
@@ -366,19 +382,8 @@ function createMenu(years){
 		var c = colors(i);
 
 		var btn = d3.select('#nav').append('div')
-			//.text(function () { return objects.length; });
-			.style('display', 'inline-block')
-			//.style('background-color', 'teal')
 			.style('background-color', c)
 			.style('border', '2px solid ' + c)
-			.style('text-align', 'center')
-			.style('font-size', '12px')
-			.style('cursor', 'pointer')
-			
-			.style('color', '#fff')
-			.style('padding', '0 5px')
-			.style('margin-right', '5px')
-			.style('width', '25px')
 			.on('click', function() {
 
 				var value = this.innerHTML;
@@ -506,7 +511,7 @@ function displayListingBasedOnSelection(data){
 				.style('font-size', '12px')
 				.style('color', 'white')
 				.style('background-color', color)
-				.style('padding', '5px 5px 1px 5px')
+				.style('padding', '7px 5px 1px 5px')
 				.style('margin', '0 0 1px 0')
 				.style('line-height', '1em')
 				.append('p')

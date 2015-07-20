@@ -1,30 +1,37 @@
 rect.disabled {
   fill: transparent !important;
 }
+#awards{
+	padding: 0 0 2px 0;
+}
 #charts{
 	padding: 10px 0 0 0;
 	/*background: red;*/
 }
 #nav {
-	padding: 10px 0;
+	padding: 10px 0 0 0;
 	clear: both;
 }
 #nav div {
-	margin: 0 0 2px 0;
+	display: inline-block;
+	color: #fff;
+	padding: 0 5px;
+	margin: 0;
+	font-size: 12px;
+	text-align: center;
+	cursor: pointer;
 }
 #pie01, #pie02, #pie03{
 	float: left;
-	margin: 0 1px 0 0;
+	margin: 0 4px 0 0;
 }
 div.selected {
   background: none !important;
   color : #333 !important;
 }
 div.tPie {
-	width : 394px;
-	/*color: #CB4B19;*/
 	background: #E7E0CB;
-	margin: 0 0 1px 0;
+	margin: 0;
 	text-align: center;
 	font-weight: normal;
 	font-size: .6em;
