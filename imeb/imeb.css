@@ -9,10 +9,9 @@ rect.disabled {
 }
 #charts{
 	padding: 10px 0 0 0;
-	/*background: red;*/
 }
 #nav {
-	padding: 10px 0 0 0;
+	padding: 0;
 	clear: both;
 }
 #nav div {

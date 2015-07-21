@@ -1,7 +1,7 @@
 var table = [];
 var years = [];
 
-var selectedYear = 2009;
+var selectedYear = '2009';
 
 var countries = [];
 var categories = [];
@@ -22,7 +22,7 @@ d3.csv("data/smallData.csv", function(data){
 	//console.log(data);
 	table = data;
 
-	years.push('Panorama');
+	years.push({name: 'Panorama'});
 
 	for(key in data) {
 		
@@ -126,12 +126,19 @@ function createPie(sWidth, sHeight, svgId, array){
 	  	
 	  	.enter()
 	  	.append('path')
-	  	.attr('d', arc)
-	  	.attr('fill', function(d, i) { 
-	  		//console.log(d.data.label);
-	  		return colors(i);
-	    	//return colors(d.data.label);
-		})
+	  	.attr('d', arc);
+
+	  	var color =  function(d, i) {return colors(i);}
+
+	  	if(!panorama || svgId.search('#firstPie')!=0){
+	  		path.attr('stroke', '#FDF6E3')
+	  		.attr('stroke-width', '1');
+	  	} else {
+	  		var c =  function(d, i) {return colors(i+10);}
+	  		path.attr('stroke',  c);
+	  	}
+	  	
+	  	path.attr('fill', color)
 		.each(function(d) {
 			//console.log(d);
 			this._current = d;
@@ -294,12 +301,6 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
   		//.text(function(d) { return d.toUpperCase(); });
   		.text(function(d) { return d; });
 }
-function obj(label, count, state){
-	this.label = label;
-	this.count = count;
-	this.color = 'pink';
-	this.enabled = state;
-}
 function setArray(data, key, array, propertyId){
 
 	if(data[key].year == selectedYear  || panorama){
@@ -342,10 +343,11 @@ function setArray(data, key, array, propertyId){
 
 			}
 
-			if(!hasBeenIndexed)array.push(new obj(value, 1, true));
+			if(!hasBeenIndexed)array.push({label: value, count: 1, enabled: true, color:'red'});
+			//if(!hasBeenIndexed)array.push(new obj(value, 1, true));
 
 		} else {
-			array.push(new obj(value, 1, true));
+			array.push({label: value, count: 1, enabled: true, color:'red'});
 		}
 	}
 
@@ -371,7 +373,7 @@ function setYearsArray(data, key){
 
 		for(var i=0; i<years.length; i++){
 
-			var pos = years[i].search(year);
+			var pos = years[i].name.search(year);
 
 			if(pos>-1) {
 				hasBeenIndexed = true;
@@ -379,10 +381,10 @@ function setYearsArray(data, key){
 			}
 		}
 
-		if(!hasBeenIndexed)years.push(year);
+		if(!hasBeenIndexed)years.push({name: year});
 
 	} else {
-		years.push(year);
+		years.push({name: year});
 	}
 }
 function createMenu(years){
@@ -448,9 +450,9 @@ function createMenu(years){
 				}
 
 			})
-			.text(function () { return years[i]; });
+			.text(function () { return years[i].name; });
 
-		if(years[i] == selectedYear) {
+		if(years[i].name == selectedYear) {
 			btn.attr('class', 'selected');
 		}
 
@@ -464,7 +466,8 @@ function resetVariables(){
 
 }
 function editTitle(slYear){
-	d3.select('h1').text('Concours Internationaux de Bourges ' + slYear);
+	if(panorama) d3.select('h1').text('Concours Internationaux de Bourges');
+	else d3.select('h1').text('Concours Internationaux de Bourges ' + slYear);
 }
 function displayListingBasedOnSelection(data){
 
@@ -525,14 +528,24 @@ function displayListingBasedOnSelection(data){
 
 			} else {
 
-				var newDiv = d3.select('#awards').append('div')
-					.attr('id', 'ctry'+countryDivs.length)
+				var newDiv = d3.select('#awards').append('div');
+
+				var divState;
+				var max = 10;
+				if(countries.length > max) divState = 'closed';
+				else divState = 'open';
+
+				newDiv.attr('id', 'ctry'+countryDivs.length)
+					.attr('class', divState)
+					.style('cursor', 'pointer')
 					.style('font-size', '12px')
 					.style('color', 'white')
 					.style('background-color', color)
-					
+					.style('overflow', 'hidden')
 					.style('margin', '0 0 1px 0')
 					.style('line-height', '1em');
+
+				if(countries.length > max) newDiv.style('height', '23px');
 
 				newDiv.style('padding', '0 0 1px 0')
 					.append('div')
@@ -540,6 +553,28 @@ function displayListingBasedOnSelection(data){
 					.append('p').text(country);
 
 				newDiv.append('p').text(str);
+
+				newDiv.on('click', function() {
+
+					var div = d3.select(this);
+
+
+					if (div.attr('class') === 'closed') {
+					    div.attr('class', 'open');
+
+					    div.transition().duration(750)
+							.style('height', (this.children.length-1) * 18 + 30 + 'px')
+						//});
+
+					} else {
+					    div.attr('class', 'closed');
+					    div.transition().duration(500)
+							.style('height', '23px')
+						
+					}
+
+						console.log(this.children.length);
+				});	
 
 				countryDivs.push(country);
 

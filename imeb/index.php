@@ -19,7 +19,6 @@
 		</div>	
 	</div>
 	<?php include_once("../footer.php") ?>
-	<!--<script src="d3.min.js"></script>-->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
 	<script src="script.js"></script>
 </body>
