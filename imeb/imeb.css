@@ -1,6 +1,11 @@
 rect.disabled {
   fill: transparent !important;
 }
+.borderPie{
+	stroke: #E7E0CB;
+	fill: none;
+	stroke-width: 4;
+}
 #awards{
 	padding: 0 0 2px 0;
 }

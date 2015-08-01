@@ -61,7 +61,6 @@ function createSvg(divName, idName){
 		.attr('id', idName)
 		.attr('width', sceneWidth)
         .attr('height', sceneHeight)
-        .style('background', '#FDF6E3');
 }
 function addTooltip(sWidth, sHeight){
 
@@ -171,6 +170,14 @@ function createPie(sWidth, sHeight, svgId, array){
 		tooltip.style('display', 'none');
 	}); 
 
+	d3.select(svgId)
+
+
+	.append('rect')
+		.attr('class', 'borderPie')
+		.attr('width', sceneWidth)
+	  	.attr('height', sceneHeight);
+
 	addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array);
 }
 function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
@@ -181,15 +188,30 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 	var tooBig = false;
 
 	if(panorama){
+
 		d3.select('#firstPie').attr('width', sceneWidth+340);
+		d3.select('#firstPie').select('.borderPie').attr('width', sceneWidth+340);
+
 		d3.select('#thirdPie').attr('width', sceneWidth+340);
+		d3.select('#thirdPie').select('.borderPie').attr('width', sceneWidth+340);
+
 	} else if(array.length>7 && svgId.search('#firstPie')==0) {
+		
 		tooBig=true;
+		
 		d3.select('#firstPie').attr('width', sceneWidth+150);
+		d3.select('#firstPie').select('.borderPie').attr('width', sceneWidth+150);
+
 		d3.select('#thirdPie').attr('width', sceneWidth);
+		d3.select('#thirdPie').select('.borderPie').attr('width', sceneWidth);
+
 	} else if (svgId.search('#firstPie')==0){
+
 		d3.select('#firstPie').attr('width', sceneWidth);
+		d3.select('#firstPie').select('.borderPie').attr('width', sceneWidth);
+
 		d3.select('#thirdPie').attr('width', sceneWidth);
+		d3.select('#thirdPie').select('.borderPie').attr('width', sceneWidth);
 	}
 
 
@@ -547,7 +569,7 @@ function displayListingBasedOnSelection(data){
 
 				if(countries.length > max) newDiv.style('height', '23px');
 
-				newDiv.style('padding', '0 0 1px 0')
+				newDiv.style('padding', '0 0 2px 0')
 					.append('div')
 					.attr('class', 'titleC')
 					.append('p').text(country);
