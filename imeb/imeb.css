@@ -18,6 +18,8 @@ rect.disabled {
 #nav {
 	padding: 0;
 	clear: both;
+	max-width: 1150px;
+	/*background: red;*/
 }
 #nav div {
 	display: inline-block;
