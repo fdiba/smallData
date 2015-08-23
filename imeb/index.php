@@ -8,8 +8,17 @@
 	<?php include_once("../analyticstracking.php") ?>
 </head>
 <body>
+	<header>
+		<nav id="top-bar">
+			<h1 id="btn1"><a href="../">WEBODROME</a></h1>
+			<ul>
+				<li><a target="_blank" href="https://github.com/fdiba"><img src="../images/net/github.png" alt=""></a></li>
+				<li><a target="_blank" href="http://twitter.com/webodrome"><img src="../images/net/twitter.png" alt=""></a></li>
+			</ul>
+		</nav>
+	</header>
 	<div class="container">
-		<h1>Concours Internationaux de Bourges</h1>
+		<h1 id="mainTitle">Concours Internationaux de Bourges</h1>
 		<h2>Oeuvres primées</h2>
 		<div id="nav"></div>
 		<div id="charts">

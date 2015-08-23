@@ -60,7 +60,7 @@ function createSvg(divName, idName){
 		.append('svg')
 		.attr('id', idName)
 		.attr('width', sceneWidth)
-        .attr('height', sceneHeight)
+        .attr('height', sceneHeight);
 }
 function addTooltip(sWidth, sHeight){
 
@@ -170,10 +170,7 @@ function createPie(sWidth, sHeight, svgId, array){
 		tooltip.style('display', 'none');
 	}); 
 
-	d3.select(svgId)
-
-
-	.append('rect')
+	d3.select(svgId).append('rect')
 		.attr('class', 'borderPie')
 		.attr('width', sceneWidth)
 	  	.attr('height', sceneHeight);
@@ -488,8 +485,8 @@ function resetVariables(){
 
 }
 function editTitle(slYear){
-	if(panorama) d3.select('h1').text('Concours Internationaux de Bourges');
-	else d3.select('h1').text('Concours Internationaux de Bourges ' + slYear);
+	if(panorama) d3.select('#mainTitle').text('Concours Internationaux de Bourges');
+	else d3.select('#mainTitle').text('Concours Internationaux de Bourges ' + slYear);
 }
 function displayListingBasedOnSelection(data){
 

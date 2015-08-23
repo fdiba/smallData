@@ -1,3 +1,46 @@
+@import url(http://fonts.googleapis.com/css?family=Playball|Slabo+27px|Roboto:400,700);
+
+/*navigation*/
+header{
+	/*width: 100%;*/
+	background: #000;
+	border-bottom: 1px solid #333;
+	height: 35px;
+}
+header nav ul {
+	float: right;
+    display: inline-block;
+    padding: 6px 20px 2px 0;
+}
+header nav ul li {
+	padding-left: 14px;
+	float: right;
+}
+header h1#btn1{
+
+	padding: 8px 0 4px 20px;
+	float: left;
+    display: inline-block;
+    color: white;
+    font-size: 1.4em;
+    font-family: 'Roboto', sans-serif;
+    /*font-weight: normal;*/
+}
+#btn1 a{
+	text-decoration: none;
+	color: #fff;
+}
+
+
+h1#mainTitle{
+	font-family: 'Roboto Slab', "Helvetica Neue", Helvetica, sans-serif;
+  	font-weight: 700;
+  	color: #f08f67;
+  	font-size: 1.75em;
+  	margin-bottom: .4em;
+  	line-height : 1em;
+}
+
 rect.disabled {
   fill: transparent !important;
 }

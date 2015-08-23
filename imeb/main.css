@@ -24,7 +24,7 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 body {
   font-family: "Exo 2", "Helvetica Neue", Helvetica, sans-serif;
   font-weight: 300;
-  font-size: 1.2em;
+  /*font-size: 1.2em;*/
   line-height: 1.2em;
   background: #FCFCFA;
   color: #475B62;
@@ -34,7 +34,7 @@ strong {
   font-weight: 600;
 }
  
-h1, h2, h3, h4, h5, h6 {
+h2, h3, h4, h5, h6 {
   font-family: 'Roboto Slab', "Helvetica Neue", Helvetica, sans-serif;
   font-weight: 700;
   color: #f08f67;
