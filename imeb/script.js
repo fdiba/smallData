@@ -531,6 +531,10 @@ function displayListingBasedOnSelection(data){
 
 			var cat = data[i].category;
 			var award = data[i].award;
+			
+			var addon = data[i].addon;
+			if(addon!=="") award += " "+addon;
+
 			if(award.search('M')==0)award="Mention";
 			if(country=='')country = "Inconnu";
 
