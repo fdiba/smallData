@@ -23,6 +23,7 @@
 		<div id="chart"></div>	
 	</div>
 	<?php include_once("../../footer.php") ?>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
 	<script src="sankey.js"></script>
 	<script src="script.js"></script>

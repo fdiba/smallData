@@ -2,7 +2,7 @@ var data = {};
 var nodes = [];
 var links = [];
 var colors;
-var svgWidth;
+var margin;
 
 d3.csv("../data/smallData.csv", function(data){
 
@@ -13,11 +13,27 @@ d3.csv("../data/smallData.csv", function(data){
   }
 
   createData();
-  sankeyStuff();
+
+  margin = {top: 20, right: 1, bottom: 20, left: 41};
+
+  var iniWidth = 960;
+  var svgWidth = iniWidth - margin.left - margin.right;
+
+
+  var sWidth = $(window).width();
+
+  if(sWidth - 75 < svgWidth){
+    svgWidth = svgWidth - 250;
+    // d3.select('header').style('background', 'pink');
+  }
+
+  
+
+  createSankeyDiagram(svgWidth);
 
   d3.select("svg")
   //.style('background', '#FDF6E3')
-  .attr('width', svgWidth+150+'px');
+  .attr('width', (svgWidth+150) + 'px');
 
   var max = links.length;
   
@@ -28,8 +44,8 @@ d3.csv("../data/smallData.csv", function(data){
   d3.selectAll('.link').style('stroke', function(d, i){
     return colors(i);
   });
-});
 
+});
 
 function setSankeyNodes(data, key){
 
@@ -138,7 +154,7 @@ function setSankeyNodes(data, key){
 function createData(){
   data = {'nodes': nodes, 'links': links};
 }
-function sankeyStuff(){
+function createSankeyDiagram(svgWidth){
 
   var max = data.nodes.length;
   
@@ -146,9 +162,6 @@ function sankeyStuff(){
     .domain([0, max*.25, max*.5, max*.75, max])
     .range(['#5dbf8c', '#8ecb84', '#bad97a', '#dab470', '#f08f67']);
 
-  // Some setup stuff.
-  var margin = {top: 20, right: 1, bottom: 20, left: 41};
-  svgWidth = 960 - margin.left - margin.right;
   var height = 1500 - margin.top - margin.bottom;
   var color = d3.scale.category20();
 
@@ -262,4 +275,5 @@ function sankeyStuff(){
     .text(function (d) {
       return d.name;
     });
+
 }
