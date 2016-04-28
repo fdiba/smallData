@@ -217,6 +217,7 @@ void draw() {
       n.display();
     } else {
       n.updateBox2d();
+      n.editVelBasedOnNoiseFieldBox2d(noiseScale, noiseStrength);
       n.checkEdgesBox2d();
       n.displayBox2d();
     }
