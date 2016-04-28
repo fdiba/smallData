@@ -2,10 +2,18 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.util.Date;
+
 import de.bezier.data.sql.*;
+import org.jbox2d.collision.shapes.*;
+import org.jbox2d.common.*;
+import org.jbox2d.dynamics.*;
+import shiffman.box2d.*;
 
 MySQL dbconnection;
 
+Box2DProcessing box2d;
+
+ArrayList<String[]> records;
 ArrayList<Node> nodes;
 
 boolean fsMode;
@@ -14,11 +22,24 @@ boolean displayNoiseField = false;
 float noiseScale = 50f; //50: 1 to infiny
 float noiseStrength = 1; //1: 1 to infiny
 
+boolean isDead;
+
+int maxCreatures;
+int pointer;
+
+boolean useNoise;
+
 void setup() {
 
   size(800, 600);
   frame.setLocation(20, 40);
   frame.setResizable(true);
+
+  box2d = new Box2DProcessing(this);
+  box2d.createWorld();
+  box2d.setGravity(0, 0);
+
+  maxCreatures = 200;
 
   String lines[] = loadStrings("access.txt");
   String user = lines[0];
@@ -33,6 +54,7 @@ void setup() {
     //dbconnection.query( "SELECT COUNT(*) FROM artist" );
     dbconnection.query( "SELECT firstName, id, name FROM artist" );
 
+    records = new ArrayList<String[]>();
     nodes = new ArrayList<Node>();
 
     while (dbconnection.next ()) {
@@ -48,12 +70,27 @@ void setup() {
       catch (IOException ie) {
         println(ie);
       }
-      nodes.add(new Node(id, fName, name));
+      String[] arr = {
+        str(id), fName, name
+      };
+      records.add(arr);
+      //nodes.add(new Node(id, fName, name));
       //println(id, " ", fName, " ", name);
     }
   } else {
     println("connection failed !");
   }
+
+  if (maxCreatures>records.size())maxCreatures=records.size();
+
+  for (int i=0; i<maxCreatures; i++) {
+    String[] arr = records.get(i);
+    nodes.add(new Node(Integer.parseInt(arr[0]), arr[1], arr[2]));
+  }
+
+  pointer = maxCreatures;
+
+  println("nodes size: ", nodes.size());
 }
 void keyPressed() {
   if (key == 'f') {
@@ -113,23 +150,87 @@ void keyPressed() {
     }
   } else if (key == 'b') {
     displayNoiseField = !displayNoiseField;
+  } else if (key == 'n') {
+    useNoise = !useNoise;
+    if (useNoise) {
+      for (int i=0; i<nodes.size (); i++) {
+        Node n = nodes.get(i);
+        n.loc.x = n.pos.x;
+        n.loc.y = n.pos.y;
+      }
+    } else {
+      for (int i=0; i<nodes.size (); i++) {
+        Node n = nodes.get(i);
+
+        box2d.destroyBody(n.body);
+
+        BodyDef bd = new BodyDef();
+        bd.type = BodyType.DYNAMIC;
+
+        bd.position = box2d.coordPixelsToWorld(n.loc.x, n.loc.y);
+        n.body = box2d.world.createBody(bd);
+
+        CircleShape cs = new CircleShape();
+        cs.m_radius = box2d.scalarPixelsToWorld(n.diam/2);
+
+        FixtureDef fd = new FixtureDef();
+        fd.shape = cs;
+
+        fd.density = n.density;
+        fd.friction = n.friction;
+        fd.restitution = n.restitution;
+
+        n.body.createFixture(fd);
+
+        n.body.setLinearVelocity(n.linearVelocity);
+        n.body.setAngularVelocity(n.angularVelocity);
+      }
+    }
   } else if (key == 's') {
     saveIMG();
   }
 }
 void draw() {
+
   background(225);
+
+  box2d.step();
 
   if (displayNoiseField) displayNoiseField();
 
+  while (box2d.world.getBodyCount () < maxCreatures) {
+    String[] arr = records.get(pointer);
+    nodes.add(new Node(Integer.parseInt(arr[0]), arr[1], arr[2]));
+    pointer++;
+    if (pointer>=nodes.size())pointer=0;
+  }
+
   noStroke();
 
-  for (int i=0; i<200; i++) {
+  for (int i=0; i<nodes.size (); i++) {
     Node n = nodes.get(i);
-    n.update();
-    n.editVelBasedOnNoiseField(noiseScale, noiseStrength);
-    n.checkEdges();
-    n.display();
+
+    if (useNoise) {
+      n.update();
+      n.editVelBasedOnNoiseField(noiseScale, noiseStrength);
+      n.checkEdges();
+      n.display();
+    } else {
+      n.updateBox2d();
+      n.checkEdgesBox2d();
+      n.displayBox2d();
+    }
+  }
+
+  if (!useNoise)removeDeadNodes();
+}
+void removeDeadNodes() {
+
+  for (int i = nodes.size ()-1; i >= 0; i--) {
+    if (nodes.get(i).isDead) {
+      box2d.destroyBody(nodes.get(i).body);
+      nodes.remove(i);
+    }
   }
 }
 void saveIMG() {
