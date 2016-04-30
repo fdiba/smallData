@@ -53,10 +53,12 @@ class Node {
     FixtureDef fd = new FixtureDef();
     fd.shape = cs;
 
-    fd.density = 10f; //1 how heavy it is in relation to its area
-    fd.friction = .3; //.3 how slippery it is
-    fd.restitution = .5; //.5 how bouncy the fixture is
+    fd.density = 10.; //1 how heavy it is in relation to its area
+    fd.friction = 1.; //.3 how slippery it is
+    fd.restitution = 0; //.5 how bouncy the fixture is
 
+    //fd.filter.groupIndex = 0;
+  
     body.createFixture(fd);
 
     linearVelocity = new Vec2(random(-5, 5), random(-5, 5));
@@ -71,6 +73,39 @@ class Node {
     vel = new PVector(random(-1, 1), random(-1, 1));
     vel.normalize();
     speed = random(1, 3);
+  }
+  void resetBody(){
+    
+    box2d.destroyBody(body);
+    
+    BodyDef bd = new BodyDef();
+    bd.type = BodyType.DYNAMIC;
+
+    bd.position = box2d.coordPixelsToWorld(pos.x, pos.y);
+    body = box2d.world.createBody(bd);
+
+    CircleShape cs = new CircleShape();
+    diam*=2;
+    cs.m_radius = box2d.scalarPixelsToWorld(diam/2);
+
+    FixtureDef fd = new FixtureDef();
+    fd.shape = cs;
+
+    fd.density = 10f; //1 how heavy it is in relation to its area
+    fd.friction = .3; //.3 how slippery it is
+    fd.restitution = .5; //.5 how bouncy the fixture is
+
+    body.createFixture(fd);
+
+    linearVelocity = new Vec2(random(-5, 5), random(-5, 5));
+    body.setLinearVelocity(linearVelocity);
+    //angularVelocity = random(-1, 1);
+    angularVelocity = 0f;
+    body.setAngularVelocity(angularVelocity);
+    
+  }
+  void applyForce(Vec2 v) {
+    body.applyForce(v, body.getWorldCenter());
   }
   boolean contains(float x, float y) {
     Vec2 worldPoint = box2d.coordPixelsToWorld(x, y);

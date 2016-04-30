@@ -41,6 +41,7 @@ float maxDist;
 boolean pause;
 
 int sl_node;
+String sl_ctry = "";
 
 void setup() {
 
@@ -59,12 +60,12 @@ void setup() {
   //------------------------------------------------------------------->
   //box2d.listenForCollisions();
 
-  int thickness = 2;
+  int thickness = 6;
   boundaries = new ArrayList<Boundary>();
-  boundaries.add(new Boundary(width/2, height, width, thickness));
-  boundaries.add(new Boundary(width/2, 0, width, thickness));
-  boundaries.add(new Boundary(0, height/2, thickness, height));
-  boundaries.add(new Boundary(width, height/2, thickness, height));
+  boundaries.add(new Boundary(width/2, height+thickness/2, width, thickness));
+  boundaries.add(new Boundary(width/2, 0-thickness/2, width, thickness));
+  boundaries.add(new Boundary(0-thickness/2, height/2, thickness, height));
+  boundaries.add(new Boundary(width+thickness/2, height/2, thickness, height));
 
   maxCreatures = 100; //------------------------------------------------>
   sl_node = maxCreatures+1;
@@ -121,10 +122,6 @@ void setup() {
   }
 
   pointer = maxCreatures;
-
-
-  //NGrp grp = new NGrp(nodes.get(0), nodes.get(1));
-  //groupes.add(grp);
 }
 void draw() {
 
@@ -134,8 +131,7 @@ void draw() {
 
   if (displayNoiseField) displayNoiseField();
 
-  //while (box2d.world.getBodyCount () < maxCreatures) {
-  while (nodes.size() < maxCreatures) {
+  while (nodes.size () < maxCreatures) {
     String[] arr = records.get(pointer);
     nodes.add(new Node(Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
     pointer++;
@@ -160,7 +156,6 @@ void draw() {
         float dist = maxDist;
         Node f = null;
 
-
         if (i!=j) {
           Node o = nodes.get(j);
 
@@ -178,8 +173,6 @@ void draw() {
         }
 
         if (f!=null) {
-          //stroke(214, 25, 80);
-          //line(n.pos.x, n.pos.y, f.pos.x, f.pos.y);
 
           if (groupes.size()>0) {
 
@@ -187,15 +180,7 @@ void draw() {
 
             if (grp!=null) { //s'ajouter seulement si f n'est pas seul
 
-                if (!f.alone) {
-
-                if (grp.gNodes.size()==2) {
-                  grp.addNode(n);
-                } else {
-                  grp.addNode2(n);
-                }
-              } else { //le groupe existe mais ni f ni n n'en font partie car trop éloignés
-              }
+                if (!f.alone) grp.addNode(n);
             } else { //create new grp if group do not exist
               NGrp g = new NGrp(n, f);
               groupes.add(g);
@@ -224,7 +209,10 @@ void draw() {
   }
 
   if (useBox2d) {
-    for (NGrp g : groupes) g.display();
+    for (NGrp g : groupes) {
+      g.update();
+      g.display();
+    }
     for (Boundary b : boundaries) b.display();
     removeDeadNodes();
   }
@@ -297,6 +285,14 @@ void checkNodeInfo() {
         if (sl_node != n.id) {
           println(n.id, n.fName, n.name, n.country);
           sl_node = n.id;
+        }
+      }
+    }
+    for (NGrp g : groupes) {
+      if (g.contains(mouseX, mouseY)) {
+        if (!sl_ctry.equals(g.name)) {
+          println(g.name, g.gNodes.size());
+          sl_ctry = g.name;
         }
       }
     }
