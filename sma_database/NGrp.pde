@@ -1,7 +1,10 @@
 class NGrp {
 
   String name;
+
+  //TODO remove it!
   ArrayList<Node> gNodes;
+
   ArrayList<DistanceJoint> joints;
 
   float len;
@@ -43,24 +46,72 @@ class NGrp {
     //println(dj.getBodyA());
 
     joints.add(dj);
-    //box2d.world.destroyJoint(dj);
+  }
+  void addNode2(Node n) {
+
+    float maxDist = 999;
+    float dist = maxDist;
+    int joint_id = -1;
+    DistanceJoint old_dj = null;
+
+    for (int i=0; i<joints.size (); i++) {
+
+      DistanceJoint j = joints.get(i);
+
+      Vec2 pos = box2d.getBodyPixelCoord(j.getBodyA());
+      Vec2 pos2 = box2d.getBodyPixelCoord(j.getBodyB());
+
+      pos.subLocal(pos2);
+      pos.mulLocal(.5);
+      pos.addLocal(pos2);
+
+      float distance = sqrt ((pos.x - n.pos.x)*(pos.x - n.pos.x) + (pos.y - n.pos.y)*(pos.y - n.pos.y));
+      if (distance < dist) {
+        dist = distance;
+        joint_id = i;
+        old_dj = j;
+      }
+
+      fill(127);
+      ellipse(pos.x, pos.y, 10, 10);
+    }
+
+
+    if (joint_id>=0) {
+      
+      n.alone = false;
+      n.setNode();
+      
+      createNewJoint(old_dj.getBodyA(), n.body);
+      createNewJoint(old_dj.getBodyB(), n.body);
+      
+      joints.remove(joint_id);  
+      box2d.world.destroyJoint(old_dj);
+      
+      
+      
+      //pause = true;
+    }
+    //find les deux body les plus proches
+    //casser leur conection
+    //mettre en pause
+    //ajouter la node
+    //créer deux joints
   }
   void addNode(Node n) {
 
     n.alone = false;
-
     n.setNode();
 
     Node pn = gNodes.get(gNodes.size()-1);
 
     gNodes.add(n);
     createNewJoint(pn.body, n.body);
-    
-    if(gNodes.size()==3){
+
+    if (gNodes.size()==3) {
       Node fn = gNodes.get(0);
       createNewJoint(n.body, fn.body);
     }
-    
   }
   void display() {
 

@@ -38,6 +38,10 @@ int world_offset;
 
 float maxDist;
 
+boolean pause;
+
+int sl_node;
+
 void setup() {
 
   size(800, 600);
@@ -62,7 +66,8 @@ void setup() {
   boundaries.add(new Boundary(0, height/2, thickness, height));
   boundaries.add(new Boundary(width, height/2, thickness, height));
 
-  maxCreatures = 200;
+  maxCreatures = 100; //------------------------------------------------>
+  sl_node = maxCreatures+1;
 
   String lines[] = loadStrings("access.txt");
   String user = lines[0];
@@ -125,11 +130,12 @@ void draw() {
 
   background(225);
 
-  box2d.step();
+  if (!pause) box2d.step();
 
   if (displayNoiseField) displayNoiseField();
 
-  while (box2d.world.getBodyCount () < maxCreatures) {
+  //while (box2d.world.getBodyCount () < maxCreatures) {
+  while (nodes.size() < maxCreatures) {
     String[] arr = records.get(pointer);
     nodes.add(new Node(Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
     pointer++;
@@ -185,6 +191,8 @@ void draw() {
 
                 if (grp.gNodes.size()==2) {
                   grp.addNode(n);
+                } else {
+                  grp.addNode2(n);
                 }
               } else { //le groupe existe mais ni f ni n n'en font partie car trop éloignés
               }
@@ -216,10 +224,12 @@ void draw() {
   }
 
   if (useBox2d) {
-    updateAndDisplayNGrp();
-    removeDeadNodes();
+    for (NGrp g : groupes) g.display();
     for (Boundary b : boundaries) b.display();
+    removeDeadNodes();
   }
+
+  if (pause)checkNodeInfo();
 
   if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), "records:", records.size());
 }
@@ -243,12 +253,6 @@ void removeNodeFromRecord(Node n) {
       records.remove(i);
       break;
     }
-  }
-}
-void updateAndDisplayNGrp() {
-  for (NGrp g : groupes) {
-    //g.update();
-    g.display();
   }
 }
 void removeDeadNodes() {
@@ -283,6 +287,18 @@ void displayNoiseField() {
       y2 = y + sin (angle)*steps;
 
       line (x, y, x2, y2);
+    }
+  }
+}
+void checkNodeInfo() {
+  if (pause) {
+    for (Node n : nodes) {
+      if (n.contains(mouseX, mouseY)) {
+        if (sl_node != n.id) {
+          println(n.id, n.fName, n.name, n.country);
+          sl_node = n.id;
+        }
+      }
     }
   }
 }
@@ -382,58 +398,18 @@ void keyPressed() {
         n.body.setAngularVelocity(n.angularVelocity);
       }
     }
+  } else if (key == ' ') {
+    pause = !pause;
   } else if (key == 's') {
     saveIMG();
   }
 }
 //--------------------------- collision ------------//
-/*void endContact(Contact cp) {
+/*
+void endContact(Contact cp) {
  //println("endContact");
  }
  void beginContact(Contact cp) {
- 
  //println("collision", random(255));
- 
- Fixture f1 = cp.getFixtureA();
- Fixture f2 = cp.getFixtureB();
- 
- Body b1 = f1.getBody();
- Body b2 = f2.getBody();
- 
- Object o1 = b1.getUserData();
- Object o2 = b2.getUserData();
- 
- 
- if (o1.getClass() == Node.class && o2.getClass() == Node.class) {
- Node n1 = (Node) o1;
- Node n2 = (Node) o2;
- checkCountry(n1, n2);
  }
- }*/
-void checkCountry(Node n1, Node n2) {
-
-  if (n1.country.equals(n2.country) && n1.alone && n2.alone) {
-
-    n1.setNode();
-    n2.setNode();
-
-
-    if (groupes.size()>0) {
-
-      NGrp grp = new NGrp(n1, n2);
-      groupes.add(grp);
-      //check if group exist
-      //s'il n'existe pas le créer
-      //s'il existe ajouter la node au grp seulement si une des deux nodes fait partie du groupe
-      //si aucune des deux nodes ne fait partie du groupe --> les faire suivre le groupe en question
-    } else {
-
-      NGrp grp = new NGrp(n1, n2);
-      groupes.add(grp);
-    }
-  } else {
-    n1.editColor(color(40, 209, 255));
-    n2.editColor(color(40, 209, 255));
-  }
-}
-
+ */

@@ -25,9 +25,6 @@ class Node {
 
   Node(int _id, String _fName, String _name, String _country) {
 
-    density = 10f;
-    friction = .3;
-    restitution = .5;
     alone = true;
 
     diam = 6f;
@@ -56,9 +53,9 @@ class Node {
     FixtureDef fd = new FixtureDef();
     fd.shape = cs;
 
-    fd.density = density; //1 how heavy it is in relation to its area
-    fd.friction = friction; //.3 how slippery it is
-    fd.restitution = restitution; //.5 how bouncy the fixture is
+    fd.density = 10f; //1 how heavy it is in relation to its area
+    fd.friction = .3; //.3 how slippery it is
+    fd.restitution = .5; //.5 how bouncy the fixture is
 
     body.createFixture(fd);
 
@@ -75,7 +72,14 @@ class Node {
     vel.normalize();
     speed = random(1, 3);
   }
+  boolean contains(float x, float y) {
+    Vec2 worldPoint = box2d.coordPixelsToWorld(x, y);
+    Fixture f = body.getFixtureList();
+    boolean inside = f.testPoint(worldPoint);
+    return inside;
+  }
   void setNode() {
+        
     editColor(color(40, 209, 89));
     alone = false;
     linearVelocity.x  = 0;
