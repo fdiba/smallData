@@ -24,7 +24,7 @@ class NGrp {
     pos = new Vec2();
 
     diam = 15;
-    len = 20;
+    len = 22; //20
 
     tx = random(1000);
     ty = tx+1000;

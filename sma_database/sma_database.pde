@@ -42,8 +42,7 @@ float maxDist;
 boolean pause;
 boolean isOn;
 
-int sl_node;
-String sl_ctry = "";
+Console cs;
 
 void setup() {
 
@@ -58,6 +57,8 @@ void setup() {
   box2d = new Box2DProcessing(this);
   box2d.createWorld();
   box2d.setGravity(0, 0);
+  
+  cs = new Console();
 
   //------------------------------------------------------------------->
   //box2d.listenForCollisions();
@@ -70,7 +71,6 @@ void setup() {
   boundaries.add(new Boundary(width+thickness/2, height/2, thickness, height));
 
   maxCreatures = 100; //------------------------------------------------>
-  sl_node = maxCreatures+1;
 
   String lines[] = loadStrings("access.txt");
   String user = lines[0];
@@ -164,8 +164,6 @@ void draw() {
     }
   }
 
-
-
   if (useBox2d) {
     for (NGrp g : groupes) {
       g.update();
@@ -176,6 +174,8 @@ void draw() {
   }
 
   if (pause)checkNodeInfo();
+  
+  cs.display();
 
   if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), "records:", records.size());
 }
@@ -210,7 +210,11 @@ void createConnexion(Node n, int i) {
 
         if (grp!=null) { //s'ajouter seulement si f n'est pas seul
 
-            if (!f.alone) grp.addNode(n, f);
+            if (!f.alone) {
+              String str = str(n.id) + " " + n.fName + " " + n.name + " " + n.country;
+              cs.update(str);
+              grp.addNode(n, f);
+            }
         } else { //create new grp if group do not exist
           NGrp g = new NGrp(n, f);
           groupes.add(g);
@@ -241,11 +245,8 @@ NGrp checkGrps(String ctryName) {
   return grp;
 }
 void removeNodeFromRecord(Node n) {
-
   String str_id =  str(n.id);
-
   for (int i=0; i<records.size (); i++) {
-
     if (records.get(i)[0].equals(str_id)) {
       records.remove(i);
       break;
@@ -291,17 +292,17 @@ void checkNodeInfo() {
   if (pause) {
     for (Node n : nodes) {
       if (n.contains(mouseX, mouseY)) {
-        if (sl_node != n.id) {
-          println(n.id, n.fName, n.name, n.country);
-          sl_node = n.id;
+        if (!str(n.id).equals(cs.message)) {
+          String str = str(n.id) + " " + n.fName + " " + n.name + " " + n.country;
+          cs.update(str);
         }
       }
     }
     for (NGrp g : groupes) {
       if (g.contains(mouseX, mouseY)) {
-        if (!sl_ctry.equals(g.name)) {
-          println(g.name, g.gNodes.size());
-          sl_ctry = g.name;
+        if (!g.name.equals(cs.message)) {
+          String str = g.name + " " + g.gNodes.size();
+          cs.update(str);
         }
       }
     }
