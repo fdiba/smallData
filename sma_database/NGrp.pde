@@ -15,36 +15,40 @@ class NGrp {
 
   float G = 0;
 
+  float tx, ty;
+
+  int firstRaw = 10;
+
   NGrp(Node n1, Node n2) {
 
     pos = new Vec2();
-    
+
     diam = 15;
     len = 20;
-    
-    
+
+    tx = random(1000);
+    ty = tx+1000;
 
     name = n1.country;
 
     n1.alone = false;
     n2.alone = false;
-    
+
     createBody(diam/2, n1, n2);
 
     n1.resetBody();
     n2.resetBody();
-    
+
     joints = new ArrayList<DistanceJoint>();
 
     gNodes = new ArrayList<Node>();
     gNodes.add(n1);
     gNodes.add(n2);
-    
-    createJoint(body, n1.body);
-    createJoint(body, n2.body);
-        
+
+    createJoint(body, n1.body, 0);
+    createJoint(body, n2.body, 0);
   }
-  void addNode(Node n) {
+  void addNode(Node n, Node f) {
 
     n.alone = false;
     n.setNode();
@@ -53,10 +57,24 @@ class NGrp {
 
     gNodes.add(n);
 
-    createJoint(body, n.body);
+    if (gNodes.size()>firstRaw) { //DO SOMETHING ELSE
 
+      len=25;
+      createJoint(body, n.body, 0);
+
+      //Body b= gNodes.get(gNodes.size()-(firstRaw+1)).body;
+
+      //createJoint(f.body, n.body, 0);
+
+
+      //Body b= gNodes.get(gNodes.size()-11).body;
+      //len=10;
+      //createJoint(b, n.body, 0);
+    } else {
+      createJoint(body, n.body, 0);
+    }
   }
-  void createJoint(Body body, Body n_body) {
+  void createJoint(Body body, Body n_body, float frequencyHz) {
 
     DistanceJointDef djd = new DistanceJointDef();
     // Connection between previous particle and this one
@@ -66,7 +84,7 @@ class NGrp {
     djd.length = box2d.scalarPixelsToWorld(len);
 
     // These properties affect how springy the joint is 
-    djd.frequencyHz = 0;  // Try a value less than 5 (0 for no elasticity)
+    djd.frequencyHz = frequencyHz;  // Try a value less than 5 (0 for no elasticity)
     djd.dampingRatio = 1; // Ranges between 0 and 1
 
       // Make the joint.  Note we aren't storing a reference to the joint ourselves anywhere!
@@ -148,16 +166,19 @@ class NGrp {
       Vec2 xx = n.pos.sub(v);
       xx.normalize();
       xx.mulLocal(diam+1.1);
-      
+
       //n.body.setTransform(xx, 0);
       //n.linearVelocity = xx;
       //n.body.setLinearVelocity(n.linearVelocity);
-      
+
       xx.addLocal(v);
 
-      noFill();
-      stroke(0);
-      ellipse(xx.x, xx.y, 5, 5);
+
+      if (gNodes.size()<firstRaw) {
+        noFill();
+        stroke(0);
+        ellipse(xx.x, xx.y, 5, 5);
+      }
     }
 
     if (body!=null) {
@@ -168,8 +189,18 @@ class NGrp {
 
       pos = box2d.getBodyPixelCoord(body);
 
+
+      //float x = map(noise(tx), 0, 1, 0, width);
+      //float y = map(noise(ty), 0, 1, 0, height);
+
+      float x = map(noise(tx), 0, 1, -25, 25);
+      float y = map(noise(ty), 0, 1, -25, 25);
+
+      tx += 0.01;
+      ty += 0.01;
+
       //linearVelocity = new Vec2(random(-1, 1), random(-1, 1));
-      linearVelocity = new Vec2(1, 0);
+      linearVelocity = new Vec2(x, y);
       body.setLinearVelocity(linearVelocity);
 
 
@@ -182,10 +213,11 @@ class NGrp {
        body.setLinearVelocity(linearVelocity);*/
     }
 
-
-    fill(0, 0, 255);
-    noStroke();
-    ellipse(v.x, v.y, 5, 5);
+    if (gNodes.size()<firstRaw) {
+      fill(0, 0, 255);
+      noStroke();
+      ellipse(v.x, v.y, 5, 5);
+    }
   }
   Vec2 attract(Node m) {
 
@@ -225,10 +257,9 @@ class NGrp {
       Vec2 pos1 = box2d.getBodyPixelCoord(j.getBodyA());
       Vec2 pos2 = box2d.getBodyPixelCoord(j.getBodyB());
 
-      stroke(255, 0, 0);
+      stroke(255, 0 , 0);
       line(pos1.x, pos1.y, pos2.x, pos2.y);
     }
-
   }
   boolean contains(float x, float y) {
 

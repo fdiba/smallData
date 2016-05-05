@@ -20,6 +20,7 @@ ArrayList<Boundary> boundaries;
 ArrayList<String[]> records;
 ArrayList<Node> nodes;
 ArrayList<NGrp> groupes;
+ArrayList<Node> notAloneNodes;
 
 boolean fsMode;
 boolean displayNoiseField = false;
@@ -39,6 +40,7 @@ int world_offset;
 float maxDist;
 
 boolean pause;
+boolean isOn;
 
 int sl_node;
 String sl_ctry = "";
@@ -87,7 +89,8 @@ void setup() {
     groupes = new ArrayList<NGrp>();
     records = new ArrayList<String[]>();
     nodes = new ArrayList<Node>();
-
+    notAloneNodes = new ArrayList<Node>();
+    
     while (dbconnection.next ()) {
 
       int id = dbconnection.getInt("id");
@@ -151,54 +154,7 @@ void draw() {
     } else {
       n.updateBox2d();
 
-      for (int j=0; j<nodes.size (); j++) {
-
-        float dist = maxDist;
-        Node f = null;
-
-        if (i!=j) {
-          Node o = nodes.get(j);
-
-          if (n.alone) { //it is looking for a grp
-
-            if (n.country.equals(o.country)) {
-
-              float distance = sqrt ((o.pos.x - n.pos.x)*(o.pos.x - n.pos.x) + (o.pos.y - n.pos.y)*(o.pos.y - n.pos.y));
-              if (distance < dist) {
-                f = nodes.get(j);
-                dist = distance;
-              }
-            }
-          }
-        }
-
-        if (f!=null) {
-
-          if (groupes.size()>0) {
-
-            NGrp grp = checkGrps(n.country);
-
-            if (grp!=null) { //s'ajouter seulement si f n'est pas seul
-
-                if (!f.alone) grp.addNode(n);
-            } else { //create new grp if group do not exist
-              NGrp g = new NGrp(n, f);
-              groupes.add(g);
-              n.setNode();
-              f.setNode();
-              removeNodeFromRecord(n);
-              removeNodeFromRecord(f);
-            }
-          } else { // create first grp
-            NGrp g = new NGrp(n, f);
-            groupes.add(g);
-            n.setNode();
-            f.setNode();
-            removeNodeFromRecord(n);
-            removeNodeFromRecord(f);
-          }
-        }
-      }
+      if (isOn)createConnexion(n, i);
 
       if (n.alone) {
         n.editVelBasedOnNoiseFieldBox2d(noiseScale, noiseStrength);
@@ -207,6 +163,8 @@ void draw() {
       n.displayBox2d();
     }
   }
+
+
 
   if (useBox2d) {
     for (NGrp g : groupes) {
@@ -220,6 +178,57 @@ void draw() {
   if (pause)checkNodeInfo();
 
   if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), "records:", records.size());
+}
+void createConnexion(Node n, int i) {
+
+  for (int j=0; j<nodes.size (); j++) {
+
+    float dist = maxDist;
+    Node f = null;
+
+    if (i!=j) {
+      Node o = nodes.get(j);
+
+      if (n.alone) { //it is looking for a grp
+
+        if (n.country.equals(o.country)) {
+
+          float distance = sqrt ((o.pos.x - n.pos.x)*(o.pos.x - n.pos.x) + (o.pos.y - n.pos.y)*(o.pos.y - n.pos.y));
+          if (distance < dist) {
+            f = nodes.get(j);
+            dist = distance;
+          }
+        }
+      }
+    }
+
+    if (f!=null) {
+
+      if (groupes.size()>0) {
+
+        NGrp grp = checkGrps(n.country);
+
+        if (grp!=null) { //s'ajouter seulement si f n'est pas seul
+
+            if (!f.alone) grp.addNode(n, f);
+        } else { //create new grp if group do not exist
+          NGrp g = new NGrp(n, f);
+          groupes.add(g);
+          n.setNode();
+          f.setNode();
+          removeNodeFromRecord(n);
+          removeNodeFromRecord(f);
+        }
+      } else { // create first grp
+        NGrp g = new NGrp(n, f);
+        groupes.add(g);
+        n.setNode();
+        f.setNode();
+        removeNodeFromRecord(n);
+        removeNodeFromRecord(f);
+      }
+    }
+  }
 }
 NGrp checkGrps(String ctryName) {
   NGrp grp = null;
@@ -354,6 +363,8 @@ void keyPressed() {
       frame.setSize(800, 600);
       frame.setLocation(20, 40);
     }
+  } else if (key == 'a') {
+    isOn = !isOn;
   } else if (key == 'b') {
     displayNoiseField = !displayNoiseField;
   } else if (key == 'n') { //TODO BUG WITH COLLISION

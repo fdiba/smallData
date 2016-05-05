@@ -38,6 +38,8 @@ class Node {
 
     BodyDef bd = new BodyDef();
     bd.type = BodyType.DYNAMIC;
+    
+    //bd.fixedRotation =true;
 
     float x = world_offset + random(width-world_offset);
     float y = world_offset + random(height-world_offset);
