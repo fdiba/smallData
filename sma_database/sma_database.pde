@@ -188,6 +188,8 @@ void draw() { //TODO ENLARGE TERRITORY
       g.checkEdgesBox2d();
       g.display();
     }
+    for (NGrp g : groupes)g.displayText();
+    
     for (Boundary b : boundaries) b.display();
     removeDeadNodes();
   }

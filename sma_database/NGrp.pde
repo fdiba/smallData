@@ -149,16 +149,18 @@ class NGrp {
       ty = tx+1000;
     }
   }
+  void displayText(){
+    if(g_records.size()>10){
+      fill(25);
+      text(name, pos.x-textWidth(name)/2, pos.y+4);
+    }
+  }
   void display() {
 
     fill(c);
     noStroke();
     ellipse(pos.x, pos.y, diam, diam);
     
-    if(g_records.size()>10){
-      fill(25);
-      text(name, pos.x-textWidth(name)/2, pos.y+4);
-    }
   }
   boolean contains(float x, float y) {
 
