@@ -22,6 +22,8 @@ class Node {
   boolean alone;
 
   float density, friction, restitution;
+  
+  int groupIndex = 1;
 
   Node(int _id, String _fName, String _name, String _country) {
 
@@ -59,7 +61,7 @@ class Node {
     fd.friction = 1.; //.3 how slippery it is
     fd.restitution = 0; //.5 how bouncy the fixture is
 
-    //fd.filter.groupIndex = 0;
+    fd.filter.groupIndex = groupIndex;
   
     body.createFixture(fd);
 
@@ -76,36 +78,6 @@ class Node {
     vel.normalize();
     speed = random(1, 3);
   }
-  void resetBody(){
-    
-    box2d.destroyBody(body);
-    
-    BodyDef bd = new BodyDef();
-    bd.type = BodyType.DYNAMIC;
-
-    bd.position = box2d.coordPixelsToWorld(pos.x, pos.y);
-    body = box2d.world.createBody(bd);
-
-    CircleShape cs = new CircleShape();
-    diam*=2;
-    cs.m_radius = box2d.scalarPixelsToWorld(diam/2);
-
-    FixtureDef fd = new FixtureDef();
-    fd.shape = cs;
-
-    fd.density = 10f; //1 how heavy it is in relation to its area
-    fd.friction = .3; //.3 how slippery it is
-    fd.restitution = .5; //.5 how bouncy the fixture is
-
-    body.createFixture(fd);
-
-    linearVelocity = new Vec2(random(-5, 5), random(-5, 5));
-    body.setLinearVelocity(linearVelocity);
-    //angularVelocity = random(-1, 1);
-    angularVelocity = 0f;
-    body.setAngularVelocity(angularVelocity);
-    
-  }
   void applyForce(Vec2 v) {
     body.applyForce(v, body.getWorldCenter());
   }
@@ -114,14 +86,6 @@ class Node {
     Fixture f = body.getFixtureList();
     boolean inside = f.testPoint(worldPoint);
     return inside;
-  }
-  void setNode() {
-        
-    editColor(color(40, 209, 89));
-    alone = false;
-    linearVelocity.x  = 0;
-    linearVelocity.y = 0;
-    body.setLinearVelocity(linearVelocity);
   }
   void editColor(color c) {
     rgb = c;

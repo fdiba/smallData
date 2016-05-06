@@ -20,7 +20,6 @@ ArrayList<Boundary> boundaries;
 ArrayList<String[]> records;
 ArrayList<Node> nodes;
 ArrayList<NGrp> groupes;
-ArrayList<Node> notAloneNodes;
 
 boolean fsMode;
 boolean displayNoiseField = false;
@@ -37,12 +36,16 @@ boolean useBox2d = true; //TODO constant
 
 int world_offset;
 
-float maxDist;
 
 boolean pause;
 boolean isOn;
 
 Console cs;
+
+float extension;
+
+int fr;
+int usa;
 
 void setup() {
 
@@ -50,14 +53,15 @@ void setup() {
   frame.setLocation(20, 40);
   frame.setResizable(true);
 
-  maxDist = 20;
 
   world_offset = 20;
+  
+  extension = 20;
 
   box2d = new Box2DProcessing(this);
   box2d.createWorld();
   box2d.setGravity(0, 0);
-  
+
   cs = new Console();
 
   //------------------------------------------------------------------->
@@ -65,10 +69,10 @@ void setup() {
 
   int thickness = 6;
   boundaries = new ArrayList<Boundary>();
-  boundaries.add(new Boundary(width/2, height+thickness/2, width, thickness));
-  boundaries.add(new Boundary(width/2, 0-thickness/2, width, thickness));
-  boundaries.add(new Boundary(0-thickness/2, height/2, thickness, height));
-  boundaries.add(new Boundary(width+thickness/2, height/2, thickness, height));
+  boundaries.add(new Boundary(width/2, height+thickness/2, width+10, thickness));
+  boundaries.add(new Boundary(width/2, 0-thickness/2-1, width+10, thickness));
+  boundaries.add(new Boundary(0-thickness/2-1, height/2, thickness, height+10));
+  boundaries.add(new Boundary(width+thickness/2, height/2, thickness, height+10));
 
   maxCreatures = 100; //------------------------------------------------>
 
@@ -89,8 +93,7 @@ void setup() {
     groupes = new ArrayList<NGrp>();
     records = new ArrayList<String[]>();
     nodes = new ArrayList<Node>();
-    notAloneNodes = new ArrayList<Node>();
-    
+
     while (dbconnection.next ()) {
 
       int id = dbconnection.getInt("id");
@@ -112,21 +115,28 @@ void setup() {
       records.add(arr);
       //nodes.add(new Node(id, fName, name));
       println(arr[0], arr[1], arr[2], arr[3]);
+      
+      if(country.equals("USA")){
+        usa++;
+      } else if(country.equals("France")){
+        fr++;
+      } 
     }
   } else {
     println("connection failed !");
   }
-
+  
+  println("fr:", fr, "usa:", usa);
+  
   if (maxCreatures>records.size())maxCreatures=records.size();
 
   for (int i=0; i<maxCreatures; i++) {
     String[] arr = records.get(i);
     nodes.add(new Node(Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
+    pointer = i;
   }
-
-  pointer = maxCreatures;
 }
-void draw() {
+void draw() { //TODO ENLARGE TERRITORY
 
   background(225);
 
@@ -134,17 +144,23 @@ void draw() {
 
   if (displayNoiseField) displayNoiseField();
 
-  while (nodes.size () < maxCreatures) {
-    String[] arr = records.get(pointer);
-    nodes.add(new Node(Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
+  //while (box2d.world.getBodyCount () < maxCreatures) {
+  while (nodes.size () < maxCreatures && records.size()>0) {
+    
     pointer++;
     if (pointer>=records.size())pointer=0;
+    
+    String[] arr = records.get(pointer);
+    nodes.add(new Node(Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
+    
+    
+    if (maxCreatures>records.size())maxCreatures=records.size();
   }
 
   for (int i=0; i<nodes.size (); i++) {
     Node n = nodes.get(i);
 
-    if (!useBox2d) {
+    if (!useBox2d) { //check it
       if (n.alone) {
         n.update();
         n.editVelBasedOnNoiseField(noiseScale, noiseStrength);
@@ -154,12 +170,14 @@ void draw() {
     } else {
       n.updateBox2d();
 
-      if (isOn)createConnexion(n, i);
-
-      if (n.alone) {
-        n.editVelBasedOnNoiseFieldBox2d(noiseScale, noiseStrength);
-        n.checkEdgesBox2d();
+      if (isOn) {
+        tryCreateGroup(n, i);
+        if (!n.isDead)tryLinkToGrp(n);
       }
+
+      n.editVelBasedOnNoiseFieldBox2d(noiseScale, noiseStrength);
+      n.checkEdgesBox2d();
+
       n.displayBox2d();
     }
   }
@@ -167,6 +185,7 @@ void draw() {
   if (useBox2d) {
     for (NGrp g : groupes) {
       g.update();
+      g.checkEdgesBox2d();
       g.display();
     }
     for (Boundary b : boundaries) b.display();
@@ -174,66 +193,77 @@ void draw() {
   }
 
   if (pause)checkNodeInfo();
-  
+
   cs.display();
 
-  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), "records:", records.size());
+  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), "records:", records.size(), "bodies:",  box2d.world.getBodyCount());
 }
-void createConnexion(Node n, int i) {
+void tryLinkToGrp(Node n) {
 
-  for (int j=0; j<nodes.size (); j++) {
+  for (int i=0; i<groupes.size (); i++) {
 
-    float dist = maxDist;
-    Node f = null;
+    NGrp g = groupes.get(i);
 
-    if (i!=j) {
-      Node o = nodes.get(j);
+    if (n.country.equals(g.name)) {
 
-      if (n.alone) { //it is looking for a grp
+      float collisionDist = n.diam/2+g.diam/2+4+extension;
 
-        if (n.country.equals(o.country)) {
-
-          float distance = sqrt ((o.pos.x - n.pos.x)*(o.pos.x - n.pos.x) + (o.pos.y - n.pos.y)*(o.pos.y - n.pos.y));
-          if (distance < dist) {
-            f = nodes.get(j);
-            dist = distance;
-          }
-        }
-      }
-    }
-
-    if (f!=null) {
-
-      if (groupes.size()>0) {
-
-        NGrp grp = checkGrps(n.country);
-
-        if (grp!=null) { //s'ajouter seulement si f n'est pas seul
-
-            if (!f.alone) {
-              String str = str(n.id) + " " + n.fName + " " + n.name + " " + n.country;
-              cs.update(str);
-              grp.addNode(n, f);
-            }
-        } else { //create new grp if group do not exist
-          NGrp g = new NGrp(n, f);
-          groupes.add(g);
-          n.setNode();
-          f.setNode();
-          removeNodeFromRecord(n);
-          removeNodeFromRecord(f);
-        }
-      } else { // create first grp
-        NGrp g = new NGrp(n, f);
-        groupes.add(g);
-        n.setNode();
-        f.setNode();
-        removeNodeFromRecord(n);
-        removeNodeFromRecord(f);
+      float distance = sqrt ((g.pos.x - n.pos.x)*(g.pos.x - n.pos.x) + (g.pos.y - n.pos.y)*(g.pos.y - n.pos.y));
+      
+      if (distance < collisionDist) {
+        g.addNode(n);
+        removeNodeFromRecords(n);   
+        cs.update(g.name+" "+g.g_records.size());     
+        break;
       }
     }
   }
 }
+void tryCreateGroup(Node n, int i) {
+
+  Node f = null;
+  float collisionDist = n.diam+4+extension;
+
+  for (int j=0; j<nodes.size (); j++) {
+
+    if (i!=j) {
+      Node o = nodes.get(j);
+
+      if (n.alone) { //it is still looking for a grp
+
+        if (n.country.equals(o.country)) {
+
+          float distance = sqrt ((o.pos.x - n.pos.x)*(o.pos.x - n.pos.x) + (o.pos.y - n.pos.y)*(o.pos.y - n.pos.y));
+          if (distance < collisionDist) {
+            f = nodes.get(j);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if (f!=null) {
+
+    if (groupes.size()>0) {
+
+      NGrp grp = checkGrps(n.country);
+
+      if (grp==null) { //create new grp if grp do not already exists
+        NGrp g = new NGrp(n, f);
+        groupes.add(g);
+        removeNodeFromRecords(n);
+        removeNodeFromRecords(f);
+      }
+    } else { // create first grp
+      NGrp g = new NGrp(n, f);
+      groupes.add(g);
+      removeNodeFromRecords(n);
+      removeNodeFromRecords(f);
+    }
+  }
+}
+
 NGrp checkGrps(String ctryName) {
   NGrp grp = null;
   for (NGrp g : groupes) {
@@ -244,7 +274,7 @@ NGrp checkGrps(String ctryName) {
   }
   return grp;
 }
-void removeNodeFromRecord(Node n) {
+void removeNodeFromRecords(Node n) {
   String str_id =  str(n.id);
   for (int i=0; i<records.size (); i++) {
     if (records.get(i)[0].equals(str_id)) {
@@ -257,7 +287,7 @@ void removeDeadNodes() {
 
   for (int i = nodes.size ()-1; i >= 0; i--) {
     if (nodes.get(i).isDead) {
-      box2d.world.destroyBody(nodes.get(i).body);
+      box2d.destroyBody(nodes.get(i).body);
       nodes.remove(i);
     }
   }
@@ -301,15 +331,18 @@ void checkNodeInfo() {
     for (NGrp g : groupes) {
       if (g.contains(mouseX, mouseY)) {
         if (!g.name.equals(cs.message)) {
-          String str = g.name + " " + g.gNodes.size();
+          String str = g.name + " " + g.g_records.size();
           cs.update(str);
         }
       }
     }
   }
 }
+void mousePressed() {
+  cs.update("");
+}
 void keyPressed() {
-  if (key == 'f') {
+  if (key == 'f') { //TODO update it
     fsMode = !fsMode;
 
     if (fsMode) {
@@ -366,10 +399,12 @@ void keyPressed() {
     }
   } else if (key == 'a') {
     isOn = !isOn;
+    cs.update("interact " + str(isOn));
   } else if (key == 'b') {
     displayNoiseField = !displayNoiseField;
   } else if (key == 'n') { //TODO BUG WITH COLLISION
     useBox2d = !useBox2d;
+    cs.update("physics " + str(useBox2d));
     if (!useBox2d) {
 
       for (int i=0; i<nodes.size (); i++) {

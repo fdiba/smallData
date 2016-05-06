@@ -3,12 +3,9 @@ class NGrp {
   Body body;
   String name;
 
-  ArrayList<Node> gNodes;
+  ArrayList<Record> g_records;
 
-  float len;
   float diam;
-
-  ArrayList<DistanceJoint> joints;
 
   Vec2 pos, linearVelocity;
   float angularVelocity;
@@ -17,14 +14,17 @@ class NGrp {
 
   float tx, ty;
 
-  int firstRaw = 10;
+  color c;
+
+  int groupIndex = 2;
 
   NGrp(Node n1, Node n2) {
+
+    c = color(40, 209, 89);
 
     pos = new Vec2();
 
     diam = 15;
-    len = 22; //20
 
     tx = random(1000);
     ty = tx+1000;
@@ -34,66 +34,55 @@ class NGrp {
     n1.alone = false;
     n2.alone = false;
 
+    n1.isDead = true;
+    n2.isDead = true;
+
+    //---- bodies ----//
     createBody(diam/2, n1, n2);
 
-    n1.resetBody();
-    n2.resetBody();
+    g_records = new ArrayList<Record>();
+    g_records.add(new Record(n1.id, n1.fName, n1.name));
+    g_records.add(new Record(n2.id, n2.fName, n2.name));
 
-    joints = new ArrayList<DistanceJoint>();
-
-    gNodes = new ArrayList<Node>();
-    gNodes.add(n1);
-    gNodes.add(n2);
-
-    createJoint(body, n1.body, 0);
-    createJoint(body, n2.body, 0);
   }
-  void addNode(Node n, Node f) {
+  void addNode(Node n) {
 
     n.alone = false;
-    n.setNode();
+    n.isDead = true;
+    g_records.add(new Record(n.id, n.fName, n.name));
 
-    n.resetBody();
-
-    gNodes.add(n);
-
-    if (gNodes.size()>firstRaw) { //DO SOMETHING ELSE
-
-      len=25;
-      createJoint(body, n.body, 0);
-
-      //Body b= gNodes.get(gNodes.size()-(firstRaw+1)).body;
-
-      //createJoint(f.body, n.body, 0);
-
-
-      //Body b= gNodes.get(gNodes.size()-11).body;
-      //len=10;
-      //createJoint(b, n.body, 0);
-    } else {
-      createJoint(body, n.body, 0);
-    }
+    redefineBody();
   }
-  void createJoint(Body body, Body n_body, float frequencyHz) {
+  void redefineBody() {
 
-    DistanceJointDef djd = new DistanceJointDef();
-    // Connection between previous particle and this one
-    djd.bodyA = body;
-    djd.bodyB = n_body;
-    // Equilibrium length
-    djd.length = box2d.scalarPixelsToWorld(len);
+    box2d.destroyBody(body);
+    diam+=1;
 
-    // These properties affect how springy the joint is 
-    djd.frequencyHz = frequencyHz;  // Try a value less than 5 (0 for no elasticity)
-    djd.dampingRatio = 1; // Ranges between 0 and 1
+    //-------
 
-      // Make the joint.  Note we aren't storing a reference to the joint ourselves anywhere!
-    // We might need to someday, but for now it's ok
-    DistanceJoint dj = (DistanceJoint) box2d.world.createJoint(djd);
+    BodyDef bd = new BodyDef();
+    bd.type = BodyType.DYNAMIC;
 
-    //println(dj.getBodyA());
+    bd.position = box2d.coordPixelsToWorld(pos.x, pos.y);
+    body = box2d.world.createBody(bd);
 
-    joints.add(dj);
+    CircleShape cs = new CircleShape();
+
+    cs.m_radius = box2d.scalarPixelsToWorld(diam/2);
+
+    FixtureDef fd = new FixtureDef();
+    fd.shape = cs;
+
+    fd.filter.groupIndex = groupIndex;
+
+    fd.density = 1f; //1 how heavy it is in relation to its area
+    fd.friction = .3; //.3 how slippery it is
+    fd.restitution = .5; //.5 how bouncy the fixture is
+
+    body.createFixture(fd);
+
+    body.setLinearVelocity(linearVelocity);
+    body.setAngularVelocity(angularVelocity);
   }
   void createBody(float radius, Node n1, Node n2) {
 
@@ -117,7 +106,7 @@ class NGrp {
     FixtureDef fd = new FixtureDef();
     fd.shape = cs;
 
-    //fd.filter.groupIndex = -2;
+    fd.filter.groupIndex = groupIndex;
 
     fd.density = 1f; //1 how heavy it is in relation to its area
     fd.friction = .3; //.3 how slippery it is
@@ -133,132 +122,42 @@ class NGrp {
   }
   void update() {
 
+    pos = box2d.getBodyPixelCoord(body); //not normalized coordinates
 
+    //float val = 25/(g_records.size()+1/10);
+    float val = 25;
+    float x = map(noise(tx), 0, 1, -val, val);
+    float y = map(noise(ty), 0, 1, -val, val);
 
-    Vec2 v = new Vec2(0f, 0f);
-    Vec2 force;
+    float step = 0.01;
+    tx += step;
+    ty += step;
 
-    for (Node n : gNodes) {
-      v.addLocal(n.pos);
-      //println(n.pos.x, n.pos.y);
-
-      //force = attract(n);
-      //n.applyForce(force);
-
-
-      /*int test = round(random(3));
-       if (test%2==0) {
-       n.linearVelocity = new Vec2(10, 0);
-       n.body.setLinearVelocity(n.linearVelocity);
-       } else {
-       n.linearVelocity = new Vec2(-10, 0);
-       n.body.setLinearVelocity(n.linearVelocity);
-       }*/
-    }
-
-    v.x /= gNodes.size();
-    v.y /= gNodes.size();
-    //println(v.x, v.y);
-
-    for (Node n : gNodes) {
-
-      Vec2 vv = n.pos;
-      Vec2 xx = n.pos.sub(v);
-      xx.normalize();
-      xx.mulLocal(diam+1.1);
-
-      //n.body.setTransform(xx, 0);
-      //n.linearVelocity = xx;
-      //n.body.setLinearVelocity(n.linearVelocity);
-
-      xx.addLocal(v);
-
-
-      if (gNodes.size()<firstRaw) {
-        noFill();
-        stroke(0);
-        ellipse(xx.x, xx.y, 5, 5);
-      }
-    }
-
-    if (body!=null) {
-
-      //pos.x = v.x;
-      //pos.y = v.y;
-      //body.setTransform(v, 0);
-
-      pos = box2d.getBodyPixelCoord(body);
-
-
-      //float x = map(noise(tx), 0, 1, 0, width);
-      //float y = map(noise(ty), 0, 1, 0, height);
-
-      float x = map(noise(tx), 0, 1, -25, 25);
-      float y = map(noise(ty), 0, 1, -25, 25);
-
-      tx += 0.01;
-      ty += 0.01;
-
-      //linearVelocity = new Vec2(random(-1, 1), random(-1, 1));
-      linearVelocity = new Vec2(x, y);
-      body.setLinearVelocity(linearVelocity);
-
-
-
-      /* 
-       Vec2 target = v.sub(pos);
-       target.normalize();
-       
-       linearVelocity = target;
-       body.setLinearVelocity(linearVelocity);*/
-    }
-
-    if (gNodes.size()<firstRaw) {
-      fill(0, 0, 255);
-      noStroke();
-      ellipse(v.x, v.y, 5, 5);
-    }
+    //linearVelocity = new Vec2(random(-5, 5), random(-5, 5));
+    linearVelocity = new Vec2(x, y);
+    body.setLinearVelocity(linearVelocity);
   }
-  Vec2 attract(Node m) {
+  void checkEdgesBox2d () {
 
+    float offset = diam/2+5;
 
-    if (body!=null) {
-      // clone() makes us a copy
-      Vec2 bpos = body.getWorldCenter();    
-      Vec2 moverPos = m.body.getWorldCenter();
+    if (pos.x < 0 + offset || pos.x > width - offset) {
+      tx = random(1000);
+    }
 
-      // Vector pointing from mover to attractor
-      Vec2 force = bpos.sub(moverPos);
-      float distance = force.length();
-
-      // Keep force within bounds
-      distance = constrain(distance, 1, 5);
-      force.normalize();
-
-      // Note the attractor's mass is 0 because it's fixed so can't use that
-      float strength = (G * 1 * m.body.m_mass) / (distance * distance); // Calculate gravitional force magnitude
-      force.mulLocal(strength);         // Get force vector --> magnitude * direction
-
-      return force;
-    } else {
-      return new Vec2();
+    if (pos.y < 0 + offset || pos.y > height - offset) {
+      ty = tx+1000;
     }
   }
   void display() {
 
-    if (body!=null) {
-      fill(0, 25);
-      noStroke();
-      ellipse(pos.x, pos.y, diam, diam);
-    }
-
-    for (DistanceJoint j : joints) {
-
-      Vec2 pos1 = box2d.getBodyPixelCoord(j.getBodyA());
-      Vec2 pos2 = box2d.getBodyPixelCoord(j.getBodyB());
-
-      stroke(255, 0 , 0);
-      line(pos1.x, pos1.y, pos2.x, pos2.y);
+    fill(c);
+    noStroke();
+    ellipse(pos.x, pos.y, diam, diam);
+    
+    if(g_records.size()>10){
+      fill(25);
+      text(name, pos.x-textWidth(name)/2, pos.y+4);
     }
   }
   boolean contains(float x, float y) {
