@@ -4,6 +4,7 @@ import java.awt.GraphicsEnvironment;
 import java.util.Date;
 
 import de.bezier.data.sql.*;
+import themidibus.*;
 import org.jbox2d.collision.shapes.*;
 import org.jbox2d.common.*;
 import org.jbox2d.dynamics.*;
@@ -12,6 +13,7 @@ import org.jbox2d.dynamics.joints.*;
 import shiffman.box2d.*;
 
 MySQL dbconnection;
+MidiBus myBus;
 
 Box2DProcessing box2d;
 //World world;
@@ -47,6 +49,8 @@ float extension;
 int fr;
 int usa;
 
+FloatList floats;
+
 void setup() {
 
   size(800, 600);
@@ -55,7 +59,7 @@ void setup() {
 
 
   world_offset = 20;
-  
+
   extension = 20;
 
   box2d = new Box2DProcessing(this);
@@ -63,6 +67,12 @@ void setup() {
   box2d.setGravity(0, 0);
 
   cs = new Console();
+
+  //------------------ midi ------------------//
+  MidiBus.list();
+  myBus = new MidiBus(this, "Midi Fighter Twister", "Midi Fighter Twister");
+  resetFighterTwister();
+
 
   //------------------------------------------------------------------->
   //box2d.listenForCollisions();
@@ -115,19 +125,19 @@ void setup() {
       records.add(arr);
       //nodes.add(new Node(id, fName, name));
       println(arr[0], arr[1], arr[2], arr[3]);
-      
-      if(country.equals("USA")){
+
+      if (country.equals("USA")) {
         usa++;
-      } else if(country.equals("France")){
+      } else if (country.equals("France")) {
         fr++;
-      } 
+      }
     }
   } else {
     println("connection failed !");
   }
-  
+
   println("fr:", fr, "usa:", usa);
-  
+
   if (maxCreatures>records.size())maxCreatures=records.size();
 
   for (int i=0; i<maxCreatures; i++) {
@@ -146,14 +156,14 @@ void draw() { //TODO ENLARGE TERRITORY
 
   //while (box2d.world.getBodyCount () < maxCreatures) {
   while (nodes.size () < maxCreatures && records.size()>0) {
-    
+
     pointer++;
     if (pointer>=records.size())pointer=0;
-    
+
     String[] arr = records.get(pointer);
     nodes.add(new Node(Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
-    
-    
+
+
     if (maxCreatures>records.size())maxCreatures=records.size();
   }
 
@@ -189,7 +199,7 @@ void draw() { //TODO ENLARGE TERRITORY
       g.display();
     }
     for (NGrp g : groupes)g.displayText();
-    
+
     for (Boundary b : boundaries) b.display();
     removeDeadNodes();
   }
@@ -198,7 +208,7 @@ void draw() { //TODO ENLARGE TERRITORY
 
   cs.display();
 
-  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), "records:", records.size(), "bodies:",  box2d.world.getBodyCount());
+  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), "records:", records.size(), "bodies:", box2d.world.getBodyCount());
 }
 void tryLinkToGrp(Node n) {
 
@@ -211,7 +221,7 @@ void tryLinkToGrp(Node n) {
       float collisionDist = n.diam/2+g.diam/2+4+extension;
 
       float distance = sqrt ((g.pos.x - n.pos.x)*(g.pos.x - n.pos.x) + (g.pos.y - n.pos.y)*(g.pos.y - n.pos.y));
-      
+
       if (distance < collisionDist) {
         g.addNode(n);
         removeNodeFromRecords(n);   
@@ -299,16 +309,23 @@ void saveIMG() {
   String name = "data/sma-db-" + date.getTime() + ".jpg";
   save(name);
 }
+
+//------------------------- noiseField -------------------------//
+
 void displayNoiseField() {
 
-  stroke (#b1c999, 255);
+  stroke (#b1c999, 180);
 
   float steps = 10;
-  float x2, y2;
+  float x = 0, y = 0, x2, y2;
   float noiseVal, angle;
 
-  for (int x=0; x<width; x+=steps) {
-    for (int y=0; y<height; y+=steps) {
+  for (int i = 0; i < width; i+=steps)
+  {
+    x = i;
+    for (int j = 0; j < height; j+=steps)
+    {
+      y = j;
 
       noiseVal = noise (x/noiseScale, y/noiseScale) * noiseStrength;
       angle = map (noiseVal, 0, 1, 0, TWO_PI);
@@ -316,10 +333,12 @@ void displayNoiseField() {
       x2 = x + cos (angle)*steps;
       y2 = y + sin (angle)*steps;
 
+
       line (x, y, x2, y2);
     }
   }
 }
+
 void checkNodeInfo() {
   if (pause) {
     for (Node n : nodes) {
@@ -340,11 +359,27 @@ void checkNodeInfo() {
     }
   }
 }
+//------------------------- mouse -------------------------//
 void mousePressed() {
   cs.update("");
 }
+//------------------------- midi interface -------------------------//
+void resetFighterTwister() {
+  int channel = 0;
+  int value = 0;
+  for (int i=0; i<16; i++) myBus.sendControllerChange(channel, i, value);
+}
+//------------------------- keyboard -------------------------//
 void keyPressed() {
-  if (key == 'f') { //TODO update it
+
+  if (key == ' ') {
+    pause = !pause;
+  } else if (key == 'a') {
+    isOn = !isOn;
+    cs.update("interact " + str(isOn));
+  } else if (key == 'b') {
+    displayNoiseField = !displayNoiseField;
+  } else if (key == 'f') { //TODO update it
     fsMode = !fsMode;
 
     if (fsMode) {
@@ -389,7 +424,6 @@ void keyPressed() {
         frame.setLocation(0, 0);
       }
     } else {
-
       println("!fsMode");
 
       frame.removeNotify();
@@ -399,11 +433,6 @@ void keyPressed() {
       frame.setSize(800, 600);
       frame.setLocation(20, 40);
     }
-  } else if (key == 'a') {
-    isOn = !isOn;
-    cs.update("interact " + str(isOn));
-  } else if (key == 'b') {
-    displayNoiseField = !displayNoiseField;
   } else if (key == 'n') { //TODO BUG WITH COLLISION
     useBox2d = !useBox2d;
     cs.update("physics " + str(useBox2d));
@@ -443,8 +472,13 @@ void keyPressed() {
         n.body.setAngularVelocity(n.angularVelocity);
       }
     }
-  } else if (key == ' ') {
-    pause = !pause;
+  } else if (key == 'o') { //dezoom
+    noiseScale--;
+    if (noiseScale < 1) noiseScale = 1;
+  } else if (key == 'p') { //zoom
+    noiseScale++;
+  } else if (key == 'r') {
+    noiseSeed ((int) random (10000));
   } else if (key == 's') {
     saveIMG();
   }

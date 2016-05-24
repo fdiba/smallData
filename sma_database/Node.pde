@@ -106,7 +106,7 @@ class Node {
       alpha = 0;
     }
   }
-  void editVelBasedOnNoiseField(float noiseScale, float noiseStength) {
+  void editVelBasedOnNoiseField(float noiseScale, float noiseStength) { //if !useBox2d
     float noiseVal = noise (loc.x/noiseScale, loc.y/noiseScale) * noiseStength;
     float angle = map (noiseVal, 0, 1, 0, TWO_PI);
     vel.x = cos (angle);
