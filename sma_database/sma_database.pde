@@ -317,15 +317,11 @@ void displayNoiseField() {
   stroke (#b1c999, 180);
 
   float steps = 10;
-  float x = 0, y = 0, x2, y2;
+  float x2, y2;
   float noiseVal, angle;
 
-  for (int i = 0; i < width; i+=steps)
-  {
-    x = i;
-    for (int j = 0; j < height; j+=steps)
-    {
-      y = j;
+  for (int x = 0; x < width; x+=steps) {
+    for (int y = 0; y < height; y+=steps) {
 
       noiseVal = noise (x/noiseScale, y/noiseScale) * noiseStrength;
       angle = map (noiseVal, 0, 1, 0, TWO_PI);
