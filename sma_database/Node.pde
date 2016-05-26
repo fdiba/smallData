@@ -25,7 +25,7 @@ class Node {
   
   int groupIndex = 1;
 
-  Node(int _id, String _fName, String _name, String _country) {
+  Node(float x, float y, int _id, String _fName, String _name, String _country) {
 
     alone = true;
 
@@ -43,8 +43,8 @@ class Node {
     
     //bd.fixedRotation =true;
 
-    float x = world_offset + random(width-world_offset);
-    float y = world_offset + random(height-world_offset);
+    //float x = world_offset + random(width-world_offset);
+    //float y = world_offset + random(height-world_offset);
 
     pos = new Vec2(x, y);
 
@@ -91,16 +91,15 @@ class Node {
     rgb = c;
   }
   void checkEdgesBox2d () {
-    if (pos.x < 0 + world_offset || pos.x > width - world_offset ||
-      pos.y < 0 + world_offset || pos.y > height - world_offset) {
+    if (pos.x < w_pos.x + w_offset || pos.x > w_pos.x + w_width - w_offset ||
+      pos.y < w_pos.y + w_offset || pos.y > w_pos.y + w_height - w_offset) {
       rgb = color(255, 0, 0); 
       isDead = true;
     }
   }
   void checkEdges () {
-
-    if (loc.x < 0 + world_offset || loc.x > width - world_offset ||
-      loc.y < 0 + world_offset || loc.y > height - world_offset) {
+    if (loc.x < w_pos.x + w_offset || loc.x > w_pos.x + w_width - w_offset ||
+      loc.y < w_pos.y + w_offset || loc.y > w_pos.y + w_height - w_offset) {
       loc.x = random(width);
       loc.y = random(height);
       alpha = 0;

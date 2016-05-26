@@ -4,7 +4,7 @@ String message;
   PVector loc;
   Console() {
     
-    loc = new PVector(width-200, 20);
+    loc = new PVector(200, 30);
     
     message="SMA";
   }

@@ -36,7 +36,7 @@ int pointer;
 
 boolean useBox2d = true; //TODO constant
 
-int world_offset;
+//int world_offset;
 
 
 boolean pause;
@@ -51,14 +51,21 @@ int usa;
 
 FloatList floats;
 
+int w_width, w_height, w_offset;
+PVector w_pos;
+
 void setup() {
 
   size(800, 600);
   frame.setLocation(20, 40);
   frame.setResizable(true);
+  
+  w_offset = 6; //must be <15
+  w_width = 640;
+  w_height = 480;
+  w_pos = new PVector(20, 40);
 
-
-  world_offset = 20;
+  //world_offset = 20;
 
   extension = 20;
 
@@ -77,12 +84,12 @@ void setup() {
   //------------------------------------------------------------------->
   //box2d.listenForCollisions();
 
-  int thickness = 6;
+  int thickness = 1;
   boundaries = new ArrayList<Boundary>();
-  boundaries.add(new Boundary(width/2, height+thickness/2, width+10, thickness));
-  boundaries.add(new Boundary(width/2, 0-thickness/2-1, width+10, thickness));
-  boundaries.add(new Boundary(0-thickness/2-1, height/2, thickness, height+10));
-  boundaries.add(new Boundary(width+thickness/2, height/2, thickness, height+10));
+  boundaries.add(new Boundary(w_width/2+w_pos.x, w_height+thickness/2+w_pos.y, w_width+10, thickness)); //bottom
+  boundaries.add(new Boundary(w_width/2+w_pos.x, w_pos.y-thickness/2-1, w_width+10, thickness)); //top
+  boundaries.add(new Boundary(w_pos.x-thickness/2-1, w_height/2+w_pos.y, thickness, w_height+10)); //left
+  boundaries.add(new Boundary(w_width+thickness/2+w_pos.x, w_height/2+w_pos.y, thickness, w_height+10)); //right
 
   maxCreatures = 100; //------------------------------------------------>
 
@@ -142,7 +149,7 @@ void setup() {
 
   for (int i=0; i<maxCreatures; i++) {
     String[] arr = records.get(i);
-    nodes.add(new Node(Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
+    nodes.add(new Node(random(w_pos.x+15, w_pos.x+w_width-15), random(w_pos.y+15, w_pos.y+w_height-15), Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
     pointer = i;
   }
 }
@@ -161,7 +168,7 @@ void draw() { //TODO ENLARGE TERRITORY
     if (pointer>=records.size())pointer=0;
 
     String[] arr = records.get(pointer);
-    nodes.add(new Node(Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
+    nodes.add(new Node(random(w_pos.x+15, w_pos.x+w_width-15), random(w_pos.y+15, w_pos.y+w_height-15), Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
 
 
     if (maxCreatures>records.size())maxCreatures=records.size();
@@ -200,9 +207,10 @@ void draw() { //TODO ENLARGE TERRITORY
     }
     for (NGrp g : groupes)g.displayText();
 
-    for (Boundary b : boundaries) b.display();
     removeDeadNodes();
   }
+  
+  for (Boundary b : boundaries) b.display();
 
   if (pause)checkNodeInfo();
 
@@ -316,12 +324,12 @@ void displayNoiseField() {
 
   stroke (#b1c999, 180);
 
-  float steps = 10;
+  int steps = 10;
   float x2, y2;
   float noiseVal, angle;
 
-  for (int x = 0; x < width; x+=steps) {
-    for (int y = 0; y < height; y+=steps) {
+  for (int x = (int) w_pos.x; x < w_width+w_pos.x; x+=steps) {
+    for (int y = (int) w_pos.y+steps; y < w_height+w_pos.y; y+=steps) {
 
       noiseVal = noise (x/noiseScale, y/noiseScale) * noiseStrength;
       angle = map (noiseVal, 0, 1, 0, TWO_PI);
