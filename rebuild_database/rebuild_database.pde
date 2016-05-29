@@ -70,9 +70,17 @@ void processMtdFile(String target, String[] elements, String folderName) {
       String info_concours = "";
 
       if (lines.length>40) {
+
         info_concours = lines[40];
 
         if (info_concours.length() > concours_fpart.length()) {
+
+          //---------------- editions --------------//
+
+          info_concours = info_concours.substring(concours_fpart.length());
+
+          String[] editions = split(info_concours, ',');
+          editions = trim(editions);
 
           //---------------- name --------------//
 
@@ -100,7 +108,7 @@ void processMtdFile(String target, String[] elements, String folderName) {
             name = name.substring(0, pos) + " " + str(c).toUpperCase() +
               name.substring(pos+2, name.length());
           }
-          
+
           pos = name.indexOf("'"); 
           if (pos>=0) {
             char c = name.charAt(pos+1);            
@@ -111,7 +119,11 @@ void processMtdFile(String target, String[] elements, String folderName) {
           //---------------- fName --------------//
 
           String fName = lines[21].substring(fName_fpart.length());
-          String country;
+          
+          if (name.equals("Rozman")) {
+            name = "Rozmann";
+            fName = "Akos";
+          }
 
           //------------------ country ------------//
 
@@ -130,9 +142,11 @@ void processMtdFile(String target, String[] elements, String folderName) {
           else if (ctry.equals("République Tchèque")) ctry = "République tchèque";
           else if (ctry.equals("Gréce")) ctry = "Grèce";
 
+          //----------------------------------------//
+
           //println(fName, name, ctry, "             ", filename);
           //delay(200);
-          
+
           name = name.replaceAll("\'", "\\\\'");
 
           try {
@@ -143,24 +157,14 @@ void processMtdFile(String target, String[] elements, String folderName) {
             println(ie);
           }
 
-          //SELECT firstName, name FROM artist WHERE name ="Appleton" and firstName ="Jon Howard" 
-
-          //String request = "SELECT name FROM artist WHERE name =\"" + 
-          //name + "\" and firstName =\"" + fName + "\"";
-
-          String request = "SELECT COUNT(*) FROM artist WHERE name =\"" + 
+          String request = "SELECT id FROM artist WHERE name =\"" + 
             name + "\" and firstName =\"" + fName + "\""; 
 
           msql.query(request);
 
-          msql.next ();
+          if (!msql.next ()) { //not new artist
 
-          int numOfRows = msql.getInt(1);
-          //println("number of rows: " + numOfRows);
-
-          if (numOfRows==0) { //new artist to add to the database
-
-            count++;
+              count++;
             //println(fName, name, ctry, "             ", count);
 
             //------------ create record --------------//
@@ -177,33 +181,44 @@ void processMtdFile(String target, String[] elements, String folderName) {
             request = "SELECT id FROM country WHERE c_name =\"" + ctry + "\""; 
             msql.query(request);
 
-            if (!msql.next ()) {
+            if (!msql.next ()) { //STEP 1/3 add missing country
 
               request = "INSERT INTO country (c_name) VALUES ('"+ ctry +"')"; 
-              msql.query(request);
-
+              //msql.query(request);
               println(ctry);
-            } else { //TODO use id to add a new artist with a ctry already in
               
+            } else { //STEP 2/3 new artist
+
               int c_id = msql.getInt("id");
               request = "INSERT INTO artist (firstName, name, id_country) VALUES ('" + fName + "', '" + name + "', '" +  c_id + "')"; 
-              msql.query(request);
+              //msql.query(request);
+              //println(fName, name, ctry, "            000000000 ", c_id);
               
-              println(fName, name, ctry, "            000000000 ", c_id);
             }
+          } else { //STEP 1/3 edit artist
 
-          } else { //TODO artist already present edit edition table
-            
-            
+
+              int artist_id = msql.getInt("id");
+
+            for (String edition : editions) {
+
+              if (!edition.equals("")) {
+                
+                edition = "ed_" + edition;
+                
+                request = "INSERT INTO edition (artist_id, " + edition + ") VALUES ('" + artist_id + "', '1')" +
+                " ON DUPLICATE KEY UPDATE artist_id= '" + artist_id + "', " + edition + "=1";
+                
+                //msql.query(request);
+                //print(edition, " ");
+                
+              }
+            }
           }
-          //println(foo);
 
           //--------------------- years calculation ----------------------//
-          info_concours = info_concours.substring(concours_fpart.length());
-          String[] list = split(info_concours, ',');
-          list = trim(list);
 
-          for (String str : list) {
+          for (String str : editions) {
 
             if (str.length()>0) {
 
