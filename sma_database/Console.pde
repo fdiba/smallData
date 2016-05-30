@@ -1,10 +1,11 @@
 class Console {
 
-String message;  
+String message;
+
   PVector loc;
-  Console() {
+  Console(PVector _loc) {
     
-    loc = new PVector(200, 30);
+    loc = _loc.get();
     
     message="SMA";
   }

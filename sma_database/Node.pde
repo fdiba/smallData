@@ -42,10 +42,7 @@ class Node {
     bd.type = BodyType.DYNAMIC;
     
     //bd.fixedRotation =true;
-
-    //float x = world_offset + random(width-world_offset);
-    //float y = world_offset + random(height-world_offset);
-
+    
     pos = new Vec2(x, y);
 
     bd.position = box2d.coordPixelsToWorld(x, y);
@@ -91,15 +88,15 @@ class Node {
     rgb = c;
   }
   void checkEdgesBox2d () {
-    if (pos.x < w_pos.x + w_offset || pos.x > w_pos.x + w_width - w_offset ||
-      pos.y < w_pos.y + w_offset || pos.y > w_pos.y + w_height - w_offset) {
+    if (pos.x < tables[0][0] + tables[0][4] || pos.x > tables[0][0] + tables[0][2] - tables[0][4] ||
+      pos.y < tables[0][1] + tables[0][4] || pos.y > tables[0][1] + tables[0][3] - tables[0][4]) {
       rgb = color(255, 0, 0); 
       isDead = true;
     }
   }
   void checkEdges () {
-    if (loc.x < w_pos.x + w_offset || loc.x > w_pos.x + w_width - w_offset ||
-      loc.y < w_pos.y + w_offset || loc.y > w_pos.y + w_height - w_offset) {
+    if (loc.x < tables[0][0] + tables[0][4] || loc.x > tables[0][0] + tables[0][2] - tables[0][4] ||
+      loc.y < tables[0][1] + tables[0][4] || loc.y > tables[0][1] + tables[0][3] - tables[0][4]) {
       loc.x = random(width);
       loc.y = random(height);
       alpha = 0;

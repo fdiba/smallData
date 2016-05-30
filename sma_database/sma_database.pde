@@ -36,9 +36,6 @@ int pointer;
 
 boolean useBox2d = true; //TODO constant
 
-//int world_offset;
-
-
 boolean pause;
 boolean isOn;
 
@@ -51,21 +48,21 @@ int usa;
 
 FloatList floats;
 
-int w_width, w_height, w_offset;
-PVector w_pos;
+//x, y, w, h, offset must be < 15
+int[][] tables = {
+  {
+    20, 40, 640/2, 480/2, 6
+  }
+  , {
+    20, 40+480/2+20, 640/2, 480/2, 6
+  }
+};
 
 void setup() {
 
   size(800, 600);
   frame.setLocation(20, 40);
   frame.setResizable(true);
-  
-  w_offset = 6; //must be <15
-  w_width = 640;
-  w_height = 480;
-  w_pos = new PVector(20, 40);
-
-  //world_offset = 20;
 
   extension = 20;
 
@@ -73,7 +70,7 @@ void setup() {
   box2d.createWorld();
   box2d.setGravity(0, 0);
 
-  cs = new Console();
+  cs = new Console(new PVector(20, 24));
 
   //------------------ midi ------------------//
   MidiBus.list();
@@ -84,12 +81,7 @@ void setup() {
   //------------------------------------------------------------------->
   //box2d.listenForCollisions();
 
-  int thickness = 1;
-  boundaries = new ArrayList<Boundary>();
-  boundaries.add(new Boundary(w_width/2+w_pos.x, w_height+thickness/2+w_pos.y, w_width+10, thickness)); //bottom
-  boundaries.add(new Boundary(w_width/2+w_pos.x, w_pos.y-thickness/2-1, w_width+10, thickness)); //top
-  boundaries.add(new Boundary(w_pos.x-thickness/2-1, w_height/2+w_pos.y, thickness, w_height+10)); //left
-  boundaries.add(new Boundary(w_width+thickness/2+w_pos.x, w_height/2+w_pos.y, thickness, w_height+10)); //right
+  createBoundaries(1);
 
   maxCreatures = 100; //------------------------------------------------>
 
@@ -149,8 +141,27 @@ void setup() {
 
   for (int i=0; i<maxCreatures; i++) {
     String[] arr = records.get(i);
-    nodes.add(new Node(random(w_pos.x+15, w_pos.x+w_width-15), random(w_pos.y+15, w_pos.y+w_height-15), Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
+    addNewNode(arr);
+
     pointer = i;
+  }
+}
+void addNewNode(String[] arr) {
+  nodes.add(new Node(random(tables[0][0]+15, tables[0][0]+tables[0][2]-15), 
+  random(tables[0][1]+15, tables[0][1]+tables[0][3]-15), 
+  Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
+}
+void createBoundaries(int thickness) {
+  
+  boundaries = new ArrayList<Boundary>();
+
+  for (int[] t : tables) {
+    
+    boundaries.add(new Boundary(t[2]/2+t[0], t[3]+thickness/2+t[1], t[2]+10, thickness)); //bottom
+    boundaries.add(new Boundary(t[2]/2+t[0], t[1]-thickness/2-1, t[2]+10, thickness)); //top
+    boundaries.add(new Boundary(t[0]-thickness/2-1, t[3]/2+t[1], thickness, t[3]+10)); //left
+    boundaries.add(new Boundary(t[2]+thickness/2+t[0], t[3]/2+t[1], thickness, t[3]+10)); //right
+    
   }
 }
 void draw() { //TODO ENLARGE TERRITORY
@@ -168,8 +179,7 @@ void draw() { //TODO ENLARGE TERRITORY
     if (pointer>=records.size())pointer=0;
 
     String[] arr = records.get(pointer);
-    nodes.add(new Node(random(w_pos.x+15, w_pos.x+w_width-15), random(w_pos.y+15, w_pos.y+w_height-15), Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
-
+    addNewNode(arr);
 
     if (maxCreatures>records.size())maxCreatures=records.size();
   }
@@ -209,7 +219,7 @@ void draw() { //TODO ENLARGE TERRITORY
 
     removeDeadNodes();
   }
-  
+
   for (Boundary b : boundaries) b.display();
 
   if (pause)checkNodeInfo();
@@ -328,8 +338,8 @@ void displayNoiseField() {
   float x2, y2;
   float noiseVal, angle;
 
-  for (int x = (int) w_pos.x; x < w_width+w_pos.x; x+=steps) {
-    for (int y = (int) w_pos.y+steps; y < w_height+w_pos.y; y+=steps) {
+  for (int x = tables[0][0]; x < tables[0][2]+tables[0][0]; x+=steps) {
+    for (int y = tables[0][1]+steps; y < tables[0][3]+tables[0][1]; y+=steps) {
 
       noiseVal = noise (x/noiseScale, y/noiseScale) * noiseStrength;
       angle = map (noiseVal, 0, 1, 0, TWO_PI);

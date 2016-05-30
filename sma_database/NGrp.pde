@@ -56,7 +56,7 @@ class NGrp {
   void redefineBody() {
 
     box2d.destroyBody(body);
-    diam+=1;
+    diam+=.6;
 
     //-------
 
