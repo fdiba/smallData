@@ -22,7 +22,7 @@ class Node {
   boolean alone;
 
   float density, friction, restitution;
-  
+
   int groupIndex = 1;
 
   Node(float x, float y, int _id, String _fName, String _name, String _country) {
@@ -40,9 +40,9 @@ class Node {
 
     BodyDef bd = new BodyDef();
     bd.type = BodyType.DYNAMIC;
-    
+
     //bd.fixedRotation =true;
-    
+
     pos = new Vec2(x, y);
 
     bd.position = box2d.coordPixelsToWorld(x, y);
@@ -59,7 +59,7 @@ class Node {
     fd.restitution = 0; //.5 how bouncy the fixture is
 
     fd.filter.groupIndex = groupIndex;
-  
+
     body.createFixture(fd);
 
     linearVelocity = new Vec2(random(-5, 5), random(-5, 5));
@@ -87,21 +87,29 @@ class Node {
   void editColor(color c) {
     rgb = c;
   }
-  void checkEdgesBox2d () {
-    if (pos.x < tables[0][0] + tables[0][4] || pos.x > tables[0][0] + tables[0][2] - tables[0][4] ||
-      pos.y < tables[0][1] + tables[0][4] || pos.y > tables[0][1] + tables[0][3] - tables[0][4]) {
+  //--------------------- checkEdges ----------------------------//
+  boolean checkEdgesBox2d (int[] t) {
+    if (pos.x < t[0] + t[4] || pos.x > t[0] + t[2] - t[4] ||
+      pos.y < t[1] + t[4] || pos.y > t[1] + t[3] - t[4]) {
       rgb = color(255, 0, 0); 
       isDead = true;
+      return true;
+    } else {
+      return false;
     }
   }
-  void checkEdges () {
-    if (loc.x < tables[0][0] + tables[0][4] || loc.x > tables[0][0] + tables[0][2] - tables[0][4] ||
-      loc.y < tables[0][1] + tables[0][4] || loc.y > tables[0][1] + tables[0][3] - tables[0][4]) {
+  boolean checkEdges (int[] t) {
+    if (loc.x < t[0] + t[4] || loc.x > t[0] + t[2] - t[4] ||
+      loc.y < t[1] + t[4] || loc.y > t[1] + t[3] - t[4]) {
       loc.x = random(width);
       loc.y = random(height);
       alpha = 0;
+      return true;
+    } else {
+      return false;
     }
   }
+  //--------------------------------------------------------------//
   void editVelBasedOnNoiseField(float noiseScale, float noiseStength) { //if !useBox2d
     float noiseVal = noise (loc.x/noiseScale, loc.y/noiseScale) * noiseStength;
     float angle = map (noiseVal, 0, 1, 0, TWO_PI);

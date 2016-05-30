@@ -16,7 +16,7 @@ MySQL dbconnection;
 MidiBus myBus;
 
 Box2DProcessing box2d;
-//World world;
+Attractor attractor;
 
 ArrayList<Boundary> boundaries;
 ArrayList<String[]> records;
@@ -82,6 +82,8 @@ void setup() {
   //box2d.listenForCollisions();
 
   createBoundaries(1);
+  
+  attractor = new Attractor(2, tables[1][0]+tables[1][2]/2, tables[1][1]+tables[1][3]/2);
 
   maxCreatures = 100; //------------------------------------------------>
 
@@ -152,16 +154,15 @@ void addNewNode(String[] arr) {
   Integer.parseInt(arr[0]), arr[1], arr[2], arr[3]));
 }
 void createBoundaries(int thickness) {
-  
+
   boundaries = new ArrayList<Boundary>();
 
   for (int[] t : tables) {
-    
+
     boundaries.add(new Boundary(t[2]/2+t[0], t[3]+thickness/2+t[1], t[2]+10, thickness)); //bottom
     boundaries.add(new Boundary(t[2]/2+t[0], t[1]-thickness/2-1, t[2]+10, thickness)); //top
     boundaries.add(new Boundary(t[0]-thickness/2-1, t[3]/2+t[1], thickness, t[3]+10)); //left
     boundaries.add(new Boundary(t[2]+thickness/2+t[0], t[3]/2+t[1], thickness, t[3]+10)); //right
-    
   }
 }
 void draw() { //TODO ENLARGE TERRITORY
@@ -191,19 +192,22 @@ void draw() { //TODO ENLARGE TERRITORY
       if (n.alone) {
         n.update();
         n.editVelBasedOnNoiseField(noiseScale, noiseStrength);
-        n.checkEdges();
+        n.checkEdges(tables[0]); //--------------------------------- TODO EDIT IT
       }
       n.display();
     } else {
       n.updateBox2d();
 
-      if (isOn) {
-        tryCreateGroup(n, i);
-        if (!n.isDead)tryLinkToGrp(n);
-      }
+      /*if (isOn) { //SMA V1
+       tryCreateGroup(n, i); //--------------------------------------------------------------------> check it
+       if (!n.isDead)tryLinkToGrp(n); //--------------------------------------------------------------------> check it
+       }*/
 
       n.editVelBasedOnNoiseFieldBox2d(noiseScale, noiseStrength);
-      n.checkEdgesBox2d();
+
+      if (n.checkEdgesBox2d(tables[0]) && isOn) { //SMA V2
+        createOrEditGroup(n);
+      }
 
       n.displayBox2d();
     }
@@ -214,19 +218,56 @@ void draw() { //TODO ENLARGE TERRITORY
       g.update();
       g.checkEdgesBox2d();
       g.display();
+      g.displayText();
+      
+      Vec2 force;
+      force = attractor.attract(g);
+      //println(force);
+      g.applyForce(force);
     }
-    for (NGrp g : groupes)g.displayText();
 
     removeDeadNodes();
   }
 
   for (Boundary b : boundaries) b.display();
+  attractor.display();
 
   if (pause)checkNodeInfo();
 
   cs.display();
 
-  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), "records:", records.size(), "bodies:", box2d.world.getBodyCount());
+  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(),
+                                    "records:", records.size(),
+                                    "bodies:", box2d.world.getBodyCount(),
+                                    "groupes:", groupes.size());
+}
+void createOrEditGroup(Node n) { //SMA V2
+
+  if (groupes.size()>0) {
+
+    NGrp grp = checkGrps(n.country);
+
+    if (grp==null) { //create new grp if grp do not already exists
+      NGrp g = new NGrp(n, tables[1]);
+      groupes.add(g);
+      removeNodeFromRecords(n);
+    } else { //check tryLinkToGrp
+
+      for (int i=0; i<groupes.size (); i++) {
+        NGrp g = groupes.get(i);
+        if (n.country.equals(g.name)) {
+          g.addNode(n);
+          removeNodeFromRecords(n);   
+          cs.update(g.name+" "+g.g_records.size());  
+          break;
+        }
+      }
+    }
+  } else {  // create first grp
+    NGrp g = new NGrp(n, tables[1]);
+    groupes.add(g);
+    removeNodeFromRecords(n);
+  }
 }
 void tryLinkToGrp(Node n) {
 
@@ -388,6 +429,8 @@ void keyPressed() {
 
   if (key == ' ') {
     pause = !pause;
+    if(pause)cs.update("||");
+    else cs.update("...");
   } else if (key == 'a') {
     isOn = !isOn;
     cs.update("interact " + str(isOn));
