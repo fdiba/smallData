@@ -82,7 +82,7 @@ void setup() {
   //box2d.listenForCollisions();
 
   createBoundaries(1);
-  
+
   attractor = new Attractor(2, tables[1][0]+tables[1][2]/2, tables[1][1]+tables[1][3]/2);
 
   maxCreatures = 100; //------------------------------------------------>
@@ -167,6 +167,7 @@ void createBoundaries(int thickness) {
 }
 void draw() { //TODO ENLARGE TERRITORY
 
+  colorMode(RGB, 255);
   background(225);
 
   if (!pause) box2d.step();
@@ -215,15 +216,19 @@ void draw() { //TODO ENLARGE TERRITORY
 
   if (useBox2d) {
     for (NGrp g : groupes) {
-      g.update();
-      g.checkEdgesBox2d();
+
+      if (!pause) {
+        g.update();
+        g.checkEdgesBox2d();
+
+        Vec2 force;
+        force = attractor.attract(g);
+        //println(force);
+        g.applyForce(force);
+      }
+
       g.display();
       g.displayText();
-      
-      Vec2 force;
-      force = attractor.attract(g);
-      //println(force);
-      g.applyForce(force);
     }
 
     removeDeadNodes();
@@ -236,10 +241,10 @@ void draw() { //TODO ENLARGE TERRITORY
 
   cs.display();
 
-  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(),
-                                    "records:", records.size(),
-                                    "bodies:", box2d.world.getBodyCount(),
-                                    "groupes:", groupes.size());
+  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), 
+  "records:", records.size(), 
+  "bodies:", box2d.world.getBodyCount(), 
+  "groupes:", groupes.size());
 }
 void createOrEditGroup(Node n) { //SMA V2
 
@@ -429,7 +434,7 @@ void keyPressed() {
 
   if (key == ' ') {
     pause = !pause;
-    if(pause)cs.update("||");
+    if (pause)cs.update("||");
     else cs.update("...");
   } else if (key == 'a') {
     isOn = !isOn;

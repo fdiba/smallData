@@ -17,6 +17,7 @@ class NGrp {
 
   color c;
   float alpha;
+  color strokeColor;
 
   PFont font;
   int nameTS = 60;
@@ -56,7 +57,8 @@ class NGrp {
     growth=.15;
     font = createFont("HelveticaNeue-Bold-10.vlw", 10);
 
-    c = color(40, 209, 89);
+    g_records = new ArrayList<Record>();
+    setColor();
 
     pos = new Vec2(random(t[0]+15, t[0]+t[2]-15), random(t[1]+15, t[1]+t[3]-15));
 
@@ -74,12 +76,11 @@ class NGrp {
 
     //n.alone = false; //remove attribute
     n.isDead = true;
+    g_records.add(new Record(n.id, n.fName, n.name));
 
     //---- bodies ----//
     createBodyV2(diam/2, n);
 
-    g_records = new ArrayList<Record>();
-    g_records.add(new Record(n.id, n.fName, n.name));
   }
   void addNode(Node n) {
 
@@ -89,22 +90,30 @@ class NGrp {
 
     redefineBody();
   }
+  void setColor() {
+    colorMode(HSB, 360, 100, 100);
+    float value = map(g_records.size(), 1, 400, 200, 40);
+    value = constrain(value, 40, 200);
+    c = color(value, 100, 100);
+    strokeColor = color(value, 100, 90);
+  }
   void redefineBody() {
+
+    setColor();
 
     box2d.destroyBody(body);
     diam+=growth;
 
     defineBody();
-    
+
     body.setLinearVelocity(linearVelocity);
     body.setAngularVelocity(angularVelocity);
-    
   }
-  void defineBody(){
-    
+  void defineBody() {
+
     BodyDef bd = new BodyDef();
     bd.position = box2d.coordPixelsToWorld(pos.x, pos.y);
-    
+
     bd.type = BodyType.DYNAMIC;
     body = box2d.world.createBody(bd);
 
@@ -121,7 +130,6 @@ class NGrp {
     fd.restitution = .3; //.5 how bouncy the fixture is
 
     body.createFixture(fd);
-    
   }
   void createBodyV2(float radius, Node n) { //-------------------------- SMA V2
 
@@ -130,13 +138,12 @@ class NGrp {
     //linearVelocity = new Vec2(random(-10, 10), random(-10, 10));
     linearVelocity = new Vec2(0, 0);
     body.setLinearVelocity(linearVelocity);
-    
+
     //angularVelocity = random(-10, 10);
     angularVelocity = 0f;
     body.setAngularVelocity(angularVelocity);
-    
+
     //println(body.m_mass);
-    
   }
   void applyForce(Vec2 v) {
     body.applyForce(v, body.getWorldCenter());
@@ -170,7 +177,7 @@ class NGrp {
     fd.restitution = .5; //.5 how bouncy the fixture is
 
     body.createFixture(fd);
-    
+
     linearVelocity = new Vec2(0, 0);
     body.setLinearVelocity(linearVelocity);
     //angularVelocity = random(-1, 1);
@@ -206,7 +213,7 @@ class NGrp {
   }
   void displayText() {
     if (g_records.size()>nameTS) {
-    //if (textWidth(ctryCode)+2<diam) {
+      //if (textWidth(ctryCode)+2<diam) {
       textFont(font);
       fill(25, alpha);
       text(ctryCode, pos.x-textWidth(ctryCode)/2, pos.y+4);
@@ -218,7 +225,12 @@ class NGrp {
     float d = map(alpha, 0, 255, 0, diam);
 
     fill(c, alpha);
-    noStroke();
+    if (g_records.size()>nameTS) {
+      stroke(strokeColor);
+      strokeWeight(1);
+    } else {
+      noStroke();
+    }
     ellipse(pos.x, pos.y, d, d);
   }
   boolean contains(float x, float y) {

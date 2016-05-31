@@ -6,10 +6,14 @@ class Attractor {
   Body body;
   
   float G;
+  color c;
 
   Attractor(float _diam, float x, float y) {
     
     G = 10; // Strength of force
+
+    colorMode(RGB, 360);
+    c = color(255, 0, 0);
 
     location = new PVector(x, y);
     diam = _diam;
@@ -55,7 +59,7 @@ class Attractor {
 
     Vec2 pos = box2d.getBodyPixelCoord(body);
     noStroke();
-    fill(255, 0, 0);
+    fill(c);
     //noFill();
     ellipse(pos.x, pos.y, diam, diam);
   }
