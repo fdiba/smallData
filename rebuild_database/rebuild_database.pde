@@ -7,10 +7,7 @@ MySQL msql;
 String mainTarget = "F:/IMEB/capsules";
 IntList years;
 
-String concours_fpart;
-String name_fpart;
-String fName_fpart;
-String ctry_fpart;
+String concours_fpart, name_fpart, fName_fpart, ctry_fpart, title_fpart, duration_fpart;
 
 int count = 0;
 
@@ -41,6 +38,9 @@ void setup() {
   fName_fpart = "prénom=";
   ctry_fpart = "pays=";
 
+  title_fpart = "titre=";
+  duration_fpart = "durée=";
+
   //----------------------------------------------//
   years = new IntList();
 
@@ -52,7 +52,7 @@ void setup() {
   for (Integer year : years) {
     println(year);
   }
-  println(years.size());
+  //println(years.size());
 }
 void processMtdFile(String target, String[] elements, String folderName) {
 
@@ -72,12 +72,136 @@ void processMtdFile(String target, String[] elements, String folderName) {
       if (lines.length>40) {
 
         info_concours = lines[40];
+
         if (info_concours.length() > concours_fpart.length()) {
-          editArtistInfos(lines, info_concours);
+
+          //editArtistInfos(lines, info_concours); //----------------------------------> where magic happens 1/2
+          editMusicInfos(lines, info_concours); //----------------------------------> where magic happens 2/2
         }
       }
     }
   }
+}
+void editMusicInfos(String[] lines, String editions) {
+
+  //---------------- editions --------------//
+  editions = editions.substring(concours_fpart.length());
+  editions = trim(editions);
+
+  //---------------- title --------------//
+  String title = lines[22].substring(title_fpart.length());
+  title = trim(title);
+
+  title = title.replaceAll("\'", "\\\\'");
+
+  /*try {
+   title = new String(title.getBytes("UTF-8"), "iso-8859-1");
+   } 
+   catch (IOException ie) {
+   println(ie);
+   }*/
+
+  //println(title);
+
+  //---------------- duration --------------//
+  String duration;
+  if (lines[24].length()>duration_fpart.length()) {
+    duration = lines[24].substring(duration_fpart.length());
+    duration = trim(duration);
+    duration = duration.replaceAll("\'", ":");
+    if (duration.equals("11:"))duration="11:00";
+    else if(duration.indexOf("00:")==0)duration=duration.substring(3);
+  } else duration = "";
+
+  //print(duration, ' ');
+
+  //---------------- fName & name --------------//
+  String name = getName(lines[20]);
+  String fName = lines[21].substring(fName_fpart.length());
+
+  if (name.equals("Rozman")) {
+    name = "Rozmann";
+    fName = "Akos";
+  }
+
+  try {
+    fName = new String(fName.getBytes("UTF-8"), "iso-8859-1");
+  } 
+  catch (IOException ie) {
+    println(ie);
+  }
+
+  //---------------- request --------------//
+
+  String request = "SELECT id FROM artist WHERE name =\"" + 
+    name + "\" and firstName =\"" + fName + "\""; 
+
+  msql.query(request);
+
+  if (!msql.next ()) { //we got a pb
+    println("pb ");
+  } else {
+    //println(random(200));
+
+    int artist_id = msql.getInt("id");
+
+    /*request = "INSERT INTO music (title, duration, editions, id_artist) VALUES ('"
+      + title + "', '" + duration + "', '" + editions + "', '"
+      +  artist_id + "') AS tmp WHERE NOT EXISTS (SELECT title FROM music WHERE title='"
+      + title + "') LIMIT 1;";*/
+
+    request = "INSERT INTO music (title, duration, editions, id_artist) VALUES ('"
+      + title + "', '" + duration + "', '" + editions + "', '"
+      +  artist_id + "')";
+
+    //msql.query(request); //-----------------------------------------------------------------------> 1/1
+    //println(fName, name, ctry, "            000000000 ", c_id);
+  }
+}
+String getName(String line) {
+
+  String str = line.substring(name_fpart.length());
+  String endStr = str.substring(1, str.length());
+  str = str.substring(0, 1) + endStr.toLowerCase();
+
+  str = trim(str);
+
+  String[] names = split(str, ' ');
+  names = trim(names);
+
+  str = "";
+
+  for (String n : names) {
+    char c = n.charAt(0);
+    if (str.length()<1) n = str(c).toUpperCase() + n.substring(1);
+    else n = " " + str(c).toUpperCase() + n.substring(1);
+    str = str + n;
+  }
+
+  int pos = str.indexOf("-"); 
+  if (pos>=0) {
+    char c = str.charAt(pos+1);            
+    str = str.substring(0, pos) + " " + str(c).toUpperCase()
+      + str.substring(pos+2, str.length());
+  }
+
+  pos = str.indexOf("'"); 
+  if (pos>=0) {
+    char c = str.charAt(pos+1);            
+    str = str.substring(0, pos) + "'" + str(c).toUpperCase()
+      + str.substring(pos+2, str.length());
+  }
+
+  str = str.replaceAll("\'", "\\\\'");
+
+  try {
+    str = new String(str.getBytes("UTF-8"), "iso-8859-1");
+  } 
+  catch (IOException ie) {
+    println(ie);
+  }
+
+  return str;
 }
 void editArtistInfos(String[] lines, String info_concours) {
 
@@ -88,47 +212,20 @@ void editArtistInfos(String[] lines, String info_concours) {
   String[] editions = split(info_concours, ',');
   editions = trim(editions);
 
-  //---------------- name --------------//
-
-  String name = lines[20].substring(name_fpart.length());
-  String endStr = name.substring(1, name.length());
-  name = name.substring(0, 1) + endStr.toLowerCase();
-
-  name = trim(name);
-
-  String[] names = split(name, ' ');
-  names = trim(names);
-
-  name = "";
-
-  for (String n : names) {
-    char c = n.charAt(0);
-    if (name.length()<1) n = str(c).toUpperCase() + n.substring(1);
-    else n = " " + str(c).toUpperCase() + n.substring(1);
-    name = name + n;
-  }
-
-  int pos = name.indexOf("-"); 
-  if (pos>=0) {
-    char c = name.charAt(pos+1);            
-    name = name.substring(0, pos) + " " + str(c).toUpperCase() +
-      name.substring(pos+2, name.length());
-  }
-
-  pos = name.indexOf("'"); 
-  if (pos>=0) {
-    char c = name.charAt(pos+1);            
-    name = name.substring(0, pos) + "'" + str(c).toUpperCase() +
-      name.substring(pos+2, name.length());
-  }
-
-  //---------------- fName --------------//
-
+  //---------------- fName & name --------------//
+  String name = getName(lines[20]);
   String fName = lines[21].substring(fName_fpart.length());
 
   if (name.equals("Rozman")) {
     name = "Rozmann";
     fName = "Akos";
+  }
+
+  try {
+    fName = new String(fName.getBytes("UTF-8"), "iso-8859-1");
+  } 
+  catch (IOException ie) {
+    println(ie);
   }
 
   //------------------ country ------------//
@@ -152,16 +249,6 @@ void editArtistInfos(String[] lines, String info_concours) {
 
   //println(fName, name, ctry, "             ", filename);
   //delay(200);
-
-  name = name.replaceAll("\'", "\\\\'");
-
-  try {
-    name = new String(name.getBytes("UTF-8"), "iso-8859-1");
-    fName = new String(fName.getBytes("UTF-8"), "iso-8859-1");
-  } 
-  catch (IOException ie) {
-    println(ie);
-  }
 
   String request = "SELECT id FROM artist WHERE name =\"" + 
     name + "\" and firstName =\"" + fName + "\""; 
