@@ -24,34 +24,6 @@ class NGrp {
   float growth;
   int diamMin;
 
-  NGrp(Node n1, Node n2) { //OLD SMA V1
-
-    alpha=127;
-    c = color(40, 209, 89);
-
-    pos = new Vec2();
-
-    diamMin = 15;
-    diam = diamMin;
-
-    tx = random(1000);
-    ty = tx+1000;
-
-    name = n1.country;
-
-    n1.alone = false;
-    n2.alone = false;
-
-    n1.isDead = true;
-    n2.isDead = true;
-
-    //---- bodies ----//
-    createBody(diam/2, n1, n2);
-
-    g_records = new ArrayList<Record>();
-    g_records.add(new Record(n1.id, n1.fName, n1.name));
-    g_records.add(new Record(n2.id, n2.fName, n2.name));
-  }
   NGrp(Node n, int[] t) { //--------------------------- SMA V2
 
     growth=.15;
@@ -75,7 +47,6 @@ class NGrp {
     else ctryCode = name;
 
     //n.alone = false; //remove attribute
-    n.isDead = true;
     g_records.add(new Record(n.id, n.fName, n.name));
 
     //---- bodies ----//
@@ -84,8 +55,6 @@ class NGrp {
   }
   void addNode(Node n) {
 
-    n.alone = false;
-    n.isDead = true;
     g_records.add(new Record(n.id, n.fName, n.name));
 
     redefineBody();

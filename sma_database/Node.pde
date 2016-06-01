@@ -19,15 +19,12 @@ class Node {
   float diam;
 
   boolean isDead;
-  boolean alone;
 
   float density, friction, restitution;
 
   int groupIndex = 1;
 
   Node(float x, float y, int _id, String _fName, String _name, String _country) {
-
-    alone = true;
 
     diam = 6f;
     rgb = color(0);
@@ -84,15 +81,11 @@ class Node {
     boolean inside = f.testPoint(worldPoint);
     return inside;
   }
-  void editColor(color c) {
-    rgb = c;
-  }
   //--------------------- checkEdges ----------------------------//
   boolean checkEdgesBox2d (int[] t) {
     if (pos.x < t[0] + t[4] || pos.x > t[0] + t[2] - t[4] ||
       pos.y < t[1] + t[4] || pos.y > t[1] + t[3] - t[4]) {
       rgb = color(255, 0, 0); 
-      isDead = true;
       return true;
     } else {
       return false;
@@ -101,9 +94,9 @@ class Node {
   boolean checkEdges (int[] t) {
     if (loc.x < t[0] + t[4] || loc.x > t[0] + t[2] - t[4] ||
       loc.y < t[1] + t[4] || loc.y > t[1] + t[3] - t[4]) {
-      loc.x = random(width);
+      /*loc.x = random(width);
       loc.y = random(height);
-      alpha = 0;
+      alpha = 0;*/
       return true;
     } else {
       return false;
@@ -159,20 +152,6 @@ class Node {
     float tmp_diam = diam/(256f/(1f+alpha));
     ellipse(pos.x, pos.y, tmp_diam, tmp_diam);
 
-    /*float a = body.getAngle();
-     pushMatrix();
-     translate(pos.x, pos.y);
-     rotate(a);
-     
-     noStroke();
-     ellipse(0, 0, tmp_diam*2, tmp_diam*2);
-     
-     // Let's add a line so we can see the rotation
-     strokeWeight(2);
-     stroke(255, 0, 0);
-     line(0, 0, tmp_diam, 0);
-     
-     popMatrix();*/
   }
 }
 
