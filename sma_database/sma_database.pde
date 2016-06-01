@@ -23,6 +23,9 @@ ArrayList<String[]> records;
 ArrayList<Node> nodes;
 ArrayList<NGrp> groupes;
 
+ArrayList<Composer> composers;
+ArrayList<Particle> particles;
+
 boolean fsMode;
 boolean displayNoiseField = false;
 
@@ -43,7 +46,7 @@ float extension;
 int fr;
 int usa;
 
-int r_count, r_count2, r_count3;
+int r_count1, r_count2, r_count3;
 
 FloatList floats;
 
@@ -67,9 +70,7 @@ void setup() {
   frame.setLocation(20, 40);
   frame.setResizable(true);
 
-  r_count = 0;
-  r_count2 = 0;
-  r_count3 = 0;
+  r_count1 = r_count2 = r_count3 = 0;
 
   extension = 20;
 
@@ -109,13 +110,16 @@ void setup() {
       + " INNER JOIN country ON artist.id_country = country.id";
     msql.query(request);
 
-    groupes = new ArrayList<NGrp>();
     records = new ArrayList<String[]>();
     nodes = new ArrayList<Node>();
+    groupes = new ArrayList<NGrp>();
+
+    composers = new ArrayList<Composer>();
+    particles = new ArrayList<Particle>();
 
     while (msql.next ()) {
 
-      r_count++;
+      r_count1++;
 
       int id = msql.getInt("id");
       String fName = msql.getString("firstName");
@@ -147,7 +151,7 @@ void setup() {
   }
 
   println("fr:", fr, "usa:", usa);
-  println("r_count:", r_count);
+  println("r_count:", r_count1);
 
   if (maxCreatures>records.size())maxCreatures=records.size();
 
@@ -214,11 +218,16 @@ void draw() { //TODO ENLARGE TERRITORY
         n.editVelBasedOnNoiseFieldBox2d(noiseScale, noiseStrength);
 
         if (n.checkEdgesBox2d(tables[0])) { //SMA V2
-          if (isOn)createOrEditGroup(n);
-          else {
+          if (isOn) {
+
+            createOrEditGroup(n);
+
+            checkDBforMusic(n.id, n.fName, n.name, n.country);
+          } else {
             putItInRecords(n.id, n.fName, n.name, n.country);
-            n.isDead = true;
           }
+
+          n.isDead = true;
         }
       } else {
 
@@ -229,6 +238,9 @@ void draw() { //TODO ENLARGE TERRITORY
       n.displayBox2d();
     }
   }
+
+  //-------------------------- particles ---------------------------//
+  if (composers.size()>0)createOrEditParticle();
 
   //-------------------------- groupes -----------------------------//
   if (useBox2d) {
@@ -259,10 +271,13 @@ void draw() { //TODO ENLARGE TERRITORY
 
   cs.display();
 
-  if (frameCount%(24*10*5)==0)println("nodes: ", nodes.size(), 
+  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), 
   "records:", records.size(), 
   "bodies:", box2d.world.getBodyCount(), 
   "groupes:", groupes.size(), 
+  "composers:", composers.size(), 
+  "particles:", particles.size(), 
+  "r_count2:", r_count2, 
   "r_count3:", r_count3);
 }
 void putItInRecords(int id, String fName, String name, String country) {
@@ -271,26 +286,68 @@ void putItInRecords(int id, String fName, String name, String country) {
   };
   records.add(arr);
 }
-void checkDBforMusic(int id) {
+void checkDBforMusic(int id, String fName, String name, String country) {
 
   String request = "SELECT title FROM music  WHERE id_artist=" + id;
   msql.query(request);
 
-  r_count2++;
+  //r_count2++;
 
   int c=0;
   String title = "";
+  ArrayList<String[]>musics = new ArrayList<String[]>();
 
   while (msql.next ()) {
+
+    r_count2++;
     c++;
 
+    //------------------------ title --------------------------//
     title = msql.getString("title");
-    //println("MATCH");
+
+    try {
+      title = new String(title.getBytes("iso-8859-1"), "UTF-8");
+    } 
+    catch (IOException ie) {
+      println(ie);
+    }
+
+    String[] music = {
+      title, title, title
+    };
+    musics.add(music);
   }
 
-  if (c>0)println(c, r_count2, title);
 
-  //delay(200);
+  if (musics.size()>0) {
+    Composer cp = new Composer(id, fName, name, country, musics);
+    composers.add(cp);
+    //println(musics.size());
+  }
+  //if (musics.size()>5)println(musics.size(), "hits:", fName, name); //----------------------------------------------> check highest!
+}
+void createOrEditParticle() {
+
+
+  for (int i=composers.size ()-1; i>=0; i--) {
+
+    if (particles.size()>0) {
+
+      int index = checkParticles(composers.get(i).country);
+
+      if (index<0) { //create new grp if grp do not already exists
+
+        particles.add(new Particle(composers.remove(i)));
+        
+      } else {
+        
+        particles.get(index).addComposer(composers.remove(i));
+        
+      }
+    } else {
+      particles.add(new Particle(composers.remove(i)));
+    }
+  }
 }
 void createOrEditGroup(Node n) { //SMA V2
 
@@ -302,7 +359,7 @@ void createOrEditGroup(Node n) { //SMA V2
 
       NGrp g = new NGrp(n, tables[1]);
       groupes.add(g);
-    } else { //check tryLinkToGrp
+    } else {
 
       NGrp g = groupes.get(index);
       g.addNode(n);
@@ -313,8 +370,15 @@ void createOrEditGroup(Node n) { //SMA V2
     NGrp g = new NGrp(n, tables[1]);
     groupes.add(g);
   }
-  n.isDead = true;
   r_count3++;
+}
+int checkParticles(String ctryName) {
+  for (int i=0; i<particles.size (); i++) {
+    if (particles.get(i).name.equals(ctryName)) {
+      return i;
+    }
+  }
+  return -1;
 }
 int checkGrps(String ctryName) {
   for (int i=0; i<groupes.size (); i++) {
