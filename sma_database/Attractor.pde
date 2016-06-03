@@ -50,6 +50,7 @@ class Attractor {
     //float strength = (G * 1 * g.body.m_mass) / (distance * distance); // Calculate gravitional force magnitude
     //float strength = distance * distance; // Calculate gravitional force magnitude
     //float strength = (G * 1 * g.body.m_mass) / (distance * distance); // Calculate gravitional force magnitude
+    //float strength = map(g.diam, g.diamMin, 50, 0, 100);
     float strength = map(g.diam, g.diamMin, 50, -20, 100);
     force.mulLocal(strength*g.body.m_mass);         // Get force vector --> magnitude * direction
 

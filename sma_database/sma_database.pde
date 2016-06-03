@@ -262,6 +262,14 @@ void draw() { //TODO ENLARGE TERRITORY
     }
   }
 
+  //-------------------------- particles -----------------------------//
+  
+  for (Particle p : particles) {
+    p.update();
+    p.checkEdges();
+    p.display();
+  }
+
   //-------------------------- others -----------------------------//
 
   for (Boundary b : boundaries) b.display();
@@ -337,7 +345,7 @@ void createOrEditParticle() {
 
       if (index<0) { //create new grp if grp do not already exists
 
-        particles.add(new Particle(composers.remove(i)));
+        particles.add(new Particle(composers.remove(i), tables[2]));
         
       } else {
         
@@ -345,7 +353,7 @@ void createOrEditParticle() {
         
       }
     } else {
-      particles.add(new Particle(composers.remove(i)));
+      particles.add(new Particle(composers.remove(i), tables[2]));
     }
   }
 }
