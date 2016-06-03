@@ -17,6 +17,7 @@ class Node {
   private color rgb;
   int alpha;
   float diam;
+  float diamMax;
 
   boolean isDead;
 
@@ -26,7 +27,7 @@ class Node {
 
   Node(float x, float y, int _id, String _fName, String _name, String _country) {
 
-    diam = 6f;
+    diamMax = 6f;
     rgb = color(0);
     alpha = 0;
 
@@ -110,13 +111,18 @@ class Node {
     vel.y = sin (angle);
   }
   void update() {
-    if (alpha<255)alpha+=5;
+    
+    if (alpha<255) {
+      alpha+=5;
+      diam = diamMax/(256f/(1f+alpha));
+    }
+
     loc.add (PVector.div(PVector.mult(vel, speed), 256f/(1f+alpha)));
   }
   void display() {
     fill(rgb, alpha);
-    float tmp_diam = diam/(256f/(1f+alpha));
-    ellipse(loc.x, loc.y, tmp_diam, tmp_diam);
+    //float tmp_diam = diam/(256f/(1f+alpha));
+    ellipse(loc.x, loc.y, diam, diam);
   }
   //---------------- Box2d ----------------//
   void editVelBasedOnNoiseFieldBox2d(float noiseScale, float noiseStength) {
@@ -142,15 +148,17 @@ class Node {
     body.setLinearVelocity(linearVelocity);
   }
   void updateBox2d() {
-    if (alpha<255)alpha+=5;
+    if (alpha<255) {
+      alpha+=5;
+      diam = diamMax/(256f/(1f+alpha));
+    }
     pos = box2d.getBodyPixelCoord(body);
   }
   void displayBox2d() {
 
     noStroke();
     fill(rgb, alpha);
-    float tmp_diam = diam/(256f/(1f+alpha));
-    ellipse(pos.x, pos.y, tmp_diam, tmp_diam);
+    ellipse(pos.x, pos.y, diam, diam);
 
   }
 }
