@@ -11,12 +11,15 @@ import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.*;
 import org.jbox2d.dynamics.joints.*;
 import shiffman.box2d.*;
+import controlP5.*;
 
 MySQL msql;
 MidiBus myBus;
 
 Box2DProcessing box2d;
 Attractor attractor;
+
+ControlP5 cp5;
 
 ArrayList<Boundary> boundaries;
 ArrayList<String[]> records;
@@ -46,21 +49,23 @@ float extension;
 int fr;
 int usa;
 
-int r_count1, r_count2, r_count3;
+int r_count1, r_musics, r_count3;
 
 FloatList floats;
+
+int cpTS;
 
 //x, y, w, h, offset must be < 15
 int[][] tables = {
   {
-    20, 40, 640/2, 480/2, 6
+    20, 40, 640/2, 480/2, 6, 0, 0
   }
   , {
-    20, 40+480/2+20, 640/2, 480/2, 6
+    20, 40+480/2+20, 640/2, 480/2, 6, 0, 0
   }
   , 
   {
-    20+640/2+20, 40+480/2+20, 640/2, 480/2, 6
+    20+640/2+20, 40+480/2+20, 640/2, 480/2, 6, 20+640/2+20+(640/2)/2, 40+480/2+20+(480/2)/2
   }
 };
 
@@ -69,8 +74,13 @@ void setup() {
   size(800, 600);
   frame.setLocation(20, 40);
   frame.setResizable(true);
+  
+  cp5 = new ControlP5(this);
+  // name, minValue, maxValue, defaultValue, x, y, width, height
+  cpTS = 26;
+  cp5.addSlider("composers TS", 0, 200, cpTS, 430, 80, 100, 14).setId(1).setColorLabel(color(0));
 
-  r_count1 = r_count2 = r_count3 = 0;
+  r_count1 = r_musics = r_count3 = 0;
 
   extension = 20;
 
@@ -265,13 +275,18 @@ void draw() { //TODO ENLARGE TERRITORY
   //-------------------------- particles -----------------------------//
 
   for (Particle p : particles) {
-    if (!pause) {
-      p.update(particles); //---------------------------------------------------------------------------->
-      p.checkEdges();
+
+    if (p.composers.size()>cpTS) {
+      if (!pause) {
+        p.update(particles); //---------------------------------------------------------------------------->
+        p.checkEdges();
+      }
+      p.display();
     }
-    p.display();
   }
-  for (Particle p : particles) p.displayText();
+  for (Particle p : particles) {
+    if (p.composers.size()>cpTS) p.displayText();
+  }
 
   //-------------------------- others -----------------------------//
 
@@ -288,7 +303,7 @@ void draw() { //TODO ENLARGE TERRITORY
   "groupes:", groupes.size(), 
   "composers:", composers.size(), 
   "particles:", particles.size(), 
-  "r_count2:", r_count2, 
+  "r_musics:", r_musics, 
   "r_count3:", r_count3);
 }
 void putItInRecords(int id, String fName, String name, String country) {
@@ -302,15 +317,13 @@ void checkDBforMusic(int id, String fName, String name, String country) {
   String request = "SELECT title FROM music  WHERE id_artist=" + id;
   msql.query(request);
 
-  //r_count2++;
-
   int c=0;
   String title = "";
   ArrayList<String[]>musics = new ArrayList<String[]>();
 
   while (msql.next ()) {
 
-    r_count2++;
+    r_musics++;
     c++;
 
     //------------------------ title --------------------------//
@@ -572,6 +585,17 @@ void keyPressed() {
     noiseSeed ((int) random (10000));
   } else if (key == 's') {
     saveIMG();
+  }
+}
+//-------------------------- P5 -----------------------------//
+// function controlEvent will be invoked with every value change 
+// in any registered controller
+public void controlEvent(ControlEvent theEvent) {
+  println("got a control event from controller with id "+theEvent.getId());
+  switch(theEvent.getId()) {
+    case(1): // numberboxA is registered with id 1
+    cpTS = (int)(theEvent.getController().getValue());
+    break;
   }
 }
 //--------------------------- collision ------------//

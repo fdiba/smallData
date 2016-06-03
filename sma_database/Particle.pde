@@ -1,8 +1,6 @@
 class Particle {
 
-  PVector loc;
-  PVector vel;
-  PVector acc;
+  PVector loc, vel, acc;
 
   String name;
   String ctryCode;
@@ -10,8 +8,7 @@ class Particle {
   ArrayList<Composer> composers;
   int[] table;
   color c, strokeColor;
-  float diamMax;
-  float diam;
+  float diamMax, diam;
 
   float alpha;
 
@@ -22,6 +19,8 @@ class Particle {
 
   int countTS;
   PFont font;
+
+  PVector center;
 
   Particle(Composer cp, int[] t) {
 
@@ -57,6 +56,8 @@ class Particle {
 
     table = t;
 
+    center = new PVector(table[5], table[6]);
+
     loc = new PVector(table[0]+table[4]+random(table[2]-table[4]*2), table[1]+table[4]+random(table[3]-+table[4]*2));
 
     //colorMode(HSB, 360, 100, 100);
@@ -70,6 +71,7 @@ class Particle {
 
     diamMax+=growth;
     diam = diamMax;
+
 
     //println(name, composers.size());
   }
@@ -86,19 +88,22 @@ class Particle {
     PVector steer = new PVector(0, 0);
     int count = 0;
 
-    for (Particle p : particles) {
+    for (Particle p : myParticles) {
 
-      float desiredseparation = diam/2+p.diam/2+1;
+      if (p.composers.size()>cpTS) {
 
-      float d = PVector.dist(loc, p.loc);
+        float desiredseparation = diam/2+p.diam/2+3;
 
-      if ((d > 0) && (d < desiredseparation)) {
+        float d = PVector.dist(loc, p.loc);
 
-        PVector diff = PVector.sub(loc, p.loc);
-        diff.normalize();
-        diff.div(d); // Weight by distance
-        steer.add(diff);
-        count++;
+        if ((d > 0) && (d < desiredseparation)) {
+
+          PVector diff = PVector.sub(loc, p.loc);
+          diff.normalize();
+          diff.div(d); // Weight by distance
+          steer.add(diff);
+          count++;
+        }
       }
     }
 
@@ -114,6 +119,23 @@ class Particle {
 
     return steer;
   }
+  // A method that calculates and applies a steering force towards a target
+  // STEER = DESIRED MINUS VELOCITY
+  PVector seek(PVector target) {
+
+    PVector desired = PVector.sub(target, loc);  // A vector pointing from the location to the target
+
+    // Normalize desired and scale to maximum speed
+    desired.normalize();
+
+    desired.mult(maxspeed);
+    // Steering = Desired minus Velocity
+    PVector steer = PVector.sub(desired, vel);
+    steer.limit(maxforce);  // Limit to maximum steering force
+
+
+      return steer;
+  }
   void applyForce(PVector force) {
     // We could add mass here if we want A = F / M
     acc.add(force);
@@ -125,8 +147,14 @@ class Particle {
       diam = diamMax/(256f/(1f+alpha));
     }
 
+    PVector seek = seek(center);
     PVector sep = separate(myParticles);
-    sep.mult(1);
+
+    sep.mult(5);
+    seek.mult(1);
+
+
+    applyForce(seek);
     applyForce(sep);
 
     //loc.x += random(-1, 1);
@@ -167,6 +195,7 @@ class Particle {
     }
   }
   void display() {
+
     fill(c, alpha);
     if (composers.size()>countTS) {
       stroke(strokeColor);
@@ -175,6 +204,10 @@ class Particle {
       noStroke();
     }
     ellipse(loc.x, loc.y, diam, diam);
+
+    //noStroke();
+    //fill(255, 0, 0);
+    //ellipse(table[5], table[6], 10, 10);
   }
 }
 
