@@ -85,19 +85,32 @@ void setup() {
   cp5 = new ControlP5(this);
   cp5.setAutoDraw(false);
 
+  //Label.setUpperCaseDefault(false);
+  //cp5.setFont(createFont("Arial", 12));
 
   cp5.addScrollableList("composers")
-    .setPosition(100, 100)
-      .setSize(150, 100)
+    .setPosition(50, 100)
+      .setSize(200, 100)
         .setBarHeight(20)
           .setItemHeight(20).hide().setId(2);
 
+  //cp5.get(ScrollableList.class, "composers").getValueLabel().toUpperCase(false);
+  //cp5.get(ScrollableList.class, "composers").getCaptionLabel().toUpperCase(false);
+
   state0 = true;
-  cp5.addToggle("state 0").setPosition(430, 50).setSize(30, 14).setId(0).setValue(state0).setColorLabel(color(0));
+
+  cp5.addToggle("state 0")
+    .setPosition(430, 50)
+      .setSize(30, 14)
+        .setId(0)
+          .setValue(state0)
+            .setColorLabel(color(0));
 
   // name, minValue, maxValue, defaultValue, x, y, width, height
   cpTS = 26;
-  cp5.addSlider("composers TS", 0, 200, cpTS, 430, 80, 100, 14).setId(1).setColorLabel(color(0));
+  cp5.addSlider("composers TS", 0, 200, cpTS, 430, 80, 100, 14)
+    .setId(1)
+      .setColorLabel(color(0));
 
   r_count1 = r_musics = r_count3 = 0;
 
@@ -529,15 +542,36 @@ void checkNodeAndParticleInfo() {
     }
   }
 }
+void updateCPList(Particle p) {
+
+  sl_p = p;
+
+  cp5.get(ScrollableList.class, "composers").clear();
+  String str = p.ctryCode + ' ' + p.composers.size();
+  cp5.get(ScrollableList.class, "composers").setLabel(str);
+
+  ArrayList<String> l = new ArrayList<String>(); //4
+
+  for (Composer c : p.composers) {
+    String label = c.name + ' ' + c.fName + ' ' + c.musics.size();
+    l.add(label);
+  }
+
+  cp5.get(ScrollableList.class, "composers").setItems(l);
+}
 void mousePressed() {
-  
+
   cs.update("");
 
 
   for (Particle p : particles) {
     if (p.contains(mouseX, mouseY)) {
       String str = p.name + " " + p.composers.size();
-      if (!str.equals(cs.message)) cs.update(str);
+      if (!str.equals(cs.message)) {
+
+        cs.update(str);
+        updateCPList(p);
+      }
       //println(random(200));
 
       if (state1) {
@@ -553,36 +587,6 @@ void mousePressed() {
       cp5.getController("composers").show();
 
       //saveIMG();
-
-
-      //---------- list ------------//
-      
-      sl_p = p;
-
-      cp5.get(ScrollableList.class, "composers").clear();
-      cp5.get(ScrollableList.class, "composers").setLabel("composers");
-
-      ArrayList<String> l = new ArrayList<String>(); //4
-      
-      for(Composer c : p.composers){
-        String label = c.name + ' ' + c.fName + ' ' + c.musics.size();
-        l.add(label);
-      }
-
-      /*l.add("test");
-      l.add("foo");
-      l.add("bar");
-      l.add("test");
-      l.add("foo");
-      l.add("bar");
-      l.add("test");
-      l.add("foo");
-      l.add("bar");
-      l.add("test");
-      l.add("foo");
-      l.add("bar");*/
-
-      cp5.get(ScrollableList.class, "composers").setItems(l);
     }
   }
 }

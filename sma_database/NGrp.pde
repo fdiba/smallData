@@ -24,7 +24,7 @@ class NGrp {
   float growth;
   int diamMin;
 
-  NGrp(Node n, int[] t) { //--------------------------- SMA V2
+  NGrp(Node n, int[] t) {
 
     growth=.15;
     font = createFont("HelveticaNeue-Bold-10.vlw", 10);

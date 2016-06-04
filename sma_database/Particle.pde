@@ -65,7 +65,18 @@ class Particle {
   }
   void addComposer(Composer cp) {
 
-    composers.add(cp);
+    boolean higher = false;
+
+    for (int i=0; i<composers.size (); i++) {
+
+      if (cp.musics.size() > composers.get(i).musics.size()) {
+        composers.add(i, cp);
+        higher = true;
+        break;
+      }
+    }
+
+    if (!higher)composers.add(cp);
 
     setColors();
 
@@ -189,9 +200,9 @@ class Particle {
   }
   //------------------ interactivity -------------------//
   boolean contains(float x, float y) {
-    
+
     float d = dist(x, y, loc.x, loc.y);
-    if(d<diam/2) return true;
+    if (d<diam/2) return true;
     else return false;
   }
   //-------------------- display ----------------------//
