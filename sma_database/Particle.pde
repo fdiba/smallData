@@ -187,6 +187,14 @@ class Particle {
       loc.y = table[1] + table[4];
     }
   }
+  //------------------ interactivity -------------------//
+  boolean contains(float x, float y) {
+    
+    float d = dist(x, y, loc.x, loc.y);
+    if(d<diam/2) return true;
+    else return false;
+  }
+  //-------------------- display ----------------------//
   void displayText() {
     if (composers.size()>countTS) {
       textFont(font);

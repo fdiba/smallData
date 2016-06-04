@@ -47,7 +47,7 @@ class Node {
     body = box2d.world.createBody(bd);
 
     CircleShape cs = new CircleShape();
-    cs.m_radius = box2d.scalarPixelsToWorld(diam/2);
+    cs.m_radius = box2d.scalarPixelsToWorld(diamMax/2);
 
     FixtureDef fd = new FixtureDef();
     fd.shape = cs;

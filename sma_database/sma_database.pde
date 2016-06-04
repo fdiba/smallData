@@ -21,6 +21,8 @@ Attractor attractor;
 
 ControlP5 cp5;
 
+boolean state0, state1;
+
 ArrayList<Boundary> boundaries;
 ArrayList<String[]> records;
 ArrayList<Node> nodes;
@@ -74,11 +76,13 @@ void setup() {
   size(800, 600);
   frame.setLocation(20, 40);
   frame.setResizable(true);
-  
+
   cp5 = new ControlP5(this);
   // name, minValue, maxValue, defaultValue, x, y, width, height
   cpTS = 26;
   cp5.addSlider("composers TS", 0, 200, cpTS, 430, 80, 100, 14).setId(1).setColorLabel(color(0));
+
+  state0 = true;
 
   r_count1 = r_musics = r_count3 = 0;
 
@@ -194,6 +198,20 @@ void draw() { //TODO ENLARGE TERRITORY
   colorMode(RGB, 255);
   background(225);
 
+  if (state0) state0();
+
+
+  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), 
+  "records:", records.size(), 
+  "bodies:", box2d.world.getBodyCount(), 
+  "groupes:", groupes.size(), 
+  "composers:", composers.size(), 
+  "particles:", particles.size(), 
+  "r_musics:", r_musics, 
+  "r_count3:", r_count3);
+}
+void state0() {
+
   if (!pause) box2d.step();
 
   if (displayNoiseField) displayNoiseField();
@@ -293,18 +311,9 @@ void draw() { //TODO ENLARGE TERRITORY
   for (Boundary b : boundaries) b.display();
   attractor.display();
 
-  if (pause)checkNodeInfo();
+  if (pause)checkNodeAndParticleInfo();
 
   cs.display();
-
-  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), 
-  "records:", records.size(), 
-  "bodies:", box2d.world.getBodyCount(), 
-  "groupes:", groupes.size(), 
-  "composers:", composers.size(), 
-  "particles:", particles.size(), 
-  "r_musics:", r_musics, 
-  "r_count3:", r_count3);
 }
 void putItInRecords(int id, String fName, String name, String country) {
   String[] arr = {
@@ -441,27 +450,33 @@ void displayNoiseField() {
   }
 }
 
-void checkNodeInfo() {
-  if (pause) {
-    for (Node n : nodes) {
-      if (n.contains(mouseX, mouseY)) {
-        if (!str(n.id).equals(cs.message)) {
-          String str = str(n.id) + " " + n.fName + " " + n.name + " " + n.country;
-          cs.update(str);
-        }
-      }
+
+//------------------------- mouse -------------------------//
+
+void checkNodeAndParticleInfo() {
+
+  for (Node n : nodes) {
+    if (n.contains(mouseX, mouseY)) {
+      String str = str(n.id) + " " + n.fName + " " + n.name + " " + n.country;
+      if (!str.equals(cs.message)) cs.update(str);
     }
-    for (NGrp g : groupes) {
-      if (g.contains(mouseX, mouseY)) {
-        if (!g.name.equals(cs.message)) {
-          String str = g.name + " " + g.g_records.size();
-          cs.update(str);
-        }
-      }
+  }
+
+  for (NGrp g : groupes) {
+    if (g.contains(mouseX, mouseY)) {
+      String str = g.name + " " + g.g_records.size();
+      if (!str.equals(cs.message)) cs.update(str);
+    }
+  }
+
+  for (Particle p : particles) {
+    if (p.contains(mouseX, mouseY)) {
+      String str = p.name + " " + p.composers.size();
+      if (!str.equals(cs.message)) cs.update(str);
+      //println(random(200));
     }
   }
 }
-//------------------------- mouse -------------------------//
 void mousePressed() {
   cs.update("");
 }
