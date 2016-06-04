@@ -82,6 +82,8 @@ void setup() {
   frame.setLocation(20, 40);
   frame.setResizable(true);
 
+  //-------------------- cp5 --------------------------//
+
   cp5 = new ControlP5(this);
   cp5.setAutoDraw(false);
 
@@ -92,10 +94,22 @@ void setup() {
     .setPosition(50, 100)
       .setSize(200, 100)
         .setBarHeight(20)
-          .setItemHeight(20).hide().setId(2);
+          .setItemHeight(20)
+            .setType(ControlP5.LIST)
+              .hide()
+                .setId(2);
 
   //cp5.get(ScrollableList.class, "composers").getValueLabel().toUpperCase(false);
   //cp5.get(ScrollableList.class, "composers").getCaptionLabel().toUpperCase(false);
+
+  cp5.addScrollableList("playlist")
+    .setPosition(400, 120)
+      .setSize(230, 100)
+        .setBarHeight(20)
+          .setItemHeight(20)
+            .setType(ControlP5.LIST)
+              .hide()
+                .setId(3);
 
   state0 = true;
 
@@ -111,6 +125,8 @@ void setup() {
   cp5.addSlider("composers TS", 0, 200, cpTS, 430, 80, 100, 14)
     .setId(1)
       .setColorLabel(color(0));
+
+  //----------------------------------------------//
 
   r_count1 = r_musics = r_count3 = 0;
 
@@ -387,7 +403,7 @@ void putItInRecords(int id, String fName, String name, String country) {
 }
 void checkDBforMusic(int id, String fName, String name, String country) {
 
-  String request = "SELECT title FROM music  WHERE id_artist=" + id;
+  String request = "SELECT title FROM music  WHERE id_artist=" + id; //TODO -----------------------------------------------> CHECK it
   msql.query(request);
 
   int c=0;
@@ -542,7 +558,27 @@ void checkNodeAndParticleInfo() {
     }
   }
 }
+void updatePlaylist(Composer cp) {
+
+  cp5.getController("playlist").show();
+
+  cp5.get(ScrollableList.class, "playlist").clear();
+  String str = cp.name + ' ' + cp.musics.size();
+  cp5.get(ScrollableList.class, "playlist").setLabel(str);
+
+  ArrayList<String> l = new ArrayList<String>();
+
+  for (String[] info : cp.musics) {
+    //String label = c.name + ' ' + c.fName + ' ' + c.musics.size();
+    l.add(info[0]);
+  }
+
+  cp5.get(ScrollableList.class, "playlist").setItems(l);
+}
 void updateCPList(Particle p) {
+
+  cp5.getController("playlist").hide();
+
 
   sl_p = p;
 
@@ -550,7 +586,7 @@ void updateCPList(Particle p) {
   String str = p.ctryCode + ' ' + p.composers.size();
   cp5.get(ScrollableList.class, "composers").setLabel(str);
 
-  ArrayList<String> l = new ArrayList<String>(); //4
+  ArrayList<String> l = new ArrayList<String>();
 
   for (Composer c : p.composers) {
     String label = c.name + ' ' + c.fName + ' ' + c.musics.size();
@@ -725,7 +761,10 @@ public void controlEvent(ControlEvent theEvent) {
     state1 = !state0;
 
     if (state1)cp5.getController("composers").show();
-    else cp5.getController("composers").hide();
+    else {
+      cp5.getController("composers").hide();
+      cp5.getController("playlist").hide();
+    }
 
     //println(state0);
     break;
@@ -736,6 +775,7 @@ public void controlEvent(ControlEvent theEvent) {
     println((int)theEvent.getController().getValue());
     sl_cp = sl_p.composers.get((int)theEvent.getController().getValue());
     println(sl_cp.name, sl_cp.fName);
+    updatePlaylist(sl_cp);
     break;
   }
 }
