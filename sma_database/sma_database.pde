@@ -78,11 +78,21 @@ void setup() {
   frame.setResizable(true);
 
   cp5 = new ControlP5(this);
+  cp5.setAutoDraw(false);
+
+
+  cp5.addScrollableList("composers")
+    .setPosition(100, 100)
+      .setSize(150, 100)
+        .setBarHeight(20)
+          .setItemHeight(20).hide();
+
+  state0 = true;
+  cp5.addToggle("state 0").setPosition(430, 50).setSize(30, 14).setId(0).setValue(state0).setColorLabel(color(0));
+
   // name, minValue, maxValue, defaultValue, x, y, width, height
   cpTS = 26;
   cp5.addSlider("composers TS", 0, 200, cpTS, 430, 80, 100, 14).setId(1).setColorLabel(color(0));
-
-  state0 = true;
 
   r_count1 = r_musics = r_count3 = 0;
 
@@ -199,7 +209,9 @@ void draw() { //TODO ENLARGE TERRITORY
   background(225);
 
   if (state0) state0();
+  else if (state1) state1();
 
+  cp5.draw();
 
   if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), 
   "records:", records.size(), 
@@ -209,6 +221,23 @@ void draw() { //TODO ENLARGE TERRITORY
   "particles:", particles.size(), 
   "r_musics:", r_musics, 
   "r_count3:", r_count3);
+}
+void state1() {
+
+  if (!pause) box2d.step();
+
+  //-------------------------- batches 2 and 3 -----------------------------//
+
+  updateAndDisplayBatch2();
+  updateAndDisplayBatch3();
+
+  //-------------------------- others -----------------------------//
+
+  displayBoundaries();
+
+  if (pause)checkNodeAndParticleInfo();
+
+  cs.display();
 }
 void state0() {
 
@@ -265,12 +294,54 @@ void state0() {
 
       n.displayBox2d();
     }
-  }
+  }  
 
-  //-------------------------- particles ---------------------------//
+  //-------------------------- batches 2 and 3 -----------------------------//
+
+  updateAndDisplayBatch2();
+  updateAndDisplayBatch3();
+
+  //-------------------------- others -----------------------------//
+
+  displayBoundaries();
+
+  if (pause)checkNodeAndParticleInfo();
+
+  cs.display();
+}
+void displayBoundaries() {
+
+  for (int i=0; i<boundaries.size (); i++) {
+
+    if (state0)boundaries.get(i).display();
+    else {
+
+      if (state1 && i >3)boundaries.get(i).display();
+    }
+  }
+}
+void updateAndDisplayBatch3() {
+
   if (composers.size()>0)createOrEditParticle();
 
-  //-------------------------- groupes -----------------------------//
+  for (Particle p : particles) {
+
+    if (p.composers.size()>cpTS) {
+      if (!pause) {
+        p.update(particles);
+        p.checkEdges();
+      }
+      p.display();
+    }
+  }
+  for (Particle p : particles) {
+    if (p.composers.size()>cpTS) p.displayText();
+  }
+}
+void updateAndDisplayBatch2() {
+
+  attractor.display();
+
   if (useBox2d) {
 
     for (NGrp g : groupes) {
@@ -289,31 +360,6 @@ void state0() {
       g.displayText();
     }
   }
-
-  //-------------------------- particles -----------------------------//
-
-  for (Particle p : particles) {
-
-    if (p.composers.size()>cpTS) {
-      if (!pause) {
-        p.update(particles); //---------------------------------------------------------------------------->
-        p.checkEdges();
-      }
-      p.display();
-    }
-  }
-  for (Particle p : particles) {
-    if (p.composers.size()>cpTS) p.displayText();
-  }
-
-  //-------------------------- others -----------------------------//
-
-  for (Boundary b : boundaries) b.display();
-  attractor.display();
-
-  if (pause)checkNodeAndParticleInfo();
-
-  cs.display();
 }
 void putItInRecords(int id, String fName, String name, String country) {
   String[] arr = {
@@ -420,6 +466,7 @@ int checkGrps(String ctryName) {
   return -1;
 }
 void saveIMG() {
+
   Date date = new Date();
   String name = "data/sma-db-" + date.getTime() + ".jpg";
   save(name);
@@ -470,7 +517,7 @@ void checkNodeAndParticleInfo() {
   }
 
   for (Particle p : particles) {
-    if (p.contains(mouseX, mouseY)) {
+    if (p.contains(mouseX, mouseY) && p.composers.size()>cpTS) {
       String str = p.name + " " + p.composers.size();
       if (!str.equals(cs.message)) cs.update(str);
       //println(random(200));
@@ -479,6 +526,29 @@ void checkNodeAndParticleInfo() {
 }
 void mousePressed() {
   cs.update("");
+
+
+  for (Particle p : particles) {
+    if (p.contains(mouseX, mouseY)) {
+      String str = p.name + " " + p.composers.size();
+      if (!str.equals(cs.message)) cs.update(str);
+      //println(random(200));
+
+      if (state1) {
+      } else { //change of state
+
+          state0 = false;
+        state1 = !state0;
+
+        cp5.getController("state 0").setValue(0);
+      }
+
+      //if not the same
+      cp5.getController("composers").show();
+
+      //saveIMG();
+    }
+  }
 }
 //------------------------- midi interface -------------------------//
 void resetFighterTwister() {
@@ -606,9 +676,20 @@ void keyPressed() {
 // function controlEvent will be invoked with every value change 
 // in any registered controller
 public void controlEvent(ControlEvent theEvent) {
-  println("got a control event from controller with id "+theEvent.getId());
+  println("got a control event from controller with id " + theEvent.getId());
   switch(theEvent.getId()) {
-    case(1): // numberboxA is registered with id 1
+    case(0):
+    if (theEvent.getController().getValue()>0)state0=true;
+    else state0 = false;
+
+    state1 = !state0;
+
+    if (state1)cp5.getController("composers").show();
+    else cp5.getController("composers").hide();
+
+    //println(state0);
+    break;
+    case(1):
     cpTS = (int)(theEvent.getController().getValue());
     break;
   }
