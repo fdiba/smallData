@@ -2,6 +2,8 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.util.Date;
+import java.util.List;
+import java.util.Arrays;
 
 import de.bezier.data.sql.*;
 import themidibus.*;
@@ -42,7 +44,7 @@ int maxCreatures;
 boolean useBox2d = true; //TODO constant
 
 boolean pause;
-boolean isOn;
+boolean isOn = true;
 
 Console cs;
 
@@ -56,6 +58,9 @@ int r_count1, r_musics, r_count3;
 FloatList floats;
 
 int cpTS;
+
+Particle sl_p;
+Composer sl_cp;
 
 //x, y, w, h, offset must be < 15
 int[][] tables = {
@@ -85,7 +90,7 @@ void setup() {
     .setPosition(100, 100)
       .setSize(150, 100)
         .setBarHeight(20)
-          .setItemHeight(20).hide();
+          .setItemHeight(20).hide().setId(2);
 
   state0 = true;
   cp5.addToggle("state 0").setPosition(430, 50).setSize(30, 14).setId(0).setValue(state0).setColorLabel(color(0));
@@ -213,7 +218,7 @@ void draw() { //TODO ENLARGE TERRITORY
 
   cp5.draw();
 
-  if (frameCount%(24*10)==0)println("nodes: ", nodes.size(), 
+  if (frameCount%(24*10*6)==0)println("nodes: ", nodes.size(), 
   "records:", records.size(), 
   "bodies:", box2d.world.getBodyCount(), 
   "groupes:", groupes.size(), 
@@ -525,6 +530,7 @@ void checkNodeAndParticleInfo() {
   }
 }
 void mousePressed() {
+  
   cs.update("");
 
 
@@ -547,6 +553,36 @@ void mousePressed() {
       cp5.getController("composers").show();
 
       //saveIMG();
+
+
+      //---------- list ------------//
+      
+      sl_p = p;
+
+      cp5.get(ScrollableList.class, "composers").clear();
+      cp5.get(ScrollableList.class, "composers").setLabel("composers");
+
+      ArrayList<String> l = new ArrayList<String>(); //4
+      
+      for(Composer c : p.composers){
+        String label = c.name + ' ' + c.fName + ' ' + c.musics.size();
+        l.add(label);
+      }
+
+      /*l.add("test");
+      l.add("foo");
+      l.add("bar");
+      l.add("test");
+      l.add("foo");
+      l.add("bar");
+      l.add("test");
+      l.add("foo");
+      l.add("bar");
+      l.add("test");
+      l.add("foo");
+      l.add("bar");*/
+
+      cp5.get(ScrollableList.class, "composers").setItems(l);
     }
   }
 }
@@ -691,6 +727,11 @@ public void controlEvent(ControlEvent theEvent) {
     break;
     case(1):
     cpTS = (int)(theEvent.getController().getValue());
+    break;
+    case(2):
+    println((int)theEvent.getController().getValue());
+    sl_cp = sl_p.composers.get((int)theEvent.getController().getValue());
+    println(sl_cp.name, sl_cp.fName);
     break;
   }
 }
