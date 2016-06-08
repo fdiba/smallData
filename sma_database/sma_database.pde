@@ -403,7 +403,7 @@ void putItInRecords(int id, String fName, String name, String country) {
 }
 void checkDBforMusic(int id, String fName, String name, String country) { //TODO TOO MANY REQUESTS
 
-  String request = "SELECT title, duration, editions FROM music  WHERE id_artist=" + id; //TODO -----------------------------------------------> CHECK it
+  String request = "SELECT title, duration, editions, misam FROM music  WHERE id_artist=" + id; //TODO -----------------------------------------------> CHECK it
   msql.query(request);
 
   int c=0;
@@ -424,17 +424,15 @@ void checkDBforMusic(int id, String fName, String name, String country) { //TODO
     catch (IOException ie) {
       println(ie);
     }
-    
-    //------------------------ duration --------------------------//
-    
+
+    //------------------------ duration editions misam --------------------------//
+
     String duration = msql.getString("duration");
-    
-    //------------------------ editions --------------------------//
-    
     String editions = msql.getString("editions");
+    String misam = msql.getString("misam");
 
     String[] music = {
-      title, duration, editions
+      title, duration, editions, misam
     };
     musics.add(music);
   }
@@ -787,6 +785,9 @@ public void controlEvent(ControlEvent theEvent) {
     break;
     case(3):
     int music_id = (int)theEvent.getController().getValue();
+    String str = sl_cp.musics.get(music_id)[0] + " | " + sl_cp.musics.get(music_id)[1] +
+      " | " + sl_cp.musics.get(music_id)[2] + " | MISAM-" + sl_cp.musics.get(music_id)[3];
+    cs.update(str);
     println(sl_cp.musics.get(music_id));
     break;
   }
@@ -799,4 +800,4 @@ void endContact(Contact cp) {
  void beginContact(Contact cp) {
  //println("collision", random(255));
  }
-) */
+ ) */
