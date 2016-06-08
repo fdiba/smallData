@@ -136,7 +136,7 @@ void updateMusicInfos(String[] lines, String editions) { //TODO mix with insertM
     request = "UPDATE music SET misam = '" + misam + "' WHERE id =" + music_id; 
 
     msql.query(request); //-----------------------------------------------------------------------> 1/1
-    println(misam);
+    //println(misam);
   }
 }
 
@@ -173,7 +173,8 @@ void editMusicInfos(String[] lines, String editions) {
 
   //print(duration, ' ');
 
-  //---------------- fName & name --------------//
+  //---------------- name & fName --------------//
+  
   String name = getName(lines[20]);
   String fName = lines[21].substring(fName_fpart.length());
 
@@ -267,7 +268,7 @@ void editArtistInfos(String[] lines, String info_concours) {
 
   info_concours = info_concours.substring(concours_fpart.length());
 
-  String[] editions = split(info_concours, ',');
+  String[] editions = split(info_concours, ','); //TODO sort editions if size > 1
   editions = trim(editions);
 
   //---------------- fName & name --------------//

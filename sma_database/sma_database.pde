@@ -403,7 +403,7 @@ void putItInRecords(int id, String fName, String name, String country) {
 }
 void checkDBforMusic(int id, String fName, String name, String country) { //TODO TOO MANY REQUESTS
 
-  String request = "SELECT title, duration, editions, misam FROM music  WHERE id_artist=" + id; //TODO -----------------------------------------------> CHECK it
+  String request = "SELECT title, duration, editions, residence, misam FROM music  WHERE id_artist=" + id; //TODO -----------------------------------------------> CHECK it
   msql.query(request);
 
   int c=0;
@@ -429,10 +429,11 @@ void checkDBforMusic(int id, String fName, String name, String country) { //TODO
 
     String duration = msql.getString("duration");
     String editions = msql.getString("editions");
+    String residence = msql.getString("residence");
     String misam = msql.getString("misam");
 
     String[] music = {
-      title, duration, editions, misam
+      title, duration, editions, residence, misam
     };
     musics.add(music);
   }
@@ -443,7 +444,29 @@ void checkDBforMusic(int id, String fName, String name, String country) { //TODO
     composers.add(cp);
     //println(musics.size());
   }
-  //if (musics.size()>5)println(musics.size(), "hits:", fName, name); //----------------------------------------------> check highest!
+  if (musics.size()>5) {
+    
+    int init=0;
+
+    for (String[] str : musics) {
+
+      if (str[3]!= null) {
+
+        init++;
+        if (init==1) {
+          println("");
+          println(fName, name, musics.size(), "hits :");
+          println("-------------------");
+        }
+        
+        println(str[0], "- résidence :", str[3], "MISAM :", str[4]);
+        
+      }
+    }
+
+
+    //println(musics.size(), "hits:", fName, name); //----------------------------------------------> check highest!
+  }
 }
 void createOrEditParticle() {
 
