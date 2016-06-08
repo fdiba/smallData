@@ -87,9 +87,9 @@ void processMtdFile(String target, String[] elements, String folderName) {
 
 
 void updateMusicInfos(String[] lines, String editions) { //TODO mix with insertMusicInfos()
-  
+
   //---------------- code misam --------------//
-  
+
   String misam = lines[6].substring(misam_fpart.length());
   misam = trim(misam);
 
@@ -118,7 +118,7 @@ void updateMusicInfos(String[] lines, String editions) { //TODO mix with insertM
     if (duration.equals("11:"))duration="11:00";
     else if (duration.indexOf("00:")==0)duration=duration.substring(3);
   } else duration = "";
-  
+
   //---------------- request --------------//
 
   String request = "SELECT id FROM music WHERE title =\"" + 
@@ -135,7 +135,7 @@ void updateMusicInfos(String[] lines, String editions) { //TODO mix with insertM
 
     request = "UPDATE music SET misam = '" + misam + "' WHERE id =" + music_id; 
 
-    msql.query(request); //-----------------------------------------------------------------------> 1/1
+    //msql.query(request); //-----------------------------------------------------------------------> 1/1
     //println(misam);
   }
 }
@@ -174,9 +174,19 @@ void editMusicInfos(String[] lines, String editions) {
   //print(duration, ' ');
 
   //---------------- name & fName --------------//
-  
+
   String name = getName(lines[20]);
   String fName = lines[21].substring(fName_fpart.length());
+
+
+  //-------- capsules correction ---------------//--------------------------------------- TODO DOUBLE
+  if (name.equals("Szigeti") &&  name.equals("Itsvan")) {
+    fName = "Istvan";
+  }
+  
+  if (name.equals("Alistair") &&  name.equals("Mac Donald")) {
+    name = "MacDonald";
+  }
 
   if (name.equals("Rozman")) {
     name = "Rozmann";
@@ -274,6 +284,15 @@ void editArtistInfos(String[] lines, String info_concours) {
   //---------------- fName & name --------------//
   String name = getName(lines[20]);
   String fName = lines[21].substring(fName_fpart.length());
+
+  //-------- capsules correction ---------------//
+  if (name.equals("Szigeti") &&  name.equals("Itsvan")) {
+    fName = "Istvan";
+  }
+  
+  if (name.equals("Alistair") &&  name.equals("Mac Donald")) {
+    name = "MacDonald";
+  }
 
   if (name.equals("Rozman")) {
     name = "Rozmann";

@@ -3,7 +3,7 @@ MySQL msql;
 
 Table table;
 
-int r_count;
+int r_count1, r_count2;
 
 void setup() {
 
@@ -39,19 +39,31 @@ void setup() {
 
     String category = row.getString("category");
 
-
+    String ctry = row.getString("country");
+    ctry = trim(ctry);
+    
+    String duration = row.getString("duration");
+    if (duration.indexOf("00:")==0)duration=duration.substring(3);
+    else if (duration.indexOf("0:")==0)duration=duration.substring(2);
+    else if (duration.indexOf("1:15:00")==0)duration="75:00";
 
     //---------------- name & fName --------------//
 
     String name = getName(row.getString("name"));
 
+    //---------- title -----------------//
 
+    //---------------- title --------------//
+    title = trim(title);
+    title = title.replaceAll("\'", "\\\\'");
+    title = title.replaceAll("\"", "\\\\\"");
 
     //------------------- encode --------------//
     try {
       name = new String(name.getBytes("UTF-8"), "iso-8859-1");
       fName = new String(fName.getBytes("UTF-8"), "iso-8859-1");
       title = new String(title.getBytes("UTF-8"), "iso-8859-1");
+      ctry = new String(ctry.getBytes("UTF-8"), "iso-8859-1");
     } 
     catch (IOException ie) {
       println(ie);
@@ -69,7 +81,12 @@ void setup() {
 
     if (!msql.next ()) { //artist not already present
       //println("artist not already present");
-      r_count++;
+
+      checkIfCountryExistAndAddComposer(fName, name, ctry);
+
+      r_count1++;
+
+      //println(year, fName, name, ctry, " - ", title);
 
       /*if (category.equals("R")) { //pas présent dans les capsules
        println(year, fName, name, " - ", title);
@@ -77,19 +94,35 @@ void setup() {
     } else {
 
       int artist_id = msql.getInt("id");
+      
+      tryToFindTitleInMusic(artist_id, fName, name, title, year, duration);
 
-      tryToFindTitleInMusic(artist_id, fName, name, title, year);
-
-      if (category.equals("R")) { //pas présent dans les capsules
-        //println(year, fName, name, " - ", title);
-      }
     }
   }
 
-  println(r_count);
+  println("composers:", r_count1, "titles:", r_count2);
 }
+void checkIfCountryExistAndAddComposer(String fName, String name, String ctry) {
 
-void tryToFindTitleInMusic(int id_artist, String fName, String name, String title, int year) {
+  String request = "SELECT id FROM country WHERE c_name =\"" + ctry + "\""; 
+  msql.query(request);
+
+  if (!msql.next ()) { //add missing country
+
+    println("missing ctry:", ctry);
+    
+  } else { //add composer
+
+    int c_id = msql.getInt("id");
+
+    request = "INSERT INTO artist (firstName, name, id_country) VALUES ('" + fName + "', '" + name + "', '" +  c_id + "')";
+
+    //msql.query(request); //--------------------------------------------------------------------------------------------------------> 2/3
+
+    println(fName, name, ctry);
+  }
+}
+void tryToFindTitleInMusic(int id_artist, String fName, String name, String title, int year, String duration) {
 
   String request = "SELECT id, editions FROM music WHERE title = \"" + 
     title + "\" and id_artist = " + id_artist;
@@ -98,17 +131,27 @@ void tryToFindTitleInMusic(int id_artist, String fName, String name, String titl
 
 
   if (!msql.next ()) { //title not already present
+    r_count2++;
     //println("title not already present");
-  } else {
     
+    //println(duration);
+    
+    request = "INSERT INTO music (title, duration, editions, id_artist) VALUES ('"
+      + title + "', '" + duration + "', '" + year + "', '"
+      +  id_artist + "')";
+    
+    //msql.query(request); //--------------------------------------------------------------------------------------------------------> 3/3
+    
+  } else {
+
     int music_id = msql.getInt("id");
     String editions = msql.getString("editions");
-    
+
     request = "UPDATE music SET residence = " + year + " WHERE id =" + music_id; 
 
-    msql.query(request); //-----------------------------------------------------------------------> 1/1
+    //msql.query(request); //-----------------------------------------------------------------------------------------------------> 1/3
     //println(misam);
-    
+
     //println(name, fName, '-', title, year, "VS", editions);
   }
 }

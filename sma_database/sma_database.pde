@@ -454,17 +454,15 @@ void checkDBforMusic(int id, String fName, String name, String country) { //TODO
 
         init++;
         if (init==1) {
-          println("");
-          println(fName, name, musics.size(), "hits :");
-          println("-------------------");
+          //println("");
+          //println(fName, name, country, musics.size(), "hits :");
+          //println("-----------------------------------");
         }
         
-        println(str[0], "- résidence :", str[3], "MISAM :", str[4]);
+        //println(str[0], str[1], "- résidence :", str[3], "MISAM :", str[4]);
         
       }
     }
-
-
     //println(musics.size(), "hits:", fName, name); //----------------------------------------------> check highest!
   }
 }
@@ -809,7 +807,7 @@ public void controlEvent(ControlEvent theEvent) {
     case(3):
     int music_id = (int)theEvent.getController().getValue();
     String str = sl_cp.musics.get(music_id)[0] + " | " + sl_cp.musics.get(music_id)[1] +
-      " | " + sl_cp.musics.get(music_id)[2] + " | MISAM-" + sl_cp.musics.get(music_id)[3];
+      " | " + sl_cp.musics.get(music_id)[2] + " | MISAM-" + sl_cp.musics.get(music_id)[4];
     cs.update(str);
     println(sl_cp.musics.get(music_id));
     break;
