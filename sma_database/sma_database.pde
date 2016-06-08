@@ -401,9 +401,9 @@ void putItInRecords(int id, String fName, String name, String country) {
   };
   records.add(arr);
 }
-void checkDBforMusic(int id, String fName, String name, String country) {
+void checkDBforMusic(int id, String fName, String name, String country) { //TODO TOO MANY REQUESTS
 
-  String request = "SELECT title FROM music  WHERE id_artist=" + id; //TODO -----------------------------------------------> CHECK it
+  String request = "SELECT title, duration, editions FROM music  WHERE id_artist=" + id; //TODO -----------------------------------------------> CHECK it
   msql.query(request);
 
   int c=0;
@@ -424,9 +424,17 @@ void checkDBforMusic(int id, String fName, String name, String country) {
     catch (IOException ie) {
       println(ie);
     }
+    
+    //------------------------ duration --------------------------//
+    
+    String duration = msql.getString("duration");
+    
+    //------------------------ editions --------------------------//
+    
+    String editions = msql.getString("editions");
 
     String[] music = {
-      title, title, title
+      title, duration, editions
     };
     musics.add(music);
   }
@@ -777,6 +785,10 @@ public void controlEvent(ControlEvent theEvent) {
     println(sl_cp.name, sl_cp.fName);
     updatePlaylist(sl_cp);
     break;
+    case(3):
+    int music_id = (int)theEvent.getController().getValue();
+    println(sl_cp.musics.get(music_id));
+    break;
   }
 }
 //--------------------------- collision ------------//
@@ -787,4 +799,4 @@ void endContact(Contact cp) {
  void beginContact(Contact cp) {
  //println("collision", random(255));
  }
- */
+) */
