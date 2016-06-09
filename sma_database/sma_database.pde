@@ -16,7 +16,6 @@ import shiffman.box2d.*;
 import controlP5.*;
 
 MySQL msql;
-MidiBus myBus;
 
 Box2DProcessing box2d;
 Attractor attractor;
@@ -102,12 +101,6 @@ void setup() {
   box2d.setGravity(0, 0);
 
   cs = new Console(new PVector(20, 24));
-
-  //------------------ midi ------------------//
-  MidiBus.list();
-  myBus = new MidiBus(this, "Midi Fighter Twister", "Midi Fighter Twister");
-  resetFighterTwister();
-
 
   //------------------------------------------------------------------->
   //box2d.listenForCollisions();
@@ -591,12 +584,6 @@ void mousePressed() {
       //saveIMG();
     }
   }
-}
-//------------------------- midi interface -------------------------//
-void resetFighterTwister() {
-  int channel = 0;
-  int value = 0;
-  for (int i=0; i<16; i++) myBus.sendControllerChange(channel, i, value);
 }
 //------------------------- keyboard -------------------------//
 void keyPressed() {

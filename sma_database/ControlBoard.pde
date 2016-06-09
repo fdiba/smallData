@@ -4,6 +4,8 @@ class ControlBoard {
 
   PVector loc;
 
+  ArrayList<String[]> results_cp;
+
   ControlBoard() {
 
     loc = new PVector(380, 50);
@@ -74,14 +76,13 @@ class ControlBoard {
     String str = cp.name + ' ' + cp.musics.size();
     cp5.get(ScrollableList.class, "playlist").setLabel(str);
 
-    ArrayList<String> l = new ArrayList<String>();
+    ArrayList<String> list = new ArrayList<String>();
 
     for (String[] info : cp.musics) {
-      //String label = c.name + ' ' + c.fName + ' ' + c.musics.size();
-      l.add(info[0]);
+      list.add(info[0]);
     }
 
-    cp5.get(ScrollableList.class, "playlist").setItems(l);
+    cp5.get(ScrollableList.class, "playlist").setItems(list);
   }
   void updateComposersList(Particle p) {
 
@@ -133,22 +134,63 @@ public void controlEvent(ControlEvent theEvent) {
     cpTS = (int)(theEvent.getController().getValue());
     break;
     case(2):
-    println((int)theEvent.getController().getValue());
+
+    int value = (int)theEvent.getController().getValue();
+
+    println(value);
+
     if (!search) {//not manual search
-      sl_cp = sl_p.composers.get((int)theEvent.getController().getValue());
+      sl_cp = sl_p.composers.get(value);
       println(sl_cp.name, sl_cp.fName);
       board.updatePlaylist(sl_cp);
     } else {//TODO manual search - search titles
-      
-      
+
+
+      String request = "SELECT title, duration, editions, residence, misam FROM music  WHERE id_artist=" + board.results_cp.get(value)[0];
+
+      //println(request);
+      msql.query(request);
+
+      String title = "";
+      ArrayList<String> list = new ArrayList<String>();
+
+      while (msql.next ()) {
+
+        String misam = msql.getString("misam");
+
+        //------------------------ title --------------------------//
+        title = msql.getString("title");
+
+        try {
+          title = new String(title.getBytes("iso-8859-1"), "UTF-8");
+        } 
+        catch (IOException ie) {
+          println(ie);
+        }
+
+
+        //if (misam!=null)list.add(title);
+        list.add(title); //get all records
+      }
+
+      cp5.get(ScrollableList.class, "playlist").clear();
+      if (list.size()>0) {
+        String str = board.results_cp.get(value)[2] + ' ' + list.size();
+        cp5.get(ScrollableList.class, "playlist").setLabel(str).setItems(list);
+      } else {
+        cp5.get(ScrollableList.class, "playlist").setLabel("no result");
+      }
+      cp5.getController("playlist").show();
     }
     break;
     case(3):
-    int music_id = (int)theEvent.getController().getValue();
-    String str = sl_cp.musics.get(music_id)[0] + " | " + sl_cp.musics.get(music_id)[1] +
-      " | " + sl_cp.musics.get(music_id)[2] + " | " + sl_cp.musics.get(music_id)[4]; //misam
-    cs.update(str);
-    println(sl_cp.musics.get(music_id));
+    if (!search) {
+      int music_id = (int)theEvent.getController().getValue();
+      String str = sl_cp.musics.get(music_id)[0] + " | " + sl_cp.musics.get(music_id)[1] +
+        " | " + sl_cp.musics.get(music_id)[2] + " | " + sl_cp.musics.get(music_id)[4]; //misam
+      cs.update(str);
+      println(sl_cp.musics.get(music_id));
+    }
     break;
     case(4):
 
@@ -166,13 +208,12 @@ public void controlEvent(ControlEvent theEvent) {
       //TODO SPLIT STR WITH " "
 
       String request = "SELECT id, firstName, name FROM artist WHERE name LIKE '%" + expression + "%' OR firstName LIKE '%" + expression + "%'";
-      println(request);
+      //println(request);
       msql.query(request);
 
-      ArrayList<String> results = new ArrayList<String>();
+      board.results_cp = new ArrayList<String[]>();
 
       while (msql.next ()) {
-        println(random(200));
 
         String id = msql.getString("id");
         String fName = msql.getString("firstName");
@@ -187,19 +228,29 @@ public void controlEvent(ControlEvent theEvent) {
           println(ie);
         }
 
-        String label = id + ' ' + fName + ' ' + name;
-        results.add(label);
+        String[] arr = {
+          id, fName, name
+        };
+
+        board.results_cp.add(arr);
       }
 
-      if (results.size()>0) {
+      if (board.results_cp.size()>0) {
 
-        if (results.size()==1)cp5.get(ScrollableList.class, "composers").setLabel("result");
+        if (board.results_cp.size()==1)cp5.get(ScrollableList.class, "composers").setLabel("result");
         else {
-          String title = results.size() + " results"; 
+          String title = board.results_cp.size() + " results"; 
           cp5.get(ScrollableList.class, "composers").setLabel(title);
         }
 
-        cp5.get(ScrollableList.class, "composers").setItems(results);
+
+        ArrayList<String> list = new ArrayList<String>();
+        for (String[] info : board.results_cp) {
+          String label = info[1] + ' ' + info[2];
+          list.add(label);
+        }
+
+        cp5.get(ScrollableList.class, "composers").setItems(list);
       } else {
 
         cp5.get(ScrollableList.class, "composers").setLabel("no result");
