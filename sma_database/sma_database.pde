@@ -23,6 +23,8 @@ Attractor attractor;
 
 ControlP5 cp5;
 
+ControlBoard board;
+
 boolean state0, state1;
 
 ArrayList<Boundary> boundaries;
@@ -62,6 +64,8 @@ int cpTS;
 Particle sl_p;
 Composer sl_cp;
 
+boolean search;
+
 //x, y, w, h, offset must be < 15
 int[][] tables = {
   {
@@ -85,46 +89,7 @@ void setup() {
   //-------------------- cp5 --------------------------//
 
   cp5 = new ControlP5(this);
-  cp5.setAutoDraw(false);
-
-  //Label.setUpperCaseDefault(false);
-  //cp5.setFont(createFont("Arial", 12));
-
-  cp5.addScrollableList("composers")
-    .setPosition(50, 100)
-      .setSize(200, 100)
-        .setBarHeight(20)
-          .setItemHeight(20)
-            .setType(ControlP5.LIST)
-              .hide()
-                .setId(2);
-
-  //cp5.get(ScrollableList.class, "composers").getValueLabel().toUpperCase(false);
-  //cp5.get(ScrollableList.class, "composers").getCaptionLabel().toUpperCase(false);
-
-  cp5.addScrollableList("playlist")
-    .setPosition(400, 120)
-      .setSize(230, 100)
-        .setBarHeight(20)
-          .setItemHeight(20)
-            .setType(ControlP5.LIST)
-              .hide()
-                .setId(3);
-
-  state0 = true;
-
-  cp5.addToggle("state 0")
-    .setPosition(430, 50)
-      .setSize(30, 14)
-        .setId(0)
-          .setValue(state0)
-            .setColorLabel(color(0));
-
-  // name, minValue, maxValue, defaultValue, x, y, width, height
-  cpTS = 26;
-  cp5.addSlider("composers TS", 0, 200, cpTS, 430, 80, 100, 14)
-    .setId(1)
-      .setColorLabel(color(0));
+  board = new ControlBoard();
 
   //----------------------------------------------//
 
@@ -245,7 +210,7 @@ void draw() { //TODO ENLARGE TERRITORY
   if (state0) state0();
   else if (state1) state1();
 
-  cp5.draw();
+  board.display(); //cp5 code
 
   if (frameCount%(24*10*6)==0)println("nodes: ", nodes.size(), 
   "records:", records.size(), 
@@ -281,8 +246,7 @@ void state0() {
 
   while (nodes.size () < maxCreatures && maxCreatures>0) {
 
-    String[] arr = records.remove(records.size()-1);
-    addNewNode(arr);
+    addNewNode(records.remove(records.size()-1));
 
     if (maxCreatures>records.size())maxCreatures=records.size();
   }
@@ -311,9 +275,9 @@ void state0() {
         if (n.checkEdgesBox2d(tables[0])) { //SMA V2
           if (isOn) {
 
-            createOrEditGroup(n);
+            createOrEditGroup(n); //batch 2
 
-            checkDBforMusic(n.id, n.fName, n.name, n.country);
+            checkDBforMusic(n.id, n.fName, n.name, n.country); //batch 3
           } else {
             putItInRecords(n.id, n.fName, n.name, n.country);
           }
@@ -401,9 +365,9 @@ void putItInRecords(int id, String fName, String name, String country) {
   };
   records.add(arr);
 }
-void checkDBforMusic(int id, String fName, String name, String country) { //TODO TOO MANY REQUESTS
+void checkDBforMusic(int id, String fName, String name, String country) { //--------------------------- TODO TOO MANY REQUESTS
 
-  String request = "SELECT title, duration, editions, residence, misam FROM music  WHERE id_artist=" + id; //TODO -----------------------------------------------> CHECK it
+  String request = "SELECT title, duration, editions, residence, misam FROM music  WHERE id_artist=" + id;
   msql.query(request);
 
   int c=0;
@@ -432,10 +396,15 @@ void checkDBforMusic(int id, String fName, String name, String country) { //TODO
     String residence = msql.getString("residence");
     String misam = msql.getString("misam");
 
-    String[] music = {
-      title, duration, editions, residence, misam
-    };
-    musics.add(music);
+    if (misam!=null) { //------------- check only accessible ressources
+
+      misam = "MISAM-"+misam;
+
+      String[] music = {
+        title, duration, editions, residence, misam
+      };
+      musics.add(music);
+    }
   }
 
 
@@ -445,7 +414,7 @@ void checkDBforMusic(int id, String fName, String name, String country) { //TODO
     //println(musics.size());
   }
   if (musics.size()>5) {
-    
+
     int init=0;
 
     for (String[] str : musics) {
@@ -458,9 +427,8 @@ void checkDBforMusic(int id, String fName, String name, String country) { //TODO
           //println(fName, name, country, musics.size(), "hits :");
           //println("-----------------------------------");
         }
-        
+
         //println(str[0], str[1], "- résidence :", str[3], "MISAM :", str[4]);
-        
       }
     }
     //println(musics.size(), "hits:", fName, name); //----------------------------------------------> check highest!
@@ -487,7 +455,7 @@ void createOrEditParticle() {
     }
   }
 }
-void createOrEditGroup(Node n) { //SMA V2
+void createOrEditGroup(Node n) {
 
   if (groupes.size()>0) {
 
@@ -585,42 +553,19 @@ void checkNodeAndParticleInfo() {
     }
   }
 }
-void updatePlaylist(Composer cp) {
+void changeStateifNeededTo(int value) {
 
-  cp5.getController("playlist").show();
+  if (value==1) {
 
-  cp5.get(ScrollableList.class, "playlist").clear();
-  String str = cp.name + ' ' + cp.musics.size();
-  cp5.get(ScrollableList.class, "playlist").setLabel(str);
+    if (!state1) {
 
-  ArrayList<String> l = new ArrayList<String>();
-
-  for (String[] info : cp.musics) {
-    //String label = c.name + ' ' + c.fName + ' ' + c.musics.size();
-    l.add(info[0]);
+      state0 = false;
+      state1 = true;
+      cp5.getController("state 0").setValue(0);
+    }
+  } else {
+    //cp5.get(ScrollableList.class, "composers").clear();
   }
-
-  cp5.get(ScrollableList.class, "playlist").setItems(l);
-}
-void updateCPList(Particle p) {
-
-  cp5.getController("playlist").hide();
-
-
-  sl_p = p;
-
-  cp5.get(ScrollableList.class, "composers").clear();
-  String str = p.ctryCode + ' ' + p.composers.size();
-  cp5.get(ScrollableList.class, "composers").setLabel(str);
-
-  ArrayList<String> l = new ArrayList<String>();
-
-  for (Composer c : p.composers) {
-    String label = c.name + ' ' + c.fName + ' ' + c.musics.size();
-    l.add(label);
-  }
-
-  cp5.get(ScrollableList.class, "composers").setItems(l);
 }
 void mousePressed() {
 
@@ -633,18 +578,12 @@ void mousePressed() {
       if (!str.equals(cs.message)) {
 
         cs.update(str);
-        updateCPList(p);
+        search = false;
+        board.updateComposersList(p);
       }
       //println(random(200));
 
-      if (state1) {
-      } else { //change of state
-
-          state0 = false;
-        state1 = !state0;
-
-        cp5.getController("state 0").setValue(0);
-      }
+      changeStateifNeededTo(1);
 
       //if not the same
       cp5.getController("composers").show();
@@ -662,157 +601,69 @@ void resetFighterTwister() {
 //------------------------- keyboard -------------------------//
 void keyPressed() {
 
-  if (key == ' ') {
-    pause = !pause;
-    if (pause)cs.update("||");
-    else cs.update("...");
-  } else if (key == 'a') {
-    isOn = !isOn;
-    cs.update("interact " + str(isOn));
-  } else if (key == 'b') {
-    displayNoiseField = !displayNoiseField;
-  } else if (key == 'f') { //TODO update it
-    fsMode = !fsMode;
+  if (!cp5.get(Textfield.class, "input").isFocus()) {
 
-    if (fsMode) {
+    if (key == ' ') {
+      pause = !pause;
+      if (pause)cs.update("||");
+      else cs.update("...");
+    } else if (key == 'a') {
+      isOn = !isOn;
+      cs.update("interact " + str(isOn));
+    } else if (key == 'b') {
+      displayNoiseField = !displayNoiseField;
+    } else if (key == 'n') { //TODO BUG WITH COLLISION
+      useBox2d = !useBox2d;
+      cs.update("physics " + str(useBox2d));
+      if (!useBox2d) {
 
-      println("fsMode");
-
-      GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-      GraphicsDevice[] gs = ge.getScreenDevices();
-
-      println(gs.length);
-
-      GraphicsDevice gd;
-
-      if (gs.length > 1) {
-
-        gd = gs[0];
-        GraphicsDevice gd1 = gs[1];
-
-        int m_width = gd1.getDisplayMode().getWidth();
-        int m_height = gd1.getDisplayMode().getHeight();
-
-        int xpos = gd.getDisplayMode().getWidth();
-
-        frame.removeNotify();
-        frame.setUndecorated(true);
-        frame.addNotify();
-
-        frame.setSize(m_width, m_height);
-        frame.setLocation(xpos, 0);
+        for (int i=0; i<nodes.size (); i++) {
+          Node n = nodes.get(i);
+          n.loc.x = n.pos.x;
+          n.loc.y = n.pos.y;
+        }
       } else {
 
-        gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        for (int i=0; i<nodes.size (); i++) {
+          Node n = nodes.get(i);
 
-        int m_width = gd.getDisplayMode().getWidth();
-        int m_height = gd.getDisplayMode().getHeight();
+          box2d.destroyBody(n.body);
 
-        frame.removeNotify();
-        frame.setUndecorated(true);
-        frame.addNotify();
+          BodyDef bd = new BodyDef();
+          bd.type = BodyType.DYNAMIC;
 
-        frame.setSize(m_width, m_height);
-        frame.setLocation(0, 0);
+          bd.position = box2d.coordPixelsToWorld(n.loc.x, n.loc.y);
+          n.body = box2d.world.createBody(bd);
+
+          CircleShape cs = new CircleShape();
+          cs.m_radius = box2d.scalarPixelsToWorld(n.diam/2);
+
+          FixtureDef fd = new FixtureDef();
+          fd.shape = cs;
+
+          fd.density = n.density;
+          fd.friction = n.friction;
+          fd.restitution = n.restitution;
+
+          n.body.createFixture(fd);
+
+          n.body.setLinearVelocity(n.linearVelocity);
+          n.body.setAngularVelocity(n.angularVelocity);
+        }
       }
-    } else {
-      println("!fsMode");
-
-      frame.removeNotify();
-      frame.setUndecorated(false);
-      frame.addNotify();
-
-      frame.setSize(800, 600);
-      frame.setLocation(20, 40);
+    } else if (key == 'o') { //dezoom
+      noiseScale--;
+      if (noiseScale < 1) noiseScale = 1;
+    } else if (key == 'p') { //zoom
+      noiseScale++;
+    } else if (key == 'r') {
+      noiseSeed ((int) random (10000));
+    } else if (key == 's') {
+      saveIMG();
     }
-  } else if (key == 'n') { //TODO BUG WITH COLLISION
-    useBox2d = !useBox2d;
-    cs.update("physics " + str(useBox2d));
-    if (!useBox2d) {
-
-      for (int i=0; i<nodes.size (); i++) {
-        Node n = nodes.get(i);
-        n.loc.x = n.pos.x;
-        n.loc.y = n.pos.y;
-      }
-    } else {
-
-      for (int i=0; i<nodes.size (); i++) {
-        Node n = nodes.get(i);
-
-        box2d.destroyBody(n.body);
-
-        BodyDef bd = new BodyDef();
-        bd.type = BodyType.DYNAMIC;
-
-        bd.position = box2d.coordPixelsToWorld(n.loc.x, n.loc.y);
-        n.body = box2d.world.createBody(bd);
-
-        CircleShape cs = new CircleShape();
-        cs.m_radius = box2d.scalarPixelsToWorld(n.diam/2);
-
-        FixtureDef fd = new FixtureDef();
-        fd.shape = cs;
-
-        fd.density = n.density;
-        fd.friction = n.friction;
-        fd.restitution = n.restitution;
-
-        n.body.createFixture(fd);
-
-        n.body.setLinearVelocity(n.linearVelocity);
-        n.body.setAngularVelocity(n.angularVelocity);
-      }
-    }
-  } else if (key == 'o') { //dezoom
-    noiseScale--;
-    if (noiseScale < 1) noiseScale = 1;
-  } else if (key == 'p') { //zoom
-    noiseScale++;
-  } else if (key == 'r') {
-    noiseSeed ((int) random (10000));
-  } else if (key == 's') {
-    saveIMG();
   }
 }
-//-------------------------- P5 -----------------------------//
-// function controlEvent will be invoked with every value change 
-// in any registered controller
-public void controlEvent(ControlEvent theEvent) {
-  println("got a control event from controller with id " + theEvent.getId());
-  switch(theEvent.getId()) {
-    case(0):
-    if (theEvent.getController().getValue()>0)state0=true;
-    else state0 = false;
 
-    state1 = !state0;
-
-    if (state1)cp5.getController("composers").show();
-    else {
-      cp5.getController("composers").hide();
-      cp5.getController("playlist").hide();
-    }
-
-    //println(state0);
-    break;
-    case(1):
-    cpTS = (int)(theEvent.getController().getValue());
-    break;
-    case(2):
-    println((int)theEvent.getController().getValue());
-    sl_cp = sl_p.composers.get((int)theEvent.getController().getValue());
-    println(sl_cp.name, sl_cp.fName);
-    updatePlaylist(sl_cp);
-    break;
-    case(3):
-    int music_id = (int)theEvent.getController().getValue();
-    String str = sl_cp.musics.get(music_id)[0] + " | " + sl_cp.musics.get(music_id)[1] +
-      " | " + sl_cp.musics.get(music_id)[2] + " | MISAM-" + sl_cp.musics.get(music_id)[4];
-    cs.update(str);
-    println(sl_cp.musics.get(music_id));
-    break;
-  }
-}
 //--------------------------- collision ------------//
 /*
 void endContact(Contact cp) {
