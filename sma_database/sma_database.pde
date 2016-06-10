@@ -45,7 +45,7 @@ int maxCreatures;
 boolean useBox2d = true; //TODO constant
 
 boolean pause;
-boolean isOn = true;
+boolean isOn = false;
 
 Console cs;
 

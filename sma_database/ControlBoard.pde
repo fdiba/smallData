@@ -110,7 +110,7 @@ class ControlBoard {
 }
 //-------------------------- P5 -----------------------------//
 public void controlEvent(ControlEvent theEvent) {
-  println("got a control event from controller with id " + theEvent.getId());
+
   switch(theEvent.getId()) {
     case(0):
     if (theEvent.getController().getValue()>0) {
@@ -195,6 +195,7 @@ public void controlEvent(ControlEvent theEvent) {
     case(4):
 
     String expression = cp5.get(Textfield.class, "input").getText();
+
     if (!expression.equals("")) {
 
       search = true;
@@ -205,11 +206,20 @@ public void controlEvent(ControlEvent theEvent) {
       cp5.getController("composers").show();
 
       cp5.get(ScrollableList.class, "composers").clear();
-      //TODO SPLIT STR WITH " "
 
-      String request = "SELECT id, firstName, name FROM artist WHERE name LIKE '%" + expression + "%' OR firstName LIKE '%" + expression + "%'";
+      String[] expressions = split(expression, ' ');
+
+      StringBuilder request = new StringBuilder().append("SELECT id, firstName, name FROM artist WHERE name LIKE '%" + expressions[0] + "%' OR firstName LIKE '%" + expressions[0] + "%'");
+
+      if (expressions.length>1) {
+
+        for (int i=1; i<expressions.length; i++) {
+          request.append(" OR name LIKE '%" + expressions[i] + "%' OR firstName LIKE '%" + expressions[i] + "%'");
+        }
+      }
+
       //println(request);
-      msql.query(request);
+      msql.query(request.toString());
 
       board.results_cp = new ArrayList<String[]>();
 
@@ -256,6 +266,9 @@ public void controlEvent(ControlEvent theEvent) {
         cp5.get(ScrollableList.class, "composers").setLabel("no result");
       }
     }
+    break;
+  default:
+    println("got a control event from controller with id " + theEvent.getId());
     break;
   }
 }
