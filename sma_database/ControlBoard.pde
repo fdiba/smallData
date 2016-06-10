@@ -5,8 +5,12 @@ class ControlBoard {
   PVector loc;
 
   ArrayList<String[]> results_cp;
+  
+  StringBuilder request;
 
   ControlBoard() {
+    
+    request = new StringBuilder();
 
     loc = new PVector(380, 50);
 
@@ -136,8 +140,7 @@ public void controlEvent(ControlEvent theEvent) {
     case(2):
 
     int value = (int)theEvent.getController().getValue();
-
-    println(value);
+    //println(value);
 
     if (!search) {//not manual search
       sl_cp = sl_p.composers.get(value);
@@ -145,11 +148,11 @@ public void controlEvent(ControlEvent theEvent) {
       board.updatePlaylist(sl_cp);
     } else {//TODO manual search - search titles
 
-
-      String request = "SELECT title, duration, editions, residence, misam FROM music  WHERE id_artist=" + board.results_cp.get(value)[0];
+      board.request.setLength(0);
+      board.request.append("SELECT title, duration, editions, residence, misam FROM music  WHERE id_artist=" + board.results_cp.get(value)[0]);
 
       //println(request);
-      msql.query(request);
+      msql.query(board.request.toString());
 
       String title = "";
       ArrayList<String> list = new ArrayList<String>();
@@ -209,17 +212,18 @@ public void controlEvent(ControlEvent theEvent) {
 
       String[] expressions = split(expression, ' ');
 
-      StringBuilder request = new StringBuilder().append("SELECT id, firstName, name FROM artist WHERE name LIKE '%" + expressions[0] + "%' OR firstName LIKE '%" + expressions[0] + "%'");
+      board.request.setLength(0);
+      board.request.append("SELECT id, firstName, name FROM artist WHERE name LIKE '%" + expressions[0] + "%' OR firstName LIKE '%" + expressions[0] + "%'");
 
       if (expressions.length>1) {
 
         for (int i=1; i<expressions.length; i++) {
-          request.append(" OR name LIKE '%" + expressions[i] + "%' OR firstName LIKE '%" + expressions[i] + "%'");
+          board.request.append(" OR name LIKE '%" + expressions[i] + "%' OR firstName LIKE '%" + expressions[i] + "%'");
         }
       }
 
       //println(request);
-      msql.query(request.toString());
+      msql.query(board.request.toString());
 
       board.results_cp = new ArrayList<String[]>();
 

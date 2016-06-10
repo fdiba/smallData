@@ -54,7 +54,7 @@ float extension;
 int fr;
 int usa;
 
-int r_count1, r_musics, r_count3;
+int r_count1, r_musics, r_names;
 
 FloatList floats;
 
@@ -92,7 +92,7 @@ void setup() {
 
   //----------------------------------------------//
 
-  r_count1 = r_musics = r_count3 = 0;
+  r_count1 = r_musics = r_names = 0;
 
   extension = 20;
 
@@ -100,7 +100,7 @@ void setup() {
   box2d.createWorld();
   box2d.setGravity(0, 0);
 
-  cs = new Console(new PVector(20, 24));
+  cs = new Console(new PVector(20, 24), new PVector(20, 580));
 
   //------------------------------------------------------------------->
   //box2d.listenForCollisions();
@@ -205,14 +205,22 @@ void draw() { //TODO ENLARGE TERRITORY
 
   board.display(); //cp5 code
 
-  if (frameCount%(24*10*6)==0)println("nodes: ", nodes.size(), 
-  "records:", records.size(), 
-  "bodies:", box2d.world.getBodyCount(), 
-  "groupes:", groupes.size(), 
-  "composers:", composers.size(), 
-  "particles:", particles.size(), 
-  "r_musics:", r_musics, 
-  "r_count3:", r_count3);
+  if (frameCount%(24*10)==0) {
+
+    cs.sb.setLength(0);
+    cs.sb.append("nodes: ").append(nodes.size())
+      .append(" | records: ").append(records.size())
+        .append(" | bodies: ").append(box2d.world.getBodyCount())
+          .append(" | groupes: ").append(groupes.size())
+            .append(" | composers: ").append(composers.size())
+              .append(" | particles: ").append(particles.size())
+                .append(" | r_musics: ").append(r_musics)
+                  .append(" | r_names: ").append(r_names);
+
+    cs.updateStats(cs.sb.toString());
+    //println(cs.sb.toString());
+    
+  }
 }
 void state1() {
 
@@ -469,7 +477,7 @@ void createOrEditGroup(Node n) {
     NGrp g = new NGrp(n, tables[1]);
     groupes.add(g);
   }
-  r_count3++;
+  r_names++;
 }
 int checkParticles(String ctryName) {
   for (int i=0; i<particles.size (); i++) {
