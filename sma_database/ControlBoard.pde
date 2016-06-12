@@ -5,11 +5,11 @@ class ControlBoard {
   PVector loc;
 
   ArrayList<String[]> results_cp;
-  
+
   StringBuilder request;
 
   ControlBoard() {
-    
+
     request = new StringBuilder();
 
     loc = new PVector(380, 50);
@@ -213,16 +213,71 @@ public void controlEvent(ControlEvent theEvent) {
       String[] expressions = split(expression, ' ');
 
       board.request.setLength(0);
-      board.request.append("SELECT id, firstName, name FROM artist WHERE name LIKE '%" + expressions[0] + "%' OR firstName LIKE '%" + expressions[0] + "%'");
+      
+      String select1 = "SELECT id, firstName, name"; //TODO display country
+      String select2 = "SELECT artist.id, artist.firstName, artist.name";
+      
+      String from1 = " FROM artist";
+      String from2 = " FROM artist INNER JOIN edition ON artist.id = edition.artist_id";
+      
+      String where = "name LIKE '%" + expressions[0] + "%' OR firstName LIKE '%" + expressions[0] + "%'"; //TODO edit it
+      String and = "";
+      
+      boolean checkEditions = false;
 
       if (expressions.length>1) {
 
         for (int i=1; i<expressions.length; i++) {
-          board.request.append(" OR name LIKE '%" + expressions[i] + "%' OR firstName LIKE '%" + expressions[i] + "%'");
+
+          if (expressions[i].length()==4) {
+
+            int edition = parseInt(expressions[i]);
+
+            if (edition >=1973 && edition <=2009) {
+              
+              select2 = select2 + ", edition.ed_" + expressions[i];
+                            
+              if(!checkEditions){
+                
+                checkEditions = true;
+                and = "edition.ed_" + expressions[i] + "=1";
+              } else {
+                and = and + " OR edition.ed_" + expressions[i] + "=1";
+              }
+             
+              //println(edition);
+            } else {
+
+              where = where + " OR name LIKE '%" + expressions[i] + "%' OR firstName LIKE '%" + expressions[i] + "%'";
+            }
+          } else {
+
+            where = where + " OR name LIKE '%" + expressions[i] + "%' OR firstName LIKE '%" + expressions[i] + "%'";
+          }
+
+          //where = where + " OR name LIKE '%" + expressions[i] + "%' OR firstName LIKE '%" + expressions[i] + "%'";
         }
       }
+      
+      if(checkEditions) {
+        
+        and = " AND (" + and + ")";
+        where = " WHERE (" + where + ")";
+        
+        board.request.insert(0, and);
+        board.request.insert(0, where);
+        board.request.insert(0, from2);
+        board.request.insert(0, select2);
+      } else {
+        
+        where = " WHERE (" + where + ")";
+        
+        board.request.insert(0, where);
+        board.request.insert(0, from1);
+        board.request.insert(0, select1);
+      }
 
-      //println(request);
+      println(board.request.toString());
       msql.query(board.request.toString());
 
       board.results_cp = new ArrayList<String[]>();
