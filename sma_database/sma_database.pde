@@ -45,7 +45,7 @@ int maxCreatures;
 boolean useBox2d = true; //TODO constant
 
 boolean pause;
-boolean isOn = false;
+boolean isOn = true;
 
 Console cs;
 
@@ -54,7 +54,7 @@ float extension;
 int fr;
 int usa;
 
-int r_count1, r_musics, r_names;
+int r_count1, r_musics, r_names, r_sl;
 
 FloatList floats;
 
@@ -154,7 +154,7 @@ void setup() {
         str(id), fName, name, country
       };
       records.add(arr);
-      println(arr[0], arr[1], arr[2], arr[3]);
+      //println(arr[0], arr[1], arr[2], arr[3]);
 
       if (country.equals("USA")) {
         usa++;
@@ -219,7 +219,6 @@ void draw() { //TODO ENLARGE TERRITORY
 
     cs.updateStats(cs.sb.toString());
     //println(cs.sb.toString());
-    
   }
 }
 void state1() {
@@ -401,6 +400,8 @@ void checkDBforMusic(int id, String fName, String name, String country) { //----
 
       misam = "MISAM-"+misam;
 
+      //if(title.toLowerCase().indexOf("transp")>=0)println(misam, duration, name, fName, "|", country, "|", title);//TODO search themes
+
       String[] music = {
         title, duration, editions, residence, misam
       };
@@ -414,26 +415,56 @@ void checkDBforMusic(int id, String fName, String name, String country) { //----
     composers.add(cp);
     //println(musics.size());
   }
-  if (musics.size()>5) {
+  //PRINT LISTING
+  //if (musics.size()>5)firstSelection(musics, fName, name, country); //residence selection
+  //if (musics.size()>16)secondSelection(musics, fName, name, country);
+  if (musics.size()>8)thirdSelection(musics, fName, name, country); //residence selection
+}
+void thirdSelection(ArrayList<String[]> musics, String fName, String name, String country) {
 
-    int init=0;
+  boolean init=false;
 
-    for (String[] str : musics) {
+  for (String[] str : musics) {
 
-      if (str[3]!= null) {
+    if (str[3]!= null) { //residence
 
-        init++;
-        if (init==1) {
-          //println("");
-          //println(fName, name, country, musics.size(), "hits :");
-          //println("-----------------------------------");
-        }
+      r_sl++;
 
-        //println(str[0], str[1], "- résidence :", str[3], "MISAM :", str[4]);
-      }
+      if (!init) println();
+      println(r_sl, str[4], str[1], name, fName, "|", country, "|", str[0]);
+
+      init = true;
     }
-    //println(musics.size(), "hits:", fName, name); //----------------------------------------------> check highest!
   }
+}
+void secondSelection(ArrayList<String[]> musics, String fName, String name, String country) {
+
+  for (String[] str : musics) {
+    r_sl++;
+    println(r_sl, name, fName, country, str[0], str[1], "MISAM :", str[4]);
+  }
+  println();
+}
+void firstSelection(ArrayList<String[]> musics, String fName, String name, String country) {
+
+  boolean init=false;
+
+  for (String[] str : musics) {
+
+    if (str[3]!= null) { //residence
+
+      r_sl++;
+      if (!init) {
+        println("");
+        println(fName, name, country, musics.size(), "hits :");
+        println("-----------------------------------");
+        init=true;
+      }
+
+      println(r_sl, str[0], str[1], "| résidence :", str[3], str[4]);
+    }
+  }
+  //println(musics.size(), "hits:", fName, name); //----------------------------------------------> check highest!
 }
 void createOrEditParticle() {
 
