@@ -25,6 +25,7 @@ void setup() {
 
   //----------------------------------------------//
 
+  //oeuvres primees
   table = loadTable("smallData_IMEB.csv", "header");
 
   println(table.getRowCount() + " total rows in table"); 
@@ -41,7 +42,7 @@ void setup() {
 
     String ctry = row.getString("country");
     ctry = trim(ctry);
-    
+
     String duration = row.getString("duration");
     if (duration.indexOf("00:")==0)duration=duration.substring(3);
     else if (duration.indexOf("0:")==0)duration=duration.substring(2);
@@ -58,12 +59,27 @@ void setup() {
     title = title.replaceAll("\'", "\\\\'");
     title = title.replaceAll("\"", "\\\\\"");
 
+
+    //--------------- edit names and firstnames --------------//
+
+    for (int i=0; i<namesAndFirstnamesToCheck.length; i++) {
+
+
+      if (name.equals(namesAndFirstnamesToCheck[i][3]) && fName.equals(namesAndFirstnamesToCheck[i][2])) {
+        name = namesAndFirstnamesToCheck[i][1];
+        fName = namesAndFirstnamesToCheck[i][0];
+      }
+    }
+
+    //println(namesAndFirstnamesToCheck.length);
+
     //------------------- encode --------------//
     try {
       name = new String(name.getBytes("UTF-8"), "iso-8859-1");
       fName = new String(fName.getBytes("UTF-8"), "iso-8859-1");
       title = new String(title.getBytes("UTF-8"), "iso-8859-1");
       ctry = new String(ctry.getBytes("UTF-8"), "iso-8859-1");
+
     } 
     catch (IOException ie) {
       println(ie);
@@ -94,9 +110,8 @@ void setup() {
     } else {
 
       int artist_id = msql.getInt("id");
-      
-      tryToFindTitleInMusic(artist_id, fName, name, title, year, duration);
 
+      tryToFindTitleInMusic(artist_id, fName, name, title, year, duration);
     }
   }
 
@@ -110,7 +125,6 @@ void checkIfCountryExistAndAddComposer(String fName, String name, String ctry) {
   if (!msql.next ()) { //add missing country
 
     println("missing ctry:", ctry);
-    
   } else { //add composer
 
     int c_id = msql.getInt("id");
@@ -131,18 +145,19 @@ void tryToFindTitleInMusic(int id_artist, String fName, String name, String titl
 
 
   if (!msql.next ()) { //title not already present
+  
     r_count2++;
     //println("title not already present");
-    
-    //println(duration);
-    
+
+    println(fName, name, title, duration);
+
     request = "INSERT INTO music (title, duration, editions, id_artist) VALUES ('"
       + title + "', '" + duration + "', '" + year + "', '"
       +  id_artist + "')";
-    
+
     //msql.query(request); //--------------------------------------------------------------------------------------------------------> 3/3
-    
-  } else {
+  
+} else {
 
     int music_id = msql.getInt("id");
     String editions = msql.getString("editions");
