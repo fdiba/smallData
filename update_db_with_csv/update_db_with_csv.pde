@@ -40,13 +40,18 @@ void setup() {
 
     String category = row.getString("category");
 
+    //println(fName, title);
+    
     String ctry = row.getString("country");
     ctry = trim(ctry);
 
     String duration = row.getString("duration");
-    if (duration.indexOf("00:")==0)duration=duration.substring(3);
-    else if (duration.indexOf("0:")==0)duration=duration.substring(2);
-    else if (duration.indexOf("1:15:00")==0)duration="75:00";
+
+    if (duration!=null) {
+      if (duration.indexOf("00:")==0)duration=duration.substring(3);
+      else if (duration.indexOf("0:")==0)duration=duration.substring(2);
+      else if (duration.indexOf("1:15:00")==0)duration="75:00";
+    }
 
     //---------------- name & fName --------------//
 
@@ -79,7 +84,6 @@ void setup() {
       fName = new String(fName.getBytes("UTF-8"), "iso-8859-1");
       title = new String(title.getBytes("UTF-8"), "iso-8859-1");
       ctry = new String(ctry.getBytes("UTF-8"), "iso-8859-1");
-
     } 
     catch (IOException ie) {
       println(ie);
@@ -145,8 +149,8 @@ void tryToFindTitleInMusic(int id_artist, String fName, String name, String titl
 
 
   if (!msql.next ()) { //title not already present
-  
-    r_count2++;
+
+      r_count2++;
     //println("title not already present");
 
     println(fName, name, title, duration);
@@ -155,9 +159,9 @@ void tryToFindTitleInMusic(int id_artist, String fName, String name, String titl
       + title + "', '" + duration + "', '" + year + "', '"
       +  id_artist + "')";
 
+    //3/3
     //msql.query(request); //--------------------------------------------------------------------------------------------------------> 3/3
-  
-} else {
+  } else {
 
     int music_id = msql.getInt("id");
     String editions = msql.getString("editions");
