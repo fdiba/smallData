@@ -32,7 +32,6 @@ void setup() {
 
   //----------------------------------------------//
 
-
   concours_fpart = "année-concours=";
   name_fpart = "nom=";
   fName_fpart = "prénom=";
@@ -51,7 +50,7 @@ void setup() {
 
   years.sort();
   for (Integer year : years) {
-    println(year);
+    //println(year);
   }
   //println(years.size());
 }
@@ -76,9 +75,9 @@ void processMtdFile(String target, String[] elements, String folderName) {
 
         if (info_concours.length() > concours_fpart.length()) {
 
-          //editArtistInfos(lines, info_concours); //----------------------------------> where magic happens 1/3
+          editArtistInfos(lines, info_concours); //----------------------------------> where magic happens 1/3
           //insertMusicInfos(lines, info_concours); //----------------------------------> where magic happens 2/3
-          updateMusicInfos(lines, info_concours); //----------------------------------> where magic happens 3/3
+          //updateMusicInfos(lines, info_concours); //----------------------------------> where magic happens 3/3
         }
       }
     }
@@ -183,7 +182,7 @@ void editMusicInfos(String[] lines, String editions) {
   if (name.equals("Szigeti") &&  name.equals("Itsvan")) {
     fName = "Istvan";
   }
-  
+
   if (name.equals("Alistair") &&  name.equals("Mac Donald")) {
     name = "MacDonald";
   }
@@ -272,35 +271,61 @@ String getName(String line) {
 
   return str;
 }
+//----------- db step one -------------//
 void editArtistInfos(String[] lines, String info_concours) {
 
   //---------------- editions --------------//
 
   info_concours = info_concours.substring(concours_fpart.length());
 
-  String[] editions = split(info_concours, ','); //TODO sort editions if size > 1
+  String[] editions = split(info_concours, ','); //TODO sort editions if size > 1 AND REMOVE WHEN edition[i]==0
   editions = trim(editions);
 
   //---------------- fName & name --------------//
   String name = getName(lines[20]);
   String fName = lines[21].substring(fName_fpart.length());
 
-  //-------- capsules correction ---------------//
-  if (name.equals("Szigeti") &&  name.equals("Itsvan")) {
-    fName = "Istvan";
-  }
-  
-  if (name.equals("Alistair") &&  name.equals("Mac Donald")) {
-    name = "MacDonald";
+  //if(name.equals("Rudi"))println(fName);
+  //if(fName.equals("Jean-Charles"))println(name);
+
+  if (fName.equals("Martin Rudolf") && name.indexOf("Fischer")>0)name="Fischer";
+
+  fName = fName.replaceAll("Á", "A");
+  fName = fName.replaceAll("á", "a");
+  fName = fName.replaceAll("ã", "a");
+  fName = fName.replaceAll("ë", "e");
+  fName = fName.replaceAll("ó", "o");
+  fName = fName.replaceAll("ø", "o");
+
+  String utf_name = "";
+  String utf_fn = "";
+
+  try {
+    utf_name = new String(name.getBytes("iso-8859-1"), "UTF-8");
+    utf_fn = new String(fName.getBytes("iso-8859-1"), "UTF-8");
+  } 
+  catch (IOException ie) {
+    println(ie);
   }
 
-  if (name.equals("Rozman")) {
-    name = "Rozmann";
-    fName = "Akos";
+  for (int i=0; i<namesAndFirstnamesToCheck.length; i++) {
+
+    if (name.equals(namesAndFirstnamesToCheck[i][3]) && fName.equals(namesAndFirstnamesToCheck[i][2])) {
+      name = namesAndFirstnamesToCheck[i][1];
+      fName = namesAndFirstnamesToCheck[i][0];
+    } //Cécilie Ore
+
+    if (utf_name.equals(namesAndFirstnamesToCheck[i][3]) && utf_fn.equals(namesAndFirstnamesToCheck[i][2])) {
+      name = namesAndFirstnamesToCheck[i][1];
+      fName = namesAndFirstnamesToCheck[i][0];
+    } //Lothar Voigtländer
   }
+
 
   try {
     fName = new String(fName.getBytes("UTF-8"), "iso-8859-1");
+    //name = new String(name.getBytes("UTF-8"), "iso-8859-1");
+    //do not do it for name - check getname()
   } 
   catch (IOException ie) {
     println(ie);
@@ -309,6 +334,8 @@ void editArtistInfos(String[] lines, String info_concours) {
   //------------------ country ------------//
 
   String ctry = lines[26].substring(ctry_fpart.length());
+  ctry = trim(ctry);
+
   if (ctry.equals("Italie/Suisse")) ctry = "Italie";
   else if (ctry.equals("Canada; France")) ctry = "Canada";
   else if (ctry.equals("Grande Bretagne")) ctry = "Royaume-Uni";
@@ -322,6 +349,7 @@ void editArtistInfos(String[] lines, String info_concours) {
   else if (ctry.equals("France-Argentine")) ctry = "France";
   else if (ctry.equals("République Tchèque")) ctry = "République tchèque";
   else if (ctry.equals("Gréce")) ctry = "Grèce";
+  else if (ctry.equals("Corée")) ctry = "Corée du Sud";
 
   //----------------------------------------//
 
@@ -333,9 +361,9 @@ void editArtistInfos(String[] lines, String info_concours) {
 
   msql.query(request);
 
-  if (!msql.next ()) { //not new artist
+  if (!msql.next ()) { //no artist not found
 
-      count++;
+    count++;
     //println(fName, name, ctry, "             ", count);
 
     //------------ create record --------------//
@@ -352,18 +380,49 @@ void editArtistInfos(String[] lines, String info_concours) {
     msql.query(request);
 
     if (!msql.next ()) { //STEP 1/3 add missing country
-
-      //check updateTableCountry.php
       request = "INSERT INTO country (c_name) VALUES ('"+ ctry +"')";
       //msql.query(request); //-----------------------------------------------------------------------> 1/3
       //println(ctry);
-    } else { //STEP 2/3 new artist
-
-      //check updateArtistsTable.php
+    } else { //STEP 2/3 add new new artist
       int c_id = msql.getInt("id");
       request = "INSERT INTO artist (firstName, name, id_country) VALUES ('" + fName + "', '" + name + "', '" +  c_id + "')"; 
       //msql.query(request); //-----------------------------------------------------------------------> 2/3
-      //println(fName, name, ctry, "            000000000 ", c_id);
+
+
+      /*
+     
+       Philippe - Menard 1979
+       Janine - Elliot 1983
+       Janine - Elliot 1994
+       Luc - Ferrari 1973
+       
+       */
+
+      try { //for print
+        fName = new String(fName.getBytes("iso-8859-1"), "UTF-8");
+        name = new String(name.getBytes("iso-8859-1"), "UTF-8");
+      } 
+      catch (IOException ie) {
+        println(ie);
+      }
+
+      boolean before96= false;
+
+      String str_editions="";
+
+      for (String edition : editions) {
+
+        if (parseInt(edition)<1995 && parseInt(edition)!=0) {
+          before96=true;
+          str_editions = join(editions, ", "); 
+          break;
+        }
+      }
+
+      if (before96) {
+        println(fName, "-", name, str_editions);
+        //println(fName, name, ctry, c_id);
+      }
     }
   } else { //STEP 1/3 edit artist
 
