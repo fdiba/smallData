@@ -75,37 +75,24 @@ void processMtdFile(String target, String[] elements, String folderName) {
 
         if (info_concours.length() > concours_fpart.length()) {
 
-          editArtistInfos(lines, info_concours); //----------------------------------> where magic happens 1/3
+          //editArtistInfos(lines, info_concours); //----------------------------------> where magic happens 1/3
           //insertMusicInfos(lines, info_concours); //----------------------------------> where magic happens 2/3
-          //updateMusicInfos(lines, info_concours); //----------------------------------> where magic happens 3/3
+          updateMusicInfos(lines, info_concours); //----------------------------------> where magic happens 3/3
         }
       }
     }
   }
 }
 
-
-void updateMusicInfos(String[] lines, String editions) { //TODO mix with insertMusicInfos()
+//-------------------------------- CCC db step three ---------------------------//
+void updateMusicInfos(String[] lines, String editions) { //just used to add misam code for the moment - add R
 
   //---------------- code misam --------------//
-
   String misam = lines[6].substring(misam_fpart.length());
   misam = trim(misam);
 
   //---------------- title --------------//
-  String title = lines[22].substring(title_fpart.length());
-  title = trim(title);
-
-  title = title.replaceAll("\'", "\\\\'");
-  title = title.replaceAll("\"", "\\\\\"");
-
-  try {
-    title = new String(title.getBytes("UTF-8"), "iso-8859-1");
-  } 
-  catch (IOException ie) {
-    println(ie);
-  }
-
+  String title = editTitle(lines[22]);
   //println(title);
 
   //---------------- duration --------------//
@@ -126,7 +113,7 @@ void updateMusicInfos(String[] lines, String editions) { //TODO mix with insertM
   msql.query(request);
 
   if (!msql.next ()) { //we got a pb
-    println("pb ");
+    println("pb: music should already be registered! ");
   } else {
     //println(random(200));
 
@@ -138,26 +125,21 @@ void updateMusicInfos(String[] lines, String editions) { //TODO mix with insertM
     //println(misam);
   }
 }
-
-void editMusicInfos(String[] lines, String editions) {
+//-------------------------------- BBB db step two ---------------------------//
+void insertMusicInfos(String[] lines, String editions) {
 
   //---------------- editions --------------//
   editions = editions.substring(concours_fpart.length());
   editions = trim(editions);
 
-  //---------------- title --------------//
-  String title = lines[22].substring(title_fpart.length());
-  title = trim(title);
-
-  title = title.replaceAll("\'", "\\\\'");
-
-  try {
-    title = new String(title.getBytes("UTF-8"), "iso-8859-1");
-  } 
-  catch (IOException ie) {
-    println(ie);
+  char lastChar = editions.charAt(editions.length()-1);
+  if (lastChar==',') {
+    editions = editions.substring(0, editions.length()-1);
+    //println(editions);
   }
 
+  //---------------- title --------------//
+  String title = editTitle(lines[22]);
   //println(title);
 
   //---------------- duration --------------//
@@ -172,32 +154,11 @@ void editMusicInfos(String[] lines, String editions) {
 
   //print(duration, ' ');
 
-  //---------------- name & fName --------------//
+  //---------------- fName & name --------------//
 
-  String name = getName(lines[20]);
-  String fName = lines[21].substring(fName_fpart.length());
-
-
-  //-------- capsules correction ---------------//--------------------------------------- TODO DOUBLE
-  if (name.equals("Szigeti") &&  name.equals("Itsvan")) {
-    fName = "Istvan";
-  }
-
-  if (name.equals("Alistair") &&  name.equals("Mac Donald")) {
-    name = "MacDonald";
-  }
-
-  if (name.equals("Rozman")) {
-    name = "Rozmann";
-    fName = "Akos";
-  }
-
-  try {
-    fName = new String(fName.getBytes("UTF-8"), "iso-8859-1");
-  } 
-  catch (IOException ie) {
-    println(ie);
-  }
+  String[] idt = editNameAndFirstName(lines[21], lines[20]);
+  String fName = idt[0];
+  String name = idt[1];
 
   //---------------- request --------------//
 
@@ -207,26 +168,40 @@ void editMusicInfos(String[] lines, String editions) {
   msql.query(request);
 
   if (!msql.next ()) { //we got a pb
-    println("pb ");
+    println("pb: composer should be already present!");
   } else {
     //println(random(200));
 
     int artist_id = msql.getInt("id");
-
-    /*request = "INSERT INTO music (title, duration, editions, id_artist) VALUES ('"
-     + title + "', '" + duration + "', '" + editions + "', '"
-     +  artist_id + "') AS tmp WHERE NOT EXISTS (SELECT title FROM music WHERE title='"
-     + title + "') LIMIT 1;";*/
 
     request = "INSERT INTO music (title, duration, editions, id_artist) VALUES ('"
       + title + "', '" + duration + "', '" + editions + "', '"
       +  artist_id + "')";
 
     //msql.query(request); //-----------------------------------------------------------------------> 1/1
-    //println(fName, name, ctry, "            000000000 ", c_id);
+    println(fName, name, title, duration, editions);
   }
 }
-String getName(String line) {
+
+//------------------------- edit Strings ----------------------------------------//
+String editTitle(String line) {
+
+  String str = line.substring(title_fpart.length());
+  str = trim(str);
+
+  str = str.replaceAll("\'", "\\\\'");
+  str = str.replaceAll("\"", "\\\\\"");
+
+  try {
+    str = new String(str.getBytes("UTF-8"), "iso-8859-1");
+  } 
+  catch (IOException ie) {
+    println(ie);
+  }
+
+  return str;
+}
+String editName(String line) {
 
   String str = line.substring(name_fpart.length());
   String endStr = str.substring(1, str.length());
@@ -262,16 +237,55 @@ String getName(String line) {
 
   str = str.replaceAll("\'", "\\\\'");
 
-  try {
-    str = new String(str.getBytes("UTF-8"), "iso-8859-1");
+  return str;
+}
+String editFirstName(String line) {
+
+  String str = line.substring(fName_fpart.length());
+  str = trim(str);
+
+  str = str.replaceAll("Á", "A");
+  str = str.replaceAll("á", "a");
+  str = str.replaceAll("ã", "a");
+  str = str.replaceAll("ë", "e");
+  str = str.replaceAll("ó", "o");
+  str = str.replaceAll("ø", "o");
+
+  return str;
+}
+String[] editNameAndFirstName(String fName, String name) {
+
+  fName = editFirstName(fName);
+  name = editName(name);
+
+
+  if (fName.equals("Martin Rudolf") && name.indexOf("Fischer")>0)name="Fischer";
+
+
+  for (int i=0; i<namesAndFirstnamesToCheck.length; i++) {
+
+    if (name.equals(namesAndFirstnamesToCheck[i][3]) && fName.equals(namesAndFirstnamesToCheck[i][2])) {
+      name = namesAndFirstnamesToCheck[i][1];
+      fName = namesAndFirstnamesToCheck[i][0];
+    }
+  }
+
+
+  try { //utf8 to iso
+    fName = new String(fName.getBytes("UTF-8"), "iso-8859-1");
+    name = new String(name.getBytes("UTF-8"), "iso-8859-1");
   } 
   catch (IOException ie) {
     println(ie);
   }
 
-  return str;
+  String[] array = {
+    fName, name
+  };
+
+  return array;
 }
-//----------- db step one -------------//
+//-------------------------------- AAA db step one ---------------------------//
 void editArtistInfos(String[] lines, String info_concours) {
 
   //---------------- editions --------------//
@@ -282,54 +296,10 @@ void editArtistInfos(String[] lines, String info_concours) {
   editions = trim(editions);
 
   //---------------- fName & name --------------//
-  String name = getName(lines[20]);
-  String fName = lines[21].substring(fName_fpart.length());
 
-  //if(name.equals("Rudi"))println(fName);
-  //if(fName.equals("Jean-Charles"))println(name);
-
-  if (fName.equals("Martin Rudolf") && name.indexOf("Fischer")>0)name="Fischer";
-
-  fName = fName.replaceAll("Á", "A");
-  fName = fName.replaceAll("á", "a");
-  fName = fName.replaceAll("ã", "a");
-  fName = fName.replaceAll("ë", "e");
-  fName = fName.replaceAll("ó", "o");
-  fName = fName.replaceAll("ø", "o");
-
-  String utf_name = "";
-  String utf_fn = "";
-
-  try {
-    utf_name = new String(name.getBytes("iso-8859-1"), "UTF-8");
-    utf_fn = new String(fName.getBytes("iso-8859-1"), "UTF-8");
-  } 
-  catch (IOException ie) {
-    println(ie);
-  }
-
-  for (int i=0; i<namesAndFirstnamesToCheck.length; i++) {
-
-    if (name.equals(namesAndFirstnamesToCheck[i][3]) && fName.equals(namesAndFirstnamesToCheck[i][2])) {
-      name = namesAndFirstnamesToCheck[i][1];
-      fName = namesAndFirstnamesToCheck[i][0];
-    } //Cécilie Ore
-
-    if (utf_name.equals(namesAndFirstnamesToCheck[i][3]) && utf_fn.equals(namesAndFirstnamesToCheck[i][2])) {
-      name = namesAndFirstnamesToCheck[i][1];
-      fName = namesAndFirstnamesToCheck[i][0];
-    } //Lothar Voigtländer
-  }
-
-
-  try {
-    fName = new String(fName.getBytes("UTF-8"), "iso-8859-1");
-    //name = new String(name.getBytes("UTF-8"), "iso-8859-1");
-    //do not do it for name - check getname()
-  } 
-  catch (IOException ie) {
-    println(ie);
-  }
+  String[] idt = editNameAndFirstName(lines[21], lines[20]);
+  String fName = idt[0];
+  String name = idt[1];
 
   //------------------ country ------------//
 
@@ -389,13 +359,13 @@ void editArtistInfos(String[] lines, String info_concours) {
       //msql.query(request); //-----------------------------------------------------------------------> 2/3
 
 
-      /*
-     
+      //--------- get infos --------------//
+
+      /* not found
        Philippe - Menard 1979
        Janine - Elliot 1983
        Janine - Elliot 1994
        Luc - Ferrari 1973
-       
        */
 
       try { //for print
@@ -471,6 +441,13 @@ void editArtistInfos(String[] lines, String info_concours) {
     }
   }
 }
+
+//-----------------------------
+
+
+
+//-----------------------------
+
 void processFolders(String target, String[] elements) {
 
   for (int i=0; i<elements.length; i++) {

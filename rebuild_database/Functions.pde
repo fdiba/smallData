@@ -102,7 +102,7 @@ String[][] namesAndFirstnamesToCheck = {
     "Martin", "Fischer", "Martin Rudolf", "Fischer"
   }
   , {
-    "Jean-Charles", "François", "Jean-Charles", "Francois"
+    "Jean-Charles", "Francois", "Jean-Charles", "François"
   }
 
   //----------- G
