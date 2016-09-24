@@ -11,6 +11,9 @@ String concours_fpart, name_fpart, fName_fpart, ctry_fpart, title_fpart, duratio
 
 int count = 0;
 
+int errors;
+int emptyFiles;
+
 void setup() {
 
   //------------------ database ------------------//
@@ -48,11 +51,14 @@ void setup() {
   String[] children = dir.list();
   if (children != null) processFolders(mainTarget, children);
 
-  years.sort();
-  for (Integer year : years) {
-    //println(year);
-  }
-  //println(years.size());
+  /*years.sort();
+   for (Integer year : years) {
+   println(year);
+   }
+   println(years.size());*/
+
+  println("errors:", errors);
+  println("emptyFiles:", emptyFiles);
 }
 void processMtdFile(String target, String[] elements, String folderName) {
 
@@ -69,16 +75,22 @@ void processMtdFile(String target, String[] elements, String folderName) {
       Node node = new Node();
       String info_concours = "";
 
-      if (lines.length>40) {
+      //------------ process all composers ------------//
+      if (lines.length>1) {
 
-        info_concours = lines[40];
+        info_concours = lines[40]; //41
 
-        if (info_concours.length() > concours_fpart.length()) {
+        if (info_concours.length() > concours_fpart.length()) { //compositeurs ayant participé à au moins un concours
 
-          //editArtistInfos(lines, info_concours); //----------------------------------> where magic happens 1/3
+          //editArtistInfos(lines, info_concours, filename); //----------------------------------> where magic happens 1/3
           //insertMusicInfos(lines, info_concours); //----------------------------------> where magic happens 2/3
-          updateMusicInfos(lines, info_concours); //----------------------------------> where magic happens 3/3
+          //updateMusicInfos(lines, info_concours); //----------------------------------> where magic happens 3/3
+        } else {
+
+          editArtistInfos(lines, info_concours, filename);
         }
+      } else {
+        emptyFiles++;
       }
     }
   }
@@ -156,7 +168,7 @@ void insertMusicInfos(String[] lines, String editions) {
 
   //---------------- fName & name --------------//
 
-  String[] idt = editNameAndFirstName(lines[21], lines[20]);
+  String[] idt = editFirstNameAndName(lines[21], lines[20]);
   String fName = idt[0];
   String name = idt[1];
 
@@ -253,7 +265,7 @@ String editFirstName(String line) {
 
   return str;
 }
-String[] editNameAndFirstName(String fName, String name) {
+String[] editFirstNameAndName(String fName, String name) {
 
   fName = editFirstName(fName);
   name = editName(name);
@@ -285,25 +297,67 @@ String[] editNameAndFirstName(String fName, String name) {
 
   return array;
 }
+//----------------------------------------------------------------------------//
 //-------------------------------- AAA db step one ---------------------------//
-void editArtistInfos(String[] lines, String info_concours) {
+//----------------------------------------------------------------------------//
+void editArtistInfos(String[] lines, String info_concours, String filename) {
 
   //---------------- editions --------------//
 
-  info_concours = info_concours.substring(concours_fpart.length());
+  if (info_concours.length()>concours_fpart.length())info_concours = info_concours.substring(concours_fpart.length());
+  else info_concours = "";
 
   String[] editions = split(info_concours, ','); //TODO sort editions if size > 1 AND REMOVE WHEN edition[i]==0
   editions = trim(editions);
 
-  //---------------- fName & name --------------//
+  //---------------- fName & name & country --------------//
 
-  String[] idt = editNameAndFirstName(lines[21], lines[20]);
+  int id_fname=-1;
+  int id_name=-1;
+  int id_ctry=-1;
+
+  for (int i=0; i<lines.length; i++) {
+    int p1 = lines[i].indexOf(fName_fpart);
+    if (p1==0){
+      id_fname = i;
+      break;
+    }
+  }
+
+  for (int j=0; j<lines.length; j++) {
+    int p2 = lines[j].indexOf(name_fpart);
+    if (p2==0){
+      id_name = j;
+      break;
+    }
+  }
+  
+  for (int k=0; k<lines.length; k++) {
+    int p3 = lines[k].indexOf(ctry_fpart);
+    if (p3==0){
+      id_ctry = k;
+      break;
+    }
+  }
+
+
+  if (id_fname<0 || id_name<0 || id_ctry<0 ) {
+    println("NOT FOUND!", id_fname, id_name, id_ctry, filename);
+    //println(lines[id_name], filename);
+  }
+  
+    
+  //--- TODO bugs
+  if(filename.equals("MISAM_112729_V1_1.mtd")){
+    id_fname=21;
+    //println(lines[id_fname]);
+  }
+
+  String[] idt = editFirstNameAndName(lines[id_fname], lines[id_name]);
   String fName = idt[0];
   String name = idt[1];
 
-  //------------------ country ------------//
-
-  String ctry = lines[26].substring(ctry_fpart.length());
+  String ctry = lines[id_ctry].substring(ctry_fpart.length());
   ctry = trim(ctry);
 
   if (ctry.equals("Italie/Suisse")) ctry = "Italie";
@@ -313,6 +367,7 @@ void editArtistInfos(String[] lines, String info_concours) {
   else if (ctry.equals("") || ctry.equals("-mvt=")) ctry = "Unknown";
   else if (ctry.equals("Nouvelle Zélande")) ctry = "Nouvelle-Zélande";
   else if (ctry.equals("USA/Belgique")) ctry = "USA";
+  else if (ctry.equals("Usa;Brézil")) ctry = "USA";
   else if (ctry.equals("Serbie/Canada")) ctry = "Serbie";
   else if (ctry.equals("Pays Bas")) ctry = "Pays-Bas";
   else if (ctry.equals("Taiwan")) ctry = "Taïwan";
@@ -320,11 +375,10 @@ void editArtistInfos(String[] lines, String info_concours) {
   else if (ctry.equals("République Tchèque")) ctry = "République tchèque";
   else if (ctry.equals("Gréce")) ctry = "Grèce";
   else if (ctry.equals("Corée")) ctry = "Corée du Sud";
+  else if (ctry.equals("République Dominicaine")) ctry = "République dominicaine";
+  else if (ctry.equals("Tchéquie")) ctry = "République tchèque";
 
   //----------------------------------------//
-
-  //println(fName, name, ctry, "             ", filename);
-  //delay(200);
 
   String request = "SELECT id FROM artist WHERE name =\"" + 
     name + "\" and firstName =\"" + fName + "\""; 
@@ -352,7 +406,7 @@ void editArtistInfos(String[] lines, String info_concours) {
     if (!msql.next ()) { //STEP 1/3 add missing country
       request = "INSERT INTO country (c_name) VALUES ('"+ ctry +"')";
       //msql.query(request); //-----------------------------------------------------------------------> 1/3
-      //println(ctry);
+      println(ctry, fName, name, filename);
     } else { //STEP 2/3 add new new artist
       int c_id = msql.getInt("id");
       request = "INSERT INTO artist (firstName, name, id_country) VALUES ('" + fName + "', '" + name + "', '" +  c_id + "')"; 
