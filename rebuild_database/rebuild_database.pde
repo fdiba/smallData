@@ -297,6 +297,22 @@ String[] editFirstNameAndName(String fName, String name) {
 
   return array;
 }
+//--------------------
+int getLineID(String[] lines, String str_fpart){
+  
+  int id = -1;
+  
+  for (int i=0; i<lines.length; i++) {
+    int pos = lines[i].indexOf(str_fpart);
+    if (pos==0){
+      id = i;
+      break;
+    }
+  }
+  
+  return id;
+  
+}
 //----------------------------------------------------------------------------//
 //-------------------------------- AAA db step one ---------------------------//
 //----------------------------------------------------------------------------//
@@ -312,33 +328,11 @@ void editArtistInfos(String[] lines, String info_concours, String filename) {
 
   //---------------- fName & name & country --------------//
 
-  int id_fname=-1;
-  int id_name=-1;
-  int id_ctry=-1;
-
-  for (int i=0; i<lines.length; i++) {
-    int p1 = lines[i].indexOf(fName_fpart);
-    if (p1==0){
-      id_fname = i;
-      break;
-    }
-  }
-
-  for (int j=0; j<lines.length; j++) {
-    int p2 = lines[j].indexOf(name_fpart);
-    if (p2==0){
-      id_name = j;
-      break;
-    }
-  }
+  int id_fname, id_name, id_ctry;
   
-  for (int k=0; k<lines.length; k++) {
-    int p3 = lines[k].indexOf(ctry_fpart);
-    if (p3==0){
-      id_ctry = k;
-      break;
-    }
-  }
+  id_fname = getLineID(lines, fName_fpart);
+  id_name = getLineID(lines, name_fpart);
+  id_ctry = getLineID(lines, ctry_fpart);
 
 
   if (id_fname<0 || id_name<0 || id_ctry<0 ) {
