@@ -78,13 +78,16 @@ void processMtdFile(String target, String[] elements, String folderName) {
       //------------ process all composers ------------//
       if (lines.length>1) {
 
-        info_concours = lines[40]; //41
+        int id = getLineID(lines, concours_fpart);
+        if(id>0)info_concours = lines[id];
 
         if (info_concours.length() > concours_fpart.length()) { //compositeurs ayant participé à au moins un concours
 
           //editArtistInfos(lines, info_concours, filename); //----------------------------------> where magic happens 1/3
           //insertMusicInfos(lines, info_concours); //----------------------------------> where magic happens 2/3
           //updateMusicInfos(lines, info_concours); //----------------------------------> where magic happens 3/3
+          
+          println(info_concours);
         } else {
 
           editArtistInfos(lines, info_concours, filename);
