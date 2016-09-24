@@ -79,15 +79,14 @@ void processMtdFile(String target, String[] elements, String folderName) {
       if (lines.length>1) {
 
         int id = getLineID(lines, concours_fpart);
-        if(id>0)info_concours = lines[id];
+        if (id>=0)info_concours = lines[id];
 
         if (info_concours.length() > concours_fpart.length()) { //compositeurs ayant participé à au moins un concours
 
           //editArtistInfos(lines, info_concours, filename); //----------------------------------> where magic happens 1/3
           //insertMusicInfos(lines, info_concours); //----------------------------------> where magic happens 2/3
           //updateMusicInfos(lines, info_concours); //----------------------------------> where magic happens 3/3
-          
-          println(info_concours);
+          //println(info_concours);
         } else {
 
           editArtistInfos(lines, info_concours, filename);
@@ -301,20 +300,19 @@ String[] editFirstNameAndName(String fName, String name) {
   return array;
 }
 //--------------------
-int getLineID(String[] lines, String str_fpart){
-  
+int getLineID(String[] lines, String str_fpart) {
+
   int id = -1;
-  
+
   for (int i=0; i<lines.length; i++) {
     int pos = lines[i].indexOf(str_fpart);
-    if (pos==0){
+    if (pos==0) {
       id = i;
       break;
     }
   }
-  
+
   return id;
-  
 }
 //----------------------------------------------------------------------------//
 //-------------------------------- AAA db step one ---------------------------//
@@ -332,7 +330,7 @@ void editArtistInfos(String[] lines, String info_concours, String filename) {
   //---------------- fName & name & country --------------//
 
   int id_fname, id_name, id_ctry;
-  
+
   id_fname = getLineID(lines, fName_fpart);
   id_name = getLineID(lines, name_fpart);
   id_ctry = getLineID(lines, ctry_fpart);
@@ -342,10 +340,10 @@ void editArtistInfos(String[] lines, String info_concours, String filename) {
     println("NOT FOUND!", id_fname, id_name, id_ctry, filename);
     //println(lines[id_name], filename);
   }
-  
-    
+
+
   //--- TODO bugs
-  if(filename.equals("MISAM_112729_V1_1.mtd")){
+  if (filename.equals("MISAM_112729_V1_1.mtd")) {
     id_fname=21;
     //println(lines[id_fname]);
   }
