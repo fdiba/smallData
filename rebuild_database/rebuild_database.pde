@@ -76,13 +76,14 @@ void processMtdFile(String target, String[] elements, String folderName) {
         if (info_concours.length() > concours_fpart.length()) { //compositeurs ayant participé à au moins un concours
 
           //editArtistInfos(lines, info_concours, filename); //------------------------> where magic happens 1/3
-          //insertMusicInfos(lines, info_concours, filename); //------------------------> where magic happens 2/3
-          //updateMusicInfos(lines, info_concours); //------------------------> where magic happens 3/3
+          //insertMusicInfos(lines, info_concours, filename); //------------------------> where magic happens 2/3 //3064
+          //updateMusicInfos(lines, info_concours, filename); //------------------------> where magic happens 3/3
           //println(info_concours);
         } else {
 
           //editArtistInfos(lines, info_concours, filename);
-          //insertMusicInfos(lines, info_concours, filename); //insert only title, duration and editions
+          //insertMusicInfos(lines, info_concours, filename); //insert only title, duration misam and editions USE IT ONLY ONCE THEN UPDATE
+          updateMusicInfos(lines, info_concours, filename);
         }
       } else {
         emptyFiles++;
@@ -90,32 +91,38 @@ void processMtdFile(String target, String[] elements, String folderName) {
     }
   }
 }
-
+//------------------------------------------------------------------------------//
 //-------------------------------- CCC db step three ---------------------------//
-void updateMusicInfos(String[] lines, String editions) { //just used to add misam code for the moment - add R
+//------------------------------------------------------------------------------//
+void updateMusicInfos(String[] lines, String editions, String filename) { //just used to add misam code for the moment - add R
+
+
+  //---------------- editions --------------//
+  //add edition
 
   //---------------- code misam --------------//
-  String misam = lines[6].substring(misam_fpart.length());
+  
+  int id_misam = getLineID(lines, misam_fpart);
+  String misam = lines[id_misam].substring(misam_fpart.length());
   misam = trim(misam);
 
   //---------------- title --------------//
-  String title = editTitle(lines[22]);
+  int id_title = getLineID(lines, title_fpart);
+  String title = editTitle(lines[id_title]);
   //println(title);
 
   //---------------- duration --------------//
-  String duration;
-  if (lines[24].length()>duration_fpart.length()) {
-    duration = lines[24].substring(duration_fpart.length());
-    duration = trim(duration);
-    duration = duration.replaceAll("\'", ":");
-    if (duration.equals("11:"))duration="11:00";
-    else if (duration.indexOf("00:")==0)duration=duration.substring(3);
-  } else duration = "";
+  
+  int id_duration = getLineID(lines, duration_fpart);
+  String duration = "";
+
+  if (id_duration>-1) duration = processDuration(lines[id_duration]);
+
+  //print(duration, ' ');
 
   //---------------- request --------------//
 
-  String request = "SELECT id FROM music WHERE title =\"" + 
-    title + "\" and duration =\"" + duration + "\""; 
+  String request = "SELECT id FROM music WHERE misam = " + misam; 
 
   msql.query(request);
 
@@ -142,6 +149,12 @@ void insertMusicInfos(String[] lines, String info_concours, String filename) {
   String[] editionsArray = processEditions(info_concours); 
   String editions = join(editionsArray, ",");
   //println(editions);
+  
+  //---------------- code misam --------------//
+  
+  int id_misam = getLineID(lines, misam_fpart);
+  String misam = lines[id_misam].substring(misam_fpart.length());
+  misam = trim(misam);
 
   //---------------- title --------------//
 
@@ -154,16 +167,7 @@ void insertMusicInfos(String[] lines, String info_concours, String filename) {
   int id_duration = getLineID(lines, duration_fpart);
   String duration = "";
 
-  if (duration.length()>0) {
-
-    if (lines[id_duration].length()>duration_fpart.length()) {
-      duration = lines[id_duration].substring(duration_fpart.length());
-      duration = trim(duration);
-      duration = duration.replaceAll("\'", ":");
-      if (duration.equals("11:"))duration="11:00";
-      else if (duration.indexOf("00:")==0)duration=duration.substring(3);
-    }
-  }
+  if (id_duration>-1) duration = processDuration(lines[id_duration]);
 
   //print(duration, ' ');
 
@@ -199,15 +203,16 @@ void insertMusicInfos(String[] lines, String info_concours, String filename) {
 
   if (!msql.next ()) { //we got a pb
     println("pb: composer should be already present!");
-  } else {
+  } else { //WARNING use it only once !
 
     int artist_id = msql.getInt("id");
 
-    request = "INSERT INTO music (title, duration, editions, id_artist) VALUES ('"
+    request = "INSERT INTO music (title, duration, editions, misam, id_artist) VALUES ('"
       + title + "', '" + duration + "', '" + editions + "', '"
+      + misam + "', '"
       +  artist_id + "')";
 
-    //msql.query(request); //-----------------------------------------------------------------------> 1/1
+    msql.query(request); //-----------------------------------------------------------------------> 1/1
     //println(fName, name, title, duration, editions);
   }
 }
@@ -329,6 +334,22 @@ int getLineID(String[] lines, String str_fpart) {
 
   return id;
 }
+String processDuration(String str){
+  
+  String duration = "";
+  
+  if (str.length()>duration_fpart.length()) {
+      duration = str.substring(duration_fpart.length());
+      duration = duration.replaceAll(" ", "");
+      duration = duration.replaceAll("\'", ":");
+      if (duration.equals("11:"))duration="11:00";
+      else if (duration.indexOf("00:")==0)duration=duration.substring(3);
+      else if (duration.equals("01:09:47"))duration="69:47";
+      else if (duration.equals("01:18:30"))duration="78:30";
+      else if (duration.equals("1:02:23"))duration="62:23";
+    }
+  return duration;
+}
 String[] processEditions(String str) {
 
   if (str.length()>0) {
@@ -443,14 +464,16 @@ void editArtistInfos(String[] lines, String info_concours, String filename) {
        Luc - Ferrari 1973
        */
 
-      /*
+      
       try { //for print
        fName = new String(fName.getBytes("iso-8859-1"), "UTF-8");
        name = new String(name.getBytes("iso-8859-1"), "UTF-8");
        } 
        catch (IOException ie) {
        println(ie);
-       }*/
+       }
+       
+       println(ctry, fName, name, filename);
 
       //----------------------------------//
     }
