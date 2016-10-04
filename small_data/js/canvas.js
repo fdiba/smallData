@@ -26,10 +26,6 @@ window.onload = function() {
     minHeight = 300;
     canvas.height = minHeight;
 
-    context.fillStyle="green";
-    context.fillRect(0, 0, canvas.width, canvas.height); 
-    context.stroke();
-
     //-----------
 
     //canvas.width = 500;
@@ -46,7 +42,7 @@ window.onload = function() {
 
     resetPositions();
 
-    for(var i=0; i<num; i++){
+    for(var i=0; i<ids.length; i++){
 
         if( xPos > canvas.width-xOffset){
             xPos = 0;
@@ -66,7 +62,7 @@ window.onload = function() {
 
     function calculateMinHeight(){
 
-        for(var i=0; i<num; i++){
+        for(var i=0; i<ids.length; i++){
 
             if( xPos > canvas.width-xOffset){
                 xPos = 0;
@@ -97,15 +93,39 @@ window.onload = function() {
 
     }
 
-    //context.lineWidth = 2;
-    context.font = "40pt Calibri";
+    context.lineWidth = 2;
+    context.font = "20pt Calibri";
     context.fillStyle="grey";
-    //context.strokeStyle = "yellow";
+    context.strokeStyle = "white";
     
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillText(num, canvas.width / 2, 120);
-    //context.strokeText(num, canvas.width / 2, 120);
+    
+    var yTxtPos = 120;
+
+    context.strokeText(ids[2], canvas.width/2, yTxtPos);
+    context.fillText(ids[2], canvas.width/2, yTxtPos);
+    yTxtPos += 40;
+
+    context.strokeText(fNames[2], canvas.width/2, yTxtPos);
+    context.fillText(fNames[2], canvas.width/2, yTxtPos);
+    yTxtPos += 40;
+
+    context.strokeText(names[2], canvas.width/2, yTxtPos);
+    context.fillText(names[2], canvas.width/2, yTxtPos);
+    yTxtPos += 40;
+
+    context.strokeText(names[2], canvas.width/2, yTxtPos);
+    context.fillText(names[2], canvas.width/2, yTxtPos);
+    yTxtPos += 40;
+
+    context.strokeText(countries[2], canvas.width/2, yTxtPos);
+    context.fillText(countries[2], canvas.width/2, yTxtPos);
+    yTxtPos += 40;
+
+    context.strokeText(editions[2], canvas.width/2, yTxtPos);
+    context.fillText(editions[2], canvas.width/2, yTxtPos);
+    yTxtPos += 40;
 
     //------
 
@@ -113,7 +133,7 @@ window.onload = function() {
 
     function animate() {
 
-        //for(var i=0; i<num; i++){
+        //for(var i=0; i<arr.length; i++){
 
             if( xPos > canvas.width-xOffset){
                 xPos = 0;
