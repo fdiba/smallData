@@ -81,13 +81,23 @@ window.onload = function() {
         for(var i=0; i<ids.length; i++){
 
             //------- main rectangle ---------//
-            createNewRectangle("pink");
+            createNewRectangle("grey");
+            // createNewRectangle("pink");
 
             //------- editions ---------//
             if(editions[i].length>0){
 
                 for(var j=0; j<editions[i].length; j++){
-                    createNewRectangle("orange");
+
+                    
+                    var coef = 360/(2009-1973);
+                    var numEdition = editions[i][j] - 1973;
+                    numEdition *= coef; //0=>360
+
+                    var color1 = 'hsl('+ numEdition +', 100%, 50%)';
+
+                    // createNewRectangle("orange");
+                    createNewRectangle(color1);
                 }
 
             } else {
@@ -105,6 +115,7 @@ window.onload = function() {
 
     function drawRect(x, y, c){
 
+        // context.fillStyle='hsl('+ 150 +', 100%, 50%)';
         context.fillStyle=c;
         context.fillRect(x, y, 10, 10); 
         context.stroke();
