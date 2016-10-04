@@ -2,6 +2,9 @@ var xPos;
 var yPos;
 
 var minHeight;
+var rectangles;
+
+var xLeftOffset;
 
 window.onload = function() {
 
@@ -20,6 +23,8 @@ window.onload = function() {
         return;
     }
 
+    rectangles = new Array();
+    xLeftOffset = 10;
     resetPositions();
 
     canvas.width = $(document).width()-20;
@@ -42,90 +47,107 @@ window.onload = function() {
 
     resetPositions();
 
-    for(var i=0; i<ids.length; i++){
-
-        if( xPos > canvas.width-xOffset){
-            xPos = 0;
-            yPos += 20;
-        }
-
-        drawRect("pink");
-        xPos += 20;
+    for(var i=0; i<rectangles.length; i++){
+        drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
     }
 
     resetPositions();
+
+    displayInformation(2);
+
+    //-------- functions -----------//
 
     function resetCanvasSize(){
 
         if(canvas.height<minHeight)canvas.height=minHeight;
     }
 
+    function createNewRectangle(c){
+
+        if( xPos > canvas.width-xOffset){
+            xPos = xLeftOffset;
+            yPos += 20;
+        }
+
+        if(yPos+20>minHeight) minHeight+=20;
+
+        rectangles.push({id:ids[i], x: xPos, y:yPos, color:c});
+        xPos += 20;
+
+    }
+
     function calculateMinHeight(){
 
         for(var i=0; i<ids.length; i++){
 
-            if( xPos > canvas.width-xOffset){
-                xPos = 0;
-                yPos += 20;
+            //------- main rectangle ---------//
+            createNewRectangle("pink");
+
+            //------- editions ---------//
+            if(editions[i].length>0){
+
+                for(var j=0; j<editions[i].length; j++){
+                    createNewRectangle("orange");
+                }
+
+            } else {
+                console.log("error: no edition");
             }
 
-            if(yPos+20>minHeight) {
-                minHeight+=20;
-
-            }
-
-            //drawRect();
-            xPos += 20;
         }
 
     }
 
     function resetPositions(){
-        xPos = 0;
+        xPos = xLeftOffset;
         yPos = 5;
     }
 
-    function drawRect(c){
+    function drawRect(x, y, c){
 
         context.fillStyle=c;
-        context.fillRect(xPos, yPos, 10, 10); 
+        context.fillRect(x, y, 10, 10); 
         context.stroke();
 
     }
 
-    context.lineWidth = 2;
-    context.font = "20pt Calibri";
-    context.fillStyle="grey";
-    context.strokeStyle = "white";
-    
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    
-    var yTxtPos = 120;
+    function displayInformation(id){
 
-    context.strokeText(ids[2], canvas.width/2, yTxtPos);
-    context.fillText(ids[2], canvas.width/2, yTxtPos);
-    yTxtPos += 40;
+        context.lineWidth = 2;
+        context.font = "20pt Calibri";
+        context.fillStyle="grey";
+        context.strokeStyle = "white";
+        
+        context.textAlign = "center";
+        context.textBaseline = "middle";
 
-    context.strokeText(fNames[2], canvas.width/2, yTxtPos);
-    context.fillText(fNames[2], canvas.width/2, yTxtPos);
-    yTxtPos += 40;
+        var yTxtPos = 120;
 
-    context.strokeText(names[2], canvas.width/2, yTxtPos);
-    context.fillText(names[2], canvas.width/2, yTxtPos);
-    yTxtPos += 40;
+        context.strokeText(ids[2], canvas.width/2, yTxtPos);
+        context.fillText(ids[2], canvas.width/2, yTxtPos);
+        yTxtPos += 40;
 
-    context.strokeText(names[2], canvas.width/2, yTxtPos);
-    context.fillText(names[2], canvas.width/2, yTxtPos);
-    yTxtPos += 40;
+        context.strokeText(fNames[2], canvas.width/2, yTxtPos);
+        context.fillText(fNames[2], canvas.width/2, yTxtPos);
+        yTxtPos += 40;
 
-    context.strokeText(countries[2], canvas.width/2, yTxtPos);
-    context.fillText(countries[2], canvas.width/2, yTxtPos);
-    yTxtPos += 40;
+        context.strokeText(names[2], canvas.width/2, yTxtPos);
+        context.fillText(names[2], canvas.width/2, yTxtPos);
+        yTxtPos += 40;
 
-    context.strokeText(editions[2], canvas.width/2, yTxtPos);
-    context.fillText(editions[2], canvas.width/2, yTxtPos);
-    yTxtPos += 40;
+        context.strokeText(names[2], canvas.width/2, yTxtPos);
+        context.fillText(names[2], canvas.width/2, yTxtPos);
+        yTxtPos += 40;
+
+        context.strokeText(countries[2], canvas.width/2, yTxtPos);
+        context.fillText(countries[2], canvas.width/2, yTxtPos);
+        yTxtPos += 40;
+
+        context.strokeText(editions[2], canvas.width/2, yTxtPos);
+        context.fillText(editions[2], canvas.width/2, yTxtPos);
+        yTxtPos += 40;
+
+    }
 
     //------
 
@@ -133,16 +155,13 @@ window.onload = function() {
 
     function animate() {
 
-        //for(var i=0; i<arr.length; i++){
+        if( xPos > canvas.width-xOffset){
+            xPos = 0;
+            yPos += 20;
+        }
 
-            if( xPos > canvas.width-xOffset){
-                xPos = 0;
-                yPos += 20;
-            }
-
-            drawRect("black");
-            xPos += 20;
-        //}
+        drawRect(xPos, yPos, "black");
+        xPos += 20;
 
     }
 }
