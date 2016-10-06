@@ -1,6 +1,9 @@
 var xPos;
 var yPos;
 
+var xDist;
+var yDist;
+
 var minHeight;
 var rectangles;
 
@@ -15,7 +18,7 @@ window.onload = function() {
         return;
     }
 
-    canvas.addEventListener("mousedown", animate, false);
+    canvas.addEventListener("mousedown", getInfo, false);
 
     var context = canvas.getContext('2d');
     if(!context) {
@@ -25,6 +28,8 @@ window.onload = function() {
 
     rectangles = new Array();
     xLeftOffset = 10;
+    xDist = 11;
+    yDist = 11;
     resetPositions();
 
     canvas.width = $(document).width()-20;
@@ -53,7 +58,7 @@ window.onload = function() {
 
     resetPositions();
 
-    displayInformation(2);
+    //displayInformation(2);
 
     //-------- functions -----------//
 
@@ -62,17 +67,17 @@ window.onload = function() {
         if(canvas.height<minHeight)canvas.height=minHeight;
     }
 
-    function createNewRectangle(c){
+    function createNewRectangle(c, r_id){
 
         if( xPos > canvas.width-xOffset){
             xPos = xLeftOffset;
-            yPos += 20;
+            yPos += yDist;
         }
 
-        if(yPos+20>minHeight) minHeight+=20;
+        if(yPos+yDist>minHeight) minHeight+=yDist;
 
-        rectangles.push({id:ids[i], x: xPos, y:yPos, color:c});
-        xPos += 20;
+        rectangles.push({id:r_id, x: xPos, y:yPos, color:c});
+        xPos += xDist;
 
     }
 
@@ -81,7 +86,7 @@ window.onload = function() {
         for(var i=0; i<ids.length; i++){
 
             //------- main rectangle ---------//
-            createNewRectangle("grey");
+            createNewRectangle("#bdc3c7", ids[i]); //color grey silver
             // createNewRectangle("pink");
 
             //------- editions ---------//
@@ -90,14 +95,14 @@ window.onload = function() {
                 for(var j=0; j<editions[i].length; j++){
 
                     
-                    var coef = 360/(2009-1973);
+                    var coef = 310/(2009-1973);
                     var numEdition = editions[i][j] - 1973;
-                    numEdition *= coef; //0=>360
+                    numEdition *= coef; //0=>255 not 360
 
                     var color1 = 'hsl('+ numEdition +', 100%, 50%)';
 
                     // createNewRectangle("orange");
-                    createNewRectangle(color1);
+                    createNewRectangle(color1, ids[i]);
                 }
 
             } else {
@@ -146,10 +151,6 @@ window.onload = function() {
         context.fillText(names[2], canvas.width/2, yTxtPos);
         yTxtPos += 40;
 
-        context.strokeText(names[2], canvas.width/2, yTxtPos);
-        context.fillText(names[2], canvas.width/2, yTxtPos);
-        yTxtPos += 40;
-
         context.strokeText(countries[2], canvas.width/2, yTxtPos);
         context.fillText(countries[2], canvas.width/2, yTxtPos);
         yTxtPos += 40;
@@ -160,6 +161,39 @@ window.onload = function() {
 
     }
 
+    function selectRect(x, y){
+
+
+    	for(var i=0; i<rectangles.length; i++){
+        	
+ 			//TODO use var
+    		if(x>rectangles[i].x && x<rectangles[i].x+10 &&
+    		   y>rectangles[i].y && y<rectangles[i].y+10) {
+
+    			drawRect(rectangles[i].x, rectangles[i].y, "black");
+    			console.log(rectangles[i].id);
+
+    		}
+
+		}
+
+    }
+
+    //------
+
+    function getInfo(evt) {
+
+    	var cv = canvas.getBoundingClientRect();
+
+    	var mouseX = evt.clientX - cv.left;
+    	var mouseY = evt.clientY - cv.top;
+
+    	// console.log(mouseX, mouseY);
+
+    	selectRect(mouseX, mouseY);
+
+    }
+
     //------
 
     //var myInterval = setInterval(animate, 1000/10);
@@ -167,12 +201,12 @@ window.onload = function() {
     function animate() {
 
         if( xPos > canvas.width-xOffset){
-            xPos = 0;
-            yPos += 20;
+            xPos = xLeftOffset;
+            yPos += yDist;
         }
 
         drawRect(xPos, yPos, "black");
-        xPos += 20;
+        xPos += xDist;
 
     }
 }
