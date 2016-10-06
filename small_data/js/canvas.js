@@ -7,7 +7,11 @@ var yDist;
 var minHeight;
 var rectangles;
 
+var rWidth;
+var rHeight;
+
 var xLeftOffset;
+var pId;
 
 window.onload = function() {
 
@@ -27,9 +31,14 @@ window.onload = function() {
     }
 
     rectangles = new Array();
+    
+    pId=-1;
     xLeftOffset = 10;
     xDist = 11;
     yDist = 11;
+    rWidth = 10;
+    rHeight = 10;
+
     resetPositions();
 
     canvas.width = $(document).width()-20;
@@ -67,7 +76,7 @@ window.onload = function() {
         if(canvas.height<minHeight)canvas.height=minHeight;
     }
 
-    function createNewRectangle(c, r_id){
+    function createNewRectangle(r_id, c){
 
         if( xPos > canvas.width-xOffset){
             xPos = xLeftOffset;
@@ -86,8 +95,7 @@ window.onload = function() {
         for(var i=0; i<ids.length; i++){
 
             //------- main rectangle ---------//
-            createNewRectangle("#bdc3c7", ids[i]); //color grey silver
-            // createNewRectangle("pink");
+            createNewRectangle(ids[i], "#bdc3c7"); //color grey silver
 
             //------- editions ---------//
             if(editions[i].length>0){
@@ -99,10 +107,9 @@ window.onload = function() {
                     var numEdition = editions[i][j] - 1973;
                     numEdition *= coef; //0=>255 not 360
 
-                    var color1 = 'hsl('+ numEdition +', 100%, 50%)';
+                    var color1 = 'hsl('+ numEdition +', 80%, 50%)';
 
-                    // createNewRectangle("orange");
-                    createNewRectangle(color1, ids[i]);
+                    createNewRectangle(ids[i], color1);
                 }
 
             } else {
@@ -119,12 +126,9 @@ window.onload = function() {
     }
 
     function drawRect(x, y, c){
-
-        // context.fillStyle='hsl('+ 150 +', 100%, 50%)';
         context.fillStyle=c;
-        context.fillRect(x, y, 10, 10); 
+        context.fillRect(x, y, rWidth, rHeight); 
         context.stroke();
-
     }
 
     function displayInformation(id){
@@ -167,11 +171,30 @@ window.onload = function() {
     	for(var i=0; i<rectangles.length; i++){
         	
  			//TODO use var
-    		if(x>rectangles[i].x && x<rectangles[i].x+10 &&
-    		   y>rectangles[i].y && y<rectangles[i].y+10) {
+    		if(x>rectangles[i].x && x<rectangles[i].x+rWidth &&
+    		   y>rectangles[i].y && y<rectangles[i].y+rHeight) {
+
+                if(pId>=0){
+                    drawRect(rectangles[pId].x, rectangles[pId].y, rectangles[pId].color);
+                    console.log(rectangles[pId].c);
+                }
 
     			drawRect(rectangles[i].x, rectangles[i].y, "black");
-    			console.log(rectangles[i].id);
+    			
+                $.ajax({                                      
+                    url: 'php/request.php',       
+                    type: "POST",
+                    data: { id: rectangles[i].id } 
+                }).done(function( msg ) {
+
+                    $("#selection p").text(msg);
+
+                    // console.log(msg);
+                });
+
+                pId = i;
+
+                break;
 
     		}
 
