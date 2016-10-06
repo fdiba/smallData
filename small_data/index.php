@@ -5,7 +5,6 @@
 	$years = array(1973, 1974, 1975, 1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009);
 
 	$sth = $dbh->query('SELECT artist.id AS \'artist_id\',
-							artist.firstName, artist.name,
 							country.c_name AS \'ctry\',
 							edition.ed_1973, edition.ed_1974,
 							edition.ed_1975, edition.ed_1976,
@@ -37,8 +36,6 @@
 	$sth->setFetchMode(PDO::FETCH_ASSOC);
 
 	$ids = array();
-	$fNames = array();
-	$names = array();
 	$countries = array();
 	$editions = array();
 
@@ -46,8 +43,6 @@
 	while($row = $sth->fetch()) {
 
 		array_push($ids, $row['artist_id']);
-		array_push($fNames, $row['firstName']);
-		array_push($names, $row['name']);
 		array_push($countries, $row['ctry']);
 		array_push($editions, array());
 
@@ -76,17 +71,19 @@
 	<title>Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
+	<script type="text/javascript" src='js/perlin.js'></script>
 	<script type="text/javascript" src="js/canvas.js"></script>
 </head>
 <body>
-	<h1>Small Data</h1>
-	<div><p>composers: <?php echo $numResults ?></p></div>
+	<div id="info">
+		<h1 id="main">Small Data</h1>
+		<p>composers: <?php echo $numResults ?></p>
+	</div>
+	<div id="selection"><p>no selection</p></div>
 	<script type='text/javascript'>
 	<?php
 		echo "var num = ". $numResults . ";\n";
 		echo "var ids = ". json_encode($ids) . ";\n";
-		echo "var fNames = ". json_encode($fNames) . ";\n";
-		echo "var names = ". json_encode($names) . ";\n";
 		echo "var countries = ". json_encode($countries) . ";\n";
 		echo "var editions = ". json_encode($editions) . ";\n";
 	?>
