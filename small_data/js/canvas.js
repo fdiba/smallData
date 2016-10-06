@@ -11,7 +11,7 @@ var rWidth;
 var rHeight;
 
 var xLeftOffset;
-var pId;
+var pAId;
 
 window.onload = function() {
 
@@ -32,7 +32,7 @@ window.onload = function() {
 
     rectangles = new Array();
     
-    pId=-1;
+    pAId=-1;
     xLeftOffset = 10;
     xDist = 11;
     yDist = 11;
@@ -164,7 +164,16 @@ window.onload = function() {
         yTxtPos += 40;
 
     }
-
+    function processAllRectWhithId(artist_id){
+        for(var i=0; i<rectangles.length; i++){
+            if(rectangles[i].id==artist_id)drawRect(rectangles[i].x, rectangles[i].y, "black");
+        }
+    }
+    function resetAllRectWhithId(artist_id){
+        for(var i=0; i<rectangles.length; i++){
+            if(rectangles[i].id==artist_id)drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
+        }
+    }
     function selectRect(x, y){
 
 
@@ -174,25 +183,29 @@ window.onload = function() {
     		if(x>rectangles[i].x && x<rectangles[i].x+rWidth &&
     		   y>rectangles[i].y && y<rectangles[i].y+rHeight) {
 
-                if(pId>=0){
-                    drawRect(rectangles[pId].x, rectangles[pId].y, rectangles[pId].color);
-                    console.log(rectangles[pId].c);
+                if(pAId>=0){
+                    // drawRect(rectangles[pAId].x, rectangles[pAId].y, rectangles[pAId].color);
+                    resetAllRectWhithId(pAId);
                 }
 
-    			drawRect(rectangles[i].x, rectangles[i].y, "black");
-    			
-                $.ajax({                                      
-                    url: 'php/request.php',       
-                    type: "POST",
-                    data: { id: rectangles[i].id } 
-                }).done(function( msg ) {
+                if(rectangles[i].id != pAId){
 
-                    $("#selection p").text(msg);
+                    processAllRectWhithId(rectangles[i].id);
+        			
+                    $.ajax({                                      
+                        url: 'php/request.php',       
+                        type: "POST",
+                        data: { id: rectangles[i].id } 
+                    }).done(function( msg ) {
 
-                    // console.log(msg);
-                });
+                        $("#selection p").text(msg);
 
-                pId = i;
+                        // console.log(msg);
+                    });
+
+                }
+
+                pAId = rectangles[i].id;
 
                 break;
 
