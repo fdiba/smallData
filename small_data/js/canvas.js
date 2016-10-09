@@ -328,22 +328,40 @@ function wooot2(){
 	tNoise+=100;
 }
 function wooot(){
-	if(isAnimated)clearInterval(animation2);
-	else animation2 = setInterval(noiseAnimation, 1000/10);
+	if(isAnimated){
+		clearInterval(animation2);
+		resetSaturation(avg_sat);
+	} else animation2 = setInterval(noiseAnimation, 1000/10);
+
 	isAnimated = !isAnimated;
 	console.log("isAnimated: ", isAnimated);
 }
+function resetSaturation(sat){
 
+	for(var i=0; i<rectangles.length; i++){
+		
+		if(rectangles[i].color != color1 && rectangles[i].id != nAId){
+
+			var str = rectangles[i].color;
+
+			var pos0 = str.indexOf(",")+1;
+			var pos1 = str.indexOf("%");
+			
+			var c = str.substring(0, pos0);
+			c += " " + sat + "%, 50%)";
+
+			rectangles[i].color = c;
+			// console.log(c);
+
+			drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
+		}
+	} 
+}
 function noiseAnimation(){
-
-	// if(avg_sat==min_sat || avg_sat==max_sat)multiplicator *= -1;
-	// avg_sat+=multiplicator;
 
 	for(var i=0; i<rectangles.length; i++){
 
 		if(rectangles[i].color != color1 && rectangles[i].id != nAId){
-
-			// var c = 'hsl('+ numEdition +', 80%, 50%)';
 
 			var value = Math.abs(noise.perlin2((rectangles[i].x+tNoise) / 1000, (rectangles[i].y+tNoise) / 1000));
     		value *= 100;
