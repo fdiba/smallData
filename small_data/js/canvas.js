@@ -6,6 +6,8 @@ var avg_sat;
 var max_sat;
 var min_sat;
 
+var tNoise;
+
 //-------
 var xPos;
 var yPos;
@@ -41,6 +43,7 @@ window.onload = function() {
 	avg_sat = max_sat;
 	min_sat = 0;
 	multiplicator = 1;
+	tNoise = 0;
 
 	document.getElementById('anim').addEventListener("click", wooot) ;
 
@@ -64,7 +67,7 @@ window.onload = function() {
     rectangles = new Array();
     
     pAId=-1;
-    xLeftOffset = 10;
+    xLeftOffset = 0;
     xDist = 11;
     yDist = 11;
     rWidth = 10;
@@ -80,7 +83,7 @@ window.onload = function() {
 
     //canvas.width = 500;
 
-    var xOffset = 20;
+    var xRightOffset = 10;
 
     calculateMinHeight();
 
@@ -109,7 +112,7 @@ window.onload = function() {
 
     function createNewRectangle(r_id, c){
 
-        if( xPos > canvas.width-xOffset){
+        if( xPos > canvas.width-xRightOffset){
             xPos = xLeftOffset;
             yPos += yDist;
         }
@@ -207,7 +210,7 @@ window.onload = function() {
         			str = str.substring(0, pos0);
         			str += " 100%, 50%)";
 
-        			console.log(rectangles[i].color, str);
+        			// console.log(rectangles[i].color, str);
 
         			drawRect(rectangles[i].x, rectangles[i].y, str);
         			
@@ -289,7 +292,7 @@ window.onload = function() {
 
     function animate() {
 
-        if( xPos > canvas.width-xOffset){
+        if( xPos > canvas.width-xRightOffset){
             xPos = xLeftOffset;
             yPos += yDist;
         }
@@ -305,19 +308,36 @@ function drawRect(x, y, c){
     context.fillRect(x, y, rWidth, rHeight); 
     context.stroke();
 }
+function wooot2(){
+	console.log('test');
+	for(var i=0; i<rectangles.length; i++){
 
+		var value = Math.abs(noise.perlin2((rectangles[i].x+tNoise) / 500, (rectangles[i].y+tNoise) / 500));
+    	value *= 256;
+    	value = Math.round(value);
+
+    	if(i > 20 && i < 100) console.log(value);
+    	//var v1 = noise.perlin(rectangles[i].x
+
+		// var c = "rgb("+value+","+value+","+value+")";;
+		var c = "rgb(" + value + ", 0, 0)";;
+		rectangles[i].color = c;
+
+		drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
+	}
+	tNoise+=100;
+}
 function wooot(){
-
 	if(isAnimated)clearInterval(animation2);
 	else animation2 = setInterval(noiseAnimation, 1000/10);
-	
 	isAnimated = !isAnimated;
+	console.log("isAnimated: ", isAnimated);
 }
 
 function noiseAnimation(){
 
-	if(avg_sat==min_sat || avg_sat==max_sat)multiplicator *= -1;
-	avg_sat+=multiplicator;
+	// if(avg_sat==min_sat || avg_sat==max_sat)multiplicator *= -1;
+	// avg_sat+=multiplicator;
 
 	for(var i=0; i<rectangles.length; i++){
 
@@ -325,13 +345,21 @@ function noiseAnimation(){
 
 			// var c = 'hsl('+ numEdition +', 80%, 50%)';
 
+			var value = Math.abs(noise.perlin2((rectangles[i].x+tNoise) / 1000, (rectangles[i].y+tNoise) / 1000));
+    		value *= 100;
+    		value -= 50;
+    		// value *= 80;
+    		value = Math.round(value);
+
 			var str = rectangles[i].color;
 
 			var pos0 = str.indexOf(",")+1;
-			var pos1 = str.indexOf("%"); 
+			var pos1 = str.indexOf("%");
+
+			var sat = (avg_sat + value)%101;
 			
 			var c = str.substring(0, pos0);
-			c += " " + avg_sat + "%, 50%)";
+			c += " " + sat + "%, 50%)";
 
 			rectangles[i].color = c;
 			// console.log(c);
@@ -339,4 +367,6 @@ function noiseAnimation(){
 			drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
 		} 
     }
+
+    tNoise+=15;
 }
