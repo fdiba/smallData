@@ -1,3 +1,12 @@
+var context;
+var rectangles;
+
+var nAId;
+var avg_sat;
+var max_sat;
+var min_sat;
+
+//-------
 var xPos;
 var yPos;
 
@@ -5,7 +14,7 @@ var xDist;
 var yDist;
 
 var minHeight;
-var rectangles;
+
 
 var rWidth;
 var rHeight;
@@ -13,8 +22,30 @@ var rHeight;
 var xLeftOffset;
 var pAId;
 
+
+var color1; //color grey silver
+
+///------
+var isAnimated;
+var animation2;
+var multiplicator;
+
 window.onload = function() {
 
+
+	//------------ navigation ------------//
+
+	isAnimated = false;
+	color1 = "#bdc3c7";
+	max_sat = 50;
+	avg_sat = max_sat;
+	min_sat = 0;
+	multiplicator = 1;
+
+	document.getElementById('anim').addEventListener("click", wooot) ;
+
+
+	//------------ canvas ------------//
     var canvas = document.getElementById('myCanvas');
 
     if(!canvas) {
@@ -24,7 +55,7 @@ window.onload = function() {
 
     canvas.addEventListener("mousedown", getInfo, false);
 
-    var context = canvas.getContext('2d');
+    context = canvas.getContext('2d');
     if(!context) {
         alert("Impossible de récupérer le context du canvas");
         return;
@@ -95,7 +126,7 @@ window.onload = function() {
         for(var i=0; i<ids.length; i++){
 
             //------- main rectangle ---------//
-            createNewRectangle(ids[i], "#bdc3c7"); //color grey silver
+            createNewRectangle(ids[i], color1);
 
             //------- editions ---------//
             if(editions[i].length>0){
@@ -107,9 +138,9 @@ window.onload = function() {
                     var numEdition = editions[i][j] - 1973;
                     numEdition *= coef; //0=>255 not 360
 
-                    var color1 = 'hsl('+ numEdition +', 80%, 50%)';
+                    var c = 'hsl('+ numEdition +', ' + avg_sat + '%, 50%)';
 
-                    createNewRectangle(ids[i], color1);
+                    createNewRectangle(ids[i], c);
                 }
 
             } else {
@@ -125,11 +156,7 @@ window.onload = function() {
         yPos = 5;
     }
 
-    function drawRect(x, y, c){
-        context.fillStyle=c;
-        context.fillRect(x, y, rWidth, rHeight); 
-        context.stroke();
-    }
+    
 
     function displayInformation(id){
 
@@ -165,8 +192,32 @@ window.onload = function() {
 
     }
     function processAllRectWhithId(artist_id){
+
+    	var firstOne = false;
+
         for(var i=0; i<rectangles.length; i++){
-            if(rectangles[i].id==artist_id)drawRect(rectangles[i].x, rectangles[i].y, "black");
+
+        	if(rectangles[i].id==artist_id){
+        		if(firstOne) {
+
+        			var str = rectangles[i].color;
+
+        			var pos0 = str.indexOf(",")+1;
+
+        			str = str.substring(0, pos0);
+        			str += " 100%, 50%)";
+
+        			console.log(rectangles[i].color, str);
+
+        			drawRect(rectangles[i].x, rectangles[i].y, str);
+        			
+        		} else {
+
+        			drawRect(rectangles[i].x, rectangles[i].y, "white");
+        			firstOne = true;
+        			
+        		}
+        	}
         }
     }
     function resetAllRectWhithId(artist_id){
@@ -190,12 +241,14 @@ window.onload = function() {
 
                 if(rectangles[i].id != pAId){
 
-                    processAllRectWhithId(rectangles[i].id);
+                	nAId = rectangles[i].id;
+
+                    processAllRectWhithId(nAId);
         			
                     $.ajax({                                      
                         url: 'php/request.php',       
                         type: "POST",
-                        data: { id: rectangles[i].id } 
+                        data: { id: nAId } 
                     }).done(function( msg ) {
 
                         $("#selection p").text(msg);
@@ -205,7 +258,7 @@ window.onload = function() {
 
                 }
 
-                pAId = rectangles[i].id;
+                pAId = nAId;
 
                 break;
 
@@ -244,5 +297,46 @@ window.onload = function() {
         drawRect(xPos, yPos, "black");
         xPos += xDist;
 
+    }
+}
+
+function drawRect(x, y, c){
+    context.fillStyle=c;
+    context.fillRect(x, y, rWidth, rHeight); 
+    context.stroke();
+}
+
+function wooot(){
+
+	if(isAnimated)clearInterval(animation2);
+	else animation2 = setInterval(noiseAnimation, 1000/10);
+	
+	isAnimated = !isAnimated;
+}
+
+function noiseAnimation(){
+
+	if(avg_sat==min_sat || avg_sat==max_sat)multiplicator *= -1;
+	avg_sat+=multiplicator;
+
+	for(var i=0; i<rectangles.length; i++){
+
+		if(rectangles[i].color != color1 && rectangles[i].id != nAId){
+
+			// var c = 'hsl('+ numEdition +', 80%, 50%)';
+
+			var str = rectangles[i].color;
+
+			var pos0 = str.indexOf(",")+1;
+			var pos1 = str.indexOf("%"); 
+			
+			var c = str.substring(0, pos0);
+			c += " " + avg_sat + "%, 50%)";
+
+			rectangles[i].color = c;
+			// console.log(c);
+
+			drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
+		} 
     }
 }

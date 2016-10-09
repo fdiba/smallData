@@ -1,5 +1,33 @@
 body{
 	margin:0;
 	padding: 0;
-	background: grey;
+	/*background: #bdc3c7;*/
+	background: #fff;
+}
+#main{
+}
+#anim{
+	background: yellow;
+	display: block;
+	padding: 0 0 0 5px;
+}
+#navigation{
+	margin: 0 5px 0 0;
+	padding: 10px;
+	background: pink;
+	float: left;
+	min-width: 200px;
+}
+#info{
+	margin: 0 5px 0 10px;
+	padding: 10px;
+	background: pink;
+	min-width: 200px;
+	float: left;
+}
+#selection{
+	padding: 10px;
+	background: orange;
+	min-width: 200px;
+	float: left;
 }

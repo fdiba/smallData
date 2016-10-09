@@ -79,6 +79,9 @@
 		<h1 id="main">Small Data</h1>
 		<p>composers: <?php echo $numResults ?></p>
 	</div>
+	<div id="navigation">
+		<div id="anim">anim</div>
+	</div>
 	<div id="selection"><p>no selection</p></div>
 	<script type='text/javascript'>
 	<?php
