@@ -4,25 +4,23 @@
 
 	if(is_numeric($_POST['id'])) {
 		$id = $_POST['id'];
-
 		queryDB($id);
-
 		// echo $id;
-	} else {
-		echo "id is no numeric";
-	}
+	} else echo "id is no numeric";
+
+?>
+<?php
 
 	function queryDB($s_id){
+
+		require("../access/connexion.php");
 
 		$years = array(1973, 1974, 1975, 1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009);
 
 		$result = "no result";
 
-		require("../access/connexion.php");
-
 		/*$sth = $dbh->query('SELECT artist.firstName, artist.name FROM artist WHERE id=3');
 		$sth->setFetchMode(PDO::FETCH_ASSOC);*/
-
 
 		$sth = $dbh->query('SELECT artist.firstName, artist.name,
 							country.c_name AS \'ctry\',
@@ -74,8 +72,5 @@
 		echo $result;
 
 	}
-	
-
-	
 
 ?>

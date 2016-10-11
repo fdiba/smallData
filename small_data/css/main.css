@@ -4,22 +4,58 @@ body{
 	/*background: #bdc3c7;*/
 	background: #fff;
 }
+a {
+	color: white
+}
+ul{
+	list-style: none;
+}
+.b_on{
+	background: #1abc9c; /*green emerald*/
+}
+.b_off{
+	background: #7f8c8d; /*grey asbestos*/
+}
+#content{
+	padding: 5px;
+	background: white;
+}
 #main{
 }
 #anim{
-	background: yellow;
+	/*background: yellow;*/
+	color: white;
 	display: block;
 	padding: 0 0 0 5px;
+}
+#get_all{
+	padding: 0 0 0 5px;
+}
+#launcher{
+	margin: 0 5px 0 0;
+	padding: 10px;
+	background: #9b59b6; /*violet amethyst*/
+	float: left;
+	min-width: 200px;
+	min-width: 200px;
+	color: white;
 }
 #navigation{
 	margin: 0 5px 0 0;
 	padding: 10px;
-	background: pink;
+	background: #e74c3c; /*pink alizarin*/
 	float: left;
 	min-width: 200px;
 }
+#links{
+	margin: 0 5px 0 0;
+	background: #3498db;
+	min-width: 200px;
+	float: left;
+	color: white;
+}
 #info{
-	margin: 0 5px 0 10px;
+	margin: 0 5px 5px 0;
 	padding: 10px;
 	background: pink;
 	min-width: 200px;
@@ -27,7 +63,7 @@ body{
 }
 #selection{
 	padding: 10px;
-	background: orange;
+	background: orange; /*orange carrot*/
 	min-width: 200px;
 	float: left;
 }

@@ -50,13 +50,6 @@
 			$column_name = 'ed_' . $years[$i];
 			if ($row[$column_name]) array_push($editions[sizeof($ids)-1], $years[$i]);
 		}
-		
-		/*for($i = 0; $i <sizeof($years); $i++){
-			$column_name = 'ed_' . $years[$i];
-			if ($row[$column_name]) array_push($editions[sizeof($objects)-1][4], $years[$i]);
-		}*/
-
-
 
 	}
 
@@ -75,12 +68,18 @@
 	<script type="text/javascript" src="js/canvas.js"></script>
 </head>
 <body>
+	<div id="content">
 	<div id="info">
 		<h1 id="main">Small Data</h1>
 		<p>composers: <?php echo $numResults ?></p>
 	</div>
 	<div id="navigation">
-		<div id="anim">anim</div>
+		<div class="b_off" id="anim">anim</div>
+	</div>
+	<div id="links">
+		<ul>
+			<li><a href="animated_data.php">animated data</a></li>
+		</ul>
 	</div>
 	<div id="selection"><p>no selection</p></div>
 	<script type='text/javascript'>
@@ -96,6 +95,7 @@
             Votre navigateur ne supporte pas les canvas.
 
     </canvas>
-         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script> 
+ 	</div>
+         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </body>
 </html>

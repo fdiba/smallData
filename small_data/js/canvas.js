@@ -2,24 +2,17 @@ var context;
 var rectangles;
 
 var nAId;
-var avg_sat;
-var max_sat;
-var min_sat;
+var avg_sat, max_sat, min_sat;
 
 var tNoise;
 
 //-------
-var xPos;
-var yPos;
-
-var xDist;
-var yDist;
+var xPos, yPos;
+var xDist, yDist;
 
 var minHeight;
 
-
-var rWidth;
-var rHeight;
+var rWidth, rHeight;
 
 var xLeftOffset;
 var pAId;
@@ -30,7 +23,6 @@ var color1; //color grey silver
 ///------
 var isAnimated;
 var animation2;
-var multiplicator;
 
 window.onload = function() {
 
@@ -42,11 +34,7 @@ window.onload = function() {
 	max_sat = 50;
 	avg_sat = max_sat;
 	min_sat = 0;
-	multiplicator = 1;
 	tNoise = 0;
-
-	document.getElementById('anim').addEventListener("click", wooot) ;
-
 
 	//------------ canvas ------------//
     var canvas = document.getElementById('myCanvas');
@@ -55,27 +43,27 @@ window.onload = function() {
         alert("Impossible de récupérer le canvas");
         return;
     }
-
-    canvas.addEventListener("mousedown", getInfo, false);
-
     context = canvas.getContext('2d');
     if(!context) {
         alert("Impossible de récupérer le context du canvas");
         return;
     }
+    //----------------------------------//
+
+    document.getElementById('anim').addEventListener("click", animation1) ;
+
+    canvas.addEventListener("mousedown", getInfo, false);
 
     rectangles = new Array();
     
     pAId=-1;
     xLeftOffset = 0;
-    xDist = 11;
-    yDist = 11;
-    rWidth = 10;
-    rHeight = 10;
+    xDist = 11, yDist = 11;
+    rWidth = 10, rHeight = 10;
 
     resetPositions();
 
-    canvas.width = $(document).width()-20;
+    canvas.width = $(document).width()-10; //context left pad = 10;
     minHeight = 300;
     canvas.height = minHeight;
 
@@ -156,7 +144,7 @@ window.onload = function() {
 
     function resetPositions(){
         xPos = xLeftOffset;
-        yPos = 5;
+        yPos = 0;
     }
 
     
@@ -327,14 +315,16 @@ function wooot2(){
 	}
 	tNoise+=100;
 }
-function wooot(){
+function animation1(evt){
 	if(isAnimated){
 		clearInterval(animation2);
 		resetSaturation(avg_sat);
 	} else animation2 = setInterval(noiseAnimation, 1000/10);
 
 	isAnimated = !isAnimated;
-	console.log("isAnimated: ", isAnimated);
+
+    $("#anim").toggleClass('b_off b_on');
+
 }
 function resetSaturation(sat){
 
