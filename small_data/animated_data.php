@@ -21,6 +21,9 @@
 		</ul>
 	</div>
 	<div id="selection"><p>no selection</p></div>
+	<canvas id="cv_nav" width="500" height="20">
+        Votre navigateur ne supporte pas les canvas.
+    </canvas>
 	<canvas id="myCanvas" width="500" height="500">
         Votre navigateur ne supporte pas les canvas.
     </canvas>
