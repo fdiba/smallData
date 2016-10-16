@@ -1,5 +1,5 @@
 var init=false;
-var allData;
+var allData, slData;
 var canvas, context;
 var cv_nav, ctx_nav;
 var years=[1, 1973, 1974, 1975, 1976, 1977, 1978, 1979, 1980];
@@ -37,16 +37,43 @@ window.onload = function() {
 
 	document.getElementById('get_all').addEventListener("click", getData);
 
-
 	canvas.width = $(document).width()-25; //context left pad = 10;
     canvas.height = 600;
 
     context.fillStyle=colors[0];
-    context.fillRect(0, 0, canvas.width, canvas.height); 
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    getData();
 
 //----------------- functions -----------------//
 }
+function updateSlData(){
 
+	console.log(sl_years);
+
+	slData = [];
+
+	for (var i=0; i<allData.length-2; i+=3) {
+
+		// slData.push("3");
+
+		// slData.push(allData[i]);
+		// if(sl_years.indexOf(allData[i+2])>-1)console.log("est");
+
+		if(sl_years.includes(parseInt(allData[i+2])) || sl_years.length<1){
+			slData.push({id: allData[i], ctry: allData[i+1], edition: allData[i+2]});
+		}
+	}
+	// console.log(allData.length, slData.length);
+	// console.log(slData[slData.length-3], slData[slData.length-2], slData[slData.length-1]);
+
+	var info = "allData/3: " + allData.length/3;
+    $("#info p:eq(0)").text(info);
+    var inf1 = "slData: " + slData.length;
+    $("#info p:eq(1)").text(inf1);
+
+    // + "<br />allData: " + num;
+}
 //---------------------------------------//
 function slData(evt){
 
@@ -55,6 +82,7 @@ function slData(evt){
     var mouseY = evt.clientY - cv.top;
 
     for (var i=0; i<menu.length; i++) {
+
         if(mouseX>=menu[i].x && mouseX<=menu[i].x+bw && mouseY>=menu[i].y && mouseY<=menu[i].y+bh){
 
             if(!init)getData();
@@ -64,10 +92,20 @@ function slData(evt){
                     resetMenu();
                     sl_years=[];
                 }
-                resetInBetweenBtn(colors[3]);
-            } else if(btn01.state){
 
-                if(!menu[i].state){ //not already activated
+                
+
+	            activateBtn(i);
+
+                resetInBetweenBtn(colors[3]);
+                updateSlData();
+
+            } else if(!menu[i].state){ //not already activated
+
+            	menu[0].state = false;
+
+                if(btn01.state){
+
                     if(sl_years.length==2) {
                         removeFirstElement();
                     } else if(sl_years.length<2){ //reset first btn + in between
@@ -75,24 +113,24 @@ function slData(evt){
                         resetInBetweenBtn(colors[0]);
                     }
 
-                    sl_years.push(i);
-                }
-
-            } else {
-
-                resetMenu();
-                sl_years=[];
-                sl_years.push(i);
+                    sl_years.push(menu[i].id);
+                    updateSlData();
                 
-            }
+                } else {
 
+	                resetMenu();
+	                sl_years=[];
+	                sl_years.push(menu[i].id);
+                
+            	}
                        
-            menu[i].state = true;
-            ctx_nav.fillStyle=colors[1];
-            ctx_nav.fillRect(menu[i].x, menu[i].y, bw, bh);
+	            activateBtn(i);
 
-            console.log(sl_years);
-            break;
+	            updateSlData();
+
+	            break;
+
+	        }
         }
     }
 
@@ -109,20 +147,30 @@ function slData(evt){
             resetInBetweenBtn(colors[0]);
         }
 
+        updateSlData();
+
     }
 
     if(sl_years.length==2)checkInBetweenBtn();
+
+    
     
 }
+function activateBtn(id){
+	menu[id].state = true;
+    ctx_nav.fillStyle=colors[1];
+    ctx_nav.fillRect(menu[id].x, menu[id].y, bw, bh);
+}
 function removeFirstElement(){
-    var id = sl_years.shift();
+    var y = sl_years.shift();
+    var id = years.indexOf(y);
     menu[id].state=false;
     ctx_nav.fillStyle=colors[0];
     ctx_nav.fillRect(menu[id].x, menu[id].y, bw, bh);
 }
 function checkInBetweenBtn(){
 
-    console.log(sl_years);
+    // console.log(sl_years);
 
     if(btn01.state){
 
@@ -145,10 +193,14 @@ function checkInBetweenBtn(){
             }
         }
 
-        while(pt1<pt2-1){ //set in between btns
-            pt1++;
+        var id1, id2;
+        id1 = years.indexOf(pt1);
+        id2 = years.indexOf(pt2);
+        // console.log(id1, id2);
+        while(id1<id2-1){ //set in between btns
+            id1++;
             ctx_nav.fillStyle=colors[3];
-            ctx_nav.fillRect(menu[pt1].x, menu[pt1].y, bw, bh);
+            ctx_nav.fillRect(menu[id1].x, menu[id1].y, bw, bh);
         }
 
     }
@@ -213,11 +265,12 @@ function getData(){
     	var txt = allData[0] + " " + allData[1] + " " + allData[2];
 
     	var num = allData.length / 3;
-    	var txt2 = "array length: " + num;
+    	var txt2 = "allData: " + num;
 
         $("#selection p").text(txt);
-        $("#info p").text(txt2);
+        $("#info p:eq(0)").text(txt2);
         // $("#selection p").text(allData[0]);
         // console.log(msg);
+
     });
 }
