@@ -4,6 +4,7 @@ var canvas, context;
 var cv_nav, ctx_nav;
 var years=[1, 1973, 1974, 1975, 1976, 1977, 1978, 1979, 1980];
 var sl_years=[];
+var inBtwYears=[];
 var menu;
 var colors=["#ecf0f1", "#2c3e50", "#e74c3c", "#f1c40f"];
 //clouds grey, midnight blue - dark grey, red alizarin, yellow - sun flower
@@ -49,30 +50,22 @@ window.onload = function() {
 }
 function updateSlData(){
 
-	console.log(sl_years);
+	console.log(sl_years, inBtwYears);
 
 	slData = [];
 
 	for (var i=0; i<allData.length-2; i+=3) {
 
-		// slData.push("3");
-
-		// slData.push(allData[i]);
-		// if(sl_years.indexOf(allData[i+2])>-1)console.log("est");
-
 		if(sl_years.includes(parseInt(allData[i+2])) || sl_years.length<1){
 			slData.push({id: allData[i], ctry: allData[i+1], edition: allData[i+2]});
 		}
 	}
-	// console.log(allData.length, slData.length);
-	// console.log(slData[slData.length-3], slData[slData.length-2], slData[slData.length-1]);
 
 	var info = "allData/3: " + allData.length/3;
     $("#info p:eq(0)").text(info);
     var inf1 = "slData: " + slData.length;
     $("#info p:eq(1)").text(inf1);
 
-    // + "<br />allData: " + num;
 }
 //---------------------------------------//
 function slData(evt){
@@ -87,13 +80,13 @@ function slData(evt){
 
             if(!init)getData();
             
-            if(i==0){
+            if(i==0 && !menu[i].state){
+
                 if(sl_years.length>0){
                     resetMenu();
                     sl_years=[];
+                    inBtwYears=[];
                 }
-
-                
 
 	            activateBtn(i);
 
@@ -112,9 +105,7 @@ function slData(evt){
                         menu[0].state=false;
                         resetInBetweenBtn(colors[0]);
                     }
-
                     sl_years.push(menu[i].id);
-                    updateSlData();
                 
                 } else {
 
@@ -126,6 +117,9 @@ function slData(evt){
                        
 	            activateBtn(i);
 
+	            if(sl_years.length==2)checkInBetweenBtn();
+    			else inBtwYears=[];
+
 	            updateSlData();
 
 	            break;
@@ -135,6 +129,7 @@ function slData(evt){
     }
 
     if(mouseX>=btn01.x && mouseX<=btn01.x+bw && mouseY>=btn01.y && mouseY<=btn01.y+bh){
+
         btn01.state = !btn01.state;
 
         if(btn01.state){
@@ -145,16 +140,18 @@ function slData(evt){
             ctx_nav.fillRect(btn01.x, btn01.y, bw, bh);
             while(sl_years.length>1)removeFirstElement();
             resetInBetweenBtn(colors[0]);
-        }
 
-        updateSlData();
+            // console.log("test");
+            inBtwYears=[];
+            updateSlData();
+
+        }
 
     }
 
-    if(sl_years.length==2)checkInBetweenBtn();
+    /*if(sl_years.length==2)checkInBetweenBtn();
+    else inBtwYears=[];*/
 
-    
-    
 }
 function activateBtn(id){
 	menu[id].state = true;
@@ -172,38 +169,43 @@ function checkInBetweenBtn(){
 
     // console.log(sl_years);
 
-    if(btn01.state){
+    // if(btn01.state){
 
-        ctx_nav.fillStyle=colors[2];
-        ctx_nav.fillRect(btn01.x, btn01.y, bw, bh);
+    ctx_nav.fillStyle=colors[2];
+    ctx_nav.fillRect(btn01.x, btn01.y, bw, bh);
 
-        var pt1, pt2;
-        if(sl_years[0]<sl_years[1]){
-            pt1 = sl_years[0];
-            pt2 = sl_years[1];
-        } else {
-            pt1 = sl_years[1];
-            pt2 = sl_years[0];
-        }
-
-        for (var i = 1; i < years.length; i++) {
-            if((years[i]<pt1 || years[i]>pt2) && !menu[i].state){ //reset btn outside actual range
-                ctx_nav.fillStyle=colors[0];
-                ctx_nav.fillRect(menu[i].x, menu[i].y, bw, bh);
-            }
-        }
-
-        var id1, id2;
-        id1 = years.indexOf(pt1);
-        id2 = years.indexOf(pt2);
-        // console.log(id1, id2);
-        while(id1<id2-1){ //set in between btns
-            id1++;
-            ctx_nav.fillStyle=colors[3];
-            ctx_nav.fillRect(menu[id1].x, menu[id1].y, bw, bh);
-        }
-
+    var pt1, pt2;
+    if(sl_years[0]<sl_years[1]){
+        pt1 = sl_years[0];
+        pt2 = sl_years[1];
+    } else {
+        pt1 = sl_years[1];
+        pt2 = sl_years[0];
     }
+
+    for (var i = 1; i < years.length; i++) {
+        if((years[i]<pt1 || years[i]>pt2) && !menu[i].state){ //reset btn outside actual range
+            ctx_nav.fillStyle=colors[0];
+            ctx_nav.fillRect(menu[i].x, menu[i].y, bw, bh);
+        }
+    }
+
+    var id1, id2;
+    id1 = years.indexOf(pt1);
+    id2 = years.indexOf(pt2);
+    // console.log(id1, id2);
+
+    inBtwYears=[];
+
+    while(id1<id2-1){ //set in between btns
+        id1++;
+        ctx_nav.fillStyle=colors[3];
+        ctx_nav.fillRect(menu[id1].x, menu[id1].y, bw, bh);
+
+        inBtwYears.push(menu[id1].id);
+    }
+
+    // }
 }
 function resetInBetweenBtn(c){
     for (var i=0; i<menu.length; i++) {
