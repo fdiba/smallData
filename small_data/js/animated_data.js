@@ -50,13 +50,16 @@ window.onload = function() {
 }
 function updateSlData(){
 
-	console.log(sl_years, inBtwYears);
-
 	slData = [];
+
+	var tmpY = sl_years.concat(inBtwYears);
+
+	console.log(sl_years, inBtwYears, tmpY);
+	console.log(sl_years.length, inBtwYears.length, tmpY.length);
 
 	for (var i=0; i<allData.length-2; i+=3) {
 
-		if(sl_years.includes(parseInt(allData[i+2])) || sl_years.length<1){
+		if(tmpY.includes(parseInt(allData[i+2])) || sl_years.length<1){
 			slData.push({id: allData[i], ctry: allData[i+1], edition: allData[i+2]});
 		}
 	}
