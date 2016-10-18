@@ -52,7 +52,8 @@ window.onload = function() {
     getData();
 
 //----------------- functions -----------------//
-}
+};
+
 function updateSlData(){
 
 	slData = [];
@@ -89,10 +90,73 @@ function updateSlData(){
     	generateBarChart();
     } else if(sl_years.length==2){
     	console.log("new line graph");
+        generateLineGraph();
     }
 
 }
 function generateLineGraph(){
+
+    var myLineChart = new LineChart({
+    canvasId: "myCanvas",
+    minX: 0,
+    minY: 0,
+    maxX: 140,
+    maxY: 100,
+    unitsPerTickX: 10,
+    unitsPerTickY: 10
+    });
+
+    var data = [{
+    x: 0,
+    y: 0
+    }, {
+    x: 20,
+    y: 10
+    }, {
+    x: 40,
+    y: 15
+    }, {
+    x: 60,
+    y: 40
+    }, {
+    x: 80,
+    y: 60
+    }, {
+    x: 100,
+    y: 50
+    }, {
+    x: 120,
+    y: 85
+    }, {
+    x: 140,
+    y: 100
+    }];
+
+    myLineChart.drawLine(data, "blue", 3);
+    var data = [{
+    x: 20,
+    y: 85
+    }, {
+    x: 40,
+    y: 75
+    }, {
+    x: 60,
+    y: 75
+    }, {
+    x: 80,
+    y: 45
+    }, {
+    x: 100,
+    y: 65
+    }, {
+    x: 120,
+    y: 40
+    }, {
+    x: 140,
+    y: 35
+    }];
+
+    myLineChart.drawLine(data, "red", 3);
 
 }
 function generateBarChart(){
@@ -125,45 +189,34 @@ function generateBarChart(){
 	}
 
 	var info="";
-	if(sl_years[0]<1996)info = sl_years[0] + " complete data";
-    else info = sl_years[0] + " incomplete data";
+	if(sl_years[0]<1996)info = sl_years[0] + ": complete data";
+    else info = sl_years[0] + ": incomplete data";
 
 	$("#info p:eq(2)").text(info);
 
-	console.log(arr);
-	console.log(slData);
+	// console.log(arr);
+	// console.log(slData);
 
 	var max=0;
+    var txt="";
 	for (var k=0; k<arr.length; k++) {
 		max = Math.max(max, arr[k].value);
+        txt += arr[k].label + " " + arr[k].value + " | ";
 	}
-	
 
-	/*var data = [{
-	label: "Eating",
-	value: 2
-	}, {
-	label: "Working",
-	value: 8
-	}, {
-	label: "Sleeping",
-	value: 8
-	}, {
-	label: "Errands",
-	value: 2
-	}, {
-	label: "Entertainment",
-	value: 4
-	}];*/
+    $("#selection p").text(txt);
 
-	new BarChart({
-	canvasId: "myCanvas",
-	data: arr,
-	barWidth: 20,
-	minValue: 0,
-	maxValue: max+1,
-	gridLineIncrement: 2
+    var increment = Math.round(max/10);
+    if(increment%2)console.log(increment-=1);
+    if(max<20)increment=2; //1995
+
+    var bWidth = map(arr.length, 30, 10, 20, 40)
+
+	new BarChart({canvasId: "myCanvas", data: arr, barWidth: bWidth, minValue: 0, maxValue: max+1, gridLineIncrement: increment
 	});
+}
+function map(value, start1, stop1, start2, stop2) {
+    return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 }
 //---------------------------------------//
 function slData(evt){
@@ -362,7 +415,7 @@ function getData(){
     	allData = str.split("%");
     	// allData = str.split("%");
 
-    	var txt = allData[0] + " " + allData[1] + " " + allData[2];
+    	var txt = "no selection";
 
     	var num = allData.length / 3;
     	var txt2 = "allData: " + num;
