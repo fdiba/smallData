@@ -4,12 +4,15 @@
 	<title>Animated data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
+	<script type="text/javascript" src="js/barchart.js"></script>
 	<script type="text/javascript" src="js/animated_data.js"></script>
 </head>
 <body>
 	<div id="content">
 	<div id="info">
 		<h1 id="main">Animated data</h1>
+		<p>no info</p>
+		<p>no info</p>
 		<p>no info</p>
 	</div>
 	<div id="launcher">

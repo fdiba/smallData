@@ -7,6 +7,10 @@ body{
 a {
 	color: white
 }
+h1{
+	margin: 0;
+	padding: 0;
+}
 ul{
 	list-style: none;
 }
@@ -60,6 +64,9 @@ ul{
 	background: pink;
 	min-width: 200px;
 	float: left;
+}
+#info p{
+	margin: 0;
 }
 #selection{
 	padding: 10px;

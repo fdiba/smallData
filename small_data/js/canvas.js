@@ -63,7 +63,7 @@ window.onload = function() {
 
     resetPositions();
 
-    canvas.width = $(document).width()-10; //context left pad = 10;
+    canvas.width = $(document).width()-25; //context left pad = 10;
     minHeight = 300;
     canvas.height = minHeight;
 

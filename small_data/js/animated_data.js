@@ -2,12 +2,15 @@ var init=false;
 var allData, slData;
 var canvas, context;
 var cv_nav, ctx_nav;
-var years=[1, 1973, 1974, 1975, 1976, 1977, 1978, 1979, 1980];
+var years=[1, 1973, 1974, 1975, 1976, 1977, 1978, 1979,
+1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989,
+1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009];
 var sl_years=[];
 var inBtwYears=[];
 var menu;
-var colors=["#ecf0f1", "#2c3e50", "#e74c3c", "#f1c40f"];
-//clouds grey, midnight blue - dark grey, red alizarin, yellow - sun flower
+var colors=["#ecf0f1", "#2c3e50", "#e74c3c", "#f1c40f", "#bdc3c7"];
+//clouds grey, midnight blue - dark grey, red alizarin, yellow - sun flower, grey silver
 var bw=15, bh=15;
 var btn01;
 
@@ -43,14 +46,100 @@ window.onload = function() {
     canvas.height = 600;
     // canvas.height = 300;
 
-    context.fillStyle=colors[0];
+    context.fillStyle=colors[4];
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     getData();
 
-    //--------------------------------------//
+//----------------- functions -----------------//
+}
+function updateSlData(){
 
-    var data = [{
+	slData = [];
+
+	var tmpY = sl_years.concat(inBtwYears);
+
+	// console.log(sl_years, inBtwYears, tmpY);
+	// console.log(sl_years.length, inBtwYears.length, tmpY.length);
+
+	for (var i=0; i<allData.length-2; i+=3) {
+
+		if(sl_years.length<1){
+			slData.push({id: allData[i], ctry: allData[i+1], edition: allData[i+2]});
+		} else {
+			var arr = allData[i+2].split(",");
+
+			for (var j=0; j<arr.length; j++) {
+
+				if(tmpY.includes(parseInt(arr[j]))){
+					slData.push({id: allData[i], ctry: allData[i+1], edition: allData[i+2]});
+					break;
+				}
+			}
+		}
+	}
+
+	var info = "allData/3: " + allData.length/3;
+    $("#info p:eq(0)").text(info);
+    var inf1 = "slData: " + slData.length;
+    $("#info p:eq(1)").text(inf1);
+
+    if(sl_years.length==1 && !btn01.state){
+    	console.log("new bar chart");
+    	generateBarChart();
+    } else if(sl_years.length==2){
+    	console.log("new line graph");
+    }
+
+}
+function generateLineGraph(){
+
+}
+function generateBarChart(){
+
+
+	var arr=[];
+
+	for (var i=0; i<slData.length; i++) {
+
+		var ctry = slData[i].ctry;
+
+		if(arr.length<1) {
+			arr.push({label: ctry, value: 1});
+		} else {
+
+			for (var j=0; j<arr.length; j++) {
+
+				var added=false;
+
+				if(ctry == arr[j].label){
+					arr[j].value += 1;
+					added=true;
+					break; 
+				}
+			}
+
+			if(!added)arr.push({label: ctry, value: 1});
+
+		}
+	}
+
+	var info="";
+	if(sl_years[0]<1996)info = sl_years[0] + " complete data";
+    else info = sl_years[0] + " incomplete data";
+
+	$("#info p:eq(2)").text(info);
+
+	console.log(arr);
+	console.log(slData);
+
+	var max=0;
+	for (var k=0; k<arr.length; k++) {
+		max = Math.max(max, arr[k].value);
+	}
+	
+
+	/*var data = [{
 	label: "Eating",
 	value: 2
 	}, {
@@ -65,41 +154,16 @@ window.onload = function() {
 	}, {
 	label: "Entertainment",
 	value: 4
-	}];
+	}];*/
 
 	new BarChart({
 	canvasId: "myCanvas",
-	data: data,
-	color: "blue",
-	barWidth: 50,
+	data: arr,
+	barWidth: 20,
 	minValue: 0,
-	maxValue: 10,
+	maxValue: max+1,
 	gridLineIncrement: 2
 	});
-
-//----------------- functions -----------------//
-}
-function updateSlData(){
-
-	slData = [];
-
-	var tmpY = sl_years.concat(inBtwYears);
-
-	console.log(sl_years, inBtwYears, tmpY);
-	console.log(sl_years.length, inBtwYears.length, tmpY.length);
-
-	for (var i=0; i<allData.length-2; i+=3) {
-
-		if(tmpY.includes(parseInt(allData[i+2])) || sl_years.length<1){
-			slData.push({id: allData[i], ctry: allData[i+1], edition: allData[i+2]});
-		}
-	}
-
-	var info = "allData/3: " + allData.length/3;
-    $("#info p:eq(0)").text(info);
-    var inf1 = "slData: " + slData.length;
-    $("#info p:eq(1)").text(inf1);
-
 }
 //---------------------------------------//
 function slData(evt){
@@ -310,173 +374,3 @@ function getData(){
 
     });
 }
-
-//------------ charts ------------------//
-function BarChart(config){
-
-	var cWidth = 600;
-	var cHeight = 300;
-
-	this.canvas = document.getElementById(config.canvasId);
-	this.data = config.data;
-	this.color = config.color;
-	this.barWidth = config.barWidth;
-	this.gridLineIncrement = config.gridLineIncrement;
-
-	this.maxValue = config.maxValue - Math.floor(config.maxValue % this.gridLineIncrement);
-	this.minValue = config.minValue;
-
-	this.font = "12pt Calibri";
-	this.axisColor = "#555";
-	this.gridColor = "aaa";
-	this.padding = 10;
-
-	this.context = this.canvas.getContext("2d");
-	this.range = this.maxValue - this.minValue;
-	this.numGridLines = Math.round(this.range/this.gridLineIncrement);
-	this.longestValueWidth = this.getLongestValueWidth();
-	this.x = this.padding + this.longestValueWidth;
-	this.y = this.padding * 2;
-	this.width = cWidth - (this.longestValueWidth + this.padding * 2);
-	this.height = cHeight - (this.getLabelAreaHeight() + this.padding * 4);
-
-	this.drawGridlines();
-	
-	this.drawXAxis();
-	this.drawYAxis();
-	
-	this.drawBars();
-
-	this.drawXLabels();
-	this.drawYValues();
-}
-
-BarChart.prototype.getLabelAreaHeight = function(){
-	this.context.font = this.font;
-	var maxLabelWidth = 0;
-
-	for (var n=0; n<this.data.length; n++){
-		var label = this.data[n].label;
-		maxLabelWidth = Math.max(maxLabelWidth, this.context.measureText(label).width);
-	}
-
-
-	return Math.round(maxLabelWidth / Math.sqrt(2));
-};
-
-BarChart.prototype.getLongestValueWidth = function(){
-	this.context.font = this.font;
-	var longestValueWidth = 0;
-
-	for(var n=0; n<=this.numGridLines; n++){
-		var value = this.maxValue - (n*this.gridLineIncrement);
-		longestValueWidth = Math.max(longestValueWidth, this.context.measureText(value).width);
-	}
-	return longestValueWidth;
-};
-
-BarChart.prototype.drawXLabels = function(){
-	var context = this.context;
-	context.save();
-	var data = this.data;
-	var barSpacing = this.width/data.length;
-
-	for(var n=0; n<data.length; n++){
-		var label = data[n].label;
-		context.save();
-		context.translate(this.x + ((n+1/2)*barSpacing), this.y + this.height + 10);
-		context.rotate(-1*Math.PI/4);
-		context.font = this.font;
-		context.fillStyle = "black";
-		context.textAlign = "right";
-		context.textBaseline = "middle";
-		context.fillText(label, 0, 0);
-		context.restore();
-	}
-	context.restore();
-};
-
-BarChart.prototype.drawYValues = function(){
-	var context = this.context;
-	context.save();
-	context.font = this.font;
-	context.fillStyle = "black";
-	context.textAlign = "right";
-	context.textBaseline = "middle";
-
-	for (var n = 0; n <= this.numGridLines; n++) {
-		var value = this.maxValue - (n*this.gridLineIncrement);
-		var thisY = (n*this.height/this.numGridLines)+this.y;
-		context.fillText(value, this.x-5, thisY);
-	}
-	context.restore();
-};
-
-BarChart.prototype.drawBars = function(){
-	var context = this.context;
-	context.save();
-	var data = this.data;
-	var barSpacing = this.width/data.length;
-	var unitHeight = this.height/this.range;
-
-	for(var n=0; n<data.length; n++) {
-		var bar=data[n];
-		var barHeight=(data[n].value-this.minValue)*unitHeight;
-	
-
-		if(barHeight>0){
-			context.save();
-			context.translate(Math.round(this.x + ((n+1/2) * barSpacing)), Math.round(this.y+this.height));
-
-			context.scale(1, -1);
-
-			context.beginPath();
-			context.rect(-this.barWidth/2, 0, this.barWidth, barHeight);
-			context.fillStyle = this.color;
-			context.fill();
-			context.restore();
-		}
-	}
-	context.restore();
-};
-
-BarChart.prototype.drawGridlines = function(){
-
-	var context = this.context;
-	context.save();
-	context.strokeStyle = this.gridColor;
-	context.lineWidth = 2;
-
-	for (var n = 0; n < this.numGridLines; n++) {
-		var y = (n*this.height/this.numGridLines)+this.y;
-		context.beginPath();
-		context.moveTo(this.x, y);
-		context.lineTo(this.x+this.width, y);
-		context.stroke();
-	}
-	context.restore();
-};
-
-BarChart.prototype.drawXAxis = function(){
-	var context = this.context;
-	context.save();
-	context.beginPath();
-	context.moveTo(this.x, this.y + this.height);
-	context.lineTo(this.x + this.width, this.y + this.height);
-	context.strokeStyle = this.axisColor;
-	context.lineWidth = 2;
-	context.stroke();
-	context.restore();
-};
-
-BarChart.prototype.drawYAxis = function(){
-	var context = this.context;
-	context.save();
-	context.beginPath();
-	context.moveTo(this.x, this.y);
-	context.lineTo(this.x, this.height + this.y);
-	context.strokeStyle = this.axisColor;
-	context.lineWidth = 2;
-	context.stroke();
-	context.restore();
-};
