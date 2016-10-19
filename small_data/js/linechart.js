@@ -1,7 +1,7 @@
 function LineChart(config){
 
-    this.w = 900;
-    this.h = 500;
+    this.w = 1200;
+    this.h = 600;
 
     // user defined properties
     this.canvas = document.getElementById(config.canvasId);
@@ -16,7 +16,7 @@ function LineChart(config){
     this.padding = 10;
     this.tickSize = 10;
     this.axisColor = "#555";
-    this.pointRadius = 5;
+    this.pointRadius = 2;
     this.font = "12pt Calibri";
 
     this.fontHeight = 12;
@@ -82,12 +82,15 @@ LineChart.prototype.drawXAxis = function(){
     ctx.fillStyle = "black";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    for (var n = 0; n < this.numXTicks; n++) {
-        var label = Math.round((n + 1) * this.maxX / this.numXTicks);
+
+    for (var i=0; i<this.numXTicks; i++) {
+        // var label = Math.round((n + 1) * this.maxX / this.numXTicks);
+        var label = i + 1974;
+        var str = label.toString().substring(2, 4);
         ctx.save();
-        ctx.translate((n + 1) * this.width / this.numXTicks +
+        ctx.translate((i + 1) * this.width / this.numXTicks +
         this.x, this.y + this.height + this.padding);
-        ctx.fillText(label, 0, 0);
+        ctx.fillText(str, 0, 0);
         ctx.restore();
     }
     ctx.restore();
@@ -134,7 +137,6 @@ LineChart.prototype.drawYAxis = function(){
     ctx.restore();
 
 };
-
 LineChart.prototype.drawLine = function(data, color, width){
 
     var ctx = this.context;
@@ -144,27 +146,38 @@ LineChart.prototype.drawLine = function(data, color, width){
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.moveTo(data[0].x * this.scaleX, data[0].y * this.scaleY);
-    for (var n = 0; n < data.length; n++) {
-    var point = data[n];
-    // draw segment
-    ctx.lineTo(point.x * this.scaleX, point.y * this.scaleY);
-    ctx.stroke();
-    ctx.closePath();
-    ctx.beginPath();
-    ctx.arc(point.x * this.scaleX, point.y * this.scaleY,
-    this.pointRadius, 0, 2 * Math.PI, false);
-    ctx.fill();
-    ctx.closePath();
-    // position for next segment
-    ctx.beginPath();
-    ctx.moveTo(point.x * this.scaleX, point.y * this.scaleY);
+
+    var xPos, yPos;
+    xPos = 0;
+    yPos = data[0];
+
+    ctx.moveTo(xPos * this.scaleX, yPos * this.scaleY);
+
+    for (var i=1; i<data.length; i++) {
+
+        xPos += 5;
+        yPos = data[i];
+
+        // draw segment
+        ctx.lineTo(xPos*this.scaleX, yPos*this.scaleY);
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.beginPath();
+        ctx.arc(xPos*this.scaleX, yPos*this.scaleY, this.pointRadius, 0, 2*Math.PI, false);
+        ctx.fill();
+        ctx.closePath();
+
+        // position for next segment
+        ctx.beginPath();
+        ctx.moveTo(xPos*this.scaleX, yPos*this.scaleY);
+
+        
     }
     ctx.restore();
 };
-
 LineChart.prototype.transformContext = function(){
     var ctx = this.context;
     ctx.translate(this.x, this.y + this.height);
     ctx.scale(1, -1);
-}
+};

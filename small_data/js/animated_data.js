@@ -1,5 +1,5 @@
 var init=false;
-var allData, slData;
+var allData;
 var canvas, context;
 var cv_nav, ctx_nav;
 var years=[1, 1973, 1974, 1975, 1976, 1977, 1978, 1979,
@@ -9,8 +9,8 @@ var years=[1, 1973, 1974, 1975, 1976, 1977, 1978, 1979,
 var sl_years=[];
 var inBtwYears=[];
 var menu;
-var colors=["#ecf0f1", "#2c3e50", "#e74c3c", "#f1c40f", "#bdc3c7"];
-//clouds grey, midnight blue - dark grey, red alizarin, yellow - sun flower, grey silver
+var colors=["#ecf0f1", "#2c3e50", "#e74c3c", "#f1c40f", "#bdc3c7", "#3498db"];
+//clouds grey, midnight blue - dark grey, red alizarin, yellow - sun flower, grey silver, blue - peter river
 var bw=15, bh=15;
 var btn01;
 
@@ -36,7 +36,7 @@ window.onload = function() {
 
     drawMenu(menu);
 
-    document.getElementById('cv_nav').addEventListener("click", slData);
+    document.getElementById('cv_nav').addEventListener("click", selectData);
     //----------------------------------//
 
 	document.getElementById('get_all').addEventListener("click", getData);
@@ -56,117 +56,139 @@ window.onload = function() {
 
 function updateSlData(){
 
-	slData = [];
-
 	var tmpY = sl_years.concat(inBtwYears);
 
-	// console.log(sl_years, inBtwYears, tmpY);
-	// console.log(sl_years.length, inBtwYears.length, tmpY.length);
-
-	for (var i=0; i<allData.length-2; i+=3) {
-
-		if(sl_years.length<1){
-			slData.push({id: allData[i], ctry: allData[i+1], edition: allData[i+2]});
-		} else {
-			var arr = allData[i+2].split(",");
-
-			for (var j=0; j<arr.length; j++) {
-
-				if(tmpY.includes(parseInt(arr[j]))){
-					slData.push({id: allData[i], ctry: allData[i+1], edition: allData[i+2]});
-					break;
-				}
-			}
-		}
-	}
-
-	var info = "allData/3: " + allData.length/3;
-    $("#info p:eq(0)").text(info);
-    var inf1 = "slData: " + slData.length;
-    $("#info p:eq(1)").text(inf1);
-
     if(sl_years.length==1 && !btn01.state){
-    	console.log("new bar chart");
-    	generateBarChart();
+
+        var f_data = [];
+
+        for (var i=0; i<allData.length-2; i+=3) {
+        
+            var arr = allData[i+2].split(",");
+
+            for (var j=0; j<arr.length; j++) {
+                if(tmpY.includes(parseInt(arr[j]))){
+                    f_data.push({id: allData[i], ctry: allData[i+1], edition: allData[i+2]});
+                    break;
+                }
+            }
+        }
+
+        var inf0= "allData/3: " + allData.length/3;
+        $("#info p:eq(0)").text(inf0);
+        var inf1 = "slData: " + f_data.length;
+        $("#info p:eq(1)").text(inf1);
+
+    	// console.log("new bar chart");
+    	generateBarChart(f_data);
+
     } else if(sl_years.length==2){
+
+        var f_data = [];
+
+        for (var i=0; i<allData.length-2; i+=3) {
+
+            if(f_data.length<1){
+                
+                f_data.push({ctry: allData[i+1], arr: []});
+                for (var j=0; j<years.length-1; j++)f_data[f_data.length-1].arr[j]=0;
+
+                //-------------
+                var t_years = allData[i+2].split(",").map(Number);
+                var y = 1973; //TODO use min val in tmpY
+
+                while(y<2010){  //TODO use max val in tmpY
+                    if(t_years.includes(y))f_data[0].arr[y-1973]+=1;
+                    y++;
+                }
+                //------------
+
+                
+            } else {
+
+                var found = false;
+
+                for (var k=0; k<f_data.length; k++){
+
+                    if(f_data[k].ctry == allData[i+1]){ //same ctry
+
+                        //------------- double
+                        var t_years = allData[i+2].split(",").map(Number);
+                        var y = 1973; //TODO use min val in tmpY
+
+                        while(y<2010){  //TODO use max val in tmpY
+                            if(t_years.includes(y))f_data[k].arr[y-1973]+=1;
+                            y++;
+                        }
+                        //---------------------
+
+                        found = true;
+                        break;
+                    }
+
+
+                }
+
+                if(!found){
+                    //------------- same as one
+                    f_data.push({ctry: allData[i+1], arr: []});
+                    for (var j=0; j<years.length-1; j++)f_data[f_data.length-1].arr[j]=0;
+
+                    //-------------
+                    var t_years = allData[i+2].split(",").map(Number);
+                    var y = 1973; //TODO use min val in tmpY
+
+                    while(y<2010){  //TODO use max val in tmpY
+                        if(t_years.includes(y))f_data[0].arr[y-1973]+=1;
+                        y++;
+                    }
+                    //------------
+
+                }
+
+
+            }
+
+        }
+
+        console.log(f_data.length, f_data);
     	console.log("new line graph");
-        generateLineGraph();
+        generateLineGraph(f_data);
     }
 
 }
-function generateLineGraph(){
+function generateLineGraph(data){
 
     var myLineChart = new LineChart({
-    canvasId: "myCanvas",
-    minX: 0,
-    minY: 0,
-    maxX: 140,
-    maxY: 100,
-    unitsPerTickX: 10,
-    unitsPerTickY: 10
+        canvasId: "myCanvas",
+        minX: 0,
+        minY: 0,
+        maxX: 36*5,
+        maxY: 100,
+        unitsPerTickX: 5,
+        unitsPerTickY: 10
     });
 
-    var data = [{
-    x: 0,
-    y: 0
-    }, {
-    x: 20,
-    y: 10
-    }, {
-    x: 40,
-    y: 15
-    }, {
-    x: 60,
-    y: 40
-    }, {
-    x: 80,
-    y: 60
-    }, {
-    x: 100,
-    y: 50
-    }, {
-    x: 120,
-    y: 85
-    }, {
-    x: 140,
-    y: 100
-    }];
+    //TODO add legend
 
-    myLineChart.drawLine(data, "blue", 3);
-    var data = [{
-    x: 20,
-    y: 85
-    }, {
-    x: 40,
-    y: 75
-    }, {
-    x: 60,
-    y: 75
-    }, {
-    x: 80,
-    y: 45
-    }, {
-    x: 100,
-    y: 65
-    }, {
-    x: 120,
-    y: 40
-    }, {
-    x: 140,
-    y: 35
-    }];
+    var txt="";
+    for (var i = 0; i < data.length; i++) {
+        if(txt!="")txt+=" ";
+        // txt += data[i].ctry + ' ' + data[i].arr;
+        txt += data[i].ctry;
+        myLineChart.drawLine(data[i].arr, colors[5], 1);
+    }
 
-    myLineChart.drawLine(data, "red", 3);
+    $("#selection p").text(txt);
 
 }
-function generateBarChart(){
-
+function generateBarChart(data){
 
 	var arr=[];
 
-	for (var i=0; i<slData.length; i++) {
+	for (var i=0; i<data.length; i++) {
 
-		var ctry = slData[i].ctry;
+		var ctry = data[i].ctry;
 
 		if(arr.length<1) {
 			arr.push({label: ctry, value: 1});
@@ -194,9 +216,6 @@ function generateBarChart(){
 
 	$("#info p:eq(2)").text(info);
 
-	// console.log(arr);
-	// console.log(slData);
-
 	var max=0;
     var txt="";
 	for (var k=0; k<arr.length; k++) {
@@ -219,7 +238,7 @@ function map(value, start1, stop1, start2, stop2) {
     return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 }
 //---------------------------------------//
-function slData(evt){
+function selectData(evt){
 
     var cv = cv_nav.getBoundingClientRect();
     var mouseX = evt.clientX - cv.left;

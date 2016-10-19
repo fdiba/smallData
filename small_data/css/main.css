@@ -69,8 +69,15 @@ ul{
 	margin: 0;
 }
 #selection{
-	padding: 10px;
+	padding: 0 0 0 10px;
+	margin: 0;
 	background: orange; /*orange carrot*/
 	min-width: 200px;
+	max-width: 1200px;
+	word-wrap: break-word;
 	float: left;
+}
+#selection p {
+	padding: 0;
+	margin: 0;
 }
