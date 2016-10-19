@@ -12,6 +12,9 @@ function LineChart(config){
     this.unitsPerTickX = config.unitsPerTickX;
     this.unitsPerTickY = config.unitsPerTickY;
 
+    this.minYear = config.minYear;
+    this.maxYear = config.maxYear;
+
     // constants
     this.padding = 10;
     this.tickSize = 10;
@@ -30,15 +33,13 @@ function LineChart(config){
     this.x = this.getLongestValueWidth() + this.padding * 2;
     this.y = this.padding * 2;
     this.width = this.w - this.x - this.padding * 2;
-    this.height = this.h - this.y - this.padding -
-    this.fontHeight;
+    this.height = this.h - this.y - this.padding - this.fontHeight;
     this.scaleX = this.width / this.rangeX;
     this.scaleY = this.height / this.rangeY;
 
     this.context.fillStyle = "#ecf0f1";
     this.context.fillRect(0, 0, this.w, this.h);
 
-    // draw x y axis and tick marks
     this.drawXAxis();
     this.drawYAxis();
 
@@ -83,13 +84,11 @@ LineChart.prototype.drawXAxis = function(){
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    for (var i=0; i<this.numXTicks; i++) {
-        // var label = Math.round((n + 1) * this.maxX / this.numXTicks);
-        var label = i + 1974;
+    for (var i=0; i<=this.numXTicks; i++) {
+        var label = i + this.minYear;
         var str = label.toString().substring(2, 4);
         ctx.save();
-        ctx.translate((i + 1) * this.width / this.numXTicks +
-        this.x, this.y + this.height + this.padding);
+        ctx.translate(i*this.width / this.numXTicks + this.x, this.y + this.height + this.padding);
         ctx.fillText(str, 0, 0);
         ctx.restore();
     }
@@ -106,7 +105,7 @@ LineChart.prototype.drawYAxis = function(){
     ctx.moveTo(this.x, this.y);
     ctx.lineTo(this.x, this.y + this.height);
     ctx.strokeStyle = this.axisColor;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
 
@@ -164,15 +163,13 @@ LineChart.prototype.drawLine = function(data, color, width){
         ctx.closePath();
 
         ctx.beginPath();
-        ctx.arc(xPos*this.scaleX, yPos*this.scaleY, this.pointRadius, 0, 2*Math.PI, false);
+        ctx.arc(xPos*this.scaleX, yPos*this.scaleY, this.pointRadius, 0, 2*Math.PI);
         ctx.fill();
         ctx.closePath();
 
         // position for next segment
         ctx.beginPath();
         ctx.moveTo(xPos*this.scaleX, yPos*this.scaleY);
-
-        
     }
     ctx.restore();
 };

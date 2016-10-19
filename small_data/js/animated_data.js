@@ -41,12 +41,12 @@ window.onload = function() {
 
 	document.getElementById('get_all').addEventListener("click", getData);
 
-	canvas.width = $(document).width()-25; //context left pad = 10;
-	// canvas.width = 600;
+	//canvas.width = $(document).width()-25; //context left pad = 10;
+	canvas.width = 1240;
     canvas.height = 600;
     // canvas.height = 300;
 
-    context.fillStyle=colors[4];
+    context.fillStyle=colors[0]; //4
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     getData();
@@ -82,24 +82,33 @@ function updateSlData(){
     	// console.log("new bar chart");
     	generateBarChart(f_data);
 
-    } else if(sl_years.length==2){
+    } else if(sl_years.length==2 || sl_years.length<1){
 
         var f_data = [];
+        var minY, maxY;
+
+        if(sl_years.length<1) {
+            minY=1973;
+            maxY=2009;
+        } else {
+            minY=Math.min(sl_years[0], sl_years[1]);
+            maxY=Math.max(sl_years[0], sl_years[1]);
+        }
 
         for (var i=0; i<allData.length-2; i+=3) {
 
             if(f_data.length<1){
                 
                 f_data.push({ctry: allData[i+1], arr: []});
-                for (var j=0; j<years.length-1; j++)f_data[f_data.length-1].arr[j]=0;
+                for (var j=0; j<=maxY-minY; j++)f_data[f_data.length-1].arr[j]=0;
 
                 //-------------
                 var t_years = allData[i+2].split(",").map(Number);
-                var y = 1973; //TODO use min val in tmpY
+                var year=minY;
 
-                while(y<2010){  //TODO use max val in tmpY
-                    if(t_years.includes(y))f_data[0].arr[y-1973]+=1;
-                    y++;
+                while(year<maxY+1){
+                    if(t_years.includes(year))f_data[0].arr[year-minY]+=1;
+                    year++;
                 }
                 //------------
 
@@ -114,11 +123,11 @@ function updateSlData(){
 
                         //------------- double
                         var t_years = allData[i+2].split(",").map(Number);
-                        var y = 1973; //TODO use min val in tmpY
+                        var year=minY;
 
-                        while(y<2010){  //TODO use max val in tmpY
-                            if(t_years.includes(y))f_data[k].arr[y-1973]+=1;
-                            y++;
+                        while(year<maxY+1){  //f_data[k]
+                            if(t_years.includes(year))f_data[k].arr[year-minY]+=1;
+                            year++;
                         }
                         //---------------------
 
@@ -132,15 +141,15 @@ function updateSlData(){
                 if(!found){
                     //------------- same as one
                     f_data.push({ctry: allData[i+1], arr: []});
-                    for (var j=0; j<years.length-1; j++)f_data[f_data.length-1].arr[j]=0;
+                    for (var j=0; j<=maxY-minY; j++)f_data[f_data.length-1].arr[j]=0;
 
                     //-------------
                     var t_years = allData[i+2].split(",").map(Number);
-                    var y = 1973; //TODO use min val in tmpY
+                    var year=minY;
 
-                    while(y<2010){  //TODO use max val in tmpY
-                        if(t_years.includes(y))f_data[0].arr[y-1973]+=1;
-                        y++;
+                    while(year<maxY+1){  //f_data[f_data.length-1]
+                        if(t_years.includes(year))f_data[f_data.length-1].arr[year-minY]+=1;
+                        year++;
                     }
                     //------------
 
@@ -151,36 +160,47 @@ function updateSlData(){
 
         }
 
-        console.log(f_data.length, f_data);
+        // console.log(f_data.length, f_data);
     	console.log("new line graph");
-        generateLineGraph(f_data);
+        generateLineGraph(f_data, minY, maxY);
     }
 
 }
-function generateLineGraph(data){
+function generateLineGraph(data, minYear, maxYear){
 
     var myLineChart = new LineChart({
         canvasId: "myCanvas",
         minX: 0,
         minY: 0,
-        maxX: 36*5,
+        maxX: (maxYear-minYear)*5,
         maxY: 100,
         unitsPerTickX: 5,
-        unitsPerTickY: 10
+        unitsPerTickY: 10,
+        minYear: minYear,
+        maxYear: maxYear
     });
 
     //TODO add legend
 
     var txt="";
     for (var i = 0; i < data.length; i++) {
-        if(txt!="")txt+=" ";
-        // txt += data[i].ctry + ' ' + data[i].arr;
-        txt += data[i].ctry;
-        myLineChart.drawLine(data[i].arr, colors[5], 1);
+
+        var sum = data[i].arr.reduce(add, 0);
+        if(sum>0){
+            if(txt!="")txt+=" ";
+            // txt += data[i].ctry + ' ' + data[i].arr;
+            txt += data[i].ctry;
+            console.log(data[i].arr);
+            myLineChart.drawLine(data[i].arr, colors[5], 1);
+        }
+        
     }
 
     $("#selection p").text(txt);
 
+}
+function add(a, b) {
+    return a + b;
 }
 function generateBarChart(data){
 
