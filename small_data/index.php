@@ -81,7 +81,6 @@
 			<li><a href="animated_data.php">animated data</a></li>
 		</ul>
 	</div>
-	<div id="selection"><p>no selection</p></div>
 	<script type='text/javascript'>
 	<?php
 		echo "var num = ". $numResults . ";\n";
@@ -95,6 +94,7 @@
             Votre navigateur ne supporte pas les canvas.
 
     </canvas>
+    <div id="selection"><p>no selection</p></div>
  	</div>
          <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </body>

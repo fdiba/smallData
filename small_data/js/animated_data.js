@@ -41,18 +41,20 @@ window.onload = function() {
 
 	document.getElementById('get_all').addEventListener("click", getData);
 
-	//canvas.width = $(document).width()-25; //context left pad = 10;
-	canvas.width = 1240;
+	// canvas.width = $(document).width()-25; //context left pad = 10;
+	canvas.width = 1640;
     canvas.height = 600;
     // canvas.height = 300;
 
-    context.fillStyle=colors[0]; //4
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    resetContext();
 
     getData();
-
-//----------------- functions -----------------//
 };
+//----------------- functions -----------------//
+function resetContext(){
+    context.fillStyle=colors[4]; //4 || 0
+    context.fillRect(0, 0, canvas.width, canvas.height);
+}
 
 function updateSlData(){
 
@@ -80,6 +82,7 @@ function updateSlData(){
         $("#info p:eq(1)").text(inf1);
 
     	// console.log("new bar chart");
+        resetContext();
     	generateBarChart(f_data);
 
     } else if(sl_years.length==2 || sl_years.length<1){
@@ -161,7 +164,8 @@ function updateSlData(){
         }
 
         // console.log(f_data.length, f_data);
-    	console.log("new line graph");
+    	// console.log("new line graph");
+        resetContext();
         generateLineGraph(f_data, minY, maxY);
     }
 
@@ -191,11 +195,12 @@ function generateLineGraph(data, minYear, maxYear){
             // txt += data[i].ctry + ' ' + data[i].arr;
             txt += data[i].ctry;
             console.log(data[i].arr);
-            myLineChart.drawLine(data[i].arr, colors[5], 1);
+            myLineChart.drawLine(data[i].ctry, data[i].arr, colors[5], 1);
         }
         
     }
 
+    myLineChart.drawLegend();
     $("#selection p").text(txt);
 
 }
@@ -230,11 +235,11 @@ function generateBarChart(data){
 		}
 	}
 
-	var info="";
-	if(sl_years[0]<1996)info = sl_years[0] + ": complete data";
-    else info = sl_years[0] + ": incomplete data";
+	var inf2="";
+	if(sl_years[0]<1996)inf2 = sl_years[0] + ": complete data";
+    else inf2 = sl_years[0] + ": incomplete data";
 
-	$("#info p:eq(2)").text(info);
+	$("#info p:eq(2)").text(inf2);
 
 	var max=0;
     var txt="";

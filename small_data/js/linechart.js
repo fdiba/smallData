@@ -15,6 +15,8 @@ function LineChart(config){
     this.minYear = config.minYear;
     this.maxYear = config.maxYear;
 
+    this.countries = [];
+
     // constants
     this.padding = 10;
     this.tickSize = 10;
@@ -71,10 +73,8 @@ LineChart.prototype.drawXAxis = function(){
     // draw tick marks
     for (var n = 0; n < this.numXTicks; n++) {
         ctx.beginPath();
-        ctx.moveTo((n + 1) * this.width / this.numXTicks +
-        this.x, this.y + this.height);
-        ctx.lineTo((n + 1) * this.width / this.numXTicks +
-        this.x, this.y + this.height - this.tickSize);
+        ctx.moveTo((n + 1) * this.width / this.numXTicks + this.x, this.y + this.height);
+        ctx.lineTo((n + 1) * this.width / this.numXTicks + this.x, this.y + this.height - this.tickSize);
         ctx.stroke();
     }
 
@@ -136,7 +136,33 @@ LineChart.prototype.drawYAxis = function(){
     ctx.restore();
 
 };
-LineChart.prototype.drawLine = function(data, color, width){
+LineChart.prototype.drawLegend = function(){
+
+    var arr = this.countries;
+    var ctx = this.context;
+    var xPos = 1265, yPos = 25;
+
+    ctx.font = this.font;
+    ctx.fillStyle = "black";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+
+    for (var i=0; i<arr.length; i++) {
+
+        var value = arr[i];
+        ctx.fillText(value, xPos, yPos);
+        yPos+=15;
+        if(yPos>this.h-15){
+            yPos = 20;
+            xPos += 200;
+        }
+
+    }
+
+}
+LineChart.prototype.drawLine = function(ctry, data, color, width){
+
+    this.countries.push(ctry);
 
     var ctx = this.context;
     ctx.save();
@@ -148,16 +174,16 @@ LineChart.prototype.drawLine = function(data, color, width){
 
     var xPos, yPos;
     xPos = 0;
-    yPos = data[0];
+    
+    for (var i=0; i<data.length; i++) {
 
-    ctx.moveTo(xPos * this.scaleX, yPos * this.scaleY);
-
-    for (var i=1; i<data.length; i++) {
-
-        xPos += 5;
         yPos = data[i];
 
-        // draw segment
+        if(i===0){
+            ctx.beginPath();
+            ctx.moveTo(xPos * this.scaleX, yPos * this.scaleY);
+        }
+
         ctx.lineTo(xPos*this.scaleX, yPos*this.scaleY);
         ctx.stroke();
         ctx.closePath();
@@ -167,9 +193,11 @@ LineChart.prototype.drawLine = function(data, color, width){
         ctx.fill();
         ctx.closePath();
 
-        // position for next segment
         ctx.beginPath();
         ctx.moveTo(xPos*this.scaleX, yPos*this.scaleY);
+
+        xPos += 5;
+        
     }
     ctx.restore();
 };
