@@ -14,6 +14,8 @@ var colors=["#ecf0f1", "#2c3e50", "#e74c3c", "#f1c40f", "#bdc3c7", "#3498db"];
 var bw=15, bh=15;
 var btn01;
 
+var myLineChart;
+
 window.onload = function() {
 
 	//------------ canvas ------------//
@@ -37,8 +39,7 @@ window.onload = function() {
     drawMenu(menu);
 
     document.getElementById('cv_nav').addEventListener("click", selectData);
-    //----------------------------------//
-
+    document.getElementById('myCanvas').addEventListener("click", editData);
 	document.getElementById('get_all').addEventListener("click", getData);
 
 	// canvas.width = $(document).width()-25; //context left pad = 10;
@@ -172,7 +173,7 @@ function updateSlData(){
 }
 function generateLineGraph(data, minYear, maxYear){
 
-    var myLineChart = new LineChart({
+    myLineChart = new LineChart({
         canvasId: "myCanvas",
         minX: 0,
         minY: 0,
@@ -184,23 +185,28 @@ function generateLineGraph(data, minYear, maxYear){
         maxYear: maxYear
     });
 
-    //TODO add legend
-
-    var txt="";
     for (var i = 0; i < data.length; i++) {
 
         var sum = data[i].arr.reduce(add, 0);
         if(sum>0){
-            if(txt!="")txt+=" ";
-            // txt += data[i].ctry + ' ' + data[i].arr;
-            txt += data[i].ctry;
-            console.log(data[i].arr);
-            myLineChart.drawLine(data[i].ctry, data[i].arr, colors[5], 1);
+            /*if(txt!="")txt+=" ";
+            txt += data[i].ctry + ' ' + data[i].arr;*/
+            myLineChart.drawLine(data[i], colors[5], 1);
         }
         
     }
 
+    var inf2="";
+    var maxY=Math.max(sl_years[0], sl_years[1]);
+    var minY=Math.min(sl_years[0], sl_years[1]);
+    if(maxY<1996)inf2 = minY.toString() + "-" + maxY.toString() + ": complete data";
+    else if(sl_years.length===2)inf2 = minY.toString() + "-" + maxY.toString() + ": incomplete data";
+    else inf2 = "1973-2009: incomplete data";
+    $("#info p:eq(2)").text(inf2);
+
     myLineChart.drawLegend();
+
+    var txt=myLineChart.data.length.toString()+ " countries";
     $("#selection p").text(txt);
 
 }
@@ -238,7 +244,6 @@ function generateBarChart(data){
 	var inf2="";
 	if(sl_years[0]<1996)inf2 = sl_years[0] + ": complete data";
     else inf2 = sl_years[0] + ": incomplete data";
-
 	$("#info p:eq(2)").text(inf2);
 
 	var max=0;
@@ -263,6 +268,15 @@ function map(value, start1, stop1, start2, stop2) {
     return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 }
 //---------------------------------------//
+function editData(evt){
+
+    var cv = canvas.getBoundingClientRect();
+    var mouseX = evt.clientX - cv.left;
+    var mouseY = evt.clientY - cv.top;
+
+    if(sl_years.length===2 || menu[0].state)myLineChart.editData(mouseX, mouseY);
+
+}
 function selectData(evt){
 
     var cv = cv_nav.getBoundingClientRect();
@@ -343,10 +357,6 @@ function selectData(evt){
         }
 
     }
-
-    /*if(sl_years.length==2)checkInBetweenBtn();
-    else inBtwYears=[];*/
-
 }
 function activateBtn(id){
 	menu[id].state = true;
@@ -424,7 +434,7 @@ function createMenu(){
         arr.push({x:xPos, y:yPos, id:years[i], state:false});
         xPos += 23;
     }
-    return arr;
+     return arr;
 }
 function drawMenu(menu){
     for (var i = 0; i < menu.length; i++) {
@@ -468,6 +478,11 @@ function getData(){
         $("#info p:eq(0)").text(txt2);
         // $("#selection p").text(allData[0]);
         // console.log(msg);
+
+        //TODO REMOVE 
+        activateBtn(0);
+        resetInBetweenBtn(colors[3]);
+        updateSlData();
 
     });
 }

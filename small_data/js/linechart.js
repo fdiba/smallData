@@ -15,7 +15,14 @@ function LineChart(config){
     this.minYear = config.minYear;
     this.maxYear = config.maxYear;
 
-    this.countries = [];
+    // this.countries=[];
+    this.lg_btns=[];
+    this.bWidth=10;
+
+    this.data=[];
+
+    this.colors=["#bdc3c7", "#3498db"];
+    //grey silver, blue - peter river
 
     // constants
     this.padding = 10;
@@ -46,7 +53,30 @@ function LineChart(config){
     this.drawYAxis();
 
 }
+LineChart.prototype.editData = function(mouseX, mouseY){
 
+    var bWidth=this.bWidth;
+    var btns = this.lg_btns;
+
+    for (var i = 0; i < btns.length; i++) {
+        
+        if(mouseX>=btns[i].x && mouseX<=btns[i].x+bWidth &&
+           mouseY>=btns[i].y && mouseY<=btns[i].y+bWidth){
+            
+            btns[i].state = !btns[i].state;
+            // console.log(btns[i].state);
+            if(btns[i].state){
+                this.drawRectangle(this.context, btns[i], bWidth, this.colors[1]);
+            } else {
+                this.drawRectangle(this.context, btns[i], bWidth, this.colors[0]);
+            }
+
+            var txt=this.data[i].ctry+": "+this.data[i].arr;
+            $("#selection p").text(txt);
+            
+        } 
+    }
+}
 LineChart.prototype.getLongestValueWidth = function(){
 
     this.context.font = this.font;
@@ -136,33 +166,49 @@ LineChart.prototype.drawYAxis = function(){
     ctx.restore();
 
 };
+LineChart.prototype.drawRectangle = function(ctx, btn, bWidth, color){
+    ctx.strokeStyle = "black";
+    ctx.strokeRect(btn.x, btn.y, bWidth, bWidth)
+    ctx.fillStyle = color;
+    ctx.fillRect(btn.x, btn.y, bWidth, bWidth);
+}
 LineChart.prototype.drawLegend = function(){
 
-    var arr = this.countries;
+    var arr = this.data;
     var ctx = this.context;
-    var xPos = 1265, yPos = 25;
+    var xPos = 1235, yPos = 25;
 
     ctx.font = this.font;
     ctx.fillStyle = "black";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
 
+    var bWidth=this.bWidth;
+
     for (var i=0; i<arr.length; i++) {
 
-        var value = arr[i];
-        ctx.fillText(value, xPos, yPos);
+        this.lg_btns.push({x:xPos-18, y:yPos-6, state:true});
+        
+        var btn = this.lg_btns[this.lg_btns.length-1];
+
+        this.drawRectangle(ctx, btn, bWidth, this.colors[1]);
+
+        ctx.fillStyle = "black";
+        ctx.fillText(arr[i].ctry, xPos, yPos);
+        
         yPos+=15;
         if(yPos>this.h-15){
             yPos = 20;
-            xPos += 200;
+            xPos += 185;
         }
-
     }
-
 }
-LineChart.prototype.drawLine = function(ctry, data, color, width){
+LineChart.prototype.drawLine = function(obj, color, width){
 
-    this.countries.push(ctry);
+    this.data.push(obj);
+
+    // this.countries.push(obj.ctry);
+    var arr = obj.arr;
 
     var ctx = this.context;
     ctx.save();
@@ -175,9 +221,9 @@ LineChart.prototype.drawLine = function(ctry, data, color, width){
     var xPos, yPos;
     xPos = 0;
     
-    for (var i=0; i<data.length; i++) {
+    for (var i=0; i<arr.length; i++) {
 
-        yPos = data[i];
+        yPos = arr[i];
 
         if(i===0){
             ctx.beginPath();
