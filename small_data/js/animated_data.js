@@ -269,9 +269,6 @@ function generateBarChart(data){
 	new BarChart({canvasId: "myCanvas", data: arr, barWidth: bWidth, minValue: 0, maxValue: max+1, gridLineIncrement: increment
 	});
 }
-function map(value, start1, stop1, start2, stop2) {
-    return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
-}
 //---------------------------------------//
 function editData(evt){
 
@@ -279,7 +276,11 @@ function editData(evt){
     var mouseX = evt.clientX - cv.left;
     var mouseY = evt.clientY - cv.top;
 
-    if(sl_years.length===2 || menu[0].state)myLineChart.editData(mouseX, mouseY);
+    //linechart
+    if(sl_years.length===2 || menu[0].state){
+        if(mouseX<myLineChart.w)myLineChart.requestData(mouseX, mouseY);
+        else myLineChart.editData(mouseX, mouseY);
+    }
 
 }
 function selectData(evt){

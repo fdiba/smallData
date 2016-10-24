@@ -22,8 +22,10 @@ function LineChart(config){
     this.numSolos=0;
     this.bWidth=10;
 
-    this.colors=["#bdc3c7", "#4aa3df", "#2ecc71"];
-    //grey: silver, blue: peter river, emerald: green
+    this.lines=[];
+
+    this.colors=["#bdc3c7", "#4aa3df", "#2ecc71", "#16a085"];
+    //grey: silver, blue: peter river, emerald: green, green sea: dark green
 
     // constants
     this.padding = 10;
@@ -56,6 +58,55 @@ function LineChart(config){
 LineChart.prototype.resetCanvas = function(){
     this.context.fillStyle = "#ecf0f1";
     this.context.fillRect(0, 0, this.w, this.h);
+}
+LineChart.prototype.requestData = function(mouseX, mouseY){
+    
+    var lines=this.lines;
+    var ctx=this.context;
+    var cp={x:-999, y:-999, value:20};//closest point
+
+    for (var i=0; i<lines.length; i++) {
+        
+        var points=lines[i];
+
+        for (var j=0; j<points.length; j++) {
+            
+            var p=points[j];
+            var distance = dist(p.x, mouseX, p.y, mouseY);
+
+            if(distance < cp.value && this.numSolos===0){
+                cp={x:p.x, y:p.y, value:distance, ctryId:i, yearId:j};
+            } else if(distance < cp.value && this.solo_btns[i]){
+                if(this.solo_btns[i].state)cp={x:p.x, y:p.y, value:distance, ctryId:i, yearId:j};
+            }
+        }
+    }
+
+    if(cp.value<20){
+
+        var ctry = this.data[cp.ctryId].ctry;
+        var year = parseInt(cp.yearId) + this.minYear;
+        var value = parseInt(this.data[cp.ctryId].arr[cp.yearId]);
+        
+        // console.log(ctry, year, value);
+
+        $("#selection").empty();
+        $("#selection").append('<p>');
+        var txt=ctry+" "+year+" "+value;
+        $("#selection p").text(txt);
+
+        this.redrawLineChart();
+
+        ctx.strokeStyle=this.colors[3];
+        ctx.fillStyle=this.colors[2];
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, this.pointRadius*2, 0, 2*Math.PI);
+        ctx.stroke();
+        ctx.fill();
+        ctx.closePath();
+    } else {
+        this.redrawLineChart();
+    }
 }
 LineChart.prototype.editData = function(mouseX, mouseY){
 
@@ -102,23 +153,20 @@ LineChart.prototype.editData = function(mouseX, mouseY){
 
 
     //display infos
-    $("#selection").empty();
-    if(this.numSolos>0 && touched){
-        for (var i=0; i<solos.length; i++) {
-            if(solos[i].state){
-                var txt='<p>'+this.data[i].arr+" - "+this.data[i].ctry+'</p>';
-                $("#selection").append(txt);
-            }
-        }
-    } else if(touched){
-        for (var i=0; i<btns.length; i++) {
-            if(btns[i].state){
+    if(touched){
+        
+        var arr;
+        if(this.numSolos>0)arr=solos;
+        else arr=btns;
+
+        $("#selection").empty();
+        for (var i=0; i<arr.length; i++) {
+            if(arr[i].state){
                 var txt='<p>'+this.data[i].arr+" - "+this.data[i].ctry+'</p>';
                 $("#selection").append(txt);
             }
         }
     }
-
 }
 LineChart.prototype.redrawLineChart = function(){
     
@@ -149,8 +197,6 @@ LineChart.prototype.redrawLineChart = function(){
             if(solos[i].state)this.drawLine(data[i], this.colors[2], 2, false);
         }
     }
-
-    
 }
 LineChart.prototype.getLongestValueWidth = function(){
 
@@ -165,6 +211,8 @@ LineChart.prototype.getLongestValueWidth = function(){
 };
 
 LineChart.prototype.drawXAxis = function(){
+
+    // console.log(this.x);
 
     var ctx = this.context;
     ctx.save();
@@ -215,6 +263,7 @@ LineChart.prototype.drawYAxis = function(){
     ctx.restore();
 
     // draw tick marks
+    ctx.strokeStyle = "black";
     for (var n = 0; n < this.numYTicks; n++) {
         ctx.beginPath();
         ctx.moveTo(this.x, n * this.height / this.numYTicks +
@@ -288,45 +337,49 @@ LineChart.prototype.drawLine = function(obj, color, strokeWidth, init){
 
     var arr = obj.arr;
 
+    var points=[];
+
     var ctx = this.context;
-    ctx.save();
-    this.transformContext();
+
+    var xOffset = this.x;
+    var yOffset = this.y + this.height;
+
     ctx.lineWidth = strokeWidth;
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
     ctx.beginPath();
 
     var xPos, yPos;
-    xPos = 0;
+    xPos=0;
     
     for (var i=0; i<arr.length; i++) {
 
         yPos = arr[i];
 
+        var x=xPos*this.scaleX+xOffset;
+        var y=yOffset-(yPos*this.scaleY);
+
         if(i===0){
             ctx.beginPath();
-            ctx.moveTo(xPos * this.scaleX, yPos * this.scaleY);
+            ctx.moveTo(x, y);
         }
 
-        ctx.lineTo(xPos*this.scaleX, yPos*this.scaleY);
+        ctx.lineTo(x, y);
         ctx.stroke();
         ctx.closePath();
 
+        points.push({x: x, y:y});
+
         ctx.beginPath();
-        ctx.arc(xPos*this.scaleX, yPos*this.scaleY, this.pointRadius, 0, 2*Math.PI);
+        ctx.arc(x, y, this.pointRadius, 0, 2*Math.PI);
         ctx.fill();
         ctx.closePath();
 
         ctx.beginPath();
-        ctx.moveTo(xPos*this.scaleX, yPos*this.scaleY);
+        ctx.moveTo(x, y);
 
         xPos += 5;
         
     }
-    ctx.restore();
-};
-LineChart.prototype.transformContext = function(){
-    var ctx = this.context;
-    ctx.translate(this.x, this.y + this.height);
-    ctx.scale(1, -1);
+    this.lines.push(points);
 };

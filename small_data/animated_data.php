@@ -4,6 +4,7 @@
 	<title>Animated data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
+	<script type="text/javascript" src="js/functions.js"></script>
 	<script type="text/javascript" src="js/barchart.js"></script>
 	<script type="text/javascript" src="js/linechart.js"></script>
 	<script type="text/javascript" src="js/animated_data.js"></script>
