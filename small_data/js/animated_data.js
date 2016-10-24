@@ -207,8 +207,9 @@ function generateLineGraph(data, minYear, maxYear){
 
     myLineChart.drawLegend();
 
-    var txt=myLineChart.data.length.toString()+ " countries";
-    $("#selection p").text(txt);
+    var txt='<p>'+myLineChart.data.length.toString()+ " countries</p>";
+    $("#selection").empty();
+    $("#selection").append(txt);
 
 }
 function add(a, b) {
@@ -248,16 +249,19 @@ function generateBarChart(data){
 	$("#info p:eq(2)").text(inf2);
 
 	var max=0;
-    var txt="";
+    $("#selection").empty();
+    $("#selection").append('<p>');
+    $("#selection p").append(arr.length+ " countries: ");
 	for (var k=0; k<arr.length; k++) {
 		max = Math.max(max, arr[k].value);
-        txt += arr[k].label + " " + arr[k].value + " | ";
+        var txt=arr[k].label+" "+arr[k].value;
+        if(k<arr.length-1)txt+=' - ';
+        $("#selection p").append(txt);
 	}
-
-    $("#selection p").text(txt);
+    
 
     var increment = Math.round(max/10);
-    if(increment%2)console.log(increment-=1);
+    // if(increment%2)console.log(increment-=1);
     if(max<20)increment=2; //1995
 
     var bWidth = map(arr.length, 30, 10, 20, 40)
@@ -493,17 +497,16 @@ function getData(){
     }).done(function(str) {
 
     	allData = str.split("%");
-    	// allData = str.split("%");
 
-    	var txt = "no selection";
+    	var txt = "<p>no selection</p>";
 
     	var num = allData.length / 3;
     	var txt2 = "allData: " + num;
 
-        $("#selection p").text(txt);
+        $("#selection").empty();
+        $("#selection").append(txt);
+        
         $("#info p:eq(0)").text(txt2);
-        // $("#selection p").text(allData[0]);
-        // console.log(msg);
 
         //TODO REMOVE 
         activateBtn(0);

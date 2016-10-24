@@ -61,6 +61,7 @@ LineChart.prototype.editData = function(mouseX, mouseY){
 
     var bWidth=this.bWidth;
     var btns=this.lg_btns;
+    var solos=this.solo_btns;
     var touched=false;
 
     for (var i=0; i<btns.length; i++) { //remove country
@@ -71,9 +72,6 @@ LineChart.prototype.editData = function(mouseX, mouseY){
 
             this.drawRectangle(this.context, btns[i], bWidth, this.colors[1]);            
 
-            var txt=this.data[i].ctry+": "+this.data[i].arr;
-            $("#selection p").text(txt);
-
             this.redrawLineChart();
 
             touched=true;
@@ -82,8 +80,6 @@ LineChart.prototype.editData = function(mouseX, mouseY){
     }
 
     if(!touched){ //highlight country
-
-        var solos=this.solo_btns;
 
         for (var i=0; i<solos.length; i++) {
 
@@ -96,16 +92,33 @@ LineChart.prototype.editData = function(mouseX, mouseY){
 
                 this.drawRectangle(this.context, solos[i], bWidth, this.colors[2]);
 
-                var txt=this.data[i].ctry+": "+this.data[i].arr;
-                $("#selection p").text(txt);
-
                 this.redrawLineChart();
 
+                touched=true;
                 break;
-
             }
         }
     }
+
+
+    //display infos
+    $("#selection").empty();
+    if(this.numSolos>0 && touched){
+        for (var i=0; i<solos.length; i++) {
+            if(solos[i].state){
+                var txt='<p>'+this.data[i].arr+" - "+this.data[i].ctry+'</p>';
+                $("#selection").append(txt);
+            }
+        }
+    } else if(touched){
+        for (var i=0; i<btns.length; i++) {
+            if(btns[i].state){
+                var txt='<p>'+this.data[i].arr+" - "+this.data[i].ctry+'</p>';
+                $("#selection").append(txt);
+            }
+        }
+    }
+
 }
 LineChart.prototype.redrawLineChart = function(){
     
