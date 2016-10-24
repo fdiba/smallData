@@ -18,12 +18,12 @@ function LineChart(config){
 
     // this.countries=[];
     this.lg_btns=[];
+    this.solo_btns=[];
+    this.numSolos=0;
     this.bWidth=10;
 
-    
-
-    this.colors=["#bdc3c7", "#4aa3df"];
-    //grey silver, blue - peter river
+    this.colors=["#bdc3c7", "#4aa3df", "#2ecc71"];
+    //grey: silver, blue: peter river, emerald: green
 
     // constants
     this.padding = 10;
@@ -61,28 +61,50 @@ LineChart.prototype.editData = function(mouseX, mouseY){
 
     var bWidth=this.bWidth;
     var btns=this.lg_btns;
+    var touched=false;
 
-    for (var i = 0; i < btns.length; i++) {
+    for (var i=0; i<btns.length; i++) { //remove country
         
-        if(mouseX>=btns[i].x && mouseX<=btns[i].x+bWidth &&
-           mouseY>=btns[i].y && mouseY<=btns[i].y+bWidth){
+        if(mouseX>=btns[i].x && mouseX<=btns[i].x+bWidth && mouseY>=btns[i].y && mouseY<=btns[i].y+bWidth){
             
             btns[i].state = !btns[i].state;
-            // console.log(btns[i].state);
-            if(btns[i].state){
-                this.drawRectangle(this.context, btns[i], bWidth, this.colors[1]);
-            } else {
-                this.drawRectangle(this.context, btns[i], bWidth, this.colors[0]);
-            }
+
+            this.drawRectangle(this.context, btns[i], bWidth, this.colors[1]);            
 
             var txt=this.data[i].ctry+": "+this.data[i].arr;
             $("#selection p").text(txt);
 
             this.redrawLineChart();
 
+            touched=true;
             break;
-            
         } 
+    }
+
+    if(!touched){ //highlight country
+
+        var solos=this.solo_btns;
+
+        for (var i=0; i<solos.length; i++) {
+
+            if(mouseX>=solos[i].x && mouseX<=solos[i].x+bWidth && mouseY>=solos[i].y && mouseY<=solos[i].y+bWidth){
+
+                solos[i].state = !solos[i].state;
+
+                if(solos[i].state)this.numSolos++;
+                else this.numSolos--;
+
+                this.drawRectangle(this.context, solos[i], bWidth, this.colors[2]);
+
+                var txt=this.data[i].ctry+": "+this.data[i].arr;
+                $("#selection p").text(txt);
+
+                this.redrawLineChart();
+
+                break;
+
+            }
+        }
     }
 }
 LineChart.prototype.redrawLineChart = function(){
@@ -91,11 +113,31 @@ LineChart.prototype.redrawLineChart = function(){
     this.drawXAxis();
     this.drawYAxis();
 
+
+    // console.log('numSolos:', this.numSolos);
+    var alpha=1;
+    if(this.numSolos>0)alpha=.3;
+    else alpha=1;
+
+    this.context.globalAlpha=alpha;
+
     var data=this.data;
+    var btns=this.lg_btns;
+    var solos=this.solo_btns;
+
     for (var i = 0; i < data.length; i++) {
-        if(this.lg_btns[i].state)this.drawLine(data[i], this.colors[1], 1, false);
+        if(btns[i].state && !solos[i].state)this.drawLine(data[i], this.colors[1], 1, false);
     }
 
+    this.context.globalAlpha = 1;
+
+    if(this.numSolos>0){
+        for (var i = 0; i < data.length; i++) {
+            if(solos[i].state)this.drawLine(data[i], this.colors[2], 2, false);
+        }
+    }
+
+    
 }
 LineChart.prototype.getLongestValueWidth = function(){
 
@@ -187,6 +229,7 @@ LineChart.prototype.drawYAxis = function(){
 
 };
 LineChart.prototype.drawRectangle = function(ctx, btn, bWidth, color){
+    if(!btn.state)color=this.colors[0];
     ctx.strokeStyle = "black";
     ctx.strokeRect(btn.x, btn.y, bWidth, bWidth)
     ctx.fillStyle = color;
@@ -196,7 +239,7 @@ LineChart.prototype.drawLegend = function(){
 
     var arr = this.data;
     var ctx = this.context;
-    var xPos = 1235, yPos = 25;
+    var xPos = 1255, yPos = 25;
 
     ctx.font = this.font;
     ctx.fillStyle = "black";
@@ -207,19 +250,22 @@ LineChart.prototype.drawLegend = function(){
 
     for (var i=0; i<arr.length; i++) {
 
-        this.lg_btns.push({x:xPos-18, y:yPos-6, state:true});
+        this.lg_btns.push({x:xPos-38, y:yPos-6, state:true});
+        this.solo_btns.push({x:xPos-22, y:yPos-6, state:false});
         
         var btn = this.lg_btns[this.lg_btns.length-1];
-
         this.drawRectangle(ctx, btn, bWidth, this.colors[1]);
 
+        var solo = this.solo_btns[this.solo_btns.length-1];
+        this.drawRectangle(ctx, solo, bWidth, this.colors[2]);
+        
         ctx.fillStyle = "black";
         ctx.fillText(arr[i].ctry, xPos, yPos);
         
         yPos+=15;
         if(yPos>this.h-15){
             yPos = 20;
-            xPos += 185;
+            xPos += 205;
         }
     }
 }
