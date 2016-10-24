@@ -8,6 +8,7 @@ var years=[1, 1973, 1974, 1975, 1976, 1977, 1978, 1979,
 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009];
 var sl_years=[];
 var inBtwYears=[];
+var btnIdToEdit=-1;
 var menu;
 var colors=["#ecf0f1", "#2c3e50", "#e74c3c", "#f1c40f", "#bdc3c7", "#3498db"];
 //clouds grey, midnight blue - dark grey, red alizarin, yellow - sun flower, grey silver, blue - peter river
@@ -163,9 +164,6 @@ function updateSlData(){
             }
 
         }
-
-        // console.log(f_data.length, f_data);
-    	// console.log("new line graph");
         resetContext();
         generateLineGraph(f_data, minY, maxY);
     }
@@ -289,7 +287,7 @@ function selectData(evt){
 
             if(!init)getData();
             
-            if(i==0 && !menu[i].state){
+            if(i==0 && !menu[0].state){ //first btn
 
                 if(sl_years.length>0){
                     resetMenu();
@@ -304,12 +302,14 @@ function selectData(evt){
 
             } else if(!menu[i].state){ //not already activated
 
-            	menu[0].state = false;
+            	menu[0].state = false; //reset first btn
 
-                if(btn01.state){
+                if(btn01.state){ //red btn
 
                     if(sl_years.length==2) {
-                        removeFirstElement();
+
+                        editSlYearsArray();
+                    
                     } else if(sl_years.length<2){ //reset first btn + in between
                         menu[0].state=false;
                         resetInBetweenBtn(colors[0]);
@@ -333,10 +333,17 @@ function selectData(evt){
 
 	            break;
 
+	        } else if(menu[i].state && sl_years.length==2){
+	        	// console.log("already activated!");
+	        	ctx_nav.fillStyle=colors[4];
+           		ctx_nav.fillRect(menu[i].x, menu[i].y, bw, bh);
+           		btnIdToEdit = i;
+	        	// console.log(menu[i].id);
 	        }
         }
     }
 
+    // red btn
     if(mouseX>=btn01.x && mouseX<=btn01.x+bw && mouseY>=btn01.y && mouseY<=btn01.y+bh){
 
         btn01.state = !btn01.state;
@@ -363,12 +370,28 @@ function activateBtn(id){
     ctx_nav.fillStyle=colors[1];
     ctx_nav.fillRect(menu[id].x, menu[id].y, bw, bh);
 }
-function removeFirstElement(){
-    var y = sl_years.shift();
-    var id = years.indexOf(y);
-    menu[id].state=false;
-    ctx_nav.fillStyle=colors[0];
-    ctx_nav.fillRect(menu[id].x, menu[id].y, bw, bh);
+function editSlYearsArray(){
+
+	if(btnIdToEdit>-1){
+
+		// console.log(menu[btnIdToEdit].id, sl_years[0]);
+		if(menu[btnIdToEdit].id===sl_years[1]) sl_years.pop();
+		else sl_years.shift();
+
+		menu[btnIdToEdit].state=false;
+    	ctx_nav.fillStyle=colors[0];
+    	ctx_nav.fillRect(menu[btnIdToEdit].x, menu[btnIdToEdit].y, bw, bh);
+	    
+	    btnIdToEdit=-1;
+    
+    } else { //first behavior when year to edit has not been previously selected
+    	var y = sl_years.shift();
+		var id = years.indexOf(y);
+
+		menu[id].state=false;
+    	ctx_nav.fillStyle=colors[0];
+    	ctx_nav.fillRect(menu[id].x, menu[id].y, bw, bh);
+    }
 }
 function checkInBetweenBtn(){
 
