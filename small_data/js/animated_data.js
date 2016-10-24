@@ -171,12 +171,21 @@ function updateSlData(){
 }
 function generateLineGraph(data, minYear, maxYear){
 
+	var maxValue=0;
+
+	for (var j = 0; j < data.length; j++) {
+		var arr = data[j].arr;
+		for (var k = 0; k < arr.length; k++) {
+			if(arr[k]>maxValue)maxValue=arr[k];
+		}
+	}
+	// maxValue+=5;
+
     myLineChart = new LineChart({
         canvasId: "myCanvas",
-        minX: 0,
-        minY: 0,
+        minY: 0, //not used
         maxX: (maxYear-minYear)*5,
-        maxY: 100,
+        maxY: maxValue,
         unitsPerTickX: 5,
         unitsPerTickY: 10,
         minYear: minYear,
@@ -184,14 +193,8 @@ function generateLineGraph(data, minYear, maxYear){
     });
 
     for (var i = 0; i < data.length; i++) {
-
         var sum = data[i].arr.reduce(add, 0);
-        if(sum>0){
-            /*if(txt!="")txt+=" ";
-            txt += data[i].ctry + ' ' + data[i].arr;*/
-            myLineChart.drawLine(data[i], colors[5], 1);
-        }
-        
+        if(sum>0)myLineChart.drawLine(data[i], colors[5], 1, true);
     }
 
     var inf2="";
@@ -354,7 +357,7 @@ function selectData(evt){
         } else {
             ctx_nav.fillStyle=colors[0];
             ctx_nav.fillRect(btn01.x, btn01.y, bw, bh);
-            while(sl_years.length>1)removeFirstElement();
+            while(sl_years.length>1)editSlYearsArray();
             resetInBetweenBtn(colors[0]);
 
             // console.log("test");

@@ -5,12 +5,13 @@ function LineChart(config){
 
     // user defined properties
     this.canvas = document.getElementById(config.canvasId);
-    this.minX = config.minX;
     this.minY = config.minY;
     this.maxX = config.maxX;
     this.maxY = config.maxY;
     this.unitsPerTickX = config.unitsPerTickX;
     this.unitsPerTickY = config.unitsPerTickY;
+
+    this.data=[];
 
     this.minYear = config.minYear;
     this.maxYear = config.maxYear;
@@ -19,9 +20,9 @@ function LineChart(config){
     this.lg_btns=[];
     this.bWidth=10;
 
-    this.data=[];
+    
 
-    this.colors=["#bdc3c7", "#3498db"];
+    this.colors=["#bdc3c7", "#4aa3df"];
     //grey silver, blue - peter river
 
     // constants
@@ -46,17 +47,20 @@ function LineChart(config){
     this.scaleX = this.width / this.rangeX;
     this.scaleY = this.height / this.rangeY;
 
-    this.context.fillStyle = "#ecf0f1";
-    this.context.fillRect(0, 0, this.w, this.h);
-
+    
+    this.resetCanvas();
     this.drawXAxis();
     this.drawYAxis();
 
 }
+LineChart.prototype.resetCanvas = function(){
+    this.context.fillStyle = "#ecf0f1";
+    this.context.fillRect(0, 0, this.w, this.h);
+}
 LineChart.prototype.editData = function(mouseX, mouseY){
 
     var bWidth=this.bWidth;
-    var btns = this.lg_btns;
+    var btns=this.lg_btns;
 
     for (var i = 0; i < btns.length; i++) {
         
@@ -73,9 +77,25 @@ LineChart.prototype.editData = function(mouseX, mouseY){
 
             var txt=this.data[i].ctry+": "+this.data[i].arr;
             $("#selection p").text(txt);
+
+            this.redrawLineChart();
+
+            break;
             
         } 
     }
+}
+LineChart.prototype.redrawLineChart = function(){
+    
+    this.resetCanvas();
+    this.drawXAxis();
+    this.drawYAxis();
+
+    var data=this.data;
+    for (var i = 0; i < data.length; i++) {
+        if(this.lg_btns[i].state)this.drawLine(data[i], this.colors[1], 1, false);
+    }
+
 }
 LineChart.prototype.getLongestValueWidth = function(){
 
@@ -203,17 +223,16 @@ LineChart.prototype.drawLegend = function(){
         }
     }
 }
-LineChart.prototype.drawLine = function(obj, color, width){
+LineChart.prototype.drawLine = function(obj, color, strokeWidth, init){
 
-    this.data.push(obj);
+    if(init)this.data.push(obj);
 
-    // this.countries.push(obj.ctry);
     var arr = obj.arr;
 
     var ctx = this.context;
     ctx.save();
     this.transformContext();
-    ctx.lineWidth = width;
+    ctx.lineWidth = strokeWidth;
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
     ctx.beginPath();
