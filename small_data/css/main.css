@@ -7,6 +7,9 @@ body{
 a {
 	color: white
 }
+canvas{
+	float: left;
+}
 h1{
 	margin: 0;
 	padding: 0;
@@ -68,16 +71,23 @@ ul{
 #info p{
 	margin: 0;
 }
-#selection{
+#composers, #selection{
 	padding: 0 0 0 10px;
 	margin: 0;
-	background: orange; /*orange carrot*/
-	min-width: 200px;
-	max-width: 1200px;
-	word-wrap: break-word;
 	float: left;
+	clear: both;
+	min-width: 200px;
+	word-wrap: break-word;
+	max-width: 1190px; /*1200 - padding*/
+} 
+#composers{
+	background: #2ecc71; /*emerald green*/
+	
 }
-#selection p {
+#selection{
+	background: orange; /*orange carrot*/
+}
+#selection p, #composers p{
 	padding: 0;
 	margin: 0;
 }

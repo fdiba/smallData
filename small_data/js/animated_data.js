@@ -60,30 +60,31 @@ function resetContext(){
 
 function updateSlData(){
 
+    var inf0= "allData/4: " + allData.length/4;
+    $("#info p:eq(0)").text(inf0);
+
 	var tmpY = sl_years.concat(inBtwYears);
 
     if(sl_years.length==1 && !btn01.state){
 
         var f_data = [];
 
-        for (var i=0; i<allData.length-2; i+=3) {
+        for (var i=0; i<allData.length-3; i+=4) {
         
-            var arr = allData[i+2].split(",");
+            var arr = allData[i+3].split(",");
 
             for (var j=0; j<arr.length; j++) {
                 if(tmpY.includes(parseInt(arr[j]))){
-                    f_data.push({id: allData[i], ctry: allData[i+1], edition: allData[i+2]});
+                    f_data.push({id: allData[i], ctry: allData[i+1], cId: allData[i+2], edition: allData[i+3]});
                     break;
                 }
             }
         }
 
-        var inf0= "allData/3: " + allData.length/3;
-        $("#info p:eq(0)").text(inf0);
-        var inf1 = "slData: " + f_data.length;
+        
+        var inf1 = "composers: " + f_data.length;
         $("#info p:eq(1)").text(inf1);
 
-    	// console.log("new bar chart");
         resetContext();
     	generateBarChart(f_data);
 
@@ -100,15 +101,15 @@ function updateSlData(){
             maxY=Math.max(sl_years[0], sl_years[1]);
         }
 
-        for (var i=0; i<allData.length-2; i+=3) {
+        for (var i=0; i<allData.length-3; i+=4) {
 
             if(f_data.length<1){
                 
-                f_data.push({ctry: allData[i+1], arr: []});
+                f_data.push({ctry: allData[i+1], cId: allData[i+2], arr: []});
                 for (var j=0; j<=maxY-minY; j++)f_data[f_data.length-1].arr[j]=0;
 
                 //-------------
-                var t_years = allData[i+2].split(",").map(Number);
+                var t_years = getEditionsAsArrOfInts(allData[i+3]);
                 var year=minY;
 
                 while(year<maxY+1){
@@ -124,10 +125,10 @@ function updateSlData(){
 
                 for (var k=0; k<f_data.length; k++){
 
-                    if(f_data[k].ctry == allData[i+1]){ //same ctry
+                    if(f_data[k].cId === allData[i+2]){ //same country id
 
                         //------------- double
-                        var t_years = allData[i+2].split(",").map(Number);
+                        var t_years = getEditionsAsArrOfInts(allData[i+3]);
                         var year=minY;
 
                         while(year<maxY+1){  //f_data[k]
@@ -145,11 +146,11 @@ function updateSlData(){
 
                 if(!found){
                     //------------- same as one
-                    f_data.push({ctry: allData[i+1], arr: []});
+                    f_data.push({ctry: allData[i+1], cId: allData[i+2], arr: []});
                     for (var j=0; j<=maxY-minY; j++)f_data[f_data.length-1].arr[j]=0;
 
                     //-------------
-                    var t_years = allData[i+2].split(",").map(Number);
+                    var t_years = getEditionsAsArrOfInts(allData[i+3]);
                     var year=minY;
 
                     while(year<maxY+1){  //f_data[f_data.length-1]
@@ -164,10 +165,17 @@ function updateSlData(){
             }
 
         }
+
+        var inf1="no info";
+        $("#info p:eq(1)").text(inf1);
+
         resetContext();
         generateLineGraph(f_data, minY, maxY);
     }
 
+}
+function getEditionsAsArrOfInts(str){
+    return str.split(",").map(Number);
 }
 function generateLineGraph(data, minYear, maxYear){
 
@@ -342,11 +350,9 @@ function selectData(evt){
 	            break;
 
 	        } else if(menu[i].state && sl_years.length==2){
-	        	// console.log("already activated!");
 	        	ctx_nav.fillStyle=colors[4];
            		ctx_nav.fillRect(menu[i].x, menu[i].y, bw, bh);
            		btnIdToEdit = i;
-	        	// console.log(menu[i].id);
 	        }
         }
     }
@@ -365,7 +371,6 @@ function selectData(evt){
             while(sl_years.length>1)editSlYearsArray();
             resetInBetweenBtn(colors[0]);
 
-            // console.log("test");
             inBtwYears=[];
             updateSlData();
 
@@ -382,7 +387,6 @@ function editSlYearsArray(){
 
 	if(btnIdToEdit>-1){
 
-		// console.log(menu[btnIdToEdit].id, sl_years[0]);
 		if(menu[btnIdToEdit].id===sl_years[1]) sl_years.pop();
 		else sl_years.shift();
 
@@ -402,10 +406,6 @@ function editSlYearsArray(){
     }
 }
 function checkInBetweenBtn(){
-
-    // console.log(sl_years);
-
-    // if(btn01.state){
 
     ctx_nav.fillStyle=colors[2];
     ctx_nav.fillRect(btn01.x, btn01.y, bw, bh);
@@ -429,7 +429,6 @@ function checkInBetweenBtn(){
     var id1, id2;
     id1 = years.indexOf(pt1);
     id2 = years.indexOf(pt2);
-    // console.log(id1, id2);
 
     inBtwYears=[];
 
@@ -501,7 +500,7 @@ function getData(){
 
     	var txt = "<p>no selection</p>";
 
-    	var num = allData.length / 3;
+    	var num = allData.length / 4;
     	var txt2 = "allData: " + num;
 
         $("#selection").empty();

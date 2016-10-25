@@ -11,6 +11,8 @@ function LineChart(config){
     this.unitsPerTickX = config.unitsPerTickX;
     this.unitsPerTickY = config.unitsPerTickY;
 
+    this.cleared=true;
+
     this.data=[];
 
     this.minYear = config.minYear;
@@ -49,7 +51,6 @@ function LineChart(config){
     this.scaleX = this.width / this.rangeX;
     this.scaleY = this.height / this.rangeY;
 
-    
     this.resetCanvas();
     this.drawXAxis();
     this.drawYAxis();
@@ -87,12 +88,11 @@ LineChart.prototype.requestData = function(mouseX, mouseY){
         var ctry = this.data[cp.ctryId].ctry;
         var year = parseInt(cp.yearId) + this.minYear;
         var value = parseInt(this.data[cp.ctryId].arr[cp.yearId]);
+        var cId = parseInt(this.data[cp.ctryId].cId);
         
-        // console.log(ctry, year, value);
-
         $("#selection").empty();
         $("#selection").append('<p>');
-        var txt=ctry+" "+year+" "+value;
+        var txt=cId+" "+ctry+" "+year+" "+value;
         $("#selection p").text(txt);
 
         this.redrawLineChart();
@@ -104,9 +104,26 @@ LineChart.prototype.requestData = function(mouseX, mouseY){
         ctx.stroke();
         ctx.fill();
         ctx.closePath();
-    } else {
+
+        this.cleared=false; //one year selected
+
+        this.retrieveData(cId, year, value);
+
+    } else if(!this.cleared) {
         this.redrawLineChart();
+        this.cleared=true;
     }
+}
+LineChart.prototype.retrieveData = function(cId, year, value){
+    $.ajax({                                      
+        url: 'php/retrieve_data.php',       
+        type: "POST",
+        data: { cId: cId, year:year, value:value } 
+    }).done(function( msg ) {
+        $("#composers").empty();
+        $("#composers").append('<p>');
+        $("#composers p").text(msg);
+    });
 }
 LineChart.prototype.editData = function(mouseX, mouseY){
 
@@ -162,7 +179,7 @@ LineChart.prototype.editData = function(mouseX, mouseY){
         $("#selection").empty();
         for (var i=0; i<arr.length; i++) {
             if(arr[i].state){
-                var txt='<p>'+this.data[i].arr+" - "+this.data[i].ctry+'</p>';
+                var txt='<p>'+this.data[i].arr+" - "+this.data[i].ctry+" ID "+this.data[i].cId+'</p>';
                 $("#selection").append(txt);
             }
         }
