@@ -81,7 +81,6 @@ function updateSlData(){
             }
         }
 
-        
         var inf1 = "composers: " + f_data.length;
         $("#info p:eq(1)").text(inf1);
 
@@ -116,9 +115,7 @@ function updateSlData(){
                     if(t_years.includes(year))f_data[0].arr[year-minY]+=1;
                     year++;
                 }
-                //------------
-
-                
+                //------------                
             } else {
 
                 var found = false;
@@ -140,8 +137,6 @@ function updateSlData(){
                         found = true;
                         break;
                     }
-
-
                 }
 
                 if(!found){
@@ -158,12 +153,8 @@ function updateSlData(){
                         year++;
                     }
                     //------------
-
                 }
-
-
             }
-
         }
 
         var inf1="no info";
@@ -172,7 +163,6 @@ function updateSlData(){
         resetContext();
         generateLineGraph(f_data, minY, maxY);
     }
-
 }
 function getEditionsAsArrOfInts(str){
     return str.split(",").map(Number);
@@ -245,9 +235,7 @@ function generateBarChart(data){
 					break; 
 				}
 			}
-
 			if(!added)arr.push({label: ctry, value: 1});
-
 		}
 	}
 
@@ -274,8 +262,7 @@ function generateBarChart(data){
 
     var bWidth = map(arr.length, 30, 10, 20, 40)
 
-	new BarChart({canvasId: "myCanvas", data: arr, barWidth: bWidth, minValue: 0, maxValue: max+1, gridLineIncrement: increment
-	});
+	new BarChart({canvasId: "myCanvas", data: arr, barWidth: bWidth, minValue: 0, maxValue: max+1, gridLineIncrement: increment});
 }
 //---------------------------------------//
 function editData(evt){

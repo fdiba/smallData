@@ -13,8 +13,7 @@
 
 		require("../access/connexion.php");
 
-		$sth = $dbh->query('SELECT artist.id AS \'a_id\', artist.firstName, artist.name,
-								country.c_name AS \'c_name\'
+		$sth = $dbh->query('SELECT artist.id AS \'a_id\', artist.firstName, artist.name
 							FROM artist
 							INNER JOIN country
 							ON artist.id_country = country.id
@@ -26,7 +25,7 @@
 	
 		while($row = $sth->fetch()) {
 			if(strlen($str_all)>0) $str_all .=  "%";
-			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'] . "%". $row['c_name'];
+			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'];
 		}
 
 

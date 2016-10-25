@@ -14,6 +14,7 @@ function LineChart(config){
     this.cleared=true;
 
     this.data=[];
+    this.composers=[];
 
     this.minYear = config.minYear;
     this.maxYear = config.maxYear;
@@ -119,10 +120,21 @@ LineChart.prototype.retrieveData = function(cId, year, value){
         url: 'php/retrieve_data.php',       
         type: "POST",
         data: { cId: cId, year:year, value:value } 
-    }).done(function( msg ) {
+    }).done(function(str) {
+
+        var arr=str.split("%");
+        this.composers=[];
         $("#composers").empty();
-        $("#composers").append('<p>');
-        $("#composers p").text(msg);
+
+        for (var i=0; i<arr.length-2; i+=3) {
+            this.composers.push({id:arr[i], fn:arr[i+1], n:arr[i+2]});
+            var div='<li>'+arr[i]+" "+arr[i+1]+" "+arr[i+2]+'</li>';
+            $("#composers").append(div);
+
+            $("#composers li:last-child").click(function(event) {
+                console.log($(event.target).text());
+            });
+        }
     });
 }
 LineChart.prototype.editData = function(mouseX, mouseY){
