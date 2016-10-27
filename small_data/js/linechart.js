@@ -14,7 +14,6 @@ function LineChart(config){
     this.cleared=true;
 
     this.data=[];
-    this.composers=[];
 
     this.minYear = config.minYear;
     this.maxYear = config.maxYear;
@@ -52,6 +51,8 @@ function LineChart(config){
     this.scaleX = this.width / this.rangeX;
     this.scaleY = this.height / this.rangeY;
 
+    this.sl_ctry="";
+
     this.resetCanvas();
     this.drawXAxis();
     this.drawYAxis();
@@ -86,15 +87,11 @@ LineChart.prototype.requestData = function(mouseX, mouseY){
 
     if(cp.value<20){
 
-        var ctry = this.data[cp.ctryId].ctry;
+        this.sl_ctry = this.data[cp.ctryId].ctry;
+
         var year = parseInt(cp.yearId) + this.minYear;
         var value = parseInt(this.data[cp.ctryId].arr[cp.yearId]);
         var cId = parseInt(this.data[cp.ctryId].cId);
-        
-        $("#selection").empty();
-        $("#selection").append('<p>');
-        var txt=cId+" "+ctry+" "+year+" "+value;
-        $("#selection p").text(txt);
 
         this.redrawLineChart();
 
@@ -115,7 +112,16 @@ LineChart.prototype.requestData = function(mouseX, mouseY){
         this.cleared=true;
     }
 }
+LineChart.prototype.getTotalNumberComposersByCountry = function(cId){
+    var value=0;
+    var arr=this.data[cId].arr; 
+    for (var i=0; i<arr.length; i++) value+=arr[i];
+    return value;
+}
 LineChart.prototype.retrieveData = function(cId, year, value){
+
+    var sl_ctry=this.sl_ctry;
+    
     $.ajax({                                      
         url: 'php/retrieve_data.php',       
         type: "POST",
@@ -123,18 +129,17 @@ LineChart.prototype.retrieveData = function(cId, year, value){
     }).done(function(str) {
 
         var arr=str.split("%");
-        this.composers=[];
-        $("#composers").empty();
+        composers=[];
 
-        for (var i=0; i<arr.length-2; i+=3) {
-            this.composers.push({id:arr[i], fn:arr[i+1], n:arr[i+2]});
-            var div='<li>'+arr[i]+" "+arr[i+1]+" "+arr[i+2]+'</li>';
-            $("#composers").append(div);
-
-            $("#composers li:last-child").click(function(event) {
-                console.log($(event.target).text());
-            });
+        for (var i=0; i<arr.length-3; i+=4) {
+            composers.push({id:arr[i], fn:arr[i+1], n:arr[i+2], y:arr[i+3]});
         }
+
+        var txt=sl_ctry+" "+year+" "+value+"/"+composers.length+" | display only selection: "+yearSelection;        
+        editTitleInfo(txt)
+
+        displayCpInfos();
+
     });
 }
 LineChart.prototype.editData = function(mouseX, mouseY){

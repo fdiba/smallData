@@ -17,6 +17,10 @@ h1{
 ul{
 	list-style: none;
 }
+.selected{
+	color: white;
+	/*font-weight: bold;*/
+}
 .b_on{
 	background: #1abc9c; /*green emerald*/
 }
@@ -72,13 +76,13 @@ ul{
 	margin: 0;
 }
 #composers, #selection{
-	padding: 0 0 0 10px;
+	padding: 0 10px 0 10px;
 	margin: 0;
 	float: left;
 	clear: both;
 	min-width: 200px;
 	word-wrap: break-word;
-	max-width: 1190px; /*1200 - padding*/
+	max-width: 1180px; /*1200 - padding*/
 } 
 #composers{
 	background: #2ecc71; /*emerald green*/
@@ -87,6 +91,9 @@ ul{
     -moz-column-count: 5; /* Firefox */
     column-count: 5;
 	
+	padding-top: 10px;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
 }
 #selection{
 	background: orange; /*orange carrot*/

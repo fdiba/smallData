@@ -13,21 +13,24 @@
 
 		require("../access/connexion.php");
 
-		$sth = $dbh->query('SELECT artist.id AS \'a_id\', artist.firstName, artist.name
+		$ed_XXXX="ed_".$y;
+
+		$sth = $dbh->query('SELECT artist.id AS a_id, artist.firstName, artist.name, ' . $ed_XXXX . ' 
 							FROM artist
 							INNER JOIN country
 							ON artist.id_country = country.id
+							INNER JOIN edition
+							ON artist.id = edition.artist_id
 							WHERE country.id =' . $cId);
 
-	$sth->setFetchMode(PDO::FETCH_ASSOC);
+		$sth->setFetchMode(PDO::FETCH_ASSOC);
 
-	$str_all = "";
+		$str_all = "";
 	
 		while($row = $sth->fetch()) {
 			if(strlen($str_all)>0) $str_all .=  "%";
-			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'];
+			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . $row[$ed_XXXX];
 		}
-
 
 		echo $str_all;
 	}

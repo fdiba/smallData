@@ -16,6 +16,8 @@ var bw=15, bh=15;
 var btn01;
 
 var myLineChart;
+var composers=[];
+var yearSelection=false;
 
 window.onload = function() {
 
@@ -42,6 +44,7 @@ window.onload = function() {
     document.getElementById('cv_nav').addEventListener("click", selectData);
     document.getElementById('myCanvas').addEventListener("click", editData);
 	document.getElementById('get_all').addEventListener("click", getData);
+	document.getElementById('selection').addEventListener("click", toggleYearSl);
 
 	// canvas.width = $(document).width()-25; //context left pad = 10;
 	canvas.width = 1640;
@@ -53,11 +56,63 @@ window.onload = function() {
     getData();
 };
 //----------------- functions -----------------//
+function toggleYearSl(){
+	if(composers.length>0){
+		
+		yearSelection=!yearSelection;
+		var str = $("#selection p").html();
+		var i = str.indexOf("true"); 
+		if(i<0) str = str.replace("false", "true");
+		else  str = str.replace("true", "false");
+		editTitleInfo(str);
+
+		displayCpInfos();
+	}
+}
+function editTitleInfo(txt){
+	$("#selection").empty();
+    $("#selection").append('<p>');
+    $("#selection p").text(txt);
+}
+function displayCpInfos(){
+
+	$("#composers").empty();
+
+    if(yearSelection){
+
+        for (var j=0; j<composers.length; j++) {
+            var obj=composers[j];
+
+            if(obj.y>0){
+                var div='<li>'+obj.fn+" "+obj.n+'</li>';
+                $("#composers").append(div);
+
+                $("#composers li:last-child").click(function(event) {
+                    console.log($(event.target).text());
+                });
+            }
+        }
+    } else {
+
+        for (var j=0; j<composers.length; j++) {
+            var obj=composers[j];
+            var div="";
+            if(obj.y>0) div='<li class="selected">'+obj.fn+" "+obj.n+'</li>';
+            else div='<li>'+obj.fn+" "+obj.n+'</li>';
+            $("#composers").append(div);
+
+            $("#composers li:last-child").click(function(event) {
+                console.log($(event.target).text());
+            });
+        }
+    }
+
+}
+//---------------------------------------------//
 function resetContext(){
     context.fillStyle=colors[4]; //4 || 0
     context.fillRect(0, 0, canvas.width, canvas.height);
 }
-
 function updateSlData(){
 
     var inf0= "allData/4: " + allData.length/4;
