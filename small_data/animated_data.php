@@ -13,9 +13,9 @@
 	<div id="content">
 	<div id="info">
 		<h1 id="main">Animated data</h1>
-		<p>no info</p>
-		<p>no info</p>
-		<p>no info</p>
+		<p></p>
+		<p></p>
+		<p></p>
 	</div>
 	<div id="launcher">
 		<div class="b_off" id="get_all">get data</div>
@@ -32,7 +32,10 @@
         Votre navigateur ne supporte pas les canvas.
     </canvas>
     <div id="selection"><p>no selection</p></div>
+    <ul id="composers"></ul>
+    <ul id="titles"></ul>
     </div>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </body>
 </html>

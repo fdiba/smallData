@@ -21,6 +21,10 @@ h1{
 ul{
 	list-style: none;
 }
+.active{
+	text-decoration: underline;
+	color: black;
+}
 .selected{
 	color: white;
 	/*font-weight: bold;*/
@@ -91,6 +95,7 @@ ul{
 	padding-top: 10px;
 	padding-bottom: 5px;
 
+	width: 420px;
 	color: white;
 	background: #9b59b6; /*violet amethyst*/
 }
@@ -112,6 +117,8 @@ ul{
 	
 	padding-top: 10px;
 	padding-bottom: 5px;
+
+	color: #16a085;
 	/*margin-bottom: 5px;*/
 }
 #selection{

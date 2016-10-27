@@ -21,6 +21,8 @@ var composers=[], titles=[];
 var yearSelection=false;
 var lastComposerSelected="";
 
+var numTitlesByArtist=[];
+
 window.onload = function() {
 
 	//------------ canvas ------------//
@@ -77,6 +79,8 @@ function editTitleInfo(txt){
 }
 function retrieveAllTitleFrom(aId){
 
+    // console.log(numTitlesByArtist[aId]);
+
     $.ajax({                                      
         url: 'php/retrieve_data.php',       
         type: "POST",
@@ -90,7 +94,7 @@ function retrieveAllTitleFrom(aId){
             titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
         }
 
-        // console.log(titles.length);
+        console.log(titles.length);
         displayTitlesInfos();
 
     });
@@ -116,10 +120,17 @@ function displayCpInfos(){
 	$("#composers").empty();
 
     for (var j=0; j<composers.length; j++) {
+
         var obj=composers[j];
 
+        // console.log(numTitlesByArtist[aId]);
+
         if(obj.y>0){ //selected year
-            var div='<li class="selected">'+obj.fn+" "+obj.n+'</li>';
+            var div='<li';
+
+            if(numTitlesByArtist[obj.id]>0)div+= ' class="active selected">'+obj.fn+" "+obj.n+'</li>';
+            else div +=' class="selected">'+obj.fn+" "+obj.n+'</li>';
+
             $("#composers").append(div);
 
             $("#composers li:last-child").attr("data-id", obj.id);
@@ -130,7 +141,11 @@ function displayCpInfos(){
             });
         } else if(!yearSelection){
 
-            var div='<li>'+obj.fn+" "+obj.n+'</li>';
+            var div='<li';
+
+            if(numTitlesByArtist[obj.id]>0)div+= ' class="active" ';
+
+            div +='>'+obj.fn+" "+obj.n+'</li>';
             $("#composers").append(div);
 
             $("#composers li:last-child").attr("data-id", obj.id);
@@ -150,7 +165,7 @@ function resetContext(){
 }
 function updateSlData(){
 
-    var inf0= "allData/4: " + allData.length/4;
+    var inf0= "allData/5: " + allData.length/5;
     $("#info p:eq(0)").text(inf0);
 
 	var tmpY = sl_years.concat(inBtwYears);
@@ -159,13 +174,13 @@ function updateSlData(){
 
         var f_data = [];
 
-        for (var i=0; i<allData.length-3; i+=4) {
+        for (var i=0; i<allData.length-4; i+=5) {
         
-            var arr = allData[i+3].split(",");
+            var arr = allData[i+4].split(",");
 
             for (var j=0; j<arr.length; j++) {
                 if(tmpY.includes(parseInt(arr[j]))){
-                    f_data.push({id: allData[i], ctry: allData[i+1], cId: allData[i+2], edition: allData[i+3]});
+                    f_data.push({id: allData[i], ctry: allData[i+1], cId: allData[i+2], edition: allData[i+4]});
                     break;
                 }
             }
@@ -190,7 +205,7 @@ function updateSlData(){
             maxY=Math.max(sl_years[0], sl_years[1]);
         }
 
-        for (var i=0; i<allData.length-3; i+=4) {
+        for (var i=0; i<allData.length-4; i+=5) {
 
             if(f_data.length<1){
                 
@@ -198,7 +213,7 @@ function updateSlData(){
                 for (var j=0; j<=maxY-minY; j++)f_data[f_data.length-1].arr[j]=0;
 
                 //-------------
-                var t_years = getEditionsAsArrOfInts(allData[i+3]);
+                var t_years = getEditionsAsArrOfInts(allData[i+4]);
                 var year=minY;
 
                 while(year<maxY+1){
@@ -215,7 +230,7 @@ function updateSlData(){
                     if(f_data[k].cId === allData[i+2]){ //same country id
 
                         //------------- double
-                        var t_years = getEditionsAsArrOfInts(allData[i+3]);
+                        var t_years = getEditionsAsArrOfInts(allData[i+4]);
                         var year=minY;
 
                         while(year<maxY+1){  //f_data[k]
@@ -235,7 +250,7 @@ function updateSlData(){
                     for (var j=0; j<=maxY-minY; j++)f_data[f_data.length-1].arr[j]=0;
 
                     //-------------
-                    var t_years = getEditionsAsArrOfInts(allData[i+3]);
+                    var t_years = getEditionsAsArrOfInts(allData[i+4]);
                     var year=minY;
 
                     while(year<maxY+1){  //f_data[f_data.length-1]
@@ -574,9 +589,16 @@ function getData(){
 
     	allData = str.split("%");
 
+
+        for (var i=0; i<allData.length-4; i+=5) {
+            var id = allData[i];
+            var numTitles = allData[i+3];
+            numTitlesByArtist[id]=numTitles;
+        }
+
     	var txt = "<p>no selection</p>";
 
-    	var num = allData.length / 4;
+    	var num = allData.length / 5;
     	var txt2 = "allData: " + num;
 
         $("#selection").empty();
