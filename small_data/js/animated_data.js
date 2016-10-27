@@ -16,8 +16,10 @@ var bw=15, bh=15;
 var btn01;
 
 var myLineChart;
-var composers=[];
+
+var composers=[], titles=[];
 var yearSelection=false;
+var lastComposerSelected="";
 
 window.onload = function() {
 
@@ -70,43 +72,76 @@ function toggleYearSl(){
 	}
 }
 function editTitleInfo(txt){
-	$("#selection").empty();
-    $("#selection").append('<p>');
+	$("#selection").empty().append('<p>');
     $("#selection p").text(txt);
+}
+function retrieveAllTitleFrom(aId){
+
+    $.ajax({                                      
+        url: 'php/retrieve_data.php',       
+        type: "POST",
+        data: { aId: aId, case:1 } 
+    }).done(function(str) {
+
+        var arr=str.split("%");
+        titles=[];
+
+        for (var i=0; i<arr.length-4; i+=5) {
+            titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
+        }
+
+        // console.log(titles.length);
+        displayTitlesInfos();
+
+    });
+
+}
+function displayTitlesInfos(){
+    var str = '<em>'+lastComposerSelected+'</em>';
+    $("#titles").empty().append(str);
+    if(titles.length>0){
+        for (var i=0; i<titles.length; i++) {
+            var obj=titles[i];
+            var div='<li>'+obj.t+" "+obj.d+" "+obj.m+" "+obj.ed+'</li>';
+            $("#titles").append(div);
+        }
+    } else {
+        var div='<li>no title</li>';
+        $("#titles").append(div);
+    }
+
 }
 function displayCpInfos(){
 
 	$("#composers").empty();
 
-    if(yearSelection){
+    for (var j=0; j<composers.length; j++) {
+        var obj=composers[j];
 
-        for (var j=0; j<composers.length; j++) {
-            var obj=composers[j];
-
-            if(obj.y>0){
-                var div='<li>'+obj.fn+" "+obj.n+'</li>';
-                $("#composers").append(div);
-
-                $("#composers li:last-child").click(function(event) {
-                    console.log($(event.target).text());
-                });
-            }
-        }
-    } else {
-
-        for (var j=0; j<composers.length; j++) {
-            var obj=composers[j];
-            var div="";
-            if(obj.y>0) div='<li class="selected">'+obj.fn+" "+obj.n+'</li>';
-            else div='<li>'+obj.fn+" "+obj.n+'</li>';
+        if(obj.y>0){ //selected year
+            var div='<li class="selected">'+obj.fn+" "+obj.n+'</li>';
             $("#composers").append(div);
 
+            $("#composers li:last-child").attr("data-id", obj.id);
+
             $("#composers li:last-child").click(function(event) {
-                console.log($(event.target).text());
+                retrieveAllTitleFrom($(event.target).data("id"));
+                lastComposerSelected=$(event.target).text();
             });
+        } else if(!yearSelection){
+
+            var div='<li>'+obj.fn+" "+obj.n+'</li>';
+            $("#composers").append(div);
+
+            $("#composers li:last-child").attr("data-id", obj.id);
+
+            $("#composers li:last-child").click(function(event) {
+                retrieveAllTitleFrom($(event.target).data("id"));
+                lastComposerSelected=$(event.target).text();
+            });
+
         }
     }
-
 }
 //---------------------------------------------//
 function resetContext(){
@@ -232,7 +267,6 @@ function generateLineGraph(data, minYear, maxYear){
 			if(arr[k]>maxValue)maxValue=arr[k];
 		}
 	}
-	// maxValue+=5;
 
     myLineChart = new LineChart({
         canvasId: "myCanvas",

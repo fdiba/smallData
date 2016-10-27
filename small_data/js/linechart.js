@@ -112,12 +112,6 @@ LineChart.prototype.requestData = function(mouseX, mouseY){
         this.cleared=true;
     }
 }
-LineChart.prototype.getTotalNumberComposersByCountry = function(cId){
-    var value=0;
-    var arr=this.data[cId].arr; 
-    for (var i=0; i<arr.length; i++) value+=arr[i];
-    return value;
-}
 LineChart.prototype.retrieveData = function(cId, year, value){
 
     var sl_ctry=this.sl_ctry;
@@ -125,7 +119,7 @@ LineChart.prototype.retrieveData = function(cId, year, value){
     $.ajax({                                      
         url: 'php/retrieve_data.php',       
         type: "POST",
-        data: { cId: cId, year:year, value:value } 
+        data: { cId: cId, year:year, value:value, case:0 } 
     }).done(function(str) {
 
         var arr=str.split("%");
@@ -137,7 +131,6 @@ LineChart.prototype.retrieveData = function(cId, year, value){
 
         var txt=sl_ctry+" "+year+" "+value+"/"+composers.length+" | display only selection: "+yearSelection;        
         editTitleInfo(txt)
-
         displayCpInfos();
 
     });
@@ -187,11 +180,13 @@ LineChart.prototype.editData = function(mouseX, mouseY){
 
 
     //display infos
-    if(touched){
+    if(touched && this.numSolos>0){
         
-        var arr;
+        /*var arr;
         if(this.numSolos>0)arr=solos;
-        else arr=btns;
+        else arr=btns;*/
+
+        var arr=solos;
 
         $("#selection").empty();
         for (var i=0; i<arr.length; i++) {
@@ -200,6 +195,8 @@ LineChart.prototype.editData = function(mouseX, mouseY){
                 $("#selection").append(txt);
             }
         }
+    } else if(touched){
+        $("#selection p").text("no selection");
     }
 }
 LineChart.prototype.redrawLineChart = function(){

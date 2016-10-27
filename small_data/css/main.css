@@ -10,6 +10,10 @@ a {
 canvas{
 	float: left;
 }
+em{
+	font-weight: bold;
+	font-style: italic;
+}
 h1{
 	margin: 0;
 	padding: 0;
@@ -75,6 +79,21 @@ ul{
 #info p{
 	margin: 0;
 }
+#titles{
+
+	padding: 0 10px 0 10px;
+	margin: 0;
+	float: left;
+	/*clear: both;*/
+	min-width: 200px;
+	word-wrap: break-word;
+
+	padding-top: 10px;
+	padding-bottom: 5px;
+
+	color: white;
+	background: #9b59b6; /*violet amethyst*/
+}
 #composers, #selection{
 	padding: 0 10px 0 10px;
 	margin: 0;
@@ -93,7 +112,7 @@ ul{
 	
 	padding-top: 10px;
 	padding-bottom: 5px;
-	margin-bottom: 5px;
+	/*margin-bottom: 5px;*/
 }
 #selection{
 	background: orange; /*orange carrot*/
