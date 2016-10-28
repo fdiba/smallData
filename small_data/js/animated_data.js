@@ -94,7 +94,7 @@ function retrieveAllTitleFrom(aId){
             titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
         }
 
-        console.log(titles.length);
+        // console.log(titles.length);
         displayTitlesInfos();
 
     });
@@ -583,8 +583,9 @@ function getData(){
 	$("#get_all").toggleClass('b_off b_on');
 
 	$.ajax({                                      
-        url: 'php/animated_data.php',       
-        type: "POST"
+        url: 'php/retrieve_data.php',       
+        type: "POST",
+        data: {case:10} 
     }).done(function(str) {
 
     	allData = str.split("%");
