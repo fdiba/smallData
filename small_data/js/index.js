@@ -10,6 +10,7 @@ var xRightOffset;
 
 var nAId;
 var avg_sat, max_sat, min_sat;
+var avg_lum=50, max_lum=90, min_lum=20;
 
 var tNoise;
 
@@ -24,8 +25,7 @@ var rWidth, rHeight;
 var xLeftOffset;
 var pAId;
 
-
-var color1; //color grey silver
+var colors=[{h:203, s:4, l:77}]; //#bdc3c7 grey silver
 
 ///------
 var isAnimated;
@@ -36,16 +36,13 @@ window.onload = function() {
 	//------------ navigation ------------//
 
 	isAnimated = false;
-	color1 = "#bdc3c7";
 	max_sat = 50;
 	avg_sat = max_sat;
 	min_sat = 0;
-	tNoise = 0;
+	tNoise = 0;    
 
-	//------------ canvas ------------//
     canvas = document.getElementById('myCanvas');
     context = canvas.getContext('2d');
-    //----------------------------------//
 
     document.getElementById('get_all').addEventListener("click", getData);
 
@@ -68,11 +65,9 @@ window.onload = function() {
     getData();
 
 }
-
 function drawRect(x, y, c){
     context.fillStyle=c;
     context.fillRect(x, y, rWidth, rHeight); 
-    context.stroke();
 }
 function animation1(evt){
 	if(isAnimated){
@@ -89,7 +84,7 @@ function resetSaturation(sat){
 
 	for(var i=0; i<rectangles.length; i++){
 		
-		if(rectangles[i].color != color1 && rectangles[i].id != nAId){
+		if(!rectangles[i].anchor && rectangles[i].id != nAId){
 
 			var str = rectangles[i].color;
 
@@ -97,10 +92,14 @@ function resetSaturation(sat){
 			var pos1 = str.indexOf("%");
 			
 			var c = str.substring(0, pos0);
-			c += " " + sat + "%, 50%)";
+
+            var lum;
+            if(rectangles[i].count>0)lum=avg_lum;
+            else lum=max_lum;
+
+			c += sat+'%,'+lum+'%)';
 
 			rectangles[i].color = c;
-			// console.log(c);
 
 			drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
 		}
@@ -110,7 +109,7 @@ function noiseAnimation(){
 
 	for(var i=0; i<rectangles.length; i++){
 
-		if(rectangles[i].color != color1 && rectangles[i].id != nAId){
+		if(!rectangles[i].anchor && rectangles[i].id != nAId){
 
 			var value = Math.abs(noise.perlin2((rectangles[i].x+tNoise) / 1000, (rectangles[i].y+tNoise) / 1000));
     		value *= 100;
@@ -126,7 +125,10 @@ function noiseAnimation(){
 			var sat = (avg_sat + value)%101;
 			
 			var c = str.substring(0, pos0);
-			c += " " + sat + "%, 50%)";
+
+            var lum=avg_lum;
+
+			c += sat+'%,'+lum+'%)';
 
 			rectangles[i].color = c;
 			// console.log(c);
@@ -146,8 +148,18 @@ function calculateMinHeight(){
         var id = allData[i];
         var editions = allData[i+4].split(",");
 
+        var ctry=allData[i+1];
+        // var cId=allData[i+2];
+        var count=allData[i+3];
+
+
         //------- main rectangle ---------//
-        createNewRectangle(id, color1);
+        var lum;
+        if(count>0) lum=colors[0].l;
+        else lum=max_lum;
+
+        var color='hsl('+colors[0].h+','+colors[0].s+'%,'+lum+'%)';
+        createNewRectangle(id, color, count, true);
 
         //------- editions ---------//
         if(editions.length>0){
@@ -159,9 +171,12 @@ function calculateMinHeight(){
                 var numEdition = editions[j] - 1973;
                 numEdition *= coef; //0=>255 not 360
 
-                var c = 'hsl('+ numEdition +', ' + avg_sat + '%, 50%)';
+                var lum;
+                if(count>0) lum=avg_lum;
+                else lum=max_lum;
 
-                createNewRectangle(id, c);
+                var c='hsl('+numEdition+','+avg_sat+'%,'+lum+'%)';
+                createNewRectangle(id, c, count, false);
             }
 
         } else {
@@ -169,7 +184,7 @@ function calculateMinHeight(){
         }
     }
 }
-function createNewRectangle(r_id, c){
+function createNewRectangle(aId, c, count, anchor){
 
     if( xPos > canvas.width-xRightOffset){
         xPos = xLeftOffset;
@@ -178,7 +193,7 @@ function createNewRectangle(r_id, c){
 
     if(yPos+yDist>minHeight) minHeight+=yDist;
 
-    rectangles.push({id:r_id, x: xPos, y:yPos, color:c});
+    rectangles.push({id:aId, x: xPos, y:yPos, color:c, count:count, anchor:anchor});
     xPos += xDist;
 
 }
@@ -196,7 +211,7 @@ function processAllRectWhithId(artist_id){
                 var pos0 = str.indexOf(",")+1;
 
                 str = str.substring(0, pos0);
-                str += " 100%, 50%)";
+                str += "100%,50%)";
 
                 // console.log(rectangles[i].color, str);
 
@@ -316,8 +331,12 @@ function getData(){
         data: {case:10} 
     }).done(function(str) {
 
+        // console.log(str);
+
         allData = str.split("%");
 
+        //TO DEBUG AND CATCH ERROR
+        console.log(allData[0]);
 
         for (var i=0; i<allData.length-4; i+=5) {
             var id = allData[i];
