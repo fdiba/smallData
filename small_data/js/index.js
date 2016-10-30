@@ -44,6 +44,19 @@ window.onload = function() {
     canvas = document.getElementById('myCanvas');
     context = canvas.getContext('2d');
 
+ 
+ 
+    //----------------------------------//
+
+
+    var cv_sma = document.getElementById('sma');
+    ctx_sma = cv_sma.getContext('2d');
+
+    ctx_sma.fillStyle="red";
+    ctx_sma.fillRect(0, 0, cv_sma.width, cv_sma.height);
+
+    //----------------------------------//
+
     document.getElementById('get_all').addEventListener("click", getData);
 
 

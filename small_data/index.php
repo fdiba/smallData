@@ -29,6 +29,8 @@
     </canvas>
     <div id="selection"><p>no selection</p></div>
     <ul id="titles"></ul>
+    <canvas id="sma" width="250" height="250">
+    </canvas>
  	</div>
          <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </body>
