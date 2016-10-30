@@ -1,3 +1,4 @@
+var english=true;
 var init=false;
 var allData;
 var canvas, context;
@@ -590,9 +591,9 @@ function getData(){
 
     	allData = str.split("%");
 
-
         for (var i=0; i<allData.length-4; i+=5) {
             var id = allData[i];
+            if(english)allData[i+1]=checkCountry(allData[i+1]);
             var numTitles = allData[i+3];
             numTitlesByArtist[id]=numTitles;
         }
@@ -613,4 +614,72 @@ function getData(){
         updateSlData();
 
     });
+}
+function checkCountry(ctry){
+	switch(ctry){
+		case "Autriche":
+			return "Austria";
+		case "Brésil":
+			return "Brazil";
+		case "Pays-Bas":
+			return "Netherlands";
+		case "Slovaquie":
+			return "Slovakia";
+		case "Belgique":
+			return "Belgium";
+		case "Italie":
+			return "Italy";
+		case "Suède":
+			return "Sweden";
+		case "Allemagne":
+			return "Germany";
+		case "Pologne":
+			return "Poland";
+		case "Royaume-Uni":
+			return "United Kingdom";
+		case "Finlande":
+			return "Finland";
+		case "République tchèque":
+			return "Czech Republic";
+		case "Turquie":
+			return "Turkey";
+		case "Argentine":
+			return "Argentina";
+		case "Roumanie":
+			return "Romania";
+		case "Hongrie":
+			return "Hungary";
+		case "Chili":
+			return "Chile";
+		case "Serbie":
+			return "Serbia";
+		case "Japon":
+			return "Japan";
+		case "Espagne":
+			return "Spain";
+		case "Nouvelle-Zélande":
+			return "New Zealand";
+		case "Colombie":
+			return "Colombia";
+		case "Suisse":
+			return "Swiss";
+		case "Danemark":
+			return "Denmark";
+		case "Ecosse":
+			return "Scotland";
+		case "Slovénie":
+			return "Slovenia";
+		case "Bosnie-Herzégovine":
+			return "Bosnia and Herzegovina";
+		case "Malte":
+			return "Malta";
+		case "Hollande":
+			return "Holland";
+		case "Israël":
+			return "Israel";
+		case "Islande":
+			return "Iceland";
+		default:
+			return ctry;
+	}
 }

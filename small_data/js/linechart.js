@@ -353,6 +353,7 @@ LineChart.prototype.drawLegend = function(){
         this.drawRectangle(ctx, solo, bWidth, this.colors[2]);
         
         ctx.fillStyle = "black";
+
         ctx.fillText(arr[i].ctry, xPos, yPos);
         
         yPos+=15;
