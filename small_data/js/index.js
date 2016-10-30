@@ -43,16 +43,14 @@ window.onload = function() {
 
     canvas = document.getElementById('myCanvas');
     context = canvas.getContext('2d');
-
- 
  
     //----------------------------------//
 
-
     var cv_sma = document.getElementById('sma');
+    cv_sma.width=350;
     ctx_sma = cv_sma.getContext('2d');
 
-    ctx_sma.fillStyle="red";
+    ctx_sma.fillStyle="grey";
     ctx_sma.fillRect(0, 0, cv_sma.width, cv_sma.height);
 
     //----------------------------------//
@@ -67,7 +65,7 @@ window.onload = function() {
 
     resetPositions();
 
-    canvas.width = $(document).width()-25; //context left pad = 10;
+    canvas.width = $(document).width()-(500+25); //context left pad = 10;
     minHeight = 300;
     canvas.height = minHeight;
 
@@ -349,7 +347,7 @@ function getData(){
         allData = str.split("%");
 
         //TO DEBUG AND CATCH ERROR
-        console.log(allData[0]);
+        // console.log(allData[0]);
 
         for (var i=0; i<allData.length-4; i+=5) {
             var id = allData[i];

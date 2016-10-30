@@ -28,7 +28,7 @@ window.onload = function() {
 	//------------ canvas ------------//
     canvas = document.getElementById('myCanvas');
     context = canvas.getContext('2d');
-    //----------------------------------//zz
+    //----------------------------------//
 
     cv_nav = document.getElementById('cv_nav');
     ctx_nav = cv_nav.getContext('2d');

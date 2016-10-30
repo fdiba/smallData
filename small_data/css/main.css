@@ -39,7 +39,10 @@ ul{
 	padding: 5px;
 	background: white;
 }
-#main{
+#ctrl_bar{
+	width: 100%;
+	background: #ECF0F1; /*soft grey*/
+	position: fixed;
 }
 #anim{
 	/*background: yellow;*/
@@ -68,7 +71,8 @@ ul{
 }
 #links{
 	margin: 0 5px 0 0;
-	background: #3498db;
+	padding: 5px 5px;
+	background: #3498db; /*blue */
 	min-width: 200px;
 	float: left;
 	color: white;
@@ -83,19 +87,24 @@ ul{
 #info p{
 	margin: 0;
 }
+#infos{ /*only index*/
+	float: left;
+	min-width: 200px;
+	max-width: 420px;
+}
 #titles{
 
 	padding: 0 10px 0 10px;
 	margin: 0;
 	float: left;
 	/*clear: both;*/
-	min-width: 200px;
+	
 	word-wrap: break-word;
 
 	padding-top: 10px;
 	padding-bottom: 10px;
 
-	width: 420px;
+	
 	color: white;
 	background: #9b59b6; /*violet amethyst*/
 }
@@ -103,10 +112,8 @@ ul{
 	padding: 0 10px 0 10px;
 	margin: 0;
 	float: left;
-	clear: both;
-	min-width: 200px;
+	
 	word-wrap: break-word;
-	max-width: 1180px; /*1200 - padding*/
 } 
 #composers{
 	background: #2ecc71; /*emerald green*/
@@ -114,6 +121,9 @@ ul{
 	-webkit-column-count: 5; /* Chrome, Safari, Opera */
     -moz-column-count: 5; /* Firefox */
     column-count: 5;
+
+    clear: both;
+    max-width: 1180px; /*1200 - padding*/
 	
 	padding-top: 10px;
 	padding-bottom: 10px;
@@ -123,6 +133,8 @@ ul{
 }
 #selection{
 	background: orange; /*orange carrot*/
+	max-width: 380px;
+	
 }
 #selection p{
 	padding: 0;
