@@ -248,7 +248,7 @@ LineChart.prototype.drawXAxis = function(){
     ctx.moveTo(this.x, this.y + this.height);
     ctx.lineTo(this.x + this.width, this.y + this.height);
     ctx.strokeStyle = this.axisColor;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 5;
     ctx.stroke();
 
     // draw tick marks

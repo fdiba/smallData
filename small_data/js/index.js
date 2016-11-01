@@ -220,8 +220,8 @@ function selectRect(x, y){
     for(var i=0; i<rectangles.length; i++){
         
         //TODO use var
-        if(x>rectangles[i].x && x<rectangles[i].x+rWidth &&
-           y>rectangles[i].y && y<rectangles[i].y+rHeight) {
+        if(x>=rectangles[i].x && x<=rectangles[i].x+rWidth &&
+           y>=rectangles[i].y && y<=rectangles[i].y+rHeight) {
 
             if(pAId>=0){
                 // drawRect(rectangles[pAId].x, rectangles[pAId].y, rectangles[pAId].color);
@@ -235,40 +235,66 @@ function selectRect(x, y){
                 processAllRectWhithId(nAId);
                 
                 //-------- first query
+
                 $.ajax({                                      
                     url: 'php/retrieve_data.php',       
                     type: "POST",
                     data: {aId: nAId, case:5} 
                 }).done(function(str) {
-                    $("#selection p").text(str);
+
+                    var arr=str.split("%");
+                    var ctry=arr[2];
+                    var txt=arr[0]+' '+arr[1]+' '+ctry+' '+arr[3];
+
+                    $("#selection p").text(txt);
+
+                    //------- cookie stuff
+
+                    var is_new=true;
+
+                    if(cookies.length>0){
+
+                        for (var i = 0; i < cookies.length; i++) {
+                            if(cookies[i]===nAId){
+                                // console.log('already in');
+                                is_new=false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if(is_new){
+
+                        cookies.push(nAId);
+
+                        var str="";
+
+                        for (var i = 0; i < cookies.length; i++) {
+                            if(i>0)str+='%';
+                            str+=cookies[i];
+                        }
+
+                        $.cookie('ids', str);
+                        
+                        particles.push(createNewParticle(nAId, ctry));
+
+                        if(particles.length===1){
+                            animation01=setInterval(sma_animation, 1000/30);
+                        }
+
+                        //read cookies
+                        var txt=$.cookie('ids');
+                        // console.log(txt);
+
+                        $("#cookies").empty().append('<p>');
+                        $("#cookies p").text(txt);
+
+                    }
+
+
                 });
 
-                //------- cookie stuff
-
-                cookies.push(nAId);
-
-                var str="";
-
-                for (var i = 0; i < cookies.length; i++) {
-                	if(i>0)str+='%';
-                	str+=cookies[i];
-                }
-
-                $.cookie('ids', str);
                 
-                particles.push(createNewParticle(rectangles[i].ctry));
-
-                if(particles.length===1){
-                    animation01=setInterval(sma_animation, 1000/30);
-                }
-
-                //read cookies
-                var txt=$.cookie('ids');
-                // console.log(txt);
-
-                $("#cookies").empty().append('<p>');
-                $("#cookies p").text(txt);
-
                 //-------- second query
                 $.ajax({                                      
                     url: 'php/retrieve_data.php',       
@@ -390,9 +416,11 @@ function resetSMACanvas(){
     ctx_sma.fillStyle=h_colors[0];
     ctx_sma.fillRect(0, 0, cv_sma.width, cv_sma.height);
 }
-function createNewParticle(ctry){
+function createNewParticle(id, ctry){
+    // console.log(ctry);
     return new Particle({
         canvasId: "sma",
+        id: id,
         label: ctry,
         x:Math.random()*(cv_sma.width-8*2)+8, //8=particule radius*2
         y:Math.random()*(cv_sma.height-8*2)+8
@@ -407,9 +435,24 @@ function sma_animation(){
     for (var i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].checkEdges();
+        
         particles[i].display();
+
+        particles[i].getAwayFrom(i, particles);
     }
 
+    removeDeadParticles();
+
+}
+function removeDeadParticles(){
+    
+    for (var i=particles.length-1; i>=0; i--) {
+        if(particles[i].ids.length<1){
+            console.log("particles.length: ", particles.length);
+            particles.splice(i, 1);
+            console.log("particles.length: ", particles.length);
+        }
+    }
 }
 function noise_animation(){
 

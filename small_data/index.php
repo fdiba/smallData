@@ -5,9 +5,10 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/index.css">
-	<script type="text/javascript" src='lib/perlin.js'></script>
+	<script src='lib/perlin.js'></script>
 	<script src="lib/jquery-3.1.1.min.js"></script>
     <script src="lib/jquery.cookie.js"></script>
+    <script src="js/functions.js"></script>
     <script src="js/particles.js"></script>
 	<script src="js/index.js"></script>
 </head>
