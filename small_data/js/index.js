@@ -34,6 +34,12 @@ var colors=[{h:203, s:4, l:77}]; //#bdc3c7 grey silver
 var isAnimated;
 var animation2;
 
+
+//---------- sma -------------//
+var cv_sma, ctx_sma;
+var particles=[];
+var animation01;
+
 window.onload = function() {
 
 	//------------ navigation ------------//
@@ -49,12 +55,10 @@ window.onload = function() {
  
     //----------------------------------//
 
-    var cv_sma = document.getElementById('sma');
+    cv_sma = document.getElementById('sma');
     cv_sma.width=350;
     ctx_sma = cv_sma.getContext('2d');
-
-    ctx_sma.fillStyle=h_colors[0];
-    ctx_sma.fillRect(0, 0, cv_sma.width, cv_sma.height);
+    resetSMACanvas();
 
     //----------------------------------//
 
@@ -87,7 +91,7 @@ function animation1(evt){
 	if(isAnimated){
 		clearInterval(animation2);
 		resetSaturation(avg_sat);
-	} else animation2 = setInterval(noiseAnimation, 1000/10);
+	} else animation2 = setInterval(noise_animation, 1000/10);
 
 	isAnimated = !isAnimated;
 
@@ -118,40 +122,6 @@ function resetSaturation(sat){
 			drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
 		}
 	} 
-}
-function noiseAnimation(){
-
-	for(var i=0; i<rectangles.length; i++){
-
-		if(!rectangles[i].anchor && rectangles[i].id != nAId){
-
-			var value = Math.abs(noise.perlin2((rectangles[i].x+tNoise) / 1000, (rectangles[i].y+tNoise) / 1000));
-    		value *= 100;
-    		value -= 50;
-    		// value *= 80;
-    		value = Math.round(value);
-
-			var str = rectangles[i].color;
-
-			var pos0 = str.indexOf(",")+1;
-			var pos1 = str.indexOf("%");
-
-			var sat = (avg_sat + value)%101;
-			
-			var c = str.substring(0, pos0);
-
-            var lum=avg_lum;
-
-			c += sat+'%,'+lum+'%)';
-
-			rectangles[i].color = c;
-			// console.log(c);
-
-			drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
-		} 
-    }
-
-    tNoise+=15;
 }
 //---------------------------------------//
 
@@ -285,6 +255,12 @@ function selectRect(x, y){
                 }
 
                 $.cookie('ids', str);
+                
+                particles.push(createNewParticle(rectangles[i].ctry));
+
+                if(particles.length===1){
+                    animation01=setInterval(sma_animation, 1000/30);
+                }
 
                 //read cookies
                 var txt=$.cookie('ids');
@@ -408,4 +384,64 @@ function getData(){
         canvas.addEventListener("mousedown", getInfo, false);
 
     });
+}
+//--------- sma function ------------//
+function resetSMACanvas(){
+    ctx_sma.fillStyle=h_colors[0];
+    ctx_sma.fillRect(0, 0, cv_sma.width, cv_sma.height);
+}
+function createNewParticle(ctry){
+    return new Particle({
+        canvasId: "sma",
+        label: ctry,
+        x:Math.random()*(cv_sma.width-8*2)+8, //8=particule radius*2
+        y:Math.random()*(cv_sma.height-8*2)+8
+    });
+}
+//-----------------------------------//
+//------------ animations -----------//
+function sma_animation(){
+
+    resetSMACanvas();
+
+    for (var i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].checkEdges();
+        particles[i].display();
+    }
+
+}
+function noise_animation(){
+
+    for(var i=0; i<rectangles.length; i++){
+
+        if(!rectangles[i].anchor && rectangles[i].id != nAId){
+
+            var value = Math.abs(noise.perlin2((rectangles[i].x+tNoise) / 1000, (rectangles[i].y+tNoise) / 1000));
+            value *= 100;
+            value -= 50;
+            // value *= 80;
+            value = Math.round(value);
+
+            var str = rectangles[i].color;
+
+            var pos0 = str.indexOf(",")+1;
+            var pos1 = str.indexOf("%");
+
+            var sat = (avg_sat + value)%101;
+            
+            var c = str.substring(0, pos0);
+
+            var lum=avg_lum;
+
+            c += sat+'%,'+lum+'%)';
+
+            rectangles[i].color = c;
+            // console.log(c);
+
+            drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
+        } 
+    }
+
+    tNoise+=15;
 }

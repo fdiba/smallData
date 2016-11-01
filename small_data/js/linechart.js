@@ -3,8 +3,9 @@ function LineChart(config){
     this.w = 1200;
     this.h = 600;
 
-    // user defined properties
     this.canvas = document.getElementById(config.canvasId);
+    this.context = this.canvas.getContext("2d");
+
     this.minY = config.minY;
     this.maxX = config.maxX;
     this.maxY = config.maxY;
@@ -18,7 +19,6 @@ function LineChart(config){
     this.minYear = config.minYear;
     this.maxYear = config.maxYear;
 
-    // this.countries=[];
     this.lg_btns=[];
     this.solo_btns=[];
     this.numSolos=0;
@@ -29,7 +29,6 @@ function LineChart(config){
     this.colors=["#bdc3c7", "#4aa3df", "#2ecc71", "#16a085"];
     //grey: silver, blue: peter river, emerald: green, green sea: dark green
 
-    // constants
     this.padding = 10;
     this.tickSize = 10;
     this.axisColor = "#555";
@@ -38,8 +37,6 @@ function LineChart(config){
 
     this.fontHeight = 12;
 
-    // relationships
-    this.context = this.canvas.getContext("2d");
     this.rangeX = this.maxX - this.minY;
     this.rangeY = this.maxY - this.minY;
     this.numXTicks = Math.round(this.rangeX / this.unitsPerTickX);

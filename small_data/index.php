@@ -8,6 +8,7 @@
 	<script type="text/javascript" src='lib/perlin.js'></script>
 	<script src="lib/jquery-3.1.1.min.js"></script>
     <script src="lib/jquery.cookie.js"></script>
+    <script src="js/particles.js"></script>
 	<script src="js/index.js"></script>
 </head>
 <body>
@@ -35,9 +36,9 @@
 		    </canvas>
 		</div>
 		<div id="infos">
+			<div id="cookies"></div>
 		    <div id="selection"><p>no selection</p></div>
 		    <ul id="titles"></ul>
-		    <div id="cookies"></div>
 	    </div>
  	</div>
 </body>
