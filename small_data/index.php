@@ -5,8 +5,10 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/index.css">
-	<script type="text/javascript" src='js/perlin.js'></script>
-	<script type="text/javascript" src="js/index.js"></script>
+	<script type="text/javascript" src='lib/perlin.js'></script>
+	<script src="lib/jquery-3.1.1.min.js"></script>
+    <script src="lib/jquery.cookie.js"></script>
+	<script src="js/index.js"></script>
 </head>
 <body>
 	<div id="content">
@@ -35,8 +37,8 @@
 		<div id="infos">
 		    <div id="selection"><p>no selection</p></div>
 		    <ul id="titles"></ul>
+		    <div id="cookies"></div>
 	    </div>
  	</div>
-         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </body>
 </html>

@@ -5,3 +5,34 @@
 	margin-top: 82px;
 	clear: left;
 }
+#selection, #titles, #cookies{
+	max-width: 330px;/*-20 padding*/
+	padding: 0 10px 0 10px;
+	word-wrap: break-word;
+}
+#selection{
+	margin: 1px 0;
+	float: left;
+	
+	background: orange; /*orange carrot*/
+	
+}
+#titles{
+
+	margin: 0;
+	float: left;
+	/*clear: both;*/
+
+	padding-top: 10px;
+	padding-bottom: 10px;
+
+	color: white;
+	background: #9b59b6; /*violet amethyst*/
+}
+#cookies{
+	margin: 1px 0 0 0;
+	clear: left;
+	float: left;
+	background: #2ecc71; /*emerald green*/
+	/*text-align: left; */
+}

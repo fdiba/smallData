@@ -2,6 +2,8 @@ var init=false;
 var allData;
 var numTitlesByArtist=[];
 
+var cookies=[];
+
 var canvas, context;
 var rectangles=[];
 var titles=[];
@@ -25,6 +27,7 @@ var rWidth, rHeight;
 var xLeftOffset;
 var pAId;
 
+var h_colors=["#ecf0f1"];//grey clouds
 var colors=[{h:203, s:4, l:77}]; //#bdc3c7 grey silver
 
 ///------
@@ -50,7 +53,7 @@ window.onload = function() {
     cv_sma.width=350;
     ctx_sma = cv_sma.getContext('2d');
 
-    ctx_sma.fillStyle="grey";
+    ctx_sma.fillStyle=h_colors[0];
     ctx_sma.fillRect(0, 0, cv_sma.width, cv_sma.height);
 
     //----------------------------------//
@@ -270,6 +273,25 @@ function selectRect(x, y){
                     $("#selection p").text(str);
                 });
 
+                //------- cookie stuff
+
+                cookies.push(nAId);
+
+                var str="";
+
+                for (var i = 0; i < cookies.length; i++) {
+                	if(i>0)str+='%';
+                	str+=cookies[i];
+                }
+
+                $.cookie('ids', str);
+
+                //read cookies
+                var txt=$.cookie('ids');
+                // console.log(txt);
+
+                $("#cookies").empty().append('<p>');
+                $("#cookies p").text(txt);
 
                 //-------- second query
                 $.ajax({                                      

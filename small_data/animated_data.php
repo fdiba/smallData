@@ -5,10 +5,11 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/animated_data.css">
-	<script type="text/javascript" src="js/functions.js"></script>
-	<script type="text/javascript" src="js/barchart.js"></script>
-	<script type="text/javascript" src="js/linechart.js"></script>
-	<script type="text/javascript" src="js/animated_data.js"></script>
+	<script src="lib/jquery-3.1.1.min.js"></script>
+	<script src="js/functions.js"></script>
+	<script src="js/barchart.js"></script>
+	<script src="js/linechart.js"></script>
+	<script src="js/animated_data.js"></script>
 </head>
 <body>
 	<div id="content">
@@ -38,7 +39,5 @@
 	    <ul id="composers"></ul>
 	    <ul id="titles"></ul>
     </div>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </body>
 </html>

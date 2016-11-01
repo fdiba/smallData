@@ -5,3 +5,55 @@
 	margin-top: 120px;
 	clear: left;
 }
+#selection{
+
+	padding: 0 10px 0 10px;
+	margin: 0;
+	float: left;
+	
+	word-wrap: break-word;
+
+	background: orange; /*orange carrot*/
+	max-width: 380px;
+	
+}
+#titles{
+
+	padding: 0 10px 0 10px;
+	margin: 0;
+	float: left;
+	/*clear: both;*/
+	
+	word-wrap: break-word;
+
+	padding-top: 10px;
+	padding-bottom: 10px;
+
+	
+	color: white;
+	background: #9b59b6; /*violet amethyst*/
+}
+#composers{
+
+	padding: 0 10px 0 10px;
+	margin: 0;
+	float: left;
+	
+	word-wrap: break-word;
+
+
+	background: #2ecc71; /*emerald green*/
+
+	-webkit-column-count: 5; /* Chrome, Safari, Opera */
+    -moz-column-count: 5; /* Firefox */
+    column-count: 5;
+
+    clear: both;
+    max-width: 1180px; /*1200 - padding*/
+	
+	padding-top: 10px;
+	padding-bottom: 10px;
+
+	color: #16a085;
+	margin-bottom: 10px;
+}
