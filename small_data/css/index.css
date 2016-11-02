@@ -6,7 +6,8 @@
 	clear: left;
 }
 #selection, #titles, #cookies{
-	max-width: 330px;/*-20 padding*/
+	width: 330px;/*-20 padding*/
+	/*max-width: 330px;*/
 	padding: 0 10px 0 10px;
 	word-wrap: break-word;
 	float: left;

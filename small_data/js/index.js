@@ -243,7 +243,7 @@ function selectRect(x, y){
                 }).done(function(str) {
 
                     var arr=str.split("%");
-                    var ctry=arr[2];
+                    var ctry=checkCountry(arr[2]);
                     var txt=arr[0]+' '+arr[1]+' '+ctry+' '+arr[3];
 
                     $("#selection p").text(txt);
@@ -280,18 +280,18 @@ function selectRect(x, y){
 
                         if(particles.length===1){
                             animation01=setInterval(sma_animation, 1000/30);
+                            document.getElementById('sma').addEventListener("click", getParticleInfos);
                         }
 
                         //read cookies
-                        var txt=$.cookie('ids');
+                        // var txt=$.cookie('ids');
                         // console.log(txt);
 
+                        var txt = particles.length+' countries and '+cookies.length+' composers';
                         $("#cookies").empty().append('<p>');
                         $("#cookies p").text(txt);
 
                     }
-
-
                 });
 
                 
@@ -416,6 +416,25 @@ function resetSMACanvas(){
     ctx_sma.fillStyle=h_colors[0];
     ctx_sma.fillRect(0, 0, cv_sma.width, cv_sma.height);
 }
+function getParticleInfos(evt){
+    
+    var cv = cv_sma.getBoundingClientRect();
+
+    var mouseX = evt.clientX - cv.left;
+    var mouseY = evt.clientY - cv.top;
+
+    for (var i=0; i<particles.length; i++) {
+
+        var distance=dist(mouseX, particles[i].x, mouseY, particles[i].y)
+        if(distance<=particles[i].radius*2){
+            var txt=particles[i].label+' '+ particles[i].iso+' '+ particles[i].ids.length;
+            // console.log(txt);
+            $("#cookies").empty().append('<p>');
+            $("#cookies p").text(txt);
+            break;
+        }
+    }
+}
 function createNewParticle(id, ctry){
     // console.log(ctry);
     return new Particle({
@@ -432,7 +451,7 @@ function sma_animation(){
 
     resetSMACanvas();
 
-    for (var i = 0; i < particles.length; i++) {
+    for (var i=0; i<particles.length; i++) {
         particles[i].update();
         particles[i].checkEdges();
         
@@ -448,9 +467,9 @@ function removeDeadParticles(){
     
     for (var i=particles.length-1; i>=0; i--) {
         if(particles[i].ids.length<1){
-            console.log("particles.length: ", particles.length);
+            // console.log("particles.length: ", particles.length);
             particles.splice(i, 1);
-            console.log("particles.length: ", particles.length);
+            // console.log("particles.length: ", particles.length);
         }
     }
 }

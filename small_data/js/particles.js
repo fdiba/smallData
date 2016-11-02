@@ -18,6 +18,12 @@ function Particle(config){
 
 	this.alpha=.5;
 
+	this.font = "10pt Calibri";
+
+	this.iso=getISO3(this.label);
+
+	this.addValue=1;
+
 }
 Particle.prototype.update = function(){
 	// this.y++;
@@ -92,42 +98,22 @@ Particle.prototype.getAwayFrom = function(index, arr){
 
 			    if(distance<2){
 
-			    	if(this.ids.length===1 && arr[i].ids.length===1){
-			    		console.log("case 1");
+			    	var val=this.addValue;
+
+			    	if(arr[i].ids.length===1){
+			    		// console.log("case 1");
 			    		this.ids.push(arr[i].ids.pop());
+			    		this.radius+=val;
 			    		arr[i].alive=false;
-			    	} else if(this.ids.length===2 && arr[i].ids.length===1){
-			    		console.log("case 2");
-		    			this.ids.push(arr[i].ids.pop());
-		    			this.radius+=1;
-		    			arr[i].alive=false;
-			    	
-			    		
-			    	} else if(this.ids.length>=2 && arr[i].ids.length>=2){
-			    		console.log("case 3");
-			    		
-			    		//var value=arr[i].ids.length-1;
-
-		    			/*for (var j=value; j>=0; j--) {
-		    				this.ids.push(arr[j].ids.pop());
-		    				this.radius+=1;
-		    			}
-		    			console.log("next: ", arr[i].ids.length);*/
-
-			    		
 			    	} else {
-			    		console.log("case 4");
-			    		console.log(this.ids.length, arr[i].ids.length);
-
-			    		if(this.ids.length>arr[i].ids.length){
-
-			    			var value=arr[i].ids.length-1;
-
-			    			for (var j=value; j>=0; j--) {
+			    		/*console.log("case 2");
+			    		console.log(this.ids.length, arr[i].ids.length);*/
+			    		if(this.ids.length>=arr[i].ids.length){
+			    			for (var j=arr[i].ids.length-1; j>=0; j--) {
 		    					this.ids.push(arr[i].ids.pop());
-		    					this.radius+=.4;
+		    					this.radius+=val;
 		    				}
-
+		    				arr[i].alive=false;
 			    		}
 			    	}
 				}
@@ -139,6 +125,7 @@ Particle.prototype.display = function(){
 	
 	var ctx=this.context;
 
+	//TODO do it somewhere else
 	if(this.ids.length===1)ctx.fillStyle=this.colors[0];
 	else ctx.fillStyle=this.colors[1];
     // else ctx.fillStyle='rgba(46, 204, 113,'+this.alpha+')';
@@ -147,6 +134,17 @@ Particle.prototype.display = function(){
     ctx.arc(this.x, this.y, this.radius*2, 0, 2*Math.PI);
     ctx.fill();
     ctx.closePath();
+
+    if(this.ids.length>3){
+
+    	ctx.font = this.font;
+	    ctx.fillStyle = "black";
+	    ctx.textAlign = "center";
+	    ctx.textBaseline = "middle";
+
+	    ctx.fillText(this.iso, this.x, this.y);
+
+    }
 
 }
 Particle.prototype.checkEdges = function(){
