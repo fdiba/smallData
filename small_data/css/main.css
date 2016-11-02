@@ -87,7 +87,14 @@ ul{
 #info p{
 	margin: 0;
 }
-
+/*alphabetical order*/
+#cookies, #selection, #titles{
+	padding: 0 10px 0 10px;
+}
+#cookies p, #selection p{
+	padding: 0;
+	margin: 0;
+}
 #cookies{
 	background: #2ecc71; /*emerald green*/
 }

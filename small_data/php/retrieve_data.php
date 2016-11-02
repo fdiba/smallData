@@ -100,8 +100,7 @@
 		$dbh=null;
 		echo $str_all;
 	}
-
-	function retrieveAllCompositionsFrom02($aId){
+	function retrieveAllCompositionsFrom02($aId){ //only index case 5
 
 		require("../access/connexion.php");		
 
@@ -154,8 +153,8 @@
 
 			$str_editions = implode(", ", $editions);
 
-			$result = $row['firstName'] . ' ' . $row['name'] . ' - ' . $row['ctry']
-					  . ' - ' . $str_editions;
+			$result = $row['firstName'] . '%' . $row['name'] . '%' . $row['ctry']
+					  . '%' . $str_editions;
 
 		}
 

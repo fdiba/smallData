@@ -5,19 +5,19 @@
 	margin-top: 82px;
 	clear: left;
 }
-#selection, #titles, #cookies{
+#cookies, #selection, #titles{
 	width: 330px;/*-20 padding*/
 	/*max-width: 330px;*/
-	padding: 0 10px 0 10px;
+	
 	word-wrap: break-word;
 	float: left;
 	clear:left;
 }
-#selection p, #cookies p{
-	padding: 0;
-	margin: 0;
-}
+
 /*alphabetic order*/
+#cookies{
+	margin: 1px 0 0 0;
+}
 #infos{
 	float: left;
 	min-width: 200px;
@@ -28,10 +28,4 @@
 }
 #titles{
 	margin: 0;
-	padding-top: 10px;
-	padding-bottom: 10px;
-}
-#cookies{
-	margin: 1px 0 0 0;
-	/*text-align: left; */
 }

@@ -1,9 +1,11 @@
 function Particle(config){
 
-	this.canvas = document.getElementById(config.canvasId);
-	this.context = this.canvas.getContext("2d");
+	this.canvasId=config.canvasId;
+	this.canvas=document.getElementById(this.canvasId);
+	this.context=this.canvas.getContext("2d");
 
-	this.colors=["#bdc3c7", "#2ecc71"];//midnight blue, green emerald
+	//midnight blue, green emerald, yellow sun flower, blue peter river
+	this.colors=["#bdc3c7", "#2ecc71", "#f1c40f", "#3498db"];
 
 	this.x=config.x;
 	this.y=config.y;
@@ -24,9 +26,63 @@ function Particle(config){
 
 	this.addValue=1;
 
+	this.open=false;
+	this.r_addon=15;
+
+	this.childs=[];
+
+}
+Particle.prototype.openOrCloseIt = function(){
+
+	if(this.ids.length>1){
+
+		this.open=!this.open;
+
+		if(this.open){
+
+			// console.log('open it');
+		 	this.radius+=this.r_addon;
+
+		 	for (var i = 0; i < this.ids.length; i++) {
+		 		this.childs.push(this.createNewChild(this.ids[i]));
+		 	}
+		 
+
+		} else {
+
+			this.childs=[];
+
+			// console.log('close it');
+		 	this.radius-=this.r_addon;
+
+		}
+
+		console.log(this.radius);
+
+	}
+ 	
+}
+Particle.prototype.createNewChild=function(id){
+
+    var radius=this.radius;
+
+    return new Child({
+        canvasId: this.canvasId,
+        id: id,
+        label: this.label,
+        x:this.x-radius+Math.random()*(radius*2),
+        y:this.y-radius+Math.random()*(radius*2)
+    });
 }
 Particle.prototype.update = function(){
-	// this.y++;
+
+	for (var i = 0; i < this.childs.length; i++) {
+		this.childs[i].getAwayFrom(this.childs, this.radius);
+		this.childs[i].getCloseTo(this.x, this.y, this.radius);
+		this.childs[i].getAwayFromCenter(this.x, this.y, this.radius);
+		this.childs[i].reduceVelocityAndUseIt(.3);
+	}
+	
 }
 Particle.prototype.getAwayFrom = function(index, arr){
 
@@ -126,8 +182,9 @@ Particle.prototype.display = function(){
 	var ctx=this.context;
 
 	//TODO do it somewhere else
-	if(this.ids.length===1)ctx.fillStyle=this.colors[0];
-	else ctx.fillStyle=this.colors[1];
+	if(this.ids.length===1)ctx.fillStyle=this.colors[0];//grey
+	else if(this.open)ctx.fillStyle=this.colors[2];//yellow
+	else ctx.fillStyle=this.colors[1];//green
     // else ctx.fillStyle='rgba(46, 204, 113,'+this.alpha+')';
 
     ctx.beginPath();
@@ -135,7 +192,11 @@ Particle.prototype.display = function(){
     ctx.fill();
     ctx.closePath();
 
-    if(this.ids.length>3){
+    for (var i = 0; i < this.childs.length; i++) {
+		this.childs[i].display();
+	}
+
+    if(this.ids.length>3 || this.open){
 
     	ctx.font = this.font;
 	    ctx.fillStyle = "black";

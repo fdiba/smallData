@@ -6,8 +6,11 @@
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/network.css">
 	<script src="lib/jquery-3.1.1.min.js"></script>
+	<script src="lib/jquery.cookie.js"></script>
 	<script src="js/variables.js"></script>
     <script src="js/functions.js"></script>
+    <script src="js/childs.js"></script>
+    <script src="js/particles.js"></script>
 	<script src="js/network.js"></script>
 </head>
 <body>

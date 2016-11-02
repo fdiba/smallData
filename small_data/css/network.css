@@ -10,16 +10,14 @@ body{
 	width:200px;
 	height:500px;*/
 	margin-left: 2px;
+	word-wrap: break-word;
 	float: left;
+	max-width: 300px;
 }
 #main_container{
 	margin-top: 82px;
 }
 #selection{
-
+	/*margin: 0;*/
 	padding: 0 10px 0 10px;
-}
-#selection p {
-	padding: 0;
-	margin: 0;
 }
