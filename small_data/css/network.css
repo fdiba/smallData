@@ -1,0 +1,25 @@
+body{
+	/*background: red;*/
+}
+#ctrl_bar{
+	height:80px;
+}
+#infos{
+	/*float:left;*/
+	/*float: left;
+	width:200px;
+	height:500px;*/
+	margin-left: 2px;
+	float: left;
+}
+#main_container{
+	margin-top: 82px;
+}
+#selection{
+
+	padding: 0 10px 0 10px;
+}
+#selection p {
+	padding: 0;
+	margin: 0;
+}

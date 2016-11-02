@@ -50,7 +50,7 @@ ul{
 	display: block;
 	padding: 0 0 0 5px;
 }
-#get_all{
+#links li{
 	padding: 0 0 0 5px;
 }
 #launcher{
@@ -87,8 +87,14 @@ ul{
 #info p{
 	margin: 0;
 }
-#infos{ /*only index*/
-	float: left;
-	min-width: 200px;
-	max-width: 420px;
+
+#cookies{
+	background: #2ecc71; /*emerald green*/
+}
+#selection{
+	background: orange; /*orange carrot*/
+}
+#titles{
+	color: white;
+	background: #9b59b6; /*violet amethyst*/
 }

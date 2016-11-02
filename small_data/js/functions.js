@@ -15,6 +15,8 @@ function getISO3(ctry){
 			return "BEL";
 		case "Canada":
 			return "CAN";
+		case "Finland":
+			return "FIN";
 		case "France":
 			return "FRA";
 		case "Germany":

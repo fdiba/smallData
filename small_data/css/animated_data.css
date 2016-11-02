@@ -6,40 +6,28 @@
 	clear: left;
 }
 #selection{
-
 	padding: 0 10px 0 10px;
 	margin: 0;
 	clear:left;
 	float: left;
 	
 	word-wrap: break-word;
-
-	background: orange; /*orange carrot*/
-	/*max-width: 380px;*/
-	
 }
 #selection p{
 	padding: 0;
 	margin: 0;
 }
 #titles{
-
 	padding: 0 10px 0 10px;
 	margin: 0;
 	float: left;
-	/*clear: both;*/
 	
 	word-wrap: break-word;
 
 	padding-top: 10px;
 	padding-bottom: 10px;
-
-	
-	color: white;
-	background: #9b59b6; /*violet amethyst*/
 }
 #composers{
-
 	padding: 0 10px 0 10px;
 	margin: 0;
 	float: left;

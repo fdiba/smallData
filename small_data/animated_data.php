@@ -21,10 +21,11 @@
 				<p></p>
 			</div>
 			<div id="launcher">
-				<div class="b_off" id="get_all">get data</div>
+				<div class="b_off" id="get_all">get all data</div>
 			</div>
 			<ul id="links">
 				<li><a href="index.php">index</a></li>
+				<li><a href="network.php">network</a></li>
 			</ul>
 		</div>
 		<div id="allCanvas">

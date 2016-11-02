@@ -17,22 +17,21 @@
 	padding: 0;
 	margin: 0;
 }
+/*alphabetic order*/
+#infos{
+	float: left;
+	min-width: 200px;
+	max-width: 420px;
+}
 #selection{
 	margin: 1px 0;
-	background: orange; /*orange carrot*/
-
 }
 #titles{
 	margin: 0;
-
 	padding-top: 10px;
 	padding-bottom: 10px;
-
-	color: white;
-	background: #9b59b6; /*violet amethyst*/
 }
 #cookies{
 	margin: 1px 0 0 0;
-	background: #2ecc71; /*emerald green*/
 	/*text-align: left; */
 }

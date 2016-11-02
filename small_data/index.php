@@ -20,12 +20,13 @@
 				<p></p>
 			</div>
 			<div id="launcher">
-				<div class="b_off" id="get_all">get data</div>
+				<div class="b_off" id="get_all">get all data</div>
 			</div>
 			<div id="navigation">
 				<div class="b_off" id="anim">anim</div>
 			</div>
 			<ul id="links">
+				<li><a href="network.php">network</a></li>
 				<li><a href="animated_data.php">animated data</a></li>
 			</ul>
 		</div>
