@@ -64,7 +64,7 @@ Particle.prototype.openOrCloseIt = function(){
 
 	}
 
-	console.log(this.radius);
+	// console.log(this.radius);
  	
 }
 Particle.prototype.processChilds=function(mouseX, mouseY){
@@ -82,6 +82,7 @@ Particle.prototype.processChilds=function(mouseX, mouseY){
         	if(childs[i].id !== this.lastHit){
 
         		console.log('count', childs[i].count);
+
         		this.getTitlesFrom(childs[i].id);
         		this.lastHit=childs[i].id;
 

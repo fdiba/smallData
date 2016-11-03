@@ -17,11 +17,9 @@ function displayTitlesInfosGN(arr){
 
 //----------- only network ----------------//
 function displayFirstnameAndNameGN(obj){
-
     $("#selection").empty().append('<p>');
     var txt=obj.fn+' '+obj.n;
     $("#selection p").text(txt);
-
 }
 //----------------------------------------------//
 function dist(x1, x2, y1, y2){
