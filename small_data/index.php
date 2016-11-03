@@ -8,6 +8,7 @@
 	<script src='lib/perlin.js'></script>
 	<script src="lib/jquery-3.1.1.min.js"></script>
     <script src="lib/jquery.cookie.js"></script>
+    <script src="js/variables.js"></script>
     <script src="js/functions.js"></script>
     <script src="js/particles.js"></script>
 	<script src="js/index.js"></script>
@@ -21,10 +22,8 @@
 			</div>
 			<ul id="launcher">
 				<li class="b_off" id="get_all">get all data</li>
+				<li class="b_off" id="anim">anim</li>
 			</ul>
-			<div id="navigation">
-				<div class="b_off" id="anim">anim</div>
-			</div>
 			<ul id="links">
 				<li><a href="network.php">network</a></li>
 				<li><a href="animated_data.php">animated data</a></li>

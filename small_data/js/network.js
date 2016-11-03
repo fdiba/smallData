@@ -1,7 +1,7 @@
 var canvas, context;
 
 var init=false;
-var allData, cookies=[], id_composers, particles=[];
+var allData, cookies=[], composers, particles=[];
 
 var animation01;
 var counter001, pointer001;
@@ -23,6 +23,10 @@ function getTraces(){
     document.getElementById('get_sl').removeEventListener("click", getTraces);
     $("#get_sl").toggleClass('b_off b_on');
 
+    /*var str=$.cookie('ids');
+    $("#selection").empty();
+    $("#selection").append(str);*/
+
     cookies = $.cookie('ids').split('%');
 
     var txt=cookies.length+' composers';
@@ -31,9 +35,9 @@ function getTraces(){
 
     counter001=0;
     pointer001=0;
-    id_composers=[];
+    composers=[];
 
-    for (var i=0; i<cookies.length; i++)id_composers.push(cookies[i]);
+    for (var i=0; i<cookies.length; i+=2)composers.push({id:cookies[i], count:cookies[i+1]});
 
     /*for (var i=0; i<cookies.length; i++) {
         var index=0;
@@ -84,9 +88,10 @@ function getParticleInfos(evt){
 function addParticleWithCookies(i){
 
     var index=0;
-    while(id_composers[i]!=allData[index])index+=5;
-    //use artist_id and country name as arguments
-    particles.push(createNewParticle(allData[index], allData[index+1]));
+    while(composers[i].id!=allData[index])index+=5;
+    //use artist_id, country name and counter as arguments
+    // particles.push(createNewParticle(allData[index], allData[index+1], allData[index+3]));
+    particles.push(createNewParticle(composers[i].id, allData[index+1], composers[i].count));
 
     pointer001++;
 
@@ -97,7 +102,7 @@ function addParticleWithCookies(i){
 }
 function sma_animation(){
 
-    if(counter001%10===0 && pointer001<id_composers.length)addParticleWithCookies(pointer001);
+    if(counter001%10===0 && pointer001<composers.length)addParticleWithCookies(pointer001);
 
     resetSMACanvas();
     
@@ -129,13 +134,14 @@ function resetSMACanvas(){
     context.fillStyle=COLORS[0];
     context.fillRect(0, 0, canvas.width, canvas.height);
 }
-function createNewParticle(id, ctry){
+function createNewParticle(id, ctry, count){
 
     //800 600
     var radius=150;
 
     return new Particle({
         canvasId: "myCanvas",
+        count: count,
         id: id,
         label: ctry,
         x:canvas.width/2-radius+Math.random()*(radius*2),

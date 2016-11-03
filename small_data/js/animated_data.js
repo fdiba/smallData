@@ -35,7 +35,7 @@ window.onload = function() {
     cv_nav.width = $(document).width()-25;
     cv_nav.height = 40;
 
-    ctx_nav.fillStyle=colors[0];
+    ctx_nav.fillStyle=COLORS[0];
     ctx_nav.fillRect(0, 0, cv_nav.width, cv_nav.height);
 
     menu = createMenu();

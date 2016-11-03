@@ -1,8 +1,5 @@
-body{
-	/*background: red;*/
-}
 #ctrl_bar{
-	height:80px;
+	/*height:80px;*/
 }
 #infos{
 	/*float:left;*/
@@ -16,8 +13,9 @@ body{
 }
 #main_container{
 	margin-top: 82px;
+	
 }
 #selection{
 	/*margin: 0;*/
-	padding: 0 10px 0 10px;
+	/*padding: 0 10px 0 10px;*/
 }

@@ -34,11 +34,14 @@ var colors=[{h:203, s:4, l:77}]; //#bdc3c7 grey silver
 var isAnimated;
 var animation2;
 
+var maxWidth;
 
 //---------- sma -------------//
 var cv_sma, ctx_sma;
 var particles=[];
 var animation01;
+
+var count002=0;
 
 window.onload = function() {
 
@@ -72,7 +75,8 @@ window.onload = function() {
 
     resetPositions();
 
-    canvas.width = $(document).width()-(500+25); //context left pad = 10;
+    maxWidth=$(document).width()-(500+25); //context left pad = 10;
+    canvas.width = maxWidth;
     minHeight = 300;
     canvas.height = minHeight;
 
@@ -170,7 +174,11 @@ function calculateMinHeight(){
 }
 function createNewRectangle(aId, c, count, anchor){
 
-    if( xPos > canvas.width-xRightOffset){
+    if( xPos>canvas.width-xRightOffset){
+
+        //use to resize canvas width
+        maxWidth = canvas.width-xRightOffset+1;
+
         xPos = xLeftOffset;
         yPos += yDist;
     }
@@ -231,6 +239,7 @@ function selectRect(x, y){
             if(rectangles[i].id != pAId){
 
                 nAId = rectangles[i].id;
+                count002=rectangles[i].count;
 
                 processAllRectWhithId(nAId);
                 
@@ -265,18 +274,18 @@ function selectRect(x, y){
 
                     if(is_new){
 
-                        cookies.push(nAId);
+                        cookies.push({id:nAId, count:count002});
 
                         var str="";
 
                         for (var i = 0; i < cookies.length; i++) {
                             if(i>0)str+='%';
-                            str+=cookies[i];
+                            str+=cookies[i].id+'%'+cookies[i].count;
                         }
 
                         $.cookie('ids', str);
                         
-                        particles.push(createNewParticle(nAId, ctry));
+                        particles.push(createNewParticle(nAId, ctry, count002));
 
                         if(particles.length===1){
                             animation01=setInterval(sma_animation, 1000/30);
@@ -322,6 +331,7 @@ function selectRect(x, y){
 }
 function resetCanvasSize(){
     if(canvas.height<minHeight)canvas.height=minHeight;
+    if(canvas.width>maxWidth)canvas.width=maxWidth;
 }
 function resetPositions(){
     xPos = xLeftOffset;
@@ -379,7 +389,7 @@ function getData(){
 
         resetCanvasSize();
 
-        context.fillStyle="white";
+        context.fillStyle=COLORS[1];
         context.fillRect(0, 0, canvas.width, canvas.height); 
         context.stroke();
 
@@ -420,10 +430,11 @@ function getParticleInfos(evt){
         }
     }
 }
-function createNewParticle(id, ctry){
+function createNewParticle(id, ctry, count){
     // console.log(ctry);
     return new Particle({
         canvasId: "sma",
+        count:count,
         id: id,
         label: ctry,
         x:Math.random()*(cv_sma.width-8*2)+8, //8=particule radius*2

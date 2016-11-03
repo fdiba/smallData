@@ -2,7 +2,7 @@ body{
 	margin:0;
 	padding: 0;
 	/*background: #bdc3c7;*/
-	background: #fff;
+	background: #2c3e50; /*dark grey: midnight blue*/
 }
 a {
 	color: white
@@ -35,13 +35,10 @@ ul{
 .b_off{
 	background: #7f8c8d; /*grey asbestos*/
 }
-#content{
-	padding: 5px;
-	background: white;
-}
 #ctrl_bar{
 	width: 100%;
-	background: #ECF0F1; /*soft grey*/
+	background: #2c3e50; /*grey: midnight blue*/
+	/*background: #ECF0F1; soft grey*/
 	position: fixed;
 }
 #anim{
@@ -50,24 +47,10 @@ ul{
 	display: block;
 	padding: 0 0 0 5px;
 }
-#navigation{
-	margin: 0 5px 0 0;
-	padding: 10px;
-	background: #e74c3c; /*pink alizarin*/
-	float: left;
-	min-width: 200px;
-}
-#info{
-	margin: 0 5px 5px 0;
-	padding: 10px;
-	background: pink;
-	min-width: 200px;
-	float: left;
-}
-#info p{
-	margin: 0;
-}
 /*alphabetical order*/
+#content{
+	padding: 5px;
+}
 #cookies, #selection, #titles{
 	padding: 0 10px;
 }
@@ -77,6 +60,17 @@ ul{
 }
 #cookies{
 	background: #2ecc71; /*emerald green*/
+}
+#info{
+	margin: 0 5px 5px 0;
+	padding: 10px;
+	color: #16a085; /*dark green: green sea*/;
+	background: #34495e; /*dark blue: west asphalt*/;
+	min-width: 200px;
+	float: left;
+}
+#info p{
+	margin: 0;
 }
 #launcher{
 	margin: 0 5px 0 0;

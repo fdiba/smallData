@@ -47,6 +47,8 @@ function getISO3(ctry){
 			return "FRA";
 		case "Germany":
 			return "DEU";
+		case "Greece":
+			return "GRC";
 		case "Italy":
 			return "ITA";
 		case "Japan":

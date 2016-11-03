@@ -11,6 +11,7 @@ function Child(config){
 	this.y=config.y;
 	
 	this.id=config.id;
+	this.count=config.count;
 
 	this.label=config.label;
 	this.radius=3;
@@ -88,12 +89,11 @@ Child.prototype.display = function(){
 
 	var ctx=this.context;
 
-	ctx.fillStyle=this.colors[0];//blue
+	if(this.count>0)ctx.fillStyle=this.colors[0];//blue
+	else ctx.fillStyle='rgba(85, 152, 219, .3)';
 
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius*2, 0, 2*Math.PI);
     ctx.fill();
     ctx.closePath();
-
-
 }

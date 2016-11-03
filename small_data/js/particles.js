@@ -9,6 +9,9 @@ function Particle(config){
 
 	this.x=config.x;
 	this.y=config.y;
+
+	this.counts=[];
+	this.counts.push(config.count);
 	
 	this.ids=[];
 	this.ids.push(config.id);
@@ -49,7 +52,7 @@ Particle.prototype.openOrCloseIt = function(){
 	 	this.radius+=this.r_addon;
 
 	 	for (var i = 0; i < this.ids.length; i++) {
-	 		this.childs.push(this.createNewChild(this.ids[i]));
+	 		this.childs.push(this.createNewChild(this.ids[i], this.counts[i]));
 	 	}
 
 	} else {
@@ -78,7 +81,7 @@ Particle.prototype.processChilds=function(mouseX, mouseY){
 
         	if(childs[i].id !== this.lastHit){
 
-        		console.log('hit', childs[i].id);
+        		console.log('count', childs[i].count);
         		this.getTitlesFrom(childs[i].id);
         		this.lastHit=childs[i].id;
 
@@ -115,13 +118,14 @@ Particle.prototype.getTitlesFrom=function(artist_id){
 
 
 }
-Particle.prototype.createNewChild=function(id){
+Particle.prototype.createNewChild=function(id, count){
 
     var radius=this.radius;
 
     return new Child({
         canvasId: this.canvasId,
         id: id,
+        count: count,
         label: this.label,
         x:this.x-radius+Math.random()*(radius*2),
         y:this.y-radius+Math.random()*(radius*2)
@@ -210,8 +214,11 @@ Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 			    	var val=this.addValue;
 
 			    	if(arr[i].ids.length===1){
+			    		
 			    		// console.log("case 1");
 			    		this.ids.push(arr[i].ids.pop());
+			    		this.counts.push(arr[i].counts.pop());
+
 			    		this.radius+=val;
 			    		arr[i].alive=false;
 			    	} else {
@@ -219,7 +226,10 @@ Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 			    		console.log(this.ids.length, arr[i].ids.length);*/
 			    		if(this.ids.length>=arr[i].ids.length){
 			    			for (var j=arr[i].ids.length-1; j>=0; j--) {
+		    					
 		    					this.ids.push(arr[i].ids.pop());
+		    					this.counts.push(arr[i].counts.pop());
+
 		    					this.radius+=val;
 		    				}
 		    				arr[i].alive=false;
