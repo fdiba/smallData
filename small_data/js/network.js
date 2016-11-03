@@ -64,9 +64,19 @@ function getParticleInfos(evt){
             $("#cookies").empty().append('<p>');
             $("#cookies p").text(txt);
 
-            //TODO IF OPEN CHECK IF YOUR ARE TOUCHING CHILD
+            if(particles[i].ids.length>1){
 
-            particles[i].openOrCloseIt();
+                var child_targeted=false;
+                if(particles[i].open){
+                    child_targeted = particles[i].processChilds(mouseX, mouseY);
+                }
+
+                if(!child_targeted)particles[i].openOrCloseIt();
+            
+            } else if(particles[i].ids.length===1){
+                particles[i].getTitlesFrom(particles[i].ids[0]);
+            }
+            
             break;
         }
     }
@@ -97,7 +107,7 @@ function sma_animation(){
         
         particles[i].display();
 
-        particles[i].getAwayFrom(i, particles);
+        particles[i].getAwayOrCloserFrom(i, particles);
     }
 
     removeDeadParticles();
@@ -157,6 +167,10 @@ function getDataV2(){
         var ctry_id=allData[i+2];
         var counter=allData[i+3];
         var editions=allData[i+4];*/
+
+        for (var i=0; i<allData.length-4; i+=5) {
+            if(ENGLISH)allData[i+1]=checkCountry(allData[i+1]);
+        }
 
         var txt = "<p>no selection</p>";
 

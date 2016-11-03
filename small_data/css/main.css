@@ -50,32 +50,12 @@ ul{
 	display: block;
 	padding: 0 0 0 5px;
 }
-#links li{
-	padding: 0 0 0 5px;
-}
-#launcher{
-	margin: 0 5px 0 0;
-	padding: 10px;
-	background: #9b59b6; /*violet amethyst*/
-	float: left;
-	min-width: 200px;
-	min-width: 200px;
-	color: white;
-}
 #navigation{
 	margin: 0 5px 0 0;
 	padding: 10px;
 	background: #e74c3c; /*pink alizarin*/
 	float: left;
 	min-width: 200px;
-}
-#links{
-	margin: 0 5px 0 0;
-	padding: 5px 5px;
-	background: #3498db; /*blue */
-	min-width: 200px;
-	float: left;
-	color: white;
 }
 #info{
 	margin: 0 5px 5px 0;
@@ -89,7 +69,7 @@ ul{
 }
 /*alphabetical order*/
 #cookies, #selection, #titles{
-	padding: 0 10px 0 10px;
+	padding: 0 10px;
 }
 #cookies p, #selection p{
 	padding: 0;
@@ -98,10 +78,32 @@ ul{
 #cookies{
 	background: #2ecc71; /*emerald green*/
 }
+#launcher{
+	margin: 0 5px 0 0;
+	padding: 5px;
+	background: #9b59b6; /*violet amethyst*/
+	float: left;
+	min-width: 200px;
+	min-width: 200px;
+	color: white;
+}
+#launcher li, #links li{
+	margin: 0;
+	padding: 0 10px;
+}
+#links{
+	margin: 0 5px 0 0;
+	padding: 5px 5px;
+	background: #3498db; /*blue */
+	min-width: 200px;
+	float: left;
+	color: white;
+}
 #selection{
 	background: orange; /*orange carrot*/
 }
 #titles{
 	color: white;
+	margin: 0;
 	background: #9b59b6; /*violet amethyst*/
 }

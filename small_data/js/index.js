@@ -309,8 +309,7 @@ function selectRect(x, y){
                         titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
                     }
 
-                    // console.log(titles.length);
-                    displayTitlesInfos();
+                    displayTitlesInfosGN(titles);
 
                 });
             }
@@ -320,20 +319,6 @@ function selectRect(x, y){
             break;
         }
     }
-}
-function displayTitlesInfos(){
-    $("#titles").empty();
-    if(titles.length>0){
-        for (var i=0; i<titles.length; i++) {
-            var obj=titles[i];
-            var div='<li>'+obj.t+" "+obj.d+" "+obj.m+" "+obj.ed+'</li>';
-            $("#titles").append(div);
-        }
-    } else {
-        var div='<li>no title</li>';
-        $("#titles").append(div);
-    }
-
 }
 function resetCanvasSize(){
     if(canvas.height<minHeight)canvas.height=minHeight;
@@ -457,7 +442,7 @@ function sma_animation(){
         
         particles[i].display();
 
-        particles[i].getAwayFrom(i, particles);
+        particles[i].getAwayOrCloserFrom(i, particles);
     }
 
     removeDeadParticles();

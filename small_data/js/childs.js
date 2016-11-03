@@ -13,7 +13,7 @@ function Child(config){
 	this.id=config.id;
 
 	this.label=config.label;
-	this.radius=2;
+	this.radius=3;
 
 	this.velocity={x:0, y:0};
 
@@ -27,7 +27,6 @@ Child.prototype.getAwayFromCenter = function(t_x, t_y, t_radius){
 
 	if(distance<minDistance){
 
-
 		var x = t_x - this.x;
 		var y = t_y - this.y;
 
@@ -38,20 +37,12 @@ Child.prototype.getAwayFromCenter = function(t_x, t_y, t_radius){
 		this.velocity.y+=y;
 	}
 }
-Child.prototype.reduceVelocityAndUseIt = function(coeff){
-	this.velocity.x*=coeff;
-	this.velocity.y*=coeff;
-
-	this.x+=this.velocity.x;
-	this.y+=this.velocity.y;
-}
 Child.prototype.getCloseTo = function(t_x, t_y, t_radius){
 
-	var maxDistance = t_radius*2-4;
+	var maxDistance = t_radius*2-8;
 	var distance = dist(t_x, this.x, t_y, this.y);
 
 	if(distance>maxDistance){
-
 
 		var x = t_x - this.x;
 		var y = t_y - this.y;
@@ -67,12 +58,10 @@ Child.prototype.getAwayFrom = function(arr, radius){
 
 	for (var i=0; i<arr.length; i++) {
 
-
 		if(this.id!=arr[i].id){
 
 			var minDistance = this.radius*2+arr[i].radius*2+2;
 			var distance = dist(this.x, arr[i].x, this.y, arr[i].y);
-
 
 			if(distance<minDistance){
 
@@ -87,6 +76,13 @@ Child.prototype.getAwayFrom = function(arr, radius){
 			}
 		}
 	}
+}
+Child.prototype.reduceVelocityAndUseIt = function(coeff){
+	this.velocity.x*=coeff;
+	this.velocity.y*=coeff;
+
+	this.x+=this.velocity.x;
+	this.y+=this.velocity.y;
 }
 Child.prototype.display = function(){
 

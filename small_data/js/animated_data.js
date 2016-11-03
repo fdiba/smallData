@@ -1,4 +1,3 @@
-var english=true;
 var init=false;
 var allData;
 var canvas, context;
@@ -590,7 +589,7 @@ function getData(){
 
         for (var i=0; i<allData.length-4; i+=5) {
             var id = allData[i];
-            if(english)allData[i+1]=checkCountry(allData[i+1]);
+            if(ENGLISH)allData[i+1]=checkCountry(allData[i+1]);
             var numTitles = allData[i+3];
             numTitlesByArtist[id]=numTitles;
         }

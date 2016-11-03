@@ -6,6 +6,7 @@
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/animated_data.css">
 	<script src="lib/jquery-3.1.1.min.js"></script>
+	<script src="js/variables.js"></script>
 	<script src="js/functions.js"></script>
 	<script src="js/barchart.js"></script>
 	<script src="js/linechart.js"></script>
@@ -20,9 +21,9 @@
 				<p></p>
 				<p></p>
 			</div>
-			<div id="launcher">
-				<div class="b_off" id="get_all">get all data</div>
-			</div>
+			<ul id="launcher">
+				<li class="b_off" id="get_all">get all data</li>
+			</ul>
 			<ul id="links">
 				<li><a href="index.php">index</a></li>
 				<li><a href="network.php">network</a></li>

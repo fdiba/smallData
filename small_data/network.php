@@ -20,10 +20,11 @@
 				<h1 id="main">Network</h1>
 				<p></p>
 			</div>
-			<div id="launcher">
-				<div class="b_off" id="get_sl">get selected data</div>
-				<div class="b_off" id="get_all">get all data</div>
-			</div>
+			<ul id="launcher">
+				<li class="b_off" id="get_all">get all data</li>
+				<li class="b_off" id="get_sl">compute traces</li>
+				<li class="b_off" id="cp_all">compute all</li>		
+			</ul>
 			<ul id="links">
 				<li><a href="index.php">index</a></li>
 				<li><a href="animated_data.php">animated data</a></li>

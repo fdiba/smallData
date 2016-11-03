@@ -10,6 +10,9 @@
 	} elseif ($case==1){
 		$aId = $_POST['aId'];
 		retrieveAllCompositionsFrom($aId);
+	} elseif ($case==11){
+		$aId = $_POST['aId'];
+		retrieveAllCompositionsFrom03($aId);
 	} elseif ($case==5){
 		$aId = $_POST['aId'];
 		retrieveAllCompositionsFrom02($aId);
@@ -161,7 +164,29 @@
 		echo $result;
 
 	}
+	function retrieveAllCompositionsFrom03($aId){
 
+		require("../access/connexion.php");
+
+		$sth = $dbh->query('SELECT artist.firstName, artist.name
+							, music.id, music.title, music.duration, music.misam, music.editions
+							FROM artist
+							INNER JOIN music
+							ON artist.id = music.id_artist
+							WHERE artist.id =' . $aId);
+
+		$sth->setFetchMode(PDO::FETCH_ASSOC);
+
+		$str_all = "";
+	
+		while($row = $sth->fetch()) {
+			if(strlen($str_all)>0) $str_all .=  "%";
+			$str_all .= $row['id'] . "%" . $row['title'] . "%" . $row['duration'] . "%" . $row['misam'] . "%" . $row['editions'] . "%" . $row['firstName'] . "%" . $row['name'];
+		}
+		// if($str_all=="")$str_all="no result";
+		echo $str_all;
+
+	}
 	function retrieveAllCompositionsFrom($aId){
 
 		require("../access/connexion.php");

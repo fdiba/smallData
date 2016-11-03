@@ -1,3 +1,29 @@
+//----------- index and network ----------------//
+function displayTitlesInfosGN(arr){
+
+    $("#titles").empty();
+    if(arr.length>0){
+        for (var i=0; i<arr.length; i++) {
+            var obj=arr[i];
+            var div='<li>'+obj.t+" "+obj.d+" "+obj.m+" "+obj.ed+'</li>';
+            $("#titles").append(div);
+        }
+    } else { //TO DO REMOVE THIS CASE
+        var div='<li>no title</li>';
+        $("#titles").append(div);
+    }
+
+}
+
+//----------- only network ----------------//
+function displayFirstnameAndNameGN(obj){
+
+    $("#selection").empty().append('<p>');
+    var txt=obj.fn+' '+obj.n;
+    $("#selection p").text(txt);
+
+}
+//----------------------------------------------//
 function dist(x1, x2, y1, y2){
 	var a = x1 - x2;
 	var b = y1 - y2;

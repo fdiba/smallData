@@ -31,36 +31,89 @@ function Particle(config){
 
 	this.childs=[];
 
+	this.lastHit=-999;
+	this.titles=[];
+
 }
 Particle.prototype.openOrCloseIt = function(){
 
-	if(this.ids.length>1){
 
-		this.open=!this.open;
+	this.open=!this.open;
 
-		if(this.open){
+	if(this.open){
 
-			// console.log('open it');
-		 	this.radius+=this.r_addon;
+		var txt = this.ids.toString();
+		$("#selection p").text(txt);
 
-		 	for (var i = 0; i < this.ids.length; i++) {
-		 		this.childs.push(this.createNewChild(this.ids[i]));
-		 	}
-		 
+		// console.log('open it');
+	 	this.radius+=this.r_addon;
 
-		} else {
+	 	for (var i = 0; i < this.ids.length; i++) {
+	 		this.childs.push(this.createNewChild(this.ids[i]));
+	 	}
 
-			this.childs=[];
+	} else {
 
-			// console.log('close it');
-		 	this.radius-=this.r_addon;
+		this.childs=[];
 
-		}
-
-		console.log(this.radius);
+		// console.log('close it');
+	 	this.radius-=this.r_addon;
 
 	}
+
+	console.log(this.radius);
  	
+}
+Particle.prototype.processChilds=function(mouseX, mouseY){
+
+	var targeted=false;
+	var childs=this.childs;
+
+	for (var i=0; i<childs.length; i++) {
+
+		var distance=dist(mouseX, childs[i].x, mouseY, childs[i].y)
+        if(distance<=childs[i].radius*2){
+        	
+
+
+        	if(childs[i].id !== this.lastHit){
+
+        		console.log('hit', childs[i].id);
+        		this.getTitlesFrom(childs[i].id);
+        		this.lastHit=childs[i].id;
+
+        	}
+
+        	targeted=true;
+        	break;
+        }
+
+	}
+	return targeted;
+}
+Particle.prototype.getTitlesFrom=function(artist_id){
+
+    $.ajax({                                      
+        url: 'php/retrieve_data.php',       
+        type: "POST",
+        data: { aId: artist_id, case:11 } 
+    }).done(function(str) {
+
+        var arr=str.split("%");
+        this.titles=[];
+
+        for (var i=0; i<arr.length-6; i+=7) {
+
+        	if(i===0)displayFirstnameAndNameGN({fn:arr[i+5], n:arr[i+6]});
+            this.titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
+        }
+
+        if(this.titles.length<1)$("#selection").empty();
+        displayTitlesInfosGN(this.titles);
+
+    });
+
+
 }
 Particle.prototype.createNewChild=function(id){
 
@@ -84,7 +137,7 @@ Particle.prototype.update = function(){
 	}
 	
 }
-Particle.prototype.getAwayFrom = function(index, arr){
+Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 
 	var ctx = this.context;
 
