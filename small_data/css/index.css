@@ -23,6 +23,9 @@
 	min-width: 200px;
 	max-width: 420px;
 }
+#myCanvas{
+	margin: 0 5px 0 0;
+}
 #selection{
 	margin: 1px 0;
 }

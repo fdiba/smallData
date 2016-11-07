@@ -35,10 +35,18 @@ function getISO3(ctry){
 	switch(ctry){
 		case "Argentina":
 			return "ARG";
+		case "Austria":
+			return "AUT";
 		case "Belgium":
 			return "BEL";
+		case "Brazil":
+			return "BRA";
 		case "Canada":
 			return "CAN";
+		case "Czech Republic":
+			return "CZE";
+		case "Denmark":
+			return "DNK";
 		case "Finland":
 			return "FIN";
 		case "France":
@@ -47,20 +55,38 @@ function getISO3(ctry){
 			return "DEU";
 		case "Greece":
 			return "GRC";
+		case "Hungary":
+			return "HUN";
 		case "Italy":
 			return "ITA";
 		case "Japan":
 			return "JPN";
 		case "Netherlands":
 			return "NLD";
+		case "New Zealand":
+			return "NZL";
+		case "Norway":
+			return "NOR";
 		case "Poland":
 			return "POL";
+		case "Romania":
+			return "ROU";
+		case "Serbia":
+			return "SRB";
+		case "Slovakia":
+			return "SVK";
 		case "Spain":
 			return "ESP";
 		case "Sweden":
 			return "SWE";
+		case "Switzerland":
+			return "CHE";
 		case "United Kingdom":
 			return "GBR";
+		case "Uruguay":
+			return "URY";
+		case "Venezuela":
+			return "VEN";
 		default:
 			return ctry;
 	}
@@ -89,8 +115,12 @@ function checkCountry(ctry){
 			return "Spain";
 		case "Finlande":
 			return "Finland";
+		case "Holland":
+			return "Netherlands";
 		case "Hongrie":
 			return "Hungary";
+		case "Israel":
+			return "ISR";
 		case "Italie":
 			return "Italy";
 		case "Japon":
@@ -114,7 +144,7 @@ function checkCountry(ctry){
 		case "Suède":
 			return "Sweden";
 		case "Suisse":
-			return "Swiss";
+			return "Switzerland";
 		case "Turquie":
 			return "Turkey";
 		
@@ -128,8 +158,6 @@ function checkCountry(ctry){
 			return "Bosnia and Herzegovina";
 		case "Malte":
 			return "Malta";
-		case "Hollande":
-			return "Holland";
 		case "Israël":
 			return "Israel";
 		case "Islande":

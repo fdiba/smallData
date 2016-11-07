@@ -27,7 +27,7 @@ function Particle(config){
 
 	this.iso=getISO3(this.label);
 
-	this.addValue=1;
+	this.addValue=config.addRadiusVal; //radius
 
 	this.open=false;
 	this.r_addon=15;
@@ -45,7 +45,8 @@ Particle.prototype.openOrCloseIt = function(){
 
 	if(this.open){
 
-		var txt = this.ids.toString();
+		// var txt = this.ids.toString();
+		var txt = this.ids.length+' composers';
 		$("#selection p").text(txt);
 
 		// console.log('open it');
@@ -61,6 +62,10 @@ Particle.prototype.openOrCloseIt = function(){
 
 		// console.log('close it');
 	 	this.radius-=this.r_addon;
+	 	this.lastHit=-999;
+
+	 	$("#selection").empty();
+	 	$("#titles").empty();
 
 	}
 
@@ -76,13 +81,9 @@ Particle.prototype.processChilds=function(mouseX, mouseY){
 
 		var distance=dist(mouseX, childs[i].x, mouseY, childs[i].y)
         if(distance<=childs[i].radius*2){
-        	
-
 
         	if(childs[i].id !== this.lastHit){
-
-        		console.log('count', childs[i].count);
-
+        		console.log('id:', childs[i].id, 'count:', childs[i].count);
         		this.getTitlesFrom(childs[i].id);
         		this.lastHit=childs[i].id;
 
@@ -196,6 +197,11 @@ Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 				this.x+=this.velocity.x;
 				this.y+=this.velocity.y;
 
+				if(this.childs.length>0){
+					this.velocity.x/=this.childs.length;
+					this.velocity.y/=this.childs.length;
+				}
+
 				this.velocity.x*=.2;
 				this.velocity.y*=.2;
 
@@ -213,7 +219,7 @@ Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 			    if(distance<2){
 
 			    	var val=this.addValue;
-
+			    	
 			    	if(arr[i].ids.length===1){
 			    		
 			    		// console.log("case 1");

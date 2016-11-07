@@ -49,7 +49,7 @@ ul{
 }
 /*alphabetical order*/
 #content{
-	padding: 5px;
+	padding: 5px 5px 5px 10px;
 }
 #cookies, #selection, #titles{
 	padding: 0 10px;

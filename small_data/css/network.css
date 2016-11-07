@@ -15,7 +15,10 @@
 	margin-top: 82px;
 	
 }
+#myCanvas{
+	margin: 0 5px 0 0;
+}
 #selection{
-	/*margin: 0;*/
+	margin: 1px 0;
 	/*padding: 0 10px 0 10px;*/
 }

@@ -6,6 +6,8 @@ var allData, cookies=[], composers, particles=[];
 var animation01;
 var counter001, pointer001;
 
+var usingCookie=false;
+
 window.onload = function() {
 
 	canvas = document.getElementById('myCanvas');
@@ -18,20 +20,47 @@ window.onload = function() {
 
     getDataV2();
 }
-function getTraces(){
+function computeAll(){
 
-    document.getElementById('get_sl').removeEventListener("click", getTraces);
+	usingCookie=false;
+
+	document.getElementById('get_sl').removeEventListener("click", computeTraces);
+    document.getElementById('cp_all').removeEventListener("click", computeAll);
+
+    $("#cp_all").toggleClass('b_off b_on');
+
+    counter001=0;
+    pointer001=0;
+    composers=[];
+
+    /*var id=allData[i];
+    var ctry=allData[i+1];
+    var ctry_id=allData[i+2];
+    var counter=allData[i+3];
+    var editions=allData[i+4];*/
+
+    for (var i=0; i<allData.length-4; i+=5)composers.push({id:allData[i], count:allData[i+3]});
+
+    if(composers.length>0){
+        animation01=setInterval(sma_animation, 1000/30);
+        document.getElementById('myCanvas').addEventListener("click", getParticleInfos);
+    }
+
+}
+function computeTraces(){
+
+	usingCookie=true;
+
+    document.getElementById('get_sl').removeEventListener("click", computeTraces);
+    document.getElementById('cp_all').removeEventListener("click", computeAll);
+
     $("#get_sl").toggleClass('b_off b_on');
 
-    /*var str=$.cookie('ids');
-    $("#selection").empty();
-    $("#selection").append(str);*/
+    /*var txt=$.cookie('ids');
+    $("#selection").empty().append('<p>');
+    $("#selection p").text(txt);*/
 
     cookies = $.cookie('ids').split('%');
-
-    var txt=cookies.length+' composers';
-    $("#cookies").empty().append('<p>');
-    $("#cookies p").text(txt);
 
     counter001=0;
     pointer001=0;
@@ -39,14 +68,7 @@ function getTraces(){
 
     for (var i=0; i<cookies.length; i+=2)composers.push({id:cookies[i], count:cookies[i+1]});
 
-    /*for (var i=0; i<cookies.length; i++) {
-        var index=0;
-        while(cookies[i]!=allData[index])index+=5;
-        //use artist_id and country name as arguments
-        particles.push(createNewParticle(allData[index], allData[index+1]));
-    }
-*/
-    if(cookies.length>0){
+    if(composers.length>0){
         animation01=setInterval(sma_animation, 1000/30);
         document.getElementById('myCanvas').addEventListener("click", getParticleInfos);
     }
@@ -85,24 +107,25 @@ function getParticleInfos(evt){
         }
     }
 }
-function addParticleWithCookies(i){
+function addParticleUsing(i){
 
     var index=0;
     while(composers[i].id!=allData[index])index+=5;
+
     //use artist_id, country name and counter as arguments
-    // particles.push(createNewParticle(allData[index], allData[index+1], allData[index+3]));
-    particles.push(createNewParticle(composers[i].id, allData[index+1], composers[i].count));
+    if(usingCookie)particles.push(createNewParticle(composers[i].id, allData[index+1], composers[i].count, 1));
+    else particles.push(createNewParticle(composers[i].id, allData[index+1], composers[i].count, .2));
 
     pointer001++;
 
-    var txt=particles.length+' countries '+pointer001+'/'+cookies.length+' composers';
+    var txt=particles.length+' countries '+pointer001+'/'+composers.length+' composers';
     $("#cookies").empty().append('<p>');
     $("#cookies p").text(txt);
 
 }
 function sma_animation(){
 
-    if(counter001%10===0 && pointer001<composers.length)addParticleWithCookies(pointer001);
+    if(counter001%10===0 && pointer001<composers.length)addParticleUsing(pointer001);
 
     resetSMACanvas();
     
@@ -134,7 +157,7 @@ function resetSMACanvas(){
     context.fillStyle=COLORS[0];
     context.fillRect(0, 0, canvas.width, canvas.height);
 }
-function createNewParticle(id, ctry, count){
+function createNewParticle(id, ctry, count, addRadiusVal){
 
     //800 600
     var radius=150;
@@ -142,6 +165,7 @@ function createNewParticle(id, ctry, count){
     return new Particle({
         canvasId: "myCanvas",
         count: count,
+        addRadiusVal: addRadiusVal,
         id: id,
         label: ctry,
         x:canvas.width/2-radius+Math.random()*(radius*2),
@@ -195,8 +219,9 @@ function getDataV2(){
         /*document.getElementById('anim').addEventListener("click", animation1) ;
         canvas.addEventListener("mousedown", getInfo, false);*/
 
-        document.getElementById('get_sl').addEventListener("click", getTraces);
-        getTraces();
+        document.getElementById('get_sl').addEventListener("click", computeTraces);
+        document.getElementById('cp_all').addEventListener("click", computeAll);
+        //computeTraces();
 
     });
 

@@ -263,8 +263,8 @@ function selectRect(x, y){
 
                     if(cookies.length>0){
 
-                        for (var i = 0; i < cookies.length; i++) {
-                            if(cookies[i]===nAId){
+                        for (var i=0; i<cookies.length; i++) {
+                            if(cookies[i].id===nAId){
                                 // console.log('already in');
                                 is_new=false;
                                 break;
@@ -435,6 +435,7 @@ function createNewParticle(id, ctry, count){
     return new Particle({
         canvasId: "sma",
         count:count,
+        addRadiusVal: 1,
         id: id,
         label: ctry,
         x:Math.random()*(cv_sma.width-8*2)+8, //8=particule radius*2
