@@ -218,8 +218,10 @@ Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 
 			    if(distance<2){
 
+			    	//TODO UPDATE IT
 			    	var val=this.addValue;
-			    	
+			    	if(this.childs.length%2===0 && this.childs.length>10)val=0;
+
 			    	if(arr[i].ids.length===1){
 			    		
 			    		// console.log("case 1");

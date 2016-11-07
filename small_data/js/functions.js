@@ -35,14 +35,26 @@ function getISO3(ctry){
 	switch(ctry){
 		case "Argentina":
 			return "ARG";
+		case "Australia":
+			return "AUS";
 		case "Austria":
 			return "AUT";
 		case "Belgium":
 			return "BEL";
 		case "Brazil":
 			return "BRA";
+		case "Bulgaria":
+			return "BGR";
 		case "Canada":
 			return "CAN";
+		case "Chile":
+			return "CHL";
+		case "China":
+			return "CHN";
+		case "Colombia":
+			return "COL";
+		case "Cuba":
+			return "CUB";
 		case "Czech Republic":
 			return "CZE";
 		case "Denmark":
@@ -57,10 +69,18 @@ function getISO3(ctry){
 			return "GRC";
 		case "Hungary":
 			return "HUN";
+		case "Iceland":
+			return "ISL";
+		case "Ireland":
+			return "IRL";
+		case "Israel":
+			return "ISR";
 		case "Italy":
 			return "ITA";
 		case "Japan":
 			return "JPN";
+		case "Mexico":
+			return "MEX";
 		case "Netherlands":
 			return "NLD";
 		case "New Zealand":
@@ -69,18 +89,28 @@ function getISO3(ctry){
 			return "NOR";
 		case "Poland":
 			return "POL";
+		case "Portugal":
+			return "PRT";
 		case "Romania":
 			return "ROU";
+		case "Russia":
+			return "RUS";
 		case "Serbia":
 			return "SRB";
 		case "Slovakia":
 			return "SVK";
+		case "Slovenia":
+			return "SVN";
+		case "South Korea":
+			return "KOR";
 		case "Spain":
 			return "ESP";
 		case "Sweden":
 			return "SWE";
 		case "Switzerland":
 			return "CHE";
+		case "Taiwan":
+			return "TWN";
 		case "United Kingdom":
 			return "GBR";
 		case "Uruguay":
@@ -115,12 +145,14 @@ function checkCountry(ctry){
 			return "Spain";
 		case "Finlande":
 			return "Finland";
-		case "Holland":
+		case "Hollande": //Pays-Bas
 			return "Netherlands";
 		case "Hongrie":
 			return "Hungary";
-		case "Israel":
-			return "ISR";
+		case "Islande":
+			return "Iceland";
+		case "Israël":
+			return "Israel";
 		case "Italie":
 			return "Italy";
 		case "Japon":
@@ -145,6 +177,8 @@ function checkCountry(ctry){
 			return "Sweden";
 		case "Suisse":
 			return "Switzerland";
+		case "Taïwan":
+			return "Taiwan";
 		case "Turquie":
 			return "Turkey";
 		
@@ -158,14 +192,12 @@ function checkCountry(ctry){
 			return "Bosnia and Herzegovina";
 		case "Malte":
 			return "Malta";
-		case "Israël":
-			return "Israel";
-		case "Islande":
-			return "Iceland";
+
+
 		case "Afrique du Sud":
 			return "South Africa";
 		case "Irlande":
-			return "Irland";
+			return "Ireland";
 		case "Mexique":
 			return "Mexico";
 		case "Corée du Sud":
