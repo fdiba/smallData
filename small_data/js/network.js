@@ -7,6 +7,8 @@ var animation01;
 var counter001, pointer001;
 
 var usingCookie=false;
+var state=-999;
+var running=false;
 
 window.onload = function() {
 
@@ -19,10 +21,31 @@ window.onload = function() {
     canvas.height = Math.max(600, $(document).height()-600);
 
     getDataV2();
+
+    $(document).keypress(function(e) {
+
+	    if(e.which == 32 && state>=0) { //space bar
+
+	    	console.log('pause:', running);
+
+	        /*if(running) clearInterval(animation01);
+		    else animation01=setInterval(sma_animation, 1000/30);
+		    */
+
+		    running=!running;
+
+	    }
+	  
+	    // console.log(e.which);
+
+	});
+
 }
 function computeAll(){
 
 	usingCookie=false;
+	state=1;
+	running=true;
 
 	document.getElementById('get_sl').removeEventListener("click", computeTraces);
     document.getElementById('cp_all').removeEventListener("click", computeAll);
@@ -50,6 +73,8 @@ function computeAll(){
 function computeTraces(){
 
 	usingCookie=true;
+	state=0;
+	running=true;
 
     document.getElementById('get_sl').removeEventListener("click", computeTraces);
     document.getElementById('cp_all').removeEventListener("click", computeAll);
@@ -125,7 +150,7 @@ function addParticleUsing(i){
 }
 function sma_animation(){
 
-    if(counter001%10===0 && pointer001<composers.length)addParticleUsing(pointer001);
+    if(counter001%10===0 && pointer001<composers.length && running)addParticleUsing(pointer001);
 
     resetSMACanvas();
     
@@ -140,7 +165,7 @@ function sma_animation(){
 
     removeDeadParticles();
 
-    counter001++;
+    if(running)counter001++;
 
 }
 function removeDeadParticles(){

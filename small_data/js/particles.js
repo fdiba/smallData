@@ -30,7 +30,7 @@ function Particle(config){
 	this.addValue=config.addRadiusVal; //radius
 
 	this.open=false;
-	this.r_addon=15;
+	this.r_addon=16;
 
 	this.childs=[];
 
