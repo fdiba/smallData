@@ -122,10 +122,13 @@ function displayCpInfos(){
 
         // console.log(numTitlesByArtist[aId]);
 
+        var count=numTitlesByArtist[obj.id];
+
         if(obj.y>0){ //selected year
             var div='<li';
+            
 
-            if(numTitlesByArtist[obj.id]>0)div+= ' class="active selected">'+obj.fn+" "+obj.n+'</li>';
+            if(count>0)div+= ' class="active selected">'+obj.fn+' '+obj.n+' ('+count+')</li>';
             else div +=' class="selected">'+obj.fn+" "+obj.n+'</li>';
 
             $("#composers").append(div);
@@ -140,9 +143,9 @@ function displayCpInfos(){
 
             var div='<li';
 
-            if(numTitlesByArtist[obj.id]>0)div+= ' class="active" ';
+            if(count>0)div+= ' class="active">'+obj.fn+" "+obj.n+' ('+count+')</li>';
+            else div +='>'+obj.fn+" "+obj.n+'</li>';
 
-            div +='>'+obj.fn+" "+obj.n+'</li>';
             $("#composers").append(div);
 
             $("#composers li:last-child").attr("data-id", obj.id);
