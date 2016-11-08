@@ -196,14 +196,11 @@ Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 
 				this.x+=this.velocity.x;
 				this.y+=this.velocity.y;
-
-				if(this.childs.length>0){
-					this.velocity.x/=this.childs.length;
-					this.velocity.y/=this.childs.length;
-				}
+				
 
 				this.velocity.x*=.2;
 				this.velocity.y*=.2;
+
 
 				ctx.beginPath();
 			    ctx.moveTo(this.x, this.y);
@@ -220,7 +217,7 @@ Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 
 			    	//TODO UPDATE IT
 			    	var val=this.addValue;
-			    	if(this.childs.length%2===0 && this.childs.length>10)val=0;
+			    	// if(this.composers.length%2===0 && this.composers.length>10)val=0;
 
 			    	if(arr[i].ids.length===1){
 			    		

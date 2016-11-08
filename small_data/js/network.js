@@ -150,7 +150,10 @@ function addParticleUsing(i){
 }
 function sma_animation(){
 
-    if(counter001%10===0 && pointer001<composers.length && running)addParticleUsing(pointer001);
+    var speed=10;
+    if(state===1)speed=1; 
+
+    if(counter001%speed===0 && pointer001<composers.length && running)addParticleUsing(pointer001);
 
     resetSMACanvas();
     

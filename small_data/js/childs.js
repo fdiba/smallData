@@ -14,7 +14,9 @@ function Child(config){
 	this.count=config.count;
 
 	this.label=config.label;
-	this.radius=3;
+
+	if(this.count>0)this.radius=3;
+	else this.radius=2;
 
 	this.velocity={x:0, y:0};
 
