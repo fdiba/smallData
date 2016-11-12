@@ -126,8 +126,9 @@ LineChart.prototype.retrieveData = function(cId, year, value){
             composers.push({id:arr[i], fn:arr[i+1], n:arr[i+2], y:arr[i+3]});
         }
 
-        var txt=sl_ctry+" "+year+" "+value+"/"+composers.length+" | display only selection: "+yearSelection;        
-        editTitleInfo(txt)
+        getNumComposersInCapsulesAndTitles(cId, year, composers);
+
+        editTitleInfo(sl_ctry, year, value, composers.length, yearSelection);
         displayCpInfos();
 
     });
@@ -265,12 +266,14 @@ LineChart.prototype.drawXAxis = function(){
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
+    var yOffset=3;
+
     for (var i=0; i<=this.numXTicks; i++) {
         var label = i + this.minYear;
         var str = label.toString().substring(2, 4);
         ctx.save();
         ctx.translate(i*this.width / this.numXTicks + this.x, this.y + this.height + this.padding);
-        ctx.fillText(str, 0, 0);
+        ctx.fillText(str, 0, yOffset);
         ctx.restore();
     }
     ctx.restore();
@@ -351,7 +354,10 @@ LineChart.prototype.drawLegend = function(){
         
         ctx.fillStyle = "black";
 
-        ctx.fillText(arr[i].ctry, xPos, yPos);
+        var ctry_id=arr[i].cId;
+        var str=arr[i].ctry+' '+numCpByCountry[ctry_id].c+'/'+numCpByCountry[ctry_id].t;
+
+        ctx.fillText(str, xPos, yPos);
         
         yPos+=15;
         if(yPos>this.h-15){

@@ -1,6 +1,6 @@
 var init=false;
 var allData;
-var numTitlesByArtist=[];
+var numComposersInCapsules;
 
 var cookies=[];
 
@@ -364,26 +364,24 @@ function getData(){
         // console.log(str);
 
         allData = str.split("%");
+        numComposersInCapsules=0;
 
         //TO DEBUG AND CATCH ERROR
         // console.log(allData[0]);
 
         for (var i=0; i<allData.length-4; i+=5) {
-            var id = allData[i];
+            // var id = allData[i];
             var numTitles = allData[i+3];
-            numTitlesByArtist[id]=numTitles;
+            if(numTitles>0)numComposersInCapsules++;
         }
 
-        var txt = "<p>no selection</p>";
+        var txt = "no selection";
+        $("#selection").empty().append('<p>');
+        $("#selection p").append(txt);
 
         var num = allData.length / 5;
-        var txt2 = "allData: " + num;
-
-        $("#selection").empty();
-        $("#selection").append(txt);
-        
+        var txt2 = numComposersInCapsules+ " / " + num;
         $("#info p:eq(0)").text(txt2);
-
 
         calculateMinHeight();
 

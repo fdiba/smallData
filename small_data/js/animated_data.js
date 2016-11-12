@@ -22,6 +22,16 @@ var yearSelection=false;
 var lastComposerSelected="";
 
 var numTitlesByArtist=[];
+var maxChartWidth;
+
+var c_on=COLORS[2];
+var c_off=COLORS[0];
+var c_sl=COLORS[3];
+
+var numComposersInCapsules;
+var infos;
+var cp_infos;
+var numCpByCountry=[];
 
 window.onload = function() {
 
@@ -30,12 +40,14 @@ window.onload = function() {
     context = canvas.getContext('2d');
     //----------------------------------//
 
+    maxChartWidth=1640;
+
     cv_nav = document.getElementById('cv_nav');
     ctx_nav = cv_nav.getContext('2d');
-    cv_nav.width = $(document).width()-25;
+    cv_nav.width=maxChartWidth-440;
     cv_nav.height = 40;
 
-    ctx_nav.fillStyle=COLORS[0];
+    ctx_nav.fillStyle=COLORS[1];
     ctx_nav.fillRect(0, 0, cv_nav.width, cv_nav.height);
 
     menu = createMenu();
@@ -51,7 +63,7 @@ window.onload = function() {
 	document.getElementById('selection').addEventListener("click", toggleYearSl);
 
 	// canvas.width = $(document).width()-25; //context left pad = 10;
-	canvas.width = 1640;
+	canvas.width = maxChartWidth;
     canvas.height = 600;
     // canvas.height = 300;
 
@@ -62,20 +74,43 @@ window.onload = function() {
 //----------------- functions -----------------//
 function toggleYearSl(){
 	if(composers.length>0){
-		
 		yearSelection=!yearSelection;
-		var str = $("#selection p").html();
-		var i = str.indexOf("true"); 
-		if(i<0) str = str.replace("false", "true");
-		else  str = str.replace("true", "false");
-		editTitleInfo(str);
-
+		editTitleInfo(infos.c, infos.y, infos.nc, infos.tnc, yearSelection);
 		displayCpInfos();
 	}
 }
-function editTitleInfo(txt){
+function editTitleInfo(sl_ctry, sl_year, numOfComposers, totalNumOfComposers, sl){
+
+    infos={c:sl_ctry, y:sl_year, nc:numOfComposers, tnc:totalNumOfComposers, sl:sl};
+
+    var txt=infos.c+' '+infos.y+' '+
+            '| '+ cp_infos.num+'/'+infos.nc+ ' '+
+            '| '+ cp_infos.all+'/'+infos.tnc+' '+
+            '| '+ cp_infos.titles+'/'+cp_infos.all_titles+' records '+
+            '| display only selection: '+infos.sl;
+
 	$("#selection").empty().append('<p>');
     $("#selection p").text(txt);
+}
+function getNumComposersInCapsulesAndTitles(cId, year, composers){
+
+    cp_infos={num:0, all:0, titles:0, all_titles:0};
+
+    for (var i=0; i<composers.length; i++) {
+
+        var count=parseInt(numTitlesByArtist[composers[i].id]);
+
+        if(count>0&&composers[i].y>0){
+            cp_infos.num++;
+            cp_infos.titles+=parseInt(numTitlesByArtist[composers[i].id]);
+        }
+
+        if(count>0){
+            cp_infos.all++;
+            cp_infos.all_titles+=parseInt(numTitlesByArtist[composers[i].id]);
+        }
+    }
+
 }
 function retrieveAllTitleFrom(aId){
 
@@ -165,14 +200,11 @@ function resetContext(){
 }
 function updateSlData(){
 
-    var inf0= "allData/5: " + allData.length/5;
-    $("#info p:eq(0)").text(inf0);
-
 	var tmpY = sl_years.concat(inBtwYears);
 
     if(sl_years.length==1 && !btn01.state){
 
-        var f_data = [];
+        var f_data=[];
 
         for (var i=0; i<allData.length-4; i+=5) {
         
@@ -194,7 +226,7 @@ function updateSlData(){
 
     } else if(sl_years.length==2 || sl_years.length<1){
 
-        var f_data = [];
+        var f_data=[];
         var minY, maxY;
 
         if(sl_years.length<1) {
@@ -441,7 +473,7 @@ function selectData(evt){
 	            break;
 
 	        } else if(menu[i].state && sl_years.length==2){
-	        	ctx_nav.fillStyle=colors[4];
+	        	ctx_nav.fillStyle=c_sl;
            		ctx_nav.fillRect(menu[i].x, menu[i].y, bw, bh);
            		btnIdToEdit = i;
 	        }
@@ -471,7 +503,7 @@ function selectData(evt){
 }
 function activateBtn(id){
 	menu[id].state = true;
-    ctx_nav.fillStyle=colors[1];
+    ctx_nav.fillStyle=c_on;
     ctx_nav.fillRect(menu[id].x, menu[id].y, bw, bh);
 }
 function editSlYearsArray(){
@@ -544,7 +576,7 @@ function resetInBetweenBtn(c){
 function resetMenu(){
     for (var i=0; i<menu.length; i++) {
         menu[i].state=false;
-        ctx_nav.fillStyle=colors[0];
+        ctx_nav.fillStyle=c_off;
         ctx_nav.fillRect(menu[i].x, menu[i].y, bw, bh);
     }
 }
@@ -560,7 +592,7 @@ function createMenu(){
 function drawMenu(menu){
     for (var i = 0; i < menu.length; i++) {
         ctx_nav.lineWidth="0.75";
-        ctx_nav.strokeStyle=colors[1];
+        ctx_nav.strokeStyle=COLORS[0];
         ctx_nav.strokeRect(menu[i].x, menu[i].y, bw, bh);
         ctx_nav.fillStyle=colors[0];
         ctx_nav.fillRect(menu[i].x, menu[i].y, bw, bh);
@@ -569,7 +601,7 @@ function drawMenu(menu){
     ctx_nav.lineWidth="0.75";
     ctx_nav.strokeStyle=colors[2];
     ctx_nav.strokeRect(btn01.x, btn01.y, bw, bh);
-    ctx_nav.fillStyle=colors[0];
+    ctx_nav.fillStyle=c_off;
     ctx_nav.fillRect(btn01.x, btn01.y, bw, bh);
 
 }
@@ -588,23 +620,37 @@ function getData(){
         data: {case:10} 
     }).done(function(str) {
 
+        numComposersInCapsules=0;
     	allData = str.split("%");
+
+          /*var id=allData[i];
+        var ctry=allData[i+1];
+        var ctry_id=allData[i+2];
+        var counter=allData[i+3];
+        var editions=allData[i+4];*/
 
         for (var i=0; i<allData.length-4; i+=5) {
             var id = allData[i];
             if(ENGLISH)allData[i+1]=checkCountry(allData[i+1]);
             var numTitles = allData[i+3];
             numTitlesByArtist[id]=numTitles;
+
+            var ctry_id=allData[i+2];
+            
+            if(numCpByCountry[ctry_id])numCpByCountry[ctry_id].t++;
+            else numCpByCountry[ctry_id]={t:1, c:0};
+
+            if(numTitles>0)numCpByCountry[ctry_id].c++;
+
+            if(numTitles>0)numComposersInCapsules++;
         }
 
-    	var txt = "<p>no selection</p>";
+    	var txt = "no selection";
+        $("#selection").empty().append('<p>');
+        $("#selection p").append(txt);
 
-    	var num = allData.length / 5;
-    	var txt2 = "allData: " + num;
-
-        $("#selection").empty();
-        $("#selection").append(txt);
-        
+        var num = allData.length / 5;
+        var txt2 = numComposersInCapsules+ " / " + num;
         $("#info p:eq(0)").text(txt2);
 
         //TODO REMOVE 
