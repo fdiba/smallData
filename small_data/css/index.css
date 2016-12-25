@@ -26,6 +26,28 @@
 #myCanvas{
 	margin: 0 5px 0 0;
 }
+#searchBox{
+	padding: 5px;
+	min-width: 400px;
+	min-height: 40px;
+	background: pink;
+	float: left;
+	display: inline;
+}
+#searchBox #myForm{
+	float: left;
+	display: inline;
+}
+#searchBoxBtn{
+	min-width: 20px;
+	min-height: 20px;
+	background: yellow;
+	float: right;
+	display: inline;
+}
+#searchBoxBtn:hover{
+	background: white;
+}
 #selection{
 	margin: 1px 0;
 }

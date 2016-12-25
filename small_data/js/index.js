@@ -67,6 +67,11 @@ window.onload = function() {
 
     document.getElementById('get_all').addEventListener("click", getData);
 
+    //----------------------------------//
+
+    document.getElementById('searchBoxBtn').addEventListener("click", getSearchTerms);
+
+    //----------------------------------//
 
     pAId=-1;
     xLeftOffset = 0;
@@ -501,4 +506,10 @@ function noise_animation(){
     }
 
     tNoise+=15;
+}
+//--------- interactivity ----------//
+
+function getSearchTerms(){
+    var str = $('#searchTerms').val();
+    console.log(str);
 }

@@ -20,6 +20,10 @@ window.onload = function() {
     canvas.width = Math.max(800, $(document).width()-600);
     canvas.height = Math.max(600, $(document).height()-600);
 
+
+    /*canvas.width = Math.max(400, $(document).width()-600);
+    canvas.height = Math.max(800, $(document).height()-600);*/
+
     getDataV2();
 
     $(document).keypress(function(e) {
@@ -182,6 +186,7 @@ function removeDeadParticles(){
     }
 }
 function resetSMACanvas(){
+	// context.fillStyle="white";
     context.fillStyle=COLORS[0];
     context.fillRect(0, 0, canvas.width, canvas.height);
 }
