@@ -5,7 +5,7 @@
 	margin-top: 82px;
 	clear: left;
 }
-#cookies, #selection, #titles{
+#cookies, #selection, #titles, #results{
 	width: 330px;/*-20 padding*/
 	/*max-width: 330px;*/
 	
@@ -25,6 +25,16 @@
 }
 #myCanvas{
 	margin: 0 5px 0 0;
+}
+#results{
+	margin: 1px 0;
+	background: white;
+	padding: 0 10px;
+}
+#results p{
+	padding: 0;
+	margin: 0;
+	display: block;
 }
 #searchBox{
 	padding: 5px;

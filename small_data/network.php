@@ -26,7 +26,7 @@
 				<li class="b_off" id="cp_all">compute all</li>		
 			</ul>
 			<ul id="links">
-				<li><a href="index.php">index</a></li>
+				<li><a href="overview.php">overview</a></li>
 				<li><a href="animated_data.php">animated data</a></li>
 			</ul>
 		</div>

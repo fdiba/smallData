@@ -10,17 +10,84 @@
 	} elseif ($case==1){
 		$aId = $_POST['aId'];
 		retrieveAllCompositionsFrom($aId);
-	} elseif ($case==11){
-		$aId = $_POST['aId'];
-		retrieveAllCompositionsFrom03($aId);
 	} elseif ($case==5){
 		$aId = $_POST['aId'];
 		retrieveAllCompositionsFrom02($aId);
 	} elseif ($case==10){
 		queryDB();
+	} elseif ($case==11){
+		$aId = $_POST['aId'];
+		retrieveAllCompositionsFrom03($aId);
+	} elseif($case==28){ //overview.js
+		$terms = $_POST['terms'];
+		retrieveAllComposersNamed($terms);
 	}
 
 	//-------------------------------- functions --------------------------------------//
+
+	function retrieveAllComposersNamed($str){
+
+		$t=$str;
+
+		$terms = explode(' ', $str);
+		$where_str="";
+
+		$where_str = ' WHERE name LIKE \'%' . $terms[0] .'%\'
+							 OR firstName LIKE \'%' . $terms[0] . '%\'';
+
+		$req = 'SELECT id, firstName, name FROM artist';
+
+		
+		for ($j=0; $j < sizeof($terms); $j++) { 
+			if($j==0){
+				$where_str = ' WHERE name LIKE \'%' . $terms[$j] .'%\'
+							 OR firstName LIKE \'%' . $terms[$j] . '%\'';	
+			} else {
+				$where_str = ' OR name LIKE \'%' . $terms[$j] .'%\'
+							 OR firstName LIKE \'%' . $terms[$j] . '%\'';
+			}
+
+			$req .= $where_str;
+		}
+
+
+		//TODO split str if space !!
+
+		require("../access/connexion.php");
+
+		//---------------
+		// SELECT id, firstName, name FROM artist WHERE name LIKE '%e%' 
+		$sth = $dbh->query($req);
+
+		/*$sth = $dbh->query('SELECT id, firstName, name
+							FROM artist ' .
+							$where_str 
+							');*/
+
+		$arr= array();
+		$results="";
+
+
+		while($row = $sth->fetch()) {
+			$id=$row['id'];
+			$firstName=$row['firstName'];
+			$name=$row['name'];
+			array_push($arr, $id, $firstName, $name);
+		}
+
+		if(sizeof($arr)>0){
+			for($i=0; $i<sizeof($arr); $i++){
+				
+				if($i<sizeof($arr)-1)$results.=$arr[$i].'%';
+				else $results.=$arr[$i];
+
+			}
+		}
+
+		echo $results;
+
+	}
+
 
 	function queryDB(){
 

@@ -43,6 +43,10 @@ var animation01;
 
 var count002=0;
 
+//---------- query results -------------//
+var composers=[];
+var newResults=false;
+
 window.onload = function() {
 
 	//------------ navigation ------------//
@@ -237,7 +241,6 @@ function selectRect(x, y){
            y>=rectangles[i].y && y<=rectangles[i].y+rHeight) {
 
             if(pAId>=0){
-                // drawRect(rectangles[pAId].x, rectangles[pAId].y, rectangles[pAId].color);
                 resetAllRectWhithId(pAId);
             }
 
@@ -349,6 +352,10 @@ function getInfo(evt) {
     var mouseX = evt.clientX - cv.left;
     var mouseY = evt.clientY - cv.top;
 
+    if(newResults){
+        resetSaturation(avg_sat);
+        newResults=false;
+    }
     selectRect(mouseX, mouseY);
 
 }
@@ -409,6 +416,7 @@ function getData(){
 
     });
 }
+//-----------------------------------//
 //--------- sma function ------------//
 function resetSMACanvas(){
     ctx_sma.fillStyle=h_colors[0];
@@ -507,9 +515,114 @@ function noise_animation(){
 
     tNoise+=15;
 }
-//--------- interactivity ----------//
+//-----------------------------------//
+//--------- interactivity -----------//
 
 function getSearchTerms(){
-    var str = $('#searchTerms').val();
-    console.log(str);
+
+    var terms = $('#searchTerms').val();
+
+    if(terms==""){
+        $("#results").empty();
+        resetSaturation(avg_sat);
+        newResults=false;
+        return;
+    }
+
+    //-------- second query
+    $.ajax({                                      
+        url: 'php/retrieve_data.php',       
+        type: "POST",
+        data: { terms: terms, case:28 } 
+    }).done(function(str) {
+
+        // $("#results p").text(str);
+        // $("#results p").text(str);
+
+        $("#results").empty();
+
+        if(str.indexOf("%")<0){
+
+            $("#results").append('<p>');
+            $("#results p").text("no result");
+
+        } else{
+
+            newResults=true;
+            
+            composers = str.split("%");
+
+            var numOfElements = 3;
+
+            if(composers.length<numOfElements+1){
+
+                // console.log("one composer!");
+
+                createComposersListing(numOfElements);
+
+                // console.log(rectangles.length);
+
+                editRectanglesColorBasedOnQueryWithComposerId(composers[0]);
+
+            } else {
+
+                createComposersListing(numOfElements);
+
+                for (var j=0; j<rectangles.length; j++){
+            
+                    drawRect(rectangles[j].x, rectangles[j].y, rectangles[j].color);
+                    
+                }
+
+            }         
+
+        }
+
+        // console.log(composers.length);
+
+    });
+}
+
+//-------------//
+function createComposersListing(num){
+
+    for (var i = 0; i < composers.length; i+=num) {
+
+        var count = -1;
+
+        for (var j=0; j<allData.length-4; j+=5) {
+            if(composers[i]===allData[j]){
+                count=allData[j+3];
+                break;
+            }
+        }
+
+        $("#results").append('<p>' +
+            composers[i] + ' ' + 
+            composers[i+1] + ' ' + 
+            composers[i+2] + ' ' +
+            count + ' ' +
+            '</p>');
+
+        $("#results p:last").click(function(evt) {
+            var id = $(evt.target).text().split(' ')[0];
+            editRectanglesColorBasedOnQueryWithComposerId(id);
+        });
+    }
+}
+function test004(){
+    console.log("test");
+}
+function editRectanglesColorBasedOnQueryWithComposerId(composerId){
+
+    for (var j=0; j<rectangles.length; j++){
+        if(rectangles[j].id===composerId){
+            drawRect(rectangles[j].x, rectangles[j].y, "yellow");
+        } else {
+            var c = rectangles[j].color;
+            if(c.indexOf('50%,')>0)c=c.replace('50%,', '4%,');
+            drawRect(rectangles[j].x, rectangles[j].y, c);
+            //console.log(rectangles[j].color);
+        }
+    }
 }

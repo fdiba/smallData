@@ -25,7 +25,7 @@
 				<li class="b_off" id="get_all">get all data</li>
 			</ul>
 			<ul id="links">
-				<li><a href="index.php">index</a></li>
+				<li><a href="overview.php">overview</a></li>
 				<li><a href="network.php">network</a></li>
 			</ul>
 		</div>
