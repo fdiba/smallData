@@ -111,6 +111,15 @@ function animation1(evt){
     $("#anim").toggleClass('b_off b_on');
 
 }
+function resetSaturationForAllRects(){
+
+    for(var i=0; i<rectangles.length; i++){
+
+        drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
+        
+    } 
+
+}
 function resetSaturation(sat){
 
 	for(var i=0; i<rectangles.length; i++){
@@ -353,7 +362,8 @@ function getInfo(evt) {
     var mouseY = evt.clientY - cv.top;
 
     if(newResults){
-        resetSaturation(avg_sat);
+        $("#results").empty();
+        resetSaturationForAllRects();
         newResults=false;
     }
     selectRect(mouseX, mouseY);
@@ -536,9 +546,6 @@ function getSearchTerms(){
         data: { terms: terms, case:28 } 
     }).done(function(str) {
 
-        // $("#results p").text(str);
-        // $("#results p").text(str);
-
         $("#results").empty();
 
         if(str.indexOf("%")<0){
@@ -547,9 +554,7 @@ function getSearchTerms(){
             $("#results p").text("no result");
 
         } else{
-
-            newResults=true;
-            
+    
             composers = str.split("%");
 
             var numOfElements = 3;
@@ -559,8 +564,6 @@ function getSearchTerms(){
                 // console.log("one composer!");
 
                 createComposersListing(numOfElements);
-
-                // console.log(rectangles.length);
 
                 editRectanglesColorBasedOnQueryWithComposerId(composers[0]);
 
@@ -577,41 +580,62 @@ function getSearchTerms(){
             }         
 
         }
-
-        // console.log(composers.length);
-
     });
 }
 
 //-------------//
 function createComposersListing(num){
 
+    var arr=[];
+
     for (var i = 0; i < composers.length; i+=num) {
 
         var count = -1;
+        var id = composers[i];
 
         for (var j=0; j<allData.length-4; j+=5) {
-            if(composers[i]===allData[j]){
+            if(id===allData[j]){
                 count=allData[j+3];
                 break;
             }
         }
 
-        $("#results").append('<p>' +
-            composers[i] + ' ' + 
-            composers[i+1] + ' ' + 
-            composers[i+2] + ' ' +
-            count + ' ' +
-            '</p>');
+        var str ='<p>' + id + ' ' + composers[i+1] + ' ' + 
+            composers[i+2] + ' ' + count + ' ' + '</p>';
+        
+        if(arr.length<1){
+            arr.push([count, str]);
+            // console.log(str);
+        } else {
 
-        $("#results p:last").click(function(evt) {
-            var id = $(evt.target).text().split(' ')[0];
-            editRectanglesColorBasedOnQueryWithComposerId(id);
-        });
+            for (var k=0; k<arr.length; k++) {
+
+                if(parseInt(count)>=parseInt(arr[k][0])){
+                    arr.splice(k, 0, [count, str]);
+                    // arr.push([count, str]);
+                    break;
+                } else if(k===arr.length-1){
+                    arr.push([count, str]);
+                    break;
+                }
+
+            }
+
+        }
+        
     }
-}
-function test004(){
-    console.log("test");
+
+    for (var l=0; l<arr.length; l++) {
+        $("#results").append(arr[l][1]);
+    }
+
+    $("#results p").click(function(evt) {
+        var id = $(evt.target).text().split(' ')[0];
+        editRectanglesColorBasedOnQueryWithComposerId(id);
+    });
+
+    console.log(composers.length/num, arr.length);
+
 }
 function editRectanglesColorBasedOnQueryWithComposerId(composerId){
 
@@ -622,7 +646,8 @@ function editRectanglesColorBasedOnQueryWithComposerId(composerId){
             var c = rectangles[j].color;
             if(c.indexOf('50%,')>0)c=c.replace('50%,', '4%,');
             drawRect(rectangles[j].x, rectangles[j].y, c);
-            //console.log(rectangles[j].color);
         }
     }
+
+    newResults=true;
 }
