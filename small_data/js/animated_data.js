@@ -33,7 +33,12 @@ var infos;
 var cp_infos;
 var numCpByCountry=[];
 
+var takeCountIntoAccount;
+
 window.onload = function() {
+
+    //TODO CONTROL USING GUI
+    takeCountIntoAccount=false;
 
 	//------------ canvas ------------//
     canvas = document.getElementById('myCanvas');
@@ -202,17 +207,24 @@ function updateSlData(){
 
 	var tmpY = sl_years.concat(inBtwYears);
 
-    if(sl_years.length==1 && !btn01.state){
+    if(sl_years.length==1 && !btn01.state){ //bar chart --> display only one year
 
         var f_data=[];
 
         for (var i=0; i<allData.length-4; i+=5) {
-        
+
             var arr = allData[i+4].split(",");
+            var count = allData[i+3];
 
             for (var j=0; j<arr.length; j++) {
                 if(tmpY.includes(parseInt(arr[j]))){
-                    f_data.push({id: allData[i], ctry: allData[i+1], cId: allData[i+2], edition: allData[i+4]});
+
+                    if(takeCountIntoAccount){
+                        if(count>0)f_data.push({id: allData[i], ctry: allData[i+1], cId: allData[i+2], edition: allData[i+4]});
+                    } else {
+                        f_data.push({id: allData[i], ctry: allData[i+1], cId: allData[i+2], edition: allData[i+4]});
+                    }
+
                     break;
                 }
             }
@@ -224,7 +236,7 @@ function updateSlData(){
         resetContext();
     	generateBarChart(f_data);
 
-    } else if(sl_years.length==2 || sl_years.length<1){
+    } else if(sl_years.length==2 || sl_years.length<1){ //line chart
 
         var f_data=[];
         var minY, maxY;
@@ -239,9 +251,20 @@ function updateSlData(){
 
         for (var i=0; i<allData.length-4; i+=5) {
 
+            var count = allData[i+3];
+            //not well enough written : when count > 0 all editions are ++
+            //takeCountIntoAccount must be false to not take count into account to draw lines
+
+            if(i===0){
+                console.log('id:', allData[i], 'ctry:',allData[i+1], 'ctry_id:', allData[i+2],
+                'artist appearance in capsules:', count, 'editions:', allData[i+4]);
+            }
+
             if(f_data.length<1){
                 
                 f_data.push({ctry: allData[i+1], cId: allData[i+2], arr: []});
+
+                //init editions array
                 for (var j=0; j<=maxY-minY; j++)f_data[f_data.length-1].arr[j]=0;
 
                 //-------------
@@ -249,7 +272,13 @@ function updateSlData(){
                 var year=minY;
 
                 while(year<maxY+1){
-                    if(t_years.includes(year))f_data[0].arr[year-minY]+=1;
+                    
+                    if(takeCountIntoAccount){
+                        if(t_years.includes(year) && count>0)f_data[0].arr[year-minY]+=1;
+                    } else {
+                        if(t_years.includes(year))f_data[0].arr[year-minY]+=1;
+                    }
+
                     year++;
                 }
                 //------------                
@@ -266,7 +295,13 @@ function updateSlData(){
                         var year=minY;
 
                         while(year<maxY+1){  //f_data[k]
-                            if(t_years.includes(year))f_data[k].arr[year-minY]+=1;
+
+                            if(takeCountIntoAccount){
+                                if(t_years.includes(year) && count>0)f_data[k].arr[year-minY]+=1;
+                            } else {
+                                if(t_years.includes(year))f_data[k].arr[year-minY]+=1;
+                            }
+
                             year++;
                         }
                         //---------------------
@@ -286,7 +321,14 @@ function updateSlData(){
                     var year=minY;
 
                     while(year<maxY+1){  //f_data[f_data.length-1]
-                        if(t_years.includes(year))f_data[f_data.length-1].arr[year-minY]+=1;
+
+
+                        if(takeCountIntoAccount){
+                            if(t_years.includes(year)  && count>0)f_data[f_data.length-1].arr[year-minY]+=1;
+                        } else {
+                            if(t_years.includes(year))f_data[f_data.length-1].arr[year-minY]+=1;
+                        }
+
                         year++;
                     }
                     //------------
@@ -623,7 +665,7 @@ function getData(){
         numComposersInCapsules=0;
     	allData = str.split("%");
 
-          /*var id=allData[i];
+        /*var id=allData[i];
         var ctry=allData[i+1];
         var ctry_id=allData[i+2];
         var counter=allData[i+3];
@@ -640,9 +682,11 @@ function getData(){
             if(numCpByCountry[ctry_id])numCpByCountry[ctry_id].t++;
             else numCpByCountry[ctry_id]={t:1, c:0};
 
-            if(numTitles>0)numCpByCountry[ctry_id].c++;
+            if(numTitles>0){
+                numCpByCountry[ctry_id].c++;
+                numComposersInCapsules++;
+            }
 
-            if(numTitles>0)numComposersInCapsules++;
         }
 
     	var txt = "no selection";
