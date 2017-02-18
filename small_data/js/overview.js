@@ -634,7 +634,7 @@ function createComposersListing(num){
         editRectanglesColorBasedOnQueryWithComposerId(id);
     });
 
-    console.log(composers.length/num, arr.length);
+    // console.log(composers.length/num, arr.length);
 
 }
 function editRectanglesColorBasedOnQueryWithComposerId(composerId){
