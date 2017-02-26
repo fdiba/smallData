@@ -59,6 +59,11 @@ window.onload = function() {
 
     canvas = document.getElementById('myCanvas');
     context = canvas.getContext('2d');
+
+    //----------------------------------//
+
+    //hide animation
+    $('#anim').hide();
  
     //----------------------------------//
 
@@ -89,11 +94,15 @@ window.onload = function() {
     minHeight = 300;
     canvas.height = minHeight;
 
+
+    context.fillStyle=h_colors[0];
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
     xRightOffset = 10;
 
     $("#titles").css({"clear": "both"});
     
-    getData();
+    //getData();
 
 }
 function drawRect(x, y, c){
