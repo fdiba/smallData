@@ -4,7 +4,7 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 } else if(isset($_COOKIE["access"]) && $_COOKIE["access"]=="open"){
 	setcookie("access", "open", time()+3600);
 } else if(isset($_GET["src"]) && $_GET["src"]=="ISEA17"){
-	setcookie("access", "open", time()+3600*10);
+	setcookie("access", "open", time()+3600);
 } else {
 	header('Location: ../index.php'); 
 }
