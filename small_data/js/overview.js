@@ -87,6 +87,10 @@ window.onload = function() {
     xDist = 11, yDist = 11;
     rWidth = 10, rHeight = 10;
 
+    //-------- print -------//
+    /*xDist = 33, yDist = 33;
+    rWidth = 30, rHeight = 30;*/
+
     resetPositions();
 
     maxWidth=$(document).width()-(500+25); //context left pad = 10;
@@ -480,6 +484,8 @@ function sma_animation(){
 
     for (var i=0; i<particles.length; i++) {
         particles[i].update();
+        //if(particles[i].ids.length<2)particles[i].addNoiseField(2.);
+        particles[i].addNoiseField(2);
         particles[i].checkEdges();
         
         particles[i].display();

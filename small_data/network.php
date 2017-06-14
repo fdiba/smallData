@@ -10,13 +10,14 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Network</title>
+	<title>Network | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/network.css">
 	<?php include_once("../../analyticstracking.php") ?>
 	<script src="lib/jquery-3.1.1.min.js"></script>
 	<script src="lib/jquery.cookie.js"></script>
+	<script src="lib/perlin.js"></script>
 	<script src="js/variables.js"></script>
     <script src="js/functions.js"></script>
     <script src="js/childs.js"></script>
@@ -39,6 +40,9 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 				<li><a href="index.php">overview</a></li>
 				<li><a href="animated_data.php">animated data</a></li>
 			</ul>
+			<div id="commons">
+				<p>null</p>
+			</div>
 		</div>
 		<div id="main_container">
 			<canvas id="myCanvas" width="500" height="500">Votre navigateur ne supporte pas les canvas.</canvas>

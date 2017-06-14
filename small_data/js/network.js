@@ -10,6 +10,10 @@ var usingCookie=false;
 var state=-999;
 var running=false;
 
+var main_attributes=[];
+var sl_attribute='';
+var attr_treshold=250;
+
 window.onload = function() {
 
 	canvas = document.getElementById('myCanvas');
@@ -20,10 +24,6 @@ window.onload = function() {
     canvas.width = Math.max(800, $(document).width()-600);
     canvas.height = Math.max(600, $(document).height()-600);
 
-
-    /*canvas.width = Math.max(400, $(document).width()-600);
-    canvas.height = Math.max(800, $(document).height()-600);*/
-
     getDataV2();
 
     $(document).keypress(function(e) {
@@ -32,16 +32,10 @@ window.onload = function() {
 
 	    	console.log('pause:', running);
 
-	        /*if(running) clearInterval(animation01);
-		    else animation01=setInterval(sma_animation, 1000/30);
-		    */
-
 		    running=!running;
 
 	    }
 	  
-	    // console.log(e.which);
-
 	});
 
 }
@@ -160,20 +154,83 @@ function sma_animation(){
     if(counter001%speed===0 && pointer001<composers.length && running)addParticleUsing(pointer001);
 
     resetSMACanvas();
-    
-    for (var i=0; i<particles.length; i++) {
-        particles[i].update();
-        particles[i].checkEdges();
-        
-        particles[i].display();
 
-        particles[i].getAwayOrCloserFrom(i, particles);
+
+    if(sl_attribute.localeCompare("")==0){
+        shareInformation();
+    } else {
+        allowGrouping();
     }
-
-    removeDeadParticles();
 
     if(running)counter001++;
 
+}
+function shareInformation(){
+
+    for (var i=0; i<particles.length; i++) {
+        
+        particles[i].addNoiseField(6.);
+
+        var attributes = particles[i].SearchCommonsAndGetAwayFrom22(i, particles);
+
+        if(attributes.length>0)checkAttributes(attributes);
+
+        particles[i].checkEdges();
+        particles[i].display();
+
+    }
+
+}
+function checkAttributes(attributes){
+
+    //console.log("check it");
+
+    if(main_attributes.length<1){
+
+        for (var i=0; i<attributes.length; i++) {
+            main_attributes.push(attributes[i]);
+        }
+
+    } else {
+
+        for (var i=0; i<attributes.length; i++) {
+
+            var hasBeenFound=false;
+
+            for (var j=0; j<main_attributes.length; j++){
+
+                if(attributes[i].name.localeCompare(main_attributes[j].name)==0){
+                    main_attributes[j].count+=attributes[i].count;
+                    hasBeenFound = true;
+                    break; 
+                }
+            }
+
+            if(!hasBeenFound)main_attributes.push(attributes[i]);
+        }
+    }
+
+    var str = main_attributes.length + ' ' + main_attributes[0].name + ' ' + main_attributes[0].count;
+    $("#commons p" ).html(str);
+
+    if(main_attributes[0].count>attr_treshold){
+        $("#commons p").on("click", setCommonAttr).css("text-decoration", "underline");  
+    }
+}
+function setCommonAttr(){
+    console.log("woor");
+    sl_attribute = main_attributes[0].name;
+    $("#commons p" ).off("click").css("text-decoration", "none");  
+}
+function allowGrouping(){
+    for (var i=0; i<particles.length; i++) {
+        particles[i].update();
+        particles[i].addNoiseField(2.);
+        particles[i].checkEdges();   
+        particles[i].display();
+        particles[i].getAwayOrCloserFrom(i, particles);
+    }
+    removeDeadParticles();
 }
 function removeDeadParticles(){
     
