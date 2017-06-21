@@ -10,7 +10,8 @@ function Particle(config){
 	this.x=config.x;
 	this.y=config.y;
 
-	this.range = config.range;
+	if(config.range)this.range=config.range;
+	else this.range = 800;
 
 	this.counts=[];
 	this.counts.push(config.count);

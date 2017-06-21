@@ -15,7 +15,7 @@ var sl_attribute='';
 var attr_treshold=250;
 
 var showParticlesRange;
-var particleRange=1200;
+var particleRange=800;
 
 window.onload = function() {
 
@@ -25,7 +25,7 @@ window.onload = function() {
     document.getElementById('get_all').addEventListener("click", getDataV2);
 
     canvas.width = Math.max(800, $(document).width()-600);
-    canvas.height = Math.max(800, $(document).height()-600);
+    canvas.height = Math.max(600, $(document).height()-600);
 
     getDataV2();
 
