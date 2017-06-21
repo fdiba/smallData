@@ -14,6 +14,9 @@ var main_attributes=[];
 var sl_attribute='';
 var attr_treshold=250;
 
+var showParticlesRange;
+var particleRange=1200;
+
 window.onload = function() {
 
 	canvas = document.getElementById('myCanvas');
@@ -22,21 +25,56 @@ window.onload = function() {
     document.getElementById('get_all').addEventListener("click", getDataV2);
 
     canvas.width = Math.max(800, $(document).width()-600);
-    canvas.height = Math.max(600, $(document).height()-600);
+    canvas.height = Math.max(800, $(document).height()-600);
 
     getDataV2();
 
     $(document).keypress(function(e) {
 
-	    if(e.which == 32 && state>=0) { //space bar
+        if(state>=0){
 
-	    	console.log('pause:', running);
+            if(e.which == 32) { //space bar
+                console.log('pause:', running);
+                running=!running;
+            }
 
-		    running=!running;
+        }
 
-	    }
-	  
 	});
+
+    $(document).keydown(function(e){
+        console.log(e.which);
+
+        if(e.which == 38) { //key up
+
+            showParticlesRange=true;
+            console.log('showParticlesRange:', showParticlesRange);
+            editParticlesRange(true);
+
+        } else if (e.which == 40) { //key up
+
+            showParticlesRange=true;
+            console.log('showParticlesRange:', showParticlesRange);
+            editParticlesRange(false);
+
+        }
+    });
+
+    $(document).keyup(function(e){
+        console.log(e.which);
+
+        if(e.which == 38) { //key up
+
+            showParticlesRange=false;
+            console.log('showParticlesRange:', showParticlesRange);
+
+        } else if (e.which == 40) { //key up
+
+            showParticlesRange=false;
+            console.log('showParticlesRange:', showParticlesRange);
+
+        }
+    });
 
 }
 function computeAll(){
@@ -159,6 +197,7 @@ function sma_animation(){
     if(sl_attribute.localeCompare("")==0){
         shareInformation();
     } else {
+        if(showParticlesRange)displayParticlesRange();
         allowGrouping();
     }
 
@@ -218,7 +257,6 @@ function checkAttributes(attributes){
     }
 }
 function setCommonAttr(){
-    console.log("woor");
     sl_attribute = main_attributes[0].name;
     $("#commons p" ).off("click").css("text-decoration", "none");  
 }
@@ -226,11 +264,23 @@ function allowGrouping(){
     for (var i=0; i<particles.length; i++) {
         particles[i].update();
         particles[i].addNoiseField(2.);
-        particles[i].checkEdges();   
-        particles[i].display();
+        particles[i].checkEdges();
         particles[i].getAwayOrCloserFrom(i, particles);
+        particles[i].display();
     }
     removeDeadParticles();
+}
+function editParticlesRange(up){
+    for (var i=0; i<particles.length; i++) particles[i].editRange(particleRange);
+    if(up){
+        particleRange+=10;
+    } else {
+        particleRange-=10;
+        if(particleRange<0)particleRange=0;
+    }
+}
+function displayParticlesRange(){
+    for (var i=0; i<particles.length; i++) particles[i].displayRange();
 }
 function removeDeadParticles(){
     
@@ -259,7 +309,8 @@ function createNewParticle(id, ctry, count, addRadiusVal){
         id: id,
         label: ctry,
         x:canvas.width/2-radius+Math.random()*(radius*2),
-        y:canvas.height/2-radius+Math.random()*(radius*2)
+        y:canvas.height/2-radius+Math.random()*(radius*2),
+        range:particleRange
     });
 }
 function getDataV2(){

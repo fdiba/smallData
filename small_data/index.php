@@ -5,6 +5,8 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 	setcookie("access", "open", time()+3600);
 } else if(isset($_GET["src"]) && $_GET["src"]=="ISEA17"){
 	setcookie("access", "open", time()+3600);
+} else if(isset($_GET["src"]) && $_GET["src"]=="EVA17"){
+	setcookie("access", "open", time()+3600);
 } else {
 	header('Location: ../index.php'); 
 }
@@ -38,7 +40,7 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 			</ul>
 			<ul id="links">
 				<li><a href="network.php">network</a></li>
-				<li><a href="animated_data.php">animated data</a></li>
+				<li><a href="animated_data.php">line charts</a></li>
 			</ul>
 			<div id="searchBox">
 				<form id="myForm">

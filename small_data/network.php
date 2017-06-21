@@ -38,7 +38,7 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 			</ul>
 			<ul id="links">
 				<li><a href="index.php">overview</a></li>
-				<li><a href="animated_data.php">animated data</a></li>
+				<li><a href="animated_data.php">line charts</a></li>
 			</ul>
 			<div id="commons">
 				<p>null</p>

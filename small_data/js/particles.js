@@ -10,6 +10,8 @@ function Particle(config){
 	this.x=config.x;
 	this.y=config.y;
 
+	this.range = config.range;
+
 	this.counts=[];
 	this.counts.push(config.count);
 	
@@ -18,6 +20,8 @@ function Particle(config){
 
 	this.label=config.label;
 	this.radius=4;
+
+	this.chance = Math.random()*100;
 
 	//particles.push(createNewParticle(composers[i].id, allData[index+1], composers[i].count, 1));
 	//particles.push(createNewParticle(100, "France", 3, 1));
@@ -33,6 +37,11 @@ function Particle(config){
 	this.velocity={x:0, y:0};
 
 	this.alpha=.2;
+	this.fillAlpha = .1;
+
+	this.color1 = 'rgba(255, 165, 0,'+ this.alpha + ')'; //orange
+	this.color2 = 'rgb(52, 152, 219,'+ this.alpha + ')'; //blue
+	this.color3 = 'rgba(255, 0, 0, 1)'; //red
 
 	this.font = "10pt Calibri";
 
@@ -47,7 +56,6 @@ function Particle(config){
 
 	this.lastHit=-999;
 	this.titles=[];
-
 }
 Particle.prototype.openOrCloseIt = function(){
 
@@ -161,22 +169,13 @@ Particle.prototype.addNoiseField = function(coef){
 	this.velocity.x*=.9;
 	this.velocity.y*=.9;
 
-	//for (var i = 0; i < this.childs.length; i++) {
-		//this.getAwayFrom22(index, arr);
-		//this.childs[i].getCloseTo(this.x, this.y, this.radius);
-		//this.childs[i].getAwayFromCenter(this.x, this.y, this.radius);
-		//this.childs[i].reduceVelocityAndUseIt(.3);
-	//}
-
 }
 Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 
 	var ctx = this.context;
 	var commonAttributes=[];
-	var alpha = .4;
-	var color = 'rgba(255,165,0,'+alpha+')'; //orange
 
-	for (var i=0; i<arr.length; i++) {
+	for (var i=index+1; i<arr.length; i++) {
 
 		if(index!=i){
 
@@ -193,16 +192,10 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 					} else {
 						commonAttributes[0].count+=1;
 					}
-					color = 'rgb(52,152,219,'+alpha+')';
+					this.drawLine(this.x, this.y, arr[i].x, arr[i].y, this.color2);
+				} else {
+					this.drawLine(this.x, this.y, arr[i].x, arr[i].y, this.color1);
 				}
-
-				ctx.beginPath();
-			    ctx.moveTo(this.x, this.y);
-			    ctx.lineTo(arr[i].x, arr[i].y);
-			    ctx.strokeStyle = color;
-			    ctx.lineWidth = 2;
-			    ctx.stroke();
-
 			}
 
 			//get away from each other if
@@ -223,18 +216,21 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 				this.velocity.x*=.9;
 				this.velocity.y*=.9;
 
-				ctx.beginPath();
-			    ctx.moveTo(this.x, this.y);
-			    ctx.lineTo(arr[i].x, arr[i].y);
-			    ctx.strokeStyle = 'rgba(0, 0, 0,'+alpha+')';
-			    ctx.lineWidth = 2;
-			    ctx.stroke();
+			    //this.drawLine(this.x, this.y, arr[i].x, arr[i].y, this.color3);
 
 			}
 		}
 	}
-
 	return commonAttributes;
+}
+Particle.prototype.drawLine = function(x1, y1, x2, y2, color){
+	var ctx = this.context;
+	ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
 }
 Particle.prototype.update = function(){
 
@@ -249,24 +245,31 @@ Particle.prototype.update = function(){
 Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 
 	var ctx = this.context;
+	var range = this.calculateRange();
 
 	for (var i=0; i<arr.length; i++) {
 
 		if(index!=i && this.ids.length>0 && arr[i].ids.length>0){
-		// if(index!=i && this.alive && arr[i].alive){
 
-			if(this.label!=arr[i].label){ //different country --> separate them
+			/*var minDistance = 0;
+			if(this.ids.length>arr[i].ids.length) minDistance = this.radius;
+			else minDistance = arr[i].radius;*/
 
-				var minDistance = this.radius*2+arr[i].radius*2+2;
-				var distance = dist(this.x, arr[i].x, this.y, arr[i].y);
+			var minDistance = this.radius*2+arr[i].radius*2+2;
 
-				if(distance<minDistance){ //10
+
+			var distance = dist(this.x, arr[i].x, this.y, arr[i].y);
+
+			//different country or not in range--> separate them
+			if(this.label!=arr[i].label || distance > range){ 
+
+				if(distance<minDistance){ //separate them
 
 					var x = arr[i].x - this.x;
 					var y = arr[i].y - this.y;
 
-					x *=-0.05;
-					y *=-0.05;
+					x *=-0.1;
+					y *=-0.1;
 
 					x /= this.ids.length;
 					y /= this.ids.length;
@@ -280,22 +283,18 @@ Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 					this.velocity.x*=.9;
 					this.velocity.y*=.9;
 
-					ctx.beginPath();
-				    ctx.moveTo(this.x, this.y);
-				    ctx.lineTo(arr[i].x, arr[i].y);
-				    ctx.strokeStyle = 'rgba(255, 0, 0,'+this.alpha+')';
-				    ctx.lineWidth = 1;
-				    ctx.stroke();
+					/*var color_red = 'rgba(255, 0, 0,'+this.alpha+')';
+					this.drawLine(this.x, this.y, arr[i].x, arr[i].y, color_red);*/
 
 				}
 
-			} else { //same country --> fuse them
+			} else if(distance <= range){ //same country --> fuse them
 
 				var x = arr[i].x - this.x;
 				var y = arr[i].y - this.y;
 
-				x *=0.05;
-				y *=0.05;
+				x *=0.2;
+				y *=0.2;
 
 				x /= this.ids.length;
 				y /= this.ids.length;
@@ -309,22 +308,12 @@ Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 				this.x+=this.velocity.x;
 				this.y+=this.velocity.y;
 				
-
 				this.velocity.x*=.2;
 				this.velocity.y*=.2;
 
-				ctx.beginPath();
-			    ctx.moveTo(this.x, this.y);
-			    ctx.lineTo(arr[i].x, arr[i].y);
-			    ctx.strokeStyle = 'rgb(52,152,219,'+this.alpha+')'; //blue
-			    ctx.lineWidth = 1;
-			    ctx.stroke();
+				this.drawLine(this.x, this.y, arr[i].x, arr[i].y, this.color2);
 
-
-			    var minDistance = this.radius*2+arr[i].radius*2+2;
-				var distance = dist(this.x, arr[i].x, this.y, arr[i].y);
-
-			    if(distance<minDistance){
+			    if(distance<minDistance){ //fuse them
 
 			    	//TODO UPDATE IT
 			    	var val=this.addValue;
@@ -364,20 +353,51 @@ Particle.prototype.getAwayOrCloserFrom = function(index, arr){
 		}
 	}
 }
+Particle.prototype.calculateRange = function(){
+
+	return this.radius+this.range+this.ids.length/10;
+}
+Particle.prototype.editRange = function(range){
+	this.range=range;
+}
+Particle.prototype.displayRange = function(){
+
+	var range = this.calculateRange();
+
+	var ctx=this.context;
+
+	
+
+	if(this.chance > 90){
+		ctx.strokeStyle='rgba(255, 0, 0, .1)';
+		ctx.strokeWidth=1.;
+		ctx.beginPath();
+	    ctx.arc(this.x, this.y, range, 0, 2*Math.PI);
+	    ctx.stroke();
+	    ctx.closePath();
+	}
+
+}
 Particle.prototype.display = function(){
 	
 	var ctx=this.context;
 
+	if(this.fillAlpha<1) {
+		this.fillAlpha+=.03;
+	}
+
 	//TODO do it somewhere else
-	if(this.ids.length===1)ctx.fillStyle=this.colors[0];//grey
-	else if(this.open)ctx.fillStyle=this.colors[2];//yellow
+	if(this.ids.length===1) {
+		if(this.fillAlpha<1) ctx.fillStyle='rgba(189,195,199,'+this.fillAlpha+')'; //grey;
+		else ctx.fillStyle=this.colors[0];
+	} else if(this.open)ctx.fillStyle=this.colors[2];//yellow
 	else ctx.fillStyle=this.colors[1];//green
 
     //DEBUG
     //ctx.fillStyle='rgba(0, 0, 0, .2)';
 
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius*2, 0, 2*Math.PI);
+    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha, 0, 2*Math.PI);
     ctx.fill();
     ctx.closePath();
 
