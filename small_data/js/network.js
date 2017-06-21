@@ -16,6 +16,7 @@ var attr_treshold=250;
 
 var showParticlesRange;
 var particleRange=800;
+var noiseField=true;
 
 window.onload = function() {
 
@@ -31,19 +32,25 @@ window.onload = function() {
 
     $(document).keypress(function(e) {
 
+        console.log(e.which);
+
         if(state>=0){
 
             if(e.which == 32) { //space bar
                 console.log('pause:', running);
                 running=!running;
             }
+        }
 
+        if (e.which == 110) { //n
+            console.log('noiseField:', noiseField);
+            noiseField=!noiseField;
         }
 
 	});
 
     $(document).keydown(function(e){
-        console.log(e.which);
+        // console.log(e.which);
 
         if(e.which == 38) { //key up
 
@@ -61,7 +68,7 @@ window.onload = function() {
     });
 
     $(document).keyup(function(e){
-        console.log(e.which);
+        // console.log(e.which);
 
         if(e.which == 38) { //key up
 
@@ -208,7 +215,7 @@ function shareInformation(){
 
     for (var i=0; i<particles.length; i++) {
         
-        particles[i].addNoiseField(6.);
+        if(noiseField)particles[i].addNoiseField(6.);
 
         var attributes = particles[i].SearchCommonsAndGetAwayFrom22(i, particles);
 
@@ -263,7 +270,7 @@ function setCommonAttr(){
 function allowGrouping(){
     for (var i=0; i<particles.length; i++) {
         particles[i].update();
-        particles[i].addNoiseField(2.);
+        if(noiseField)particles[i].addNoiseField(2.);
         particles[i].checkEdges();
         particles[i].getAwayOrCloserFrom(i, particles);
         particles[i].display();
