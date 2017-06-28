@@ -46,8 +46,16 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 				<form id="myForm">
 				    <input id="searchTerms" type="text">
 				</form>
-				<div id="searchBoxBtn"></div>
 			</div>
+			<div id="searchBoxBtn"></div>
+			<div id="filters">
+				<form id="formFilters">
+				    <!-- <input id="year_01" type="text"> -->
+				    <!-- <input id="year_02" type="text"> -->
+				    <input id="numOfRecords" type="text">
+				</form>
+			</div>
+			<div id="filtersBtn"></div>
 		</div>
 		<div id="allCanvas">
 			<canvas id="myCanvas" width="500" height="500">

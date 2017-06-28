@@ -18,6 +18,26 @@
 #cookies{
 	margin: 1px 0 0 0;
 }
+#filters{
+	padding: 5px;
+	/*width: 300px;*/
+	width: 150px;
+	/*height: 55px;*/
+	height: 40px;
+	background: yellow;
+	margin: 0 0 0 10px;
+	float: left;
+	display: inline;
+}
+#filtersBtn{
+	margin: 0 0 0 5px;
+	padding: 5px;
+	width: 10px;
+	height: 10px;
+	background: yellow;
+	float: left;
+	display: inline;
+}
 #infos{
 	float: left;
 	min-width: 200px;
@@ -31,15 +51,19 @@
 	background: white;
 	padding: 0 10px;
 }
+#numOfRecords{
+	/*margin: 5px 0 0 0;*/
+}
 #results p{
 	padding: 0;
 	margin: 0;
 	display: block;
 }
 #searchBox{
+	margin: 0 0 0 5px;
 	padding: 5px;
-	min-width: 400px;
-	min-height: 40px;
+	width: 150px;
+	height: 40px;
 	background: pink;
 	float: left;
 	display: inline;
@@ -49,13 +73,15 @@
 	display: inline;
 }
 #searchBoxBtn{
-	min-width: 20px;
-	min-height: 20px;
-	background: yellow;
-	float: right;
+	margin: 0 0 0 5px;
+	padding: 5px;
+	width: 10px;
+	height: 10px;
+	background: pink;
+	float: left;
 	display: inline;
 }
-#searchBoxBtn:hover{
+#searchBoxBtn:hover, #filtersBtn:hover{
 	background: white;
 }
 #selection{

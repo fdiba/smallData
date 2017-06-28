@@ -82,6 +82,10 @@ window.onload = function() {
 
     //----------------------------------//
 
+    document.getElementById('filtersBtn').addEventListener("click", filterData);
+
+    //----------------------------------//
+
     pAId=-1;
     xLeftOffset = 0;
     xDist = 11, yDist = 11;
@@ -127,9 +131,7 @@ function animation1(evt){
 function resetSaturationForAllRects(){
 
     for(var i=0; i<rectangles.length; i++){
-
         drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
-        
     } 
 
 }
@@ -160,49 +162,57 @@ function resetSaturation(sat){
 }
 //---------------------------------------//
 
-function calculateMinHeight(){
+function calculateMinHeightAndCreateRectangles(step, threshold){
 
     for (var i=0; i<allData.length-4; i+=5) {
 
+        //---------- get data ----------//
         var id = allData[i];
         var editions = allData[i+4].split(",");
-
         var ctry=allData[i+1];
         // var cId=allData[i+2];
-        var count=allData[i+3];
+        var count=allData[i+3]; //number of compositions avalaible
 
-
-        //------- main rectangle ---------//
+        //------- set color luminosity ---------//
         var lum;
         if(count>0) lum=colors[0].l;
         else lum=max_lum;
 
         var color='hsl('+colors[0].h+','+colors[0].s+'%,'+lum+'%)';
-        createNewRectangle(id, color, count, true);
 
-        //------- editions ---------//
-        if(editions.length>0){
+        //------- create rectangles ---------//
 
-            for(var j=0; j<editions.length; j++){
-
-                
-                var coef = 310/(2009-1973);
-                var numEdition = editions[j] - 1973;
-                numEdition *= coef; //0=>255 not 360
-
-                var lum;
-                if(count>0) lum=avg_lum;
-                else lum=max_lum;
-
-                var c='hsl('+numEdition+','+avg_sat+'%,'+lum+'%)';
-                createNewRectangle(id, c, count, false);
+        if(step===0){
+            createNewRectangle(id, color, count, true);
+            createEditionsRectangles(id, count, editions);
+        } else if(step===1){
+            if(count>=threshold){
+                createNewRectangle(id, color, count, true);
+                createEditionsRectangles(id, count, editions);
             }
-
-        } else {
-            console.log("error: no edition");
         }
     }
 }
+function createEditionsRectangles(id, count, editions){
+
+    if(editions.length>0){
+        for(var j=0; j<editions.length; j++){
+            var coef = 310/(2009-1973);
+            var numEdition = editions[j] - 1973;
+            numEdition *= coef; //0=>255 not 360
+
+            var lum;
+            if(count>0) lum=avg_lum;
+            else lum=max_lum;
+
+            var c='hsl('+numEdition+','+avg_sat+'%,'+lum+'%)';
+            createNewRectangle(id, c, count, false);
+            
+        }
+    } else {
+        console.log("error: no edition");
+    }
+} 
 function createNewRectangle(aId, c, count, anchor){
 
     if( xPos>canvas.width-xRightOffset){
@@ -361,7 +371,7 @@ function selectRect(x, y){
 }
 function resetCanvasSize(){
     if(canvas.height<minHeight)canvas.height=minHeight;
-    if(canvas.width>maxWidth)canvas.width=maxWidth;
+    if(canvas.width>maxWidth)canvas.width=maxWidth+5; //+5 DEBUG
 }
 function resetPositions(){
     xPos = xLeftOffset;
@@ -418,26 +428,41 @@ function getData(){
         var txt2 = numComposersInCapsules+ " / " + num;
         $("#info p:eq(0)").text(txt2);
 
-        calculateMinHeight();
-
-        resetCanvasSize();
-
-        context.fillStyle=COLORS[1];
-        context.fillRect(0, 0, canvas.width, canvas.height); 
-        context.stroke();
-
-        resetPositions();
-
-        for(var i=0; i<rectangles.length; i++){
-            drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
-        }
-
-        resetPositions();
-
-        document.getElementById('anim').addEventListener("click", animation1) ;
-        canvas.addEventListener("mousedown", getInfo, false);
+        processData();
 
     });
+}
+function processData002(numberMinOfParticipation){
+
+    console.log("woot");
+
+    canvas.removeEventListener("mousedown", getInfo, false);
+    rectangles=[];
+
+    calculateMinHeightAndCreateRectangles(1, numberMinOfParticipation);
+    // resetCanvasSize();
+    drawRectanglesAndAddInteractivity();
+}
+function processData(){
+    calculateMinHeightAndCreateRectangles(0, 0);
+    resetCanvasSize();
+    drawRectanglesAndAddInteractivity();
+}
+function drawRectanglesAndAddInteractivity(){
+    context.fillStyle=COLORS[1];
+    context.fillRect(0, 0, canvas.width, canvas.height); 
+    context.stroke();
+
+    resetPositions();
+
+    for(var i=0; i<rectangles.length; i++){
+        drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
+    }
+
+    resetPositions();
+
+    // document.getElementById('anim').addEventListener("click", animation1) ;
+    canvas.addEventListener("mousedown", getInfo, false);
 }
 //-----------------------------------//
 //--------- sma function ------------//
@@ -542,6 +567,30 @@ function noise_animation(){
 }
 //-----------------------------------//
 //--------- interactivity -----------//
+
+function filterData(){
+
+    var year_01 = parseInt($('#year_01').val());
+    var year_02 = parseInt($('#year_02').val());
+    var numOfRecords = parseInt($('#numOfRecords').val());
+
+    // console.log(year_01, year_02, numOfRecords);
+
+    if(Number.isInteger(year_01) && Number.isInteger(year_02) && Number.isInteger(numOfRecords)){
+        console.log("all three");
+    } else if (Number.isInteger(year_01) && Number.isInteger(numOfRecords)){
+        console.log("two of them");
+    } else if (Number.isInteger(year_01)){
+        console.log("year_01");
+    } else if (Number.isInteger(numOfRecords)){
+        console.log("numOfRecords");
+        if(numOfRecords>=0)processData002(numOfRecords);
+    } else {
+        console.log(year_01, year_02, numOfRecords);
+        processData002(0);
+    }
+
+}
 
 function getSearchTerms(){
 
