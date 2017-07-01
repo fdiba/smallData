@@ -1,10 +1,12 @@
 <?php
 if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 	setcookie("access", "open", time()+3600);
-} else if($_COOKIE["access"]=="open"){
+} else if(isset($_COOKIE["access"]) && $_COOKIE["access"]=="open"){
+	setcookie("access", "open", time()+3600);
+} else if(isset($_GET["src"]) && $_GET["src"]=="ISEA17"){
 	setcookie("access", "open", time()+3600);
 } else {
-	header('Location: ../index.php');
+	header('Location: ../index.php'); 
 }
 ?>
 <!DOCTYPE html>
@@ -26,7 +28,7 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 	<div id="content">
 		<div id="ctrl_bar">
 			<div id="info">
-				<h1 id="main">Animated data</h1>
+				<h1 id="main">Animated Data</h1>
 				<p></p>
 				<p></p>
 				<p></p>
@@ -37,6 +39,7 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 			<ul id="links">
 				<li><a href="index.php">overview</a></li>
 				<li><a href="network.php">network</a></li>
+				<li><a href="categories.php">categories</a></li>
 			</ul>
 		</div>
 		<div id="allCanvas">

@@ -35,11 +35,8 @@ ul{
 .b_off{
 	background: #7f8c8d; /*grey asbestos*/
 }
-#ctrl_bar{
-	width: 100%;
-	background: #2c3e50; /*grey: midnight blue*/
-	/*background: #ECF0F1; soft grey*/
-	position: fixed;
+#allCanvas{
+	margin-top: 120px;
 }
 #anim{
 	/*background: yellow;*/
@@ -49,17 +46,24 @@ ul{
 }
 /*alphabetical order*/
 #content{
-	padding: 5px 5px 5px 10px;
-}
-#cookies, #selection, #titles{
-	padding: 0 10px;
+	/*padding: 5px 5px 5px 10px; BUG*/ 
+	padding: 0 5px 5px 10px;
 }
 #cookies p, #selection p{
 	padding: 0;
 	margin: 0;
 }
 #cookies{
+	padding: 5px 10px;
 	background: #2ecc71; /*emerald green*/
+}
+#ctrl_bar{
+	width: 100%;
+	background: #2c3e50; /*grey: midnight blue*/
+	/*background: #ECF0F1; soft grey*/
+	position: fixed;
+	left: 5px;
+	top:0;
 }
 #info{
 	margin: 0 5px 5px 0;
@@ -95,9 +99,11 @@ ul{
 }
 #selection{
 	background: orange; /*orange carrot*/
+	padding: 5px 10px;
 }
 #titles{
 	color: white;
-	margin: 0;
 	background: #9b59b6; /*violet amethyst*/
+	padding: 5px 10px;
+	margin:0;
 }

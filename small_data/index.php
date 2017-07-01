@@ -41,6 +41,7 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 			<ul id="links">
 				<li><a href="network.php">network</a></li>
 				<li><a href="animated_data.php">line charts</a></li>
+				<li><a href="categories.php">categories</a></li>
 			</ul>
 			<div id="searchBox">
 				<form id="myForm">

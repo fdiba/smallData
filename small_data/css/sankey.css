@@ -1,0 +1,30 @@
+@import url(http://fonts.googleapis.com/css?family=Roboto+Slab:700|Exo+2:300,600);
+body{
+	background: white;
+}
+#ctrl_bar{
+	background: none;
+}
+#chart {
+	background: none;
+	margin: 100px 0 0 0;
+	font-family: "Exo 2", "Helvetica Neue", Helvetica, sans-serif;
+}
+text{
+  font-size: 12px;
+}
+.node rect {
+
+  fill-opacity: .9;
+  shape-rendering: crispEdges;
+  
+}
+.link {
+  fill: none;
+  /*stroke: #024;*/
+  stroke-opacity: .5;
+}
+
+.link:hover {
+  stroke-opacity: .8;
+}
