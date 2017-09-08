@@ -11,7 +11,7 @@
 		//---------------
 
 
-		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price,
+		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price, imeb_music.award_cat,
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id
 							FROM imeb_music
@@ -23,6 +23,8 @@
 
 			$award_year=$row['award_year'];
 			$award_price=$row['award_price'];
+			$award_cat=$row['award_cat'];
+
 
 			$misam=$row['misam'];
 			$title=$row['title'];
@@ -35,7 +37,8 @@
 
 			if($award_year!=null){
 
-				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id);
+				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration,
+					$id, $award_cat);
 			}
 
 		}
