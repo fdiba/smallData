@@ -97,6 +97,14 @@ ul{
 	float: left;
 	color: white;
 }
+#listings{
+	margin: 0 5px 0 0;
+	padding: 5px 5px;
+	background: #3498db; /*blue */
+	min-width: 200px;
+	float: left;
+	color: white;
+}
 #selection{
 	background: orange; /*orange carrot*/
 	padding: 5px 10px;

@@ -1,12 +1,3 @@
-<?php
-if(isset($_POST["name"]) && $_POST["name"]=="overview"){
-	setcookie("access", "open", time()+3600);
-} else if($_COOKIE["access"]=="open"){
-	setcookie("access", "open", time()+3600);
-} else {
-	header('Location: ../index.php'); 
-}
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -40,6 +31,11 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 				<li><a href="index.php">overview</a></li>
 				<li><a href="animated_data.php">line charts</a></li>
 				<li><a href="categories.php">categories</a></li>
+			</ul>
+			<ul id="listings">
+				<li><a href="award-winning_works.php">award-winning works</a></li>
+				<li><a href="catalog.php?id=1">catalog A</a></li>
+				<li><a href="catalog.php?id=2">catalog B</a></li>
 			</ul>
 			<div id="commons">
 				<p>null</p>

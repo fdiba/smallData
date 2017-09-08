@@ -1,14 +1,3 @@
-<?php
-if(isset($_POST["name"]) && $_POST["name"]=="overview"){
-	setcookie("access", "open", time()+3600);
-} else if(isset($_COOKIE["access"]) && $_COOKIE["access"]=="open"){
-	setcookie("access", "open", time()+3600);
-} else if(isset($_GET["src"]) && $_GET["src"]=="ISEA17"){
-	setcookie("access", "open", time()+3600);
-} else {
-	header('Location: ../index.php'); 
-}
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -40,6 +29,11 @@ if(isset($_POST["name"]) && $_POST["name"]=="overview"){
 				<li><a href="index.php">overview</a></li>
 				<li><a href="network.php">network</a></li>
 				<li><a href="categories.php">categories</a></li>
+			</ul>
+			<ul id="listings">
+				<li><a href="award-winning_works.php">award-winning works</a></li>
+				<li><a href="catalog.php?id=1">catalog A</a></li>
+				<li><a href="catalog.php?id=2">catalog B</a></li>
 			</ul>
 		</div>
 		<div id="allCanvas">

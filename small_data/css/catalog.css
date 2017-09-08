@@ -1,0 +1,16 @@
+#listing{
+	padding: 10px;
+	margin: 100px 0 0 0;
+	clear: both;
+	display: block;
+	background: #F6F6F6;
+	min-width: 120px;
+	min-height: 200px;
+}
+#listing ul{
+	padding:0;
+	margin:0;
+}
+.even {
+	background: #C7C7C7;
+}
