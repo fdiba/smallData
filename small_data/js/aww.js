@@ -25,11 +25,17 @@ window.onload = function() {
             if(rank==101)rank="Mention 1";
             if(rank==102)rank="Mention 2";
             if(rank==103)rank="Mention 3";
+            if(rank==199)rank="Prix";
             if(rank==200)rank="Prix CNM";
+            if(rank==298)rank="Prix Bregman";
+            if(rank==299)rank="Prix FNME";
             if(rank==300)rank="Prix CIME";
             if(rank==301)rank="1, Prix CIME et Euphonies";
             if(rank==302)rank="1 et Prix CIME";
             if(rank==303)rank="Prix CIME et Mention";
+            if(rank==304)rank="Prix CIME et Mention 1";
+            if(rank==500)rank="Magistère";
+            if(rank==600)rank="Résidence";
             
             var obj = {year:year, rank:rank, misam:arr[i+2],
                        fn: arr[i+3], name: arr[i+4], title:arr[i+5], cat:cat};
