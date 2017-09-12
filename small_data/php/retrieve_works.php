@@ -11,7 +11,8 @@
 		//---------------
 
 
-		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price, imeb_music.award_cat, imeb_music.euphonies,
+		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price,
+							imeb_music.award_cat, imeb_music.award_cat_2, imeb_music.euphonies,
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id
 							FROM imeb_music
@@ -24,6 +25,7 @@
 			$award_year=$row['award_year'];
 			$award_price=$row['award_price'];
 			$award_cat=$row['award_cat'];
+			$award_cat2=$row['award_cat_2'];
 
 			$euphonies=$row['euphonies'];
 
@@ -39,10 +41,12 @@
 
 			if($award_year!=null){
 
-				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat);
+				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat,
+							$award_cat2);
 
 				if($euphonies==1){
-					array_push($arr, "1992", "Euphonies", $misam, $firstName, $name, $title, $duration, $id, "Euphonies");
+					array_push($arr, "1992", "Euphonies", $misam, $firstName, $name, $title, $duration, $id, "Euphonies",
+						$award_cat2);
 				}
 			}
 
