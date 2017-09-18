@@ -44,8 +44,13 @@
 				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat,
 							$award_cat2);
 
-				if($euphonies==1){
-					array_push($arr, "1992", "Euphonies", $misam, $firstName, $name, $title, $duration, $id, "Euphonies",
+				if($euphonies>0){
+
+					$year=-999;
+					if($euphonies==1)$year=1992;
+					else if($euphonies==2)$year=2004;
+
+					array_push($arr, $year, "Euphonie", $misam, $firstName, $name, $title, $duration, $id, "Euphonie",
 						$award_cat2);
 				}
 			}

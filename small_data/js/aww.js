@@ -47,15 +47,22 @@ window.onload = function() {
             else if(rank==600)rank="Résidence";
 
 
-            if(cat2==1)cat2="dispositif et instru.";
-            else if(cat2==2)cat2="esthétique formelle";
-            else if(cat2==3)cat2="esthétique program.";
-            else if(cat2==4)cat2="danse et théâtre";
-            else if(cat2==5)cat2="installation ou environ.";
+            if(cat2==1)cat2="Dispositif et instru.";
+            else if(cat2==2)cat2="Esthétique formelle";
+            else if(cat2==3)cat2="Esthétique program.";
+            else if(cat2==4)cat2="Danse ou théâtre";
+            else if(cat2==5)cat2="Installation ou environ.";
             else if(cat2==6)cat2="Multimédia";
 
-            
+            else if(cat2==7)cat2="Art sonore électroa.";
+            else if(cat2==8)cat2="Avec instruments";
+            else if(cat2==9)cat2="Sans instruments";
 
+            else if(cat2==10)cat2="tendance netart";
+            else if(cat2==11)cat2="tendance création";
+            else if(cat2==12)cat2="tendance performance";
+            
+            
             
             
             var obj = {year:year, rank:rank, misam:arr[i+2],
