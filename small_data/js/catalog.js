@@ -2,17 +2,18 @@ window.onload = function() {
 
 	$cat = $.urlParam('id');
 
-	if($cat==1 || $cat==2)retrieveData($cat);
-	else retrieveData(-999);
+	if($cat==1 || $cat==2)retrieveData($cat, 7);
+    else if($cat==3)retrieveData($cat, 11);
+	else retrieveData(-999, 7);
 
 };
 
-function retrieveData($cat){
+function retrieveData(cat, numOfElements){
 
 	$.ajax({                                      
         url: 'php/retrieve_cat.php',       
         type: "POST",
-        data: {cat: $cat}
+        data: {cat: cat}
 
     }).done(function(str) {
 
@@ -20,15 +21,20 @@ function retrieveData($cat){
 
         $("#listing").append('<ul></ul>');
 
-        var numOfElements = 7;
-
         for (var i = 0; i < arr.length; i+=numOfElements) {
 
         	var li_class = "class=\"even\"";
         	if(i/numOfElements%2==0) li_class = "class=\"odd\"";
 
-			var new_element = "<li " + li_class + " >" + arr[i] + " " + arr[i+1] + " " + arr[i+2]
-			+ " " + arr[i+3] + " " + arr[i+4] + " " + arr[i+5] +  " " + arr[i+6] +  "</li>";
+            var elements = "";
+
+            for (var j = 0; j < numOfElements; j++) {
+                if(j==0) elements = arr[i];
+                else elements += " "+ arr[i+j];
+            }
+
+			var new_element = "<li " + li_class + " >" + elements +  "</li>";
+
         	$("#listing ul").append(new_element);
         }
 
