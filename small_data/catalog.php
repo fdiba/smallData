@@ -1,8 +1,17 @@
-<?php setcookie("access", "open", time()+3600); ?>
+<?php
+	
+	$title = "Sound Archives";
+	if(isset($_GET["id"]) && $_GET["id"]==1){
+		$title = "International Sound Archives";
+	} else if(isset($_GET["id"]) && $_GET["id"]==2){
+		$title = "IMEB Sound Archives";
+	}
+
+?>
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Catalogs | Small Data</title>
+	<title><?php echo $title ?> | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/catalog.css">
@@ -14,20 +23,10 @@
 	<div id="content">
 		<div id="ctrl_bar">
 			<div id="info">
-				<h1 id="main">Catalogs</h1>
+				<h1 id="main"><?php echo $title ?></h1>
 				<p></p>
 			</div>
-			<ul id="links">
-				<li><a href="index.php">overview</a></li>
-				<li><a href="network.php">network</a></li>
-				<li><a href="animated_data.php">line charts</a></li>
-				<li><a href="categories.php">categories</a></li>
-			</ul>
-			<ul id="listings">
-				<li><a href="award-winning_works.php">award-winning works</a></li>
-				<li><a href="catalog.php?id=1">catalog A</a></li>
-				<li><a href="catalog.php?id=2">catalog B</a></li>
-			</ul>
+			<?php include_once("./php/menus.php") ?>
 		</div>
 		<div id="listing"></div>
  	</div>

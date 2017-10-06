@@ -14,16 +14,7 @@
 				<h1 id="main">Categories</h1>
 				<p></p>
 			</div>
-			<ul id="links">
-				<li><a href="index.php">overview</a></li>
-				<li><a href="network.php">network</a></li>
-				<li><a href="animated_data.php">line charts</a></li>
-			</ul>
-			<ul id="listings">
-				<li><a href="award-winning_works.php">award-winning works</a></li>
-				<li><a href="catalog.php?id=1">catalog A</a></li>
-				<li><a href="catalog.php?id=2">catalog B</a></li>
-			</ul>
+			<?php include_once("./php/menus.php") ?>
 		</div>
 		<div id="chart"></div>
  	</div>

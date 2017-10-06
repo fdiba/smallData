@@ -25,16 +25,7 @@
 			<ul id="launcher">
 				<li class="b_off" id="get_all">get all data</li>
 			</ul>
-			<ul id="links">
-				<li><a href="index.php">overview</a></li>
-				<li><a href="network.php">network</a></li>
-				<li><a href="categories.php">categories</a></li>
-			</ul>
-			<ul id="listings">
-				<li><a href="award-winning_works.php">award-winning works</a></li>
-				<li><a href="catalog.php?id=1">catalog A</a></li>
-				<li><a href="catalog.php?id=2">catalog B</a></li>
-			</ul>
+			<?php include_once("./php/menus.php") ?>
 		</div>
 		<div id="allCanvas">
 			<canvas id="cv_nav" width="500" height="20">
