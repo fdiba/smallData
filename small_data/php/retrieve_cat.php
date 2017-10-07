@@ -18,47 +18,88 @@
 
 		switch ($sub_cat) {
 			case 1:
-				$sub_cat = "Dispositif et instru.";
+				return "Dispositif et instru.";
 				break;
 			case 2:
-				$sub_cat = "Esthétique formelle";
+				return "Esthétique formelle";
 				break;
 			case 3:
-				$sub_cat = "Esthétique program.";
+				return "Esthétique program.";
 				break;
 			case 4:
-				$sub_cat = "Danse ou théâtre";
+				return "Danse ou théâtre";
 				break;
 			case 5:
-				$sub_cat = "Installation ou environ.";
+				return "Installation ou environ.";
 				break;
 			case 6:
-				$sub_cat = "Multimédia";
+				return "Multimédia";
 				break;
 			case 7:
-				$sub_cat = "Art sonore électroa.";
+				return "Art sonore électroa.";
 				break;
 			case 8:
-				$sub_cat = "Avec instruments";
+				return "Avec instruments";
 				break;
 			case 9:
-				$sub_cat = "Sans instruments";
+				return "Sans instruments";
 				break;
 			case 10:
-				$sub_cat = "tendance netart";
+				return "tendance netart";
 				break;
 			case 11:
-				$sub_cat = "tendance création";
+				return "tendance création";
 				break;
 			case 12:
-				$sub_cat = "tendance performance";
+				return "tendance performance";
 				break;
 			default:
-				// $sub_cat = "sub undefined";
+				return $sub_cat;
 				break;
 		}
 
-		return $sub_cat;
+		
+	}
+
+	function set_price($price){
+
+		switch ($price) {
+			case 199:
+				return "Prix";
+				break;
+			case 300:
+				return "Prix CIME";
+				break;
+			default:
+				return $price;
+				break;
+		}
+
+		
+
+		/*if(rank==100)rank="Mention";
+        else if(rank==101)rank="Mention 1";
+        else if(rank==102)rank="Mention 2";
+        else if(rank==103)rank="Mention 3";
+        else if(rank==197)rank="Nominé";
+        else if(rank==198)rank="Finaliste";
+        else if(rank==199)rank="Prix";
+        else if(rank==200)rank="Prix CNM";
+        else if(rank==201)rank="Grand Prix";
+        
+        else if(rank==296)rank="Pierre d'Or";
+        else if(rank==297)rank="Pierre d'Argent";
+
+
+        else if(rank==298)rank="Prix Bregman";
+        else if(rank==299)rank="Prix FNME";
+        else if(rank==300)rank="Prix CIME";
+        else if(rank==301)rank="1, Prix CIME et Euphonies";
+        else if(rank==302)rank="1 et Prix CIME";
+        else if(rank==303)rank="Prix CIME et Mention";
+        else if(rank==304)rank="Prix CIME et Mention 1";
+        else if(rank==500)rank="Magistère";
+        else if(rank==600)rank="Résidence";*/
 	}
 
 	function retrieve_euphonies(){
@@ -78,8 +119,6 @@
 
 		$arr= array();
 
-		$count = 0;
-
 		while($row = $sth->fetch()) {
 
 			$euphonies=$row['euphonies'];
@@ -87,11 +126,9 @@
 			if($euphonies>0){
 
 				$award_year=$row['award_year'];
-				$award_price=$row['award_price'];
+				$award_price=set_price($row['award_price']);
 
 				$award_cat=$row['award_cat'];
-				// if(!$award_cat)$award_cat="cat undefined";
-
 				$award_sub_cat=set_sub_cat($row['award_cat_2']);
 
 				$misam=$row['misam'];
@@ -109,24 +146,16 @@
 				$year=-999;
 				if($euphonies==1)$year=1992;
 				else if($euphonies==2)$year=2004;
+				else if($euphonies==3)$year=2010;
 
-				
-				$count++;
+		
 
 				if(sizeof($arr)<1){
 					array_push($arr, $year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat);
 
-					// array_push($arr, $year, $award_year, $count);
-
-					//array_push($arr, $year);
-
 				} else {
 
 					$new_arr = array($year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat);
-
-					// $new_arr = array($year, $award_year, $count);
-
-					//$new_arr = array($year);
 
 					for ($j=0;  $j<sizeof($arr); $j+=11) {
 
@@ -185,7 +214,7 @@
 			$title=$row['title'];
 
 			$duration=$row['duration'];
-			if(!$duration)$duration="00:00";
+			// if(!$duration)$duration="00:00";
 			
 			$firstName=$row['firstName'];
 			$name=$row['name'];

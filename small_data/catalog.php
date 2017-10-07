@@ -4,7 +4,7 @@
 	if(isset($_GET["id"])){
 		if($_GET["id"]==1)$title = "International Sound Archives";
 		else if($_GET["id"]==2)$title = "IMEB Sound Archives";
-		else if($_GET["id"]==3)$title = "Euphonies";
+		else if($_GET["id"]==3)$title = "Euphonies d’Or";
 	}
 
 ?>
