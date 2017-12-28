@@ -109,6 +109,8 @@ window.onload = function() {
     xRightOffset = 10;
 
     $("#titles").css({"clear": "both"});
+
+    setTimeout(getData(), 5000);
     
     //getData();
 
@@ -399,6 +401,7 @@ function getData(){
     document.getElementById('get_all').removeEventListener("click", getData);
     $("#get_all").toggleClass('b_off b_on');
     // $("#get_all").remove();
+    $("#launcher").remove();
 
     $.ajax({                                      
         url: 'php/retrieve_data.php',       
