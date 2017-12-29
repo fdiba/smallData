@@ -26,11 +26,13 @@
 	display: inline;
 }
 #filtersBtn{
-	margin: 0 0 0 5px;
+	background: yellow;
+}
+#filtersBtn, #searchBoxBtn{
+	margin: 5px 0 0 5px;
 	padding: 5px;
 	width: 10px;
 	height: 10px;
-	background: yellow;
 	float: left;
 	display: inline;
 }
@@ -69,13 +71,7 @@
 	display: inline;
 }
 #searchBoxBtn{
-	margin: 0 0 0 5px;
-	padding: 5px;
-	width: 10px;
-	height: 10px;
 	background: pink;
-	float: left;
-	display: inline;
 }
 #searchBoxBtn:hover, #filtersBtn:hover{
 	background: white;

@@ -28,7 +28,7 @@
 			<?php include_once("./php/menus.php") ?>
 			<div id="searchBox">
 				<form id="myForm">
-				    <input id="searchTerms" type="text">
+				    <input id="searchTerms" type="text" value="composer name">
 				</form>
 			</div>
 			<div id="searchBoxBtn"></div>
@@ -36,7 +36,7 @@
 				<form id="formFilters">
 				    <!-- <input id="year_01" type="text"> -->
 				    <!-- <input id="year_02" type="text"> -->
-				    <input id="numOfRecords" type="text">
+				    <input id="numOfRecords" type="text" value="num of records >=">
 				</form>
 			</div>
 			<div id="filtersBtn"></div>
