@@ -8,6 +8,8 @@ The application was created as part of a research project on the IMEB archives d
 
 The project starts from a simple observation: the data documenting this activity is neither large nor complex — a few thousand records. Its interest lies in its historical density rather than its volume. The approach is one of exploratory programming: the visualisations are not final renderings but reading instruments, built in the course of analysing the collection.
 
+🔗 **Live application:** [webodrome.fr/small_data](https://www.webodrome.fr/small_data/)
+
 📼 [Video walkthrough of the application](https://vimeo.com/237232737)
 
 ## The visualisations
