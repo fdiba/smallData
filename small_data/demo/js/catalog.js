@@ -36,47 +36,80 @@ function retrieveData(cat, numOfElements){
     }).done(function(str) {
 
         var arr = str.split("%");
-        var total = Math.floor(arr.length / numOfElements);
 
         $("#listing").append('<ul></ul>');
 
+        // Les donnees arrivent triees par compositeur (nom, prenom) puis titre.
+        var works = [];
+        for (var k = 0; k + numOfElements - 1 < arr.length; k += numOfElements) {
+            works.push({misam: arr[k], fn: arr[k+1], ln: arr[k+2],
+                        id_artist: arr[k+3], title: arr[k+4],
+                        duration: arr[k+5], id: arr[k+6]});
+        }
+        var total = works.length;
+
+        // Longueur de chaque serie contigue d'oeuvres d'un meme compositeur,
+        // pour le rowspan de la cellule composer. Calculee sur les series
+        // reellement contigues : si un artiste apparait en plusieurs blocs
+        // (fiche en double, tri imparfait), chaque bloc a sa propre cellule
+        // au lieu de casser la mise en page.
+        var runLength = [];
+        for (var k = works.length - 1; k >= 0; k--) {
+            if(k < works.length - 1 && works[k].id_artist === works[k+1].id_artist){
+                runLength[k] = runLength[k+1] + 1;
+            } else {
+                runLength[k] = 1;
+            }
+        }
+
         var table = document.getElementById('works_table');
+        // Toutes les lignes doivent aller dans le meme tbody : une insertion
+        // directe sur <table> cree un tbody par lot, et un rowspan ne peut
+        // pas s'etendre d'un tbody a l'autre (colonnes decalees).
+        var tbody = table.tBodies[0] || table;
         var i = 0;
+        var prevArtist = null;
+        var groupIndex = -1;
 
         // Affichage par lots : le tableau se remplit progressivement
         // et le navigateur reste reactif entre deux lots.
         function renderChunk(){
 
             var html = "";
-            var stop = Math.min(i + CHUNK * numOfElements, arr.length);
+            var stop = Math.min(i + CHUNK, works.length);
 
-            for (; i < stop; i += numOfElements) {
+            for (; i < stop; i++) {
+
+                var w = works[i];
 
                 //--------- SMA (inchange)
                 if(cat == 2){
-                    records.push({imeb_id: arr[i], fn: arr[i+1], ln: arr[i+2],
-                                  id: arr[i+6],
-                                  title: arr[i+4], duration: arr[i+5]});
+                    records.push({imeb_id: w.misam, fn: w.fn, ln: w.ln,
+                                  id: w.id,
+                                  title: w.title, duration: w.duration});
                 }
                 //---------
 
-                html += (i / numOfElements % 2 === 0) ? '<tr class="odd">' : '<tr class="even">';
+                // Une seule cellule par compositeur, etendue sur toutes ses oeuvres.
+                var newGroup = (w.id_artist !== prevArtist);
+                if(newGroup){ groupIndex++; prevArtist = w.id_artist; }
 
-                for (var j = 0; j < numOfElements; j++) {
-                    if(j != 3 && j != 6){   // 3 = artist_id, 6 = work_id
-                        html += '<td>' + arr[i+j] + '</td>';
-                    }
+                html += (groupIndex % 2 === 0) ? '<tr class="odd">' : '<tr class="even">';
+
+                if(newGroup){
+                    html += '<td class="composer" rowspan="' + runLength[i] + '">'
+                          + w.fn + ' ' + w.ln + '</td>';
                 }
-                html += '</tr>';
+
+                html += '<td>' + w.title + '</td><td>' + w.duration + '</td><td>' + w.misam + '</td></tr>';
             }
 
             // Une seule insertion par lot au lieu de deux par ligne
-            table.insertAdjacentHTML('beforeend', html);
+            tbody.insertAdjacentHTML('beforeend', html);
 
-            $("#loading").text(Math.min(Math.floor(i / numOfElements), total)
-                               + " / " + total);
+            $("#loading").text(Math.min(i, total) + " / " + total);
 
-            if(i < arr.length){
+            if(i < works.length){
                 setTimeout(renderChunk, 0);
             } else {
                 $("#loading").remove();

@@ -221,7 +221,7 @@
 							INNER JOIN imeb_artist
 							ON imeb_music.id_artist = imeb_artist.id'
 							. $where . '
-							ORDER BY imeb_artist.name ASC, imeb_artist.firstName ASC, imeb_music.title ASC');
+							ORDER BY imeb_artist.name ASC, imeb_artist.firstName ASC, imeb_artist.id ASC, imeb_music.title ASC');
 
 		$arr= array();
 		while($row = $sth->fetch()) {

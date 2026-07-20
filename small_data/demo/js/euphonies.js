@@ -62,8 +62,42 @@ function retrieveEuphonies(cat, numOfElements){
 
                 $.post(url, function( data ) {
 
-                  $('#bnfData').empty();
-                  $('#bnfData').append(data);
+                    // La reponse est une page HTML complete : on n'en garde que
+                    // le tableau de resultats, sinon elle casse la mise en page.
+                    // parseHTML avec keepScripts=false neutralise ses scripts.
+                    var nodes = $($.parseHTML(data, document, false));
+                    var results = nodes.filter('table').first();
+                    if(!results.length) results = nodes.find('table').first();
+
+                    $('#bnfData').empty();
+
+                    if(results.length){
+
+                        // Les URI arrivent parfois en texte brut : on les rend cliquables.
+                        results.find('td').each(function(){
+                            var cell = $(this);
+                            if(cell.find('a').length===0){
+                                var txt = $.trim(cell.text());
+                                if(/^https?:\/\//.test(txt)){
+                                    cell.empty().append($('<a>').attr('href', txt).text(txt));
+                                }
+                            }
+                        });
+
+                        // Liens relatifs resolus contre data.bnf.fr, https force,
+                        // ouverture dans un nouvel onglet.
+                        results.find('a').each(function(){
+                            var a = $(this);
+                            var href = a.attr('href') || '';
+                            if(href.charAt(0)==='/') href = 'https://data.bnf.fr' + href;
+                            href = href.replace(/^http:\/\//, 'https://');
+                            a.attr({href: href, target: '_blank', rel: 'noopener'});
+                        });
+
+                        $('#bnfData').append('<h2>Notices data.bnf.fr</h2>').append(results);
+                    } else {
+                        $('#bnfData').append('<p>Aucune notice data.bnf.fr pour cette œuvre.</p>');
+                    }
 
                 });
             });

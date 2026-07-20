@@ -110,3 +110,24 @@ th{
 .odd{
 	background: #F6F6F6;
 }
+/* --- resultats data.bnf.fr (euphonies.js) --- */
+#bnfData{
+	clear: both;
+	padding: 10px 0;
+	max-width: 100%;
+	overflow-x: auto;
+}
+#bnfData h2{
+	font-size: 1em;
+	margin: 0 0 5px 0;
+}
+#bnfData table{
+	border-collapse: collapse;
+	background: #F6F6F6;
+}
+#bnfData td, #bnfData th{
+	padding: 4px 8px;
+	border: 1px solid #CCC;
+	text-align: left;
+	font-size: .85em;
+}

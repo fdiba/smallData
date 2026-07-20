@@ -58,13 +58,10 @@
 		<div id="main_table">
 			<table id="works_table">
 				<tr>
-					<th>imeb id</th>
-					<th>first name</th>
-					<th>last name</th>
-					<!-- <th>artist t_id</th> -->
+					<th>composer</th>
 					<th>title</th>
 					<th>duration</th>
-					<!-- <th>work t_id</th> -->
+					<th>imeb id</th>
 				</tr>
 			</table>
 		</div>

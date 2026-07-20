@@ -102,3 +102,19 @@ th{
 .odd{
 	background: #F6F6F6;
 }
+/* --- regroupement par compositeur (catalog.js) --- */
+#works_table td.composer{
+	vertical-align: top;
+	font-weight: bold;
+}
+/* le zebrage suit le groupe compositeur, pas la ligne */
+#works_table tr:nth-child(even),
+#works_table tr:nth-child(odd){
+	background: none;
+}
+#works_table tr.even{
+	background: #C7C7C7;
+}
+#works_table tr.odd{
+	background: #F6F6F6;
+}
