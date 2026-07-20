@@ -300,7 +300,7 @@ function checkAttributes(attributes){
     var str = "";
     if(main_attributes[0].count>attr_treshold){
         str = main_attributes[0].name;
-        $("#commons p").html(str).on("click", setCommonAttr).css("text-decoration", "underline"); 
+        $("#commons p").html(str).on("click", setCommonAttr).css({"text-decoration": "underline", "cursor": "pointer"}); 
     } else {
         str = main_attributes[0].name + ' ' + main_attributes[0].count;
         $("#commons p").html(str);
@@ -308,7 +308,7 @@ function checkAttributes(attributes){
 }
 function setCommonAttr(){
     sl_attribute = main_attributes[0].name;
-    $("#commons p" ).off("click").css("text-decoration", "none");  
+    $("#commons p" ).off("click").css({"text-decoration": "none", "cursor": "default"});  
 }
 function allowGrouping(){
 

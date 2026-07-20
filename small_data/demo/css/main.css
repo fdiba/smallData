@@ -334,3 +334,10 @@ ul{
 	margin: 0 4px -1px 0;
 	border: 1px solid rgba(0, 0, 0, 0.35);
 }
+
+/* ---------- Elements de menu cliquables : curseur main ---------- */
+
+#ctrl_bar #sma_main_ctrl li,
+#ctrl_bar #commons ul li{
+	cursor: pointer;
+}
