@@ -18,6 +18,17 @@
 #ctrl_bar #searchBox{ background: pink; }
 #ctrl_bar #filters{ background: yellow; }
 
+/* Libelles au-dessus des champs */
+#ctrl_bar #searchBox label,
+#ctrl_bar #filters label{
+	display: block;
+	margin: 0 0 4px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: .04em;
+	text-transform: uppercase;
+	color: var(--sd-midnight);
+}
 #ctrl_bar #searchBox form,
 #ctrl_bar #filters form{
 	float: none;
@@ -72,8 +83,13 @@
 	float: left;
 	clear: left;
 }
+/* Le bloc vert forme un ensemble avec le canvas du SMA :
+   il vient s'y coller, sans espace. */
+#sma{
+	margin-bottom: 0;
+}
 #cookies{
-	margin: 1px 0 0 0;
+	margin: 0 0 14px 0;      /* colle au SMA, ecarte des blocs suivants */
 }
 #infos{
 	float: left;

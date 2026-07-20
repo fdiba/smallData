@@ -5,6 +5,11 @@
    animated_data.js pour la liste des compositeurs.) */
 
 $page  = basename($_SERVER['PHP_SELF']);
+
+/* Page d'accueil du projet, relative aux pages de l'application.
+   '../' si l'application est dans small_data/demo/
+   './'  si elle est directement dans small_data/ */
+$home  = '../';
 $catId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 function nav_item($href, $label, $isHere) {
@@ -25,5 +30,5 @@ echo '<ul id="links">'
    . nav_item('euphonies.php',           "Euphonies d'Or",               $page === 'euphonies.php')
    . '</ul>'
    . '<ul id="help">'
-   . nav_item('../', 'About', false)
+   . nav_item($home,       'The Project', false)
    . '</ul>';

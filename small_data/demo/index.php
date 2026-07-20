@@ -27,16 +27,18 @@
 			</ul>
 			<?php include_once("./php/menus.php") ?>
 			<div id="searchBox">
+				<label for="searchTerms">composer name</label>
 				<form id="myForm">
-				    <input id="searchTerms" type="text" value="composer name">
+				    <input id="searchTerms" type="text" value="">
 				</form>
 			</div>
 			<div id="searchBoxBtn"></div>
 			<div id="filters">
+				<label for="numOfRecords">num of records &gt;=</label>
 				<form id="formFilters">
 				    <!-- <input id="year_01" type="text"> -->
 				    <!-- <input id="year_02" type="text"> -->
-				    <input id="numOfRecords" type="text" value="num of records >=">
+				    <input id="numOfRecords" type="text" value="0">
 				</form>
 			</div>
 			<div id="filtersBtn"></div>

@@ -5,7 +5,7 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/sankey.css">
-	<?php include_once("../../analyticstracking.php") ?>
+	<?php include_once($_SERVER["DOCUMENT_ROOT"] . "/analyticstracking.php") ?>
 </head>
 <body>
 	<div id="content">

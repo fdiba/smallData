@@ -9,7 +9,7 @@
 :root{
 	--sd-gap: 5px;            /* écart unique entre les blocs de la barre */
 	--sd-pad: 10px;
-	--sd-bar-h: 92px;         /* hauteur de la barre fixe */
+	--sd-bar-h: 128px;        /* hauteur de la barre fixe (4 entrees de menu) */
 	--sd-midnight: #2c3e50;   /* midnight blue */
 	--sd-asphalt: #34495e;    /* west asphalt */
 	--sd-amethyst: #9b59b6;   /* violet amethyst */
@@ -255,10 +255,10 @@ ul{
 }
 /* La barre passe sur deux rangs en dessous de 1100px, trois sous 720px */
 @media (max-width: 1100px){
-	:root{ --sd-bar-h: 184px; }
+	:root{ --sd-bar-h: 256px; }
 }
 @media (max-width: 720px){
-	:root{ --sd-bar-h: 276px; }
+	:root{ --sd-bar-h: 384px; }
 }
 
 /* =========================================================

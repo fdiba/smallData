@@ -85,73 +85,74 @@ function pauseSMA(event){
 }
 function retrieveData(cat, numOfElements){
 
-	$.ajax({                                      
-        url: 'php/retrieve_cat.php',       
+    var CHUNK = 200;   // nombre de lignes inserees par lot
+
+    $("#info").append('<p id="loading">loading\u2026</p>');
+
+    $.ajax({
+        url: 'php/retrieve_cat.php',
         type: "POST",
         data: {cat: cat}
 
     }).done(function(str) {
 
-        var arr=str.split("%");
+        var arr = str.split("%");
+        var total = Math.floor(arr.length / numOfElements);
 
         $("#listing").append('<ul></ul>');
 
-        var prev_year;
+        var table = document.getElementById('works_table');
+        var i = 0;
 
-        console.log('arr: ' + arr.length);
+        // Affichage par lots : le tableau se remplit progressivement
+        // et le navigateur reste reactif entre deux lots.
+        function renderChunk(){
 
-        for (var i = 0; i < arr.length; i+=numOfElements) {
+            var html = "";
+            var stop = Math.min(i + CHUNK * numOfElements, arr.length);
 
-            //--------- TABLE
-            $('#works_table').append('<tr></tr>');
-            var tr = $('#works_table tr:last');
-            var tds = "";
-            //---------
+            for (; i < stop; i += numOfElements) {
 
-        	var li_class = "class=\"even\"";
-        	if(i/numOfElements%2==0) li_class = "class=\"odd\"";
-
-            var elements = "";
-            
-            //--------- SMA
-            if(cat==2){
-                var obj = {imeb_id: arr[i], fn:arr[i+1], ln:arr[i+2],
-                        id:arr[i+6],
-                        title:arr[i+4], duration:arr[i+5]}; 
-
-                // console.log(obj.id);
-                records.push(obj);
-            }
-            //---------
-
-            for (var j = 0; j < numOfElements; j++) {
-
-                //--------- TABLE
-                if(j!=3 && j!=6){  //3 = artist_id && 6 = work_id 
-                    var value = arr[i+j];
-                    tds+='<td>'+ value + '</td>';
+                //--------- SMA (inchange)
+                if(cat == 2){
+                    records.push({imeb_id: arr[i], fn: arr[i+1], ln: arr[i+2],
+                                  id: arr[i+6],
+                                  title: arr[i+4], duration: arr[i+5]});
                 }
                 //---------
 
-                // if(j==0) elements += arr[i];
-                // else elements += " "+ arr[i+j];
+                html += (i / numOfElements % 2 === 0) ? '<tr class="odd">' : '<tr class="even">';
+
+                for (var j = 0; j < numOfElements; j++) {
+                    if(j != 3 && j != 6){   // 3 = artist_id, 6 = work_id
+                        html += '<td>' + arr[i+j] + '</td>';
+                    }
+                }
+                html += '</tr>';
             }
 
-            //--------- TABLE
-            tr.append(tds);
-            //---------
+            // Une seule insertion par lot au lieu de deux par ligne
+            table.insertAdjacentHTML('beforeend', html);
 
-			// var new_element = "<li " + li_class + " >" + elements +  "</li>";
-        	// $("#listing ul").append(new_element);
+            $("#loading").text(Math.min(Math.floor(i / numOfElements), total)
+                               + " / " + total);
+
+            if(i < arr.length){
+                setTimeout(renderChunk, 0);
+            } else {
+                $("#loading").remove();
+                if(cat != null){
+                    $("#info").append("<p>" + total + " (provisionnal count)</p>");
+                } else {
+                    $("#info").append("<p>" + total + "</p>");
+                }
+            }
         }
 
-        if(cat!=null){
-            $("#info").append("<p>" + arr.length/numOfElements + " (provisionnal count)</p>");   
-        } else {
-            $("#info").append("<p>" + arr.length/numOfElements + "</p>");
-        }
-        
+        renderChunk();
 
+    }).fail(function(){
+        $("#loading").text("loading failed");
     });
 
     //--------- SMA
@@ -162,6 +163,7 @@ function retrieveData(cat, numOfElements){
     //---------
 
 }
+
 
 $.urlParam = function(name){
 	var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);

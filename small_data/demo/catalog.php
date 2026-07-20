@@ -15,7 +15,7 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/catalog.css">
-	<?php include_once("../../analyticstracking.php") ?>
+	<?php include_once($_SERVER["DOCUMENT_ROOT"] . "/analyticstracking.php") ?>
 	<script src="lib/jquery-3.1.1.min.js"></script>
 	<script src="lib/perlin.js"></script>
 	<script src="js/variables.js"></script>
