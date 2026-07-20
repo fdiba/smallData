@@ -1,0 +1,285 @@
+/* =========================================================
+   Small Data — feuille de style commune (main.css)
+   Chargée en premier par les 7 pages de l'application.
+   La barre de contrôle #ctrl_bar y est traitée une seule fois :
+   toute page qui inclut menus.php en hérite automatiquement.
+   Palette d'origine conservée (Flat UI, 2016-2017).
+   ========================================================= */
+
+:root{
+	--sd-gap: 5px;            /* écart unique entre les blocs de la barre */
+	--sd-pad: 10px;
+	--sd-bar-h: 92px;         /* hauteur de la barre fixe */
+	--sd-midnight: #2c3e50;   /* midnight blue */
+	--sd-asphalt: #34495e;    /* west asphalt */
+	--sd-amethyst: #9b59b6;   /* violet amethyst */
+	--sd-river: #3498db;      /* blue peter river */
+	--sd-emerald: #2ecc71;    /* emerald green */
+	--sd-greensea: #16a085;   /* dark green sea */
+	--sd-asbestos: #7f8c8d;   /* grey asbestos */
+}
+
+body{
+	margin: 0;
+	padding: 0;
+	background: var(--sd-midnight);
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 13px;
+	line-height: 1.5;
+}
+a{
+	color: white;
+}
+canvas{
+	float: left;
+	margin: 0 0 5px 0;
+}
+em{
+	font-weight: bold;
+	font-style: italic;
+}
+h1{
+	margin: 0;
+	padding: 0;
+	font-size: 1.2em;
+}
+ul{
+	list-style: none;
+}
+.active{
+	text-decoration: underline;
+	color: black;
+}
+.selected{
+	color: white;
+}
+.b_on{
+	background: var(--sd-emerald);
+}
+.b_off{
+	background: var(--sd-asbestos);
+}
+#content{
+	padding: 0 5px 5px 10px;
+}
+
+/* =========================================================
+   1. LA BARRE DE CONTROLE — flexbox au lieu des flottants
+   ========================================================= */
+
+#ctrl_bar{
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	width: auto;              /* corrige width:100% + left:5px, qui débordait */
+	box-sizing: border-box;
+	padding: var(--sd-gap) var(--sd-gap) var(--sd-gap) var(--sd-pad);
+	height: auto;
+	min-height: var(--sd-bar-h);
+	background: var(--sd-midnight);
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;     /* tous les blocs à la même hauteur */
+	gap: var(--sd-gap);
+	z-index: 10;
+}
+
+/* Les blocs de premier niveau ne flottent plus : le gap gère l'espacement */
+#ctrl_bar > div,
+#ctrl_bar > ul{
+	float: none;
+	margin: 0;
+	min-height: 0;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+/* ---------- Titre de page et compteur ---------- */
+
+#ctrl_bar #info{
+	padding: 8px var(--sd-pad);
+	min-width: 190px;
+	background: var(--sd-asphalt);
+	color: var(--sd-greensea);
+}
+#ctrl_bar #info h1{
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: #fff;
+	margin-bottom: 2px;
+}
+#ctrl_bar #info p{
+	margin: 0;
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;  /* le compteur ne « danse » plus */
+}
+
+/* ---------- Boutons d'action (get all data, anim, etc.) ---------- */
+
+#ctrl_bar #launcher{
+	padding: var(--sd-gap);
+	background: var(--sd-amethyst);
+	gap: 3px;
+	min-width: 110px;
+	color: white;
+}
+#ctrl_bar #launcher li{
+	margin: 0;
+	padding: 4px 10px;
+	cursor: pointer;
+	color: #fff;
+	transition: background 120ms ease;
+	user-select: none;
+}
+#ctrl_bar #launcher li:hover{
+	background: var(--sd-emerald);
+}
+#anim{
+	color: white;
+	display: block;
+	padding: 0 0 0 5px;
+}
+
+/* ---------- Les trois menus de navigation ---------- */
+
+#ctrl_bar #links,
+#ctrl_bar #listings,
+#ctrl_bar #help{
+	padding: 8px var(--sd-gap);
+	background: var(--sd-river);
+	gap: 1px;
+	color: white;
+}
+#ctrl_bar #links li,
+#ctrl_bar #listings li,
+#ctrl_bar #help li{
+	margin: 0;
+	padding: 1px var(--sd-gap);
+}
+#ctrl_bar #links a,
+#ctrl_bar #listings a,
+#ctrl_bar #help a{
+	display: block;
+	padding: 1px 4px;
+	text-decoration: none;
+	white-space: nowrap;
+	border-left: 2px solid transparent;
+	transition: border-color 120ms ease, background 120ms ease;
+}
+#ctrl_bar #links a:hover,
+#ctrl_bar #listings a:hover,
+#ctrl_bar #help a:hover{
+	background: rgba(255, 255, 255, 0.16);
+	border-left-color: #fff;
+}
+/* Page courante : marquée par la classe .here posée dans menus.php */
+#ctrl_bar a.here{
+	border-left-color: #fff;
+	background: rgba(255, 255, 255, 0.22);
+	font-weight: 600;
+}
+
+/* ---------- Panneaux blancs des pages SMA / listings ---------- */
+
+#ctrl_bar #sma_main_ctrl,
+#ctrl_bar #commons,
+#ctrl_bar #calculations{
+	padding: 5px;
+	background: #fff;
+	min-height: 0;
+}
+#ctrl_bar #sma_main_ctrl{
+	min-width: 52px;
+}
+#ctrl_bar #commons{
+	min-width: 250px;
+}
+#ctrl_bar #sma_main_ctrl ul,
+#ctrl_bar #commons ul,
+#ctrl_bar #calculations ul{
+	padding: 0;
+	margin: 0;
+}
+#ctrl_bar #commons li,
+#ctrl_bar #calculations li{
+	display: inline;
+	padding: 0 7px;
+}
+#ctrl_bar #sma_main_ctrl li{
+	padding: 0 7px;
+}
+#ctrl_bar #commons p{
+	padding: 0;
+	margin: 0;
+}
+/* Conteneur des deux panneaux sur award-winning / catalog / euphonies */
+#ctrl_bar #sma_menu{
+	padding: 0;
+	width: auto;
+	flex-direction: row;
+	align-items: stretch;
+	gap: var(--sd-gap);
+}
+#ctrl_bar #sma_menu > div{
+	float: none;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+/* ---------- Accessibilité clavier et mouvement réduit ---------- */
+
+#ctrl_bar a:focus-visible,
+#ctrl_bar li:focus-visible,
+#ctrl_bar div:focus-visible{
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce){
+	#ctrl_bar *{ transition: none !important; }
+}
+
+/* ---------- Décalage du contenu sous la barre fixe ---------- */
+
+#allCanvas,
+#main_container,
+#middle,
+#chart{
+	margin-top: calc(var(--sd-bar-h) + 8px);
+}
+/* La barre passe sur deux rangs en dessous de 1100px, trois sous 720px */
+@media (max-width: 1100px){
+	:root{ --sd-bar-h: 184px; }
+}
+@media (max-width: 720px){
+	:root{ --sd-bar-h: 276px; }
+}
+
+/* =========================================================
+   2. BLOCS D'INFORMATION (hors barre) — règles d'origine
+   ========================================================= */
+
+#cookies{
+	padding: 5px 10px;
+	background: var(--sd-emerald);
+}
+#cookies p, #selection p{
+	padding: 0;
+	margin: 0;
+}
+#selection{
+	background: orange;
+	padding: 5px 10px;
+}
+#titles{
+	color: white;
+	background: var(--sd-amethyst);
+	padding: 5px 10px;
+	margin: 0;
+}

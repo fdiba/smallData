@@ -1,0 +1,62 @@
+#ctrl_bar{
+	height:80px;
+}
+#allCanvas{
+	margin-top: 82px;
+	clear: left;
+}
+#cookies, #selection, #titles, #results{
+	width: 330px;/*-20 padding*/
+	/*max-width: 330px;*/
+	
+	word-wrap: break-word;
+	float: left;
+	clear:left;
+}
+
+/*alphabetic order*/
+#cookies{
+	margin: 1px 0 0 0;
+}
+#infos{
+	float: left;
+	min-width: 200px;
+	max-width: 420px;
+}
+#myCanvas{
+	margin: 0 5px 0 0;
+}
+#results{
+	margin: 1px 0;
+	background: white;
+	padding: 0 10px;
+}
+#results p{
+	padding: 0;
+	margin: 0;
+}
+#searchBox{
+	padding: 5px;
+	min-width: 400px;
+	min-height: 40px;
+	background: pink;
+	float: left;
+	display: inline;
+}
+#searchBox #myForm{
+	float: left;
+	display: inline;
+}
+#searchBoxBtn{
+	min-width: 20px;
+	min-height: 20px;
+	background: yellow;
+	float: right;
+	display: inline;
+}
+#searchBoxBtn:hover{
+	background: white;
+}
+#selection{
+	margin: 1px 0;
+}

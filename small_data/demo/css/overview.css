@@ -1,0 +1,98 @@
+/* =========================================================
+   Small Data — page Overview (index.php)
+   La barre de navigation est désormais traitée dans main.css.
+   Ne restent ici que la recherche, les filtres et la mise en
+   page propre à cette vue.
+   ========================================================= */
+
+/* ---------- Recherche et filtres (présents sur cette page seule) ---------- */
+
+#ctrl_bar #searchBox,
+#ctrl_bar #filters{
+	padding: 8px;
+	width: auto;
+	height: auto;
+	min-width: 150px;
+	margin: 0;
+}
+#ctrl_bar #searchBox{ background: pink; }
+#ctrl_bar #filters{ background: yellow; }
+
+#ctrl_bar #searchBox form,
+#ctrl_bar #filters form{
+	float: none;
+	display: block;
+	margin: 0;
+}
+#ctrl_bar #searchTerms,
+#ctrl_bar #numOfRecords{
+	box-sizing: border-box;
+	width: 100%;
+	padding: 5px 7px;
+	border: 0;
+	background: #fff;
+	color: var(--sd-midnight);
+	font: inherit;
+}
+#ctrl_bar #searchTerms:focus,
+#ctrl_bar #numOfRecords:focus{
+	outline: 2px solid var(--sd-midnight);
+	outline-offset: 1px;
+}
+
+/* Les deux carrés de validation : 10px à l'origine, difficiles à viser */
+#ctrl_bar #searchBoxBtn,
+#ctrl_bar #filtersBtn{
+	margin: 0;
+	padding: 0;
+	width: 30px;
+	height: auto;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	color: var(--sd-midnight);
+	font-size: 15px;
+	font-weight: 700;
+	transition: background 120ms ease;
+}
+#ctrl_bar #searchBoxBtn::after,
+#ctrl_bar #filtersBtn::after{
+	content: "\2192";                  /* flèche : « appliquer » */
+}
+#ctrl_bar #searchBoxBtn{ background: pink; }
+#ctrl_bar #filtersBtn{ background: yellow; }
+#ctrl_bar #searchBoxBtn:hover,
+#ctrl_bar #filtersBtn:hover{ background: #fff; }
+
+/* ---------- Colonne d'information et canvas ---------- */
+
+#cookies, #selection, #titles, #results{
+	width: 330px;                      /* -20 de padding */
+	word-wrap: break-word;
+	float: left;
+	clear: left;
+}
+#cookies{
+	margin: 1px 0 0 0;
+}
+#infos{
+	float: left;
+	min-width: 200px;
+	max-width: 420px;
+}
+#myCanvas{
+	margin: 0 5px 0 0;
+}
+#results{
+	margin: 1px 0;
+	background: white;
+	padding: 0 10px;
+}
+#results p{
+	padding: 0;
+	margin: 0;
+	display: block;
+}
+#selection{
+	margin: 1px 0;
+}

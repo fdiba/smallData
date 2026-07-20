@@ -1,0 +1,32 @@
+#commons{
+	margin: 0 0 0 5px;
+	min-width: 100px;
+	min-height: 20px;
+	background: white;
+	float: left;
+	display: inline;
+}
+#commons p {
+	padding: 0;
+	margin: 0;
+}
+#infos{
+	/*float:left;*/
+	/*float: left;
+	width:200px;
+	height:500px;*/
+	margin-left: 2px;
+	word-wrap: break-word;
+	float: left;
+	max-width: 300px;
+}
+#main_container{
+	margin-top: calc(var(--sd-bar-h) + 8px);
+}
+#myCanvas{
+	margin: 0 5px 0 0;
+}
+#selection{
+	margin: 1px 0;
+	/*padding: 0 10px 0 10px;*/
+}

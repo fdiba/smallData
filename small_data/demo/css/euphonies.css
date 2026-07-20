@@ -1,0 +1,112 @@
+table{
+	background: #16A085;
+	border-collapse: collapse;
+}
+table a:link, table a:visited, table a:active {
+  color: black;
+}
+td, th {
+    padding: 5px;
+    text-align: left;
+}
+th{
+	background: #16A085;
+}
+#bnfData a{
+	color: black;
+	/*margin: calc(var(--sd-bar-h) + 8px) 0 0 0;*/
+	/*float: left;*/
+}
+#bnfData{
+	padding: 0;
+}
+#calculations{
+	padding: 5px;
+	min-width: 250px;
+	min-height: 20px;
+	background: #CCC;
+	float: left;
+	display: inline;
+}
+#calculations ul {
+	padding: 0;
+	margin: 0;
+}
+#calculations li {
+	display: inline;
+	padding: 0 7px;
+	/*background: yellow;*/
+}
+#euphonies_table{
+	width: 1200px;
+}
+
+#euphonies_table tr:nth-child(even){
+	background: #C7C7C7;
+}
+#euphonies_table tr:nth-child(odd){
+	background: #F6F6F6;
+}
+#infos{
+	/*float:left;*/
+	/*float: left;
+	width:200px;
+	height:500px;*/
+	margin-left: 2px;
+	word-wrap: break-word;
+	float: left;
+	max-width: 300px;
+}
+#listing{
+	padding: 0;
+	margin: 10px 0 5px 0;
+	/*margin: calc(var(--sd-bar-h) + 8px) 0 0 0;*/
+	clear: both;
+	display: block;
+	background: none;
+	min-width: 120px;
+	min-height: 200px;
+	max-width: 800px;
+	float: left;
+}
+#listing ul{
+	padding:0;
+	margin:0 5px 5px 0;
+}
+#listing ul li{
+	padding: 0 5px;
+}
+#main_container{
+	margin-top: calc(var(--sd-bar-h) + 8px);
+}
+#middle{
+	margin: calc(var(--sd-bar-h) + 8px) 0 0 0;
+	/*background: #70db70;*/
+}
+#myCanvas{
+	margin: 0 5px 10px 0;
+}
+#selection{
+	margin: 1px 0;
+	/*padding: 0 10px 0 10px;*/
+}
+#sma_menu{
+	padding: 0 0 0 4px;
+	width: 410px;
+	float: left;
+	display: inline;
+}
+#titles {
+	padding-bottom: 10px;
+}
+#titles p {
+	/*line-height: .5em;*/
+	margin: 0;
+	padding: 0;
+}
+.even {
+	background: #C7C7C7;
+}
+.odd{
+	background: #F6F6F6;
+}

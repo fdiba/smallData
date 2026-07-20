@@ -1,0 +1,86 @@
+table{
+	background: #16A085;
+	border-collapse: collapse;
+}
+table a:link, table a:visited, table a:active {
+  color: black;
+}
+td, th {
+    padding: 5px;
+    text-align: left;
+}
+th{
+	background: #16A085;
+}
+#calculations{
+	padding: 5px;
+	min-width: 250px;
+	min-height: 20px;
+	background: #CCC;
+	float: left;
+	display: inline;
+}
+#calculations ul {
+	padding: 0;
+	margin: 0;
+}
+#calculations li {
+	display: inline;
+	padding: 0 7px;
+	/*background: yellow;*/
+}
+#infos{
+	/*float:left;*/
+	/*float: left;
+	width:200px;
+	height:500px;*/
+	margin-left: 2px;
+	word-wrap: break-word;
+	float: left;
+	max-width: 300px;
+}
+#listing{
+	padding: 0;
+	margin: calc(var(--sd-bar-h) + 8px) 0 0 0;
+	clear: both;
+	display: block;
+	background: #F6F6F6;
+	min-width: 120px;
+	/*min-height: 200px;*/
+}
+#listing ul{
+	padding:0;
+	margin:0;
+}
+#middle{
+	margin: calc(var(--sd-bar-h) + 8px) 0 0 0;
+	/*background: #70db70;*/
+}
+#selection{
+	margin: 1px 0;
+	/*padding: 0 10px 0 10px;*/
+}
+#sma_menu{
+	padding: 0 0 0 4px;
+	width: 410px;
+	float: left;
+	display: inline;
+}
+#titles p {
+	/*line-height: .5em;*/
+	margin: 0;
+	padding: 0;
+}
+#works_table{
+	width: 1064px;
+}
+
+#works_table tr:nth-child(even){
+	background: #C7C7C7;
+}
+#works_table tr:nth-child(odd){
+	background: #F6F6F6;
+}
+.even {
+	background: #C7C7C7;
+}
