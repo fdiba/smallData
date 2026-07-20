@@ -29,9 +29,13 @@ function LineChart(config){
     this.colors=["#bdc3c7", "#4aa3df", "#2ecc71", "#16a085"];
     //grey: silver, blue: peter river, emerald: green, green sea: dark green
 
+    //couleurs attribuees aux pays surlignes (une par pays)
+    this.soloColors=["#3987e5", "#2aa42a", "#dc6791", "#c98500",
+                     "#1aa876", "#e06a36", "#9085e9", "#e66767"];
+
     this.padding = 10;
     this.tickSize = 10;
-    this.axisColor = "#555";
+    this.axisColor = "#8fa3b0";
     this.pointRadius = 2;
     this.font = "12pt Calibri";
 
@@ -55,8 +59,15 @@ function LineChart(config){
     this.drawYAxis();
 
 }
+//position verticale d'une valeur, en echelle racine carree :
+//dilate le bas de l'axe pour que les pays a faibles effectifs restent lisibles
+LineChart.prototype.yPos = function(value){
+    if(this.maxY<=0)return this.y + this.height;
+    var f = Math.sqrt(value / this.maxY);
+    return this.y + this.height - f * this.height;
+};
 LineChart.prototype.resetCanvas = function(){
-    this.context.fillStyle = "#ecf0f1";
+    this.context.fillStyle = "#2c3e50";
     this.context.fillRect(0, 0, this.w, this.h);
 }
 LineChart.prototype.requestData = function(mouseX, mouseY){
@@ -92,8 +103,14 @@ LineChart.prototype.requestData = function(mouseX, mouseY){
 
         this.redrawLineChart();
 
-        ctx.strokeStyle=this.colors[3];
-        ctx.fillStyle=this.colors[2];
+        //le cercle de selection prend la couleur de la ligne cliquee,
+        //avec un anneau clair pour rester visible sur le fond sombre
+        var sl_btn = this.solo_btns[cp.ctryId];
+        var lineColor = (sl_btn && sl_btn.state && sl_btn.color) ? sl_btn.color : this.colors[1];
+
+        ctx.lineWidth=2;
+        ctx.strokeStyle="#ecf0f1";
+        ctx.fillStyle=lineColor;
         ctx.beginPath();
         ctx.arc(cp.x, cp.y, this.pointRadius*2, 0, 2*Math.PI);
         ctx.stroke();
@@ -163,10 +180,15 @@ LineChart.prototype.editData = function(mouseX, mouseY){
 
                 solos[i].state = !solos[i].state;
 
-                if(solos[i].state)this.numSolos++;
-                else this.numSolos--;
+                if(solos[i].state){
+                    solos[i].color = this.pickSoloColor();
+                    this.numSolos++;
+                } else {
+                    solos[i].color = null;
+                    this.numSolos--;
+                }
 
-                this.drawRectangle(this.context, solos[i], bWidth, this.colors[2]);
+                this.drawRectangle(this.context, solos[i], bWidth, solos[i].color || this.colors[2]);
 
                 this.redrawLineChart();
 
@@ -197,6 +219,16 @@ LineChart.prototype.editData = function(mouseX, mouseY){
         $("#selection p").text("no selection");
     }
 }
+LineChart.prototype.pickSoloColor = function(){
+    var used = [];
+    for (var i=0; i<this.solo_btns.length; i++) {
+        if(this.solo_btns[i].state && this.solo_btns[i].color)used.push(this.solo_btns[i].color);
+    }
+    for (var j=0; j<this.soloColors.length; j++) {
+        if(used.indexOf(this.soloColors[j])===-1)return this.soloColors[j];
+    }
+    return this.soloColors[this.numSolos % this.soloColors.length];
+};
 LineChart.prototype.redrawLineChart = function(){
     
     this.resetCanvas();
@@ -223,7 +255,7 @@ LineChart.prototype.redrawLineChart = function(){
 
     if(this.numSolos>0){
         for (var i = 0; i < data.length; i++) {
-            if(solos[i].state)this.drawLine(data[i], this.colors[2], 2, false);
+            if(solos[i].state)this.drawLine(data[i], solos[i].color || this.colors[2], 2, false);
         }
     }
 }
@@ -249,7 +281,7 @@ LineChart.prototype.drawXAxis = function(){
     ctx.moveTo(this.x, this.y + this.height);
     ctx.lineTo(this.x + this.width, this.y + this.height);
     ctx.strokeStyle = this.axisColor;
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 1;
     ctx.stroke();
 
     // draw tick marks
@@ -262,7 +294,7 @@ LineChart.prototype.drawXAxis = function(){
 
     // draw labels
     ctx.font = this.font;
-    ctx.fillStyle = "black";
+    ctx.fillStyle = "#ecf0f1";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
@@ -293,37 +325,46 @@ LineChart.prototype.drawYAxis = function(){
     ctx.stroke();
     ctx.restore();
 
-    // draw tick marks
-    ctx.strokeStyle = "black";
-    for (var n = 0; n < this.numYTicks; n++) {
-        ctx.beginPath();
-        ctx.moveTo(this.x, n * this.height / this.numYTicks +
-        this.y);
-        ctx.lineTo(this.x + this.tickSize, n * this.height /
-        this.numYTicks + this.y);
-        ctx.stroke();
+    //graduations rondes, placees selon l'echelle racine carree
+    var niceValues = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
+    var ticks = [];
+    for (var i = 0; i < niceValues.length; i++) {
+        if(niceValues[i] < this.maxY)ticks.push(niceValues[i]);
     }
+    ticks.push(this.maxY);
 
-    // draw values
     ctx.font = this.font;
-    ctx.fillStyle = "black";
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    
-    for (var n = 0; n < this.numYTicks; n++) {
-        var value = Math.round(this.maxY - n * this.maxY / this.numYTicks);
-        ctx.save();
-        ctx.translate(this.x - this.padding, n * this.height /
-        this.numYTicks + this.y);
-        ctx.fillText(value, 0, 0);
-        ctx.restore();
+
+    for (var n = 0; n < ticks.length; n++) {
+
+        var y = this.yPos(ticks[n]);
+
+        //ligne de grille discrete sur toute la largeur
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+        ctx.beginPath();
+        ctx.moveTo(this.x, y);
+        ctx.lineTo(this.x + this.width, y);
+        ctx.stroke();
+
+        //graduation
+        ctx.strokeStyle = "#8fa3b0";
+        ctx.beginPath();
+        ctx.moveTo(this.x, y);
+        ctx.lineTo(this.x + this.tickSize, y);
+        ctx.stroke();
+
+        //valeur
+        ctx.fillStyle = "#ecf0f1";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        ctx.fillText(ticks[n], this.x - this.padding, y);
     }
     ctx.restore();
 
 };
 LineChart.prototype.drawRectangle = function(ctx, btn, bWidth, color){
     if(!btn.state)color=this.colors[0];
-    ctx.strokeStyle = "black";
+    ctx.strokeStyle = "rgba(236, 240, 241, 0.6)";
     ctx.strokeRect(btn.x, btn.y, bWidth, bWidth)
     ctx.fillStyle = color;
     ctx.fillRect(btn.x, btn.y, bWidth, bWidth);
@@ -335,7 +376,7 @@ LineChart.prototype.drawLegend = function(){
     var xPos = 1255, yPos = 25;
 
     ctx.font = this.font;
-    ctx.fillStyle = "black";
+    ctx.fillStyle = "#ecf0f1";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
 
@@ -352,10 +393,22 @@ LineChart.prototype.drawLegend = function(){
         var solo = this.solo_btns[this.solo_btns.length-1];
         this.drawRectangle(ctx, solo, bWidth, this.colors[2]);
         
-        ctx.fillStyle = "black";
+        ctx.fillStyle = "#ecf0f1";
 
         var ctry_id=arr[i].cId;
-        var str=arr[i].ctry+' '+numCpByCountry[ctry_id].c+'/'+numCpByCountry[ctry_id].t;
+        var counts=' '+numCpByCountry[ctry_id].c+'/'+numCpByCountry[ctry_id].t;
+        var str=arr[i].ctry+counts;
+
+        //tronque les noms trop longs (Bosnia Herzegovina...) pour ne pas
+        //deborder sur la colonne suivante ; les compteurs restent visibles
+        var maxTextWidth = 158;
+        if(ctx.measureText(str).width > maxTextWidth){
+            var name=arr[i].ctry;
+            while(name.length>1 && ctx.measureText(name+'\u2026'+counts).width > maxTextWidth){
+                name=name.slice(0, -1);
+            }
+            str=name+'\u2026'+counts;
+        }
 
         ctx.fillText(str, xPos, yPos);
         
@@ -392,7 +445,7 @@ LineChart.prototype.drawLine = function(obj, color, strokeWidth, init){
         yPos = arr[i];
 
         var x=xPos*this.scaleX+xOffset;
-        var y=yOffset-(yPos*this.scaleY);
+        var y=this.yPos(yPos);
 
         if(i===0){
             ctx.beginPath();

@@ -13,8 +13,8 @@ function BarChart(config){
 
 	this.colors = ["#3498db"]; //blue - peter river
 	this.font = "12pt Calibri";
-	this.axisColor = "#555";
-	this.gridColor = "aaa";
+	this.axisColor = "#8fa3b0";
+	this.gridColor = "rgba(255, 255, 255, 0.15)";
 	this.padding = 10;
 
 	this.context = this.canvas.getContext("2d");
@@ -27,7 +27,7 @@ function BarChart(config){
 	this.height = this.h - (this.getLabelAreaHeight() + this.padding * 4);
 
 
-	this.context.fillStyle = "#ecf0f1";
+	this.context.fillStyle = "#2c3e50";
 	this.context.fillRect(0, 0, this.w, this.h);
 
 	this.drawGridlines();
@@ -70,7 +70,7 @@ BarChart.prototype.drawXLabels = function(){
 	var barSpacing = this.width/data.length;
 
 	ctx.font = this.font;
-	ctx.fillStyle = "black";
+	ctx.fillStyle = "#ecf0f1";
 	ctx.textAlign = "right";
 	ctx.textBaseline = "middle";
 
@@ -90,7 +90,7 @@ BarChart.prototype.drawYValues = function(){
 	ctx.save();
 
 	ctx.font = this.font;
-	ctx.fillStyle = "black";
+	ctx.fillStyle = "#ecf0f1";
 	ctx.textAlign = "right";
 	ctx.textBaseline = "middle";
 

@@ -84,7 +84,7 @@ function setCanvasWidthAndHeight(displaySeveralYears){
         canvas.height = 500;
     }
 
-    context.fillStyle=colors[4]; //4 || 0
+    context.fillStyle="#2c3e50"; //fond identique a la page
     context.fillRect(0, 0, canvas.width, canvas.height);
 }
 function toggleYearSl(){
@@ -98,11 +98,14 @@ function editTitleInfo(sl_ctry, sl_year, numOfComposers, totalNumOfComposers, sl
 
     infos={c:sl_ctry, y:sl_year, nc:numOfComposers, tnc:totalNumOfComposers, sl:sl};
 
-    var txt=infos.c+' '+infos.y+' '+
-            '| '+ cp_infos.num+'/'+infos.nc+ ' '+
-            '| '+ cp_infos.all+'/'+infos.tnc+' '+
-            '| '+ cp_infos.titles+'/'+cp_infos.all_titles+' records '+
-            '| display only selection: '+infos.sl;
+    var mode = infos.sl ? 'showing this edition only — click to show all composers'
+                        : 'showing all composers — click to keep this edition only';
+
+    var txt = infos.c + ', edition ' + infos.y +
+            ' · this edition: ' + cp_infos.num + '/' + infos.nc + ' composers with archived works' +
+            ' · all editions: ' + cp_infos.all + '/' + infos.tnc +
+            ' · records: ' + cp_infos.titles + '/' + cp_infos.all_titles +
+            ' · ' + mode;
 
 	$("#selection").empty().append('<p>');
     $("#selection p").text(txt);
@@ -153,11 +156,15 @@ function displayTitlesInfos(){
     if(titles.length>0){
         for (var i=0; i<titles.length; i++) {
             var obj=titles[i];
-            var div='<li>'+obj.t+" "+obj.d+" "+obj.m+" "+obj.ed+'</li>';
+            var div='<li>'+obj.t;
+            if(obj.d) div += ' ('+obj.d+')';
+            if(obj.m) div += ' — MISAM '+obj.m;
+            if(obj.ed) div += ' — edition(s): '+obj.ed;
+            div += '</li>';
             $("#titles").append(div);
         }
     } else {
-        var div='<li>no title</li>';
+        var div='<li>no archived work for this composer</li>';
         $("#titles").append(div);
     }
 
@@ -185,6 +192,12 @@ function displayCpInfos(){
 
             $("#composers li:last-child").attr("data-id", obj.id);
 
+            var tip = '';
+            if(obj.y>0) tip += 'took part in the selected edition';
+            if(count>0) tip += (tip ? ' · ' : '') + count + ' archived work(s) — click to list them';
+            if(!tip) tip = 'no archived work';
+            $("#composers li:last-child").attr("title", tip);
+
             $("#composers li:last-child").click(function(event) {
                 retrieveAllTitleFrom($(event.target).data("id"));
                 lastComposerSelected=$(event.target).text();
@@ -199,6 +212,12 @@ function displayCpInfos(){
             $("#composers").append(div);
 
             $("#composers li:last-child").attr("data-id", obj.id);
+
+            var tip = '';
+            if(obj.y>0) tip += 'took part in the selected edition';
+            if(count>0) tip += (tip ? ' · ' : '') + count + ' archived work(s) — click to list them';
+            if(!tip) tip = 'no archived work';
+            $("#composers li:last-child").attr("title", tip);
 
             $("#composers li:last-child").click(function(event) {
                 retrieveAllTitleFrom($(event.target).data("id"));
@@ -344,6 +363,11 @@ function updateSlData(){
         var inf1="no info";
         $("#info p:eq(1)").text(inf1);
 
+        //pays par ordre alphabetique (courbes et legende)
+        f_data.sort(function(a, b){
+            return String(a.ctry).localeCompare(String(b.ctry));
+        });
+
         generateLineGraph(f_data, minY, maxY);
     }
 }
@@ -428,6 +452,11 @@ function generateBarChart(data){ //display only one year TODO
 			if(!added)arr.push({label: ctry, value: 1});
 		}
 	}
+
+	//pays par ordre alphabetique (barres et recapitulatif)
+	arr.sort(function(a, b){
+		return String(a.label).localeCompare(String(b.label));
+	});
 
 	var inf2="";
 	if(sl_years[0]<1996)inf2 = sl_years[0] + ": complete data";
@@ -662,6 +691,19 @@ function drawMenu(menu){
 
     ctx_nav.fillRect(btn01.x, btn01.y, bw, bh);
 
+    //labels sous les carres : "all", '73..'09, "span"
+    ctx_nav.font="9px 'Helvetica Neue', Helvetica, Arial, sans-serif";
+    ctx_nav.fillStyle="#ecf0f1";
+    ctx_nav.textAlign="center";
+
+    for (var i = 0; i < menu.length; i++) {
+        var label = (i===0) ? "all" : "'" + menu[i].id.toString().substring(2, 4);
+        ctx_nav.fillText(label, menu[i].x + bw/2, 38);
+    }
+    ctx_nav.fillText("span", btn01.x + bw/2, 38);
+
+    ctx_nav.textAlign="start";
+
 }
 //---------------------------------------//
 function getData(){
@@ -706,7 +748,7 @@ function getData(){
 
         }
 
-    	var txt = "no selection";
+    	var txt = "no selection — click a point on a line to list the composers of a country";
         $("#selection").empty().append('<p>');
         $("#selection p").append(txt);
 

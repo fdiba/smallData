@@ -1,38 +1,145 @@
-#composers{
-	padding: 0 10px 0 10px;
-	margin: 0;
-	float: left;
-	
-	word-wrap: break-word;
+/* =========================================================
+   Line Charts — styles propres a la page (animated_data)
+   ========================================================= */
 
+/* ---------- legende ---------- */
 
-	background: #2ecc71; /*emerald green*/
-
-	-webkit-column-count: 5; /* Chrome, Safari, Opera */
-    -moz-column-count: 5; /* Firefox */
-    column-count: 5;
-
-    clear: both;
-    max-width: 1180px; /*1200 - padding*/
-	
-	padding-top: 10px;
-	padding-bottom: 10px;
-
-	color: #16a085;
-	margin-bottom: 10px;
+#legend{
+	clear: both;
+	background: var(--sd-asphalt);
+	color: #ecf0f1;
+	padding: 10px 14px;
+	margin: 0 0 10px 0;
+	max-width: 1170px;
+	font-size: 12px;
 }
+#legend .lg-title{
+	margin: 0 0 6px 0;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: #fff;
+}
+#legend .lg-cols{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 24px;
+}
+#legend .lg-cols > div{
+	flex: 1 1 300px;
+}
+#legend p{
+	margin: 0 0 4px 0;
+}
+#legend ul{
+	margin: 0;
+	padding: 0;
+}
+#legend li{
+	margin: 0 0 3px 0;
+	color: #bdc3c7;
+}
+#legend li em{
+	color: #fff;
+	font-style: normal;
+}
+#legend .sq{
+	display: inline-block;
+	width: 11px;
+	height: 11px;
+	margin: 0 4px -1px 0;
+	border: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+/* demos de la liste des compositeurs, memes codes que plus bas */
+#legend .demo{
+	display: inline-block;
+	padding: 0 6px;
+	border-left: 3px solid transparent;
+	color: #95a5a6;
+}
+#legend .demo-active{
+	color: #fff;
+	font-weight: 600;
+	border-left-color: var(--sd-emerald);
+}
+#legend .demo-selected{
+	background: rgba(26, 188, 156, 0.35);
+	color: #ecf0f1;
+}
+
+/* ---------- barre de statut (orange) ---------- */
+
 #selection{
 	margin: 0;
-	clear:left;
+	clear: left;
 	float: left;
-	max-width: 880px;
+	min-width: 320px;
+	min-height: 20px;
+	max-width: 680px;
 	word-wrap: break-word;
+	cursor: pointer;
 }
 #selection p{
 	padding: 0;
 	margin: 0;
 }
+
+/* ---------- liste des compositeurs ---------- */
+
+#composers{
+	padding: 10px;
+	margin: 0 0 10px 0;
+	float: left;
+	clear: both;
+	word-wrap: break-word;
+
+	background: var(--sd-asphalt);
+	color: #95a5a6;               /* etat par defaut : aucune oeuvre archivee */
+
+	-webkit-column-count: 5;
+	-moz-column-count: 5;
+	column-count: 5;
+	min-width: 600px;
+	min-height: 24px;
+	max-width: 1150px;
+}
+#composers li{
+	padding: 1px 6px;
+	border-left: 3px solid transparent;
+	cursor: pointer;
+	-webkit-column-break-inside: avoid;
+	break-inside: avoid;
+}
+#composers li:hover{
+	background: rgba(255, 255, 255, 0.14);
+}
+/* possede des oeuvres archivees dans les capsules */
+#composers li.active{
+	color: #fff;
+	font-weight: 600;
+	text-decoration: none;
+	border-left-color: var(--sd-emerald);
+}
+/* a participe a l'edition selectionnee */
+#composers li.selected{
+	background: rgba(26, 188, 156, 0.35);
+	color: #ecf0f1;
+}
+#composers li.active.selected{
+	color: #fff;
+}
+
+/* ---------- liste des oeuvres d'un compositeur ---------- */
+
 #titles{
 	float: left;
 	word-wrap: break-word;
+	min-width: 220px;
+	min-height: 20px;
+	max-width: 440px;
+	margin: 0;
+}
+#titles li{
+	padding: 1px 0;
 }
