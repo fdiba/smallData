@@ -341,3 +341,14 @@ ul{
 #ctrl_bar #commons ul li{
 	cursor: pointer;
 }
+
+/* "Group by:" sur la meme ligne que les proprietes qui apparaissent */
+#ctrl_bar div#commons{
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 6px;
+}
+#ctrl_bar div#commons > p{
+	white-space: nowrap;
+}

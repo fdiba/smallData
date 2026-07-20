@@ -275,6 +275,12 @@ Particle.prototype.update = function(index, particles){
 	this.x+=this.velocity.x;
 	this.y+=this.velocity.y;
 
+	//les enfants (cercles bleus) suivent le deplacement de leur parent ouvert
+	for (var k=0; k<this.childs.length; k++) {
+		this.childs[k].x += this.velocity.x;
+		this.childs[k].y += this.velocity.y;
+	}
+
 	this.velocity.x*=.9;
 	this.velocity.y*=.9;
 	
@@ -400,7 +406,10 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 	}
 
 	if(target_id>=0)this.getCloserFrom(particles[target_id]);
-	else this.getAwayFrom(index, particles);
+	//un regroupement ouvert ignore les petits noeuds isoles
+	//mais s'ecarte des autres regroupements pour ne pas les recouvrir
+	else if(!this.open)this.getAwayFrom(index, particles);
+	else this.getAwayFromGroups(index, particles);
 	
 }
 Particle.prototype.display = function(){
@@ -520,4 +529,34 @@ Particle.prototype.checkEdgesV2 = function(){
 
 	}
 	
+}
+//evitement reserve aux regroupements : pousse douce, proportionnelle au
+//chevauchement ; premultipliee par ids.length car update() divise la
+//vitesse par la taille du groupe
+Particle.prototype.getAwayFromGroups = function(index, particles){
+
+	for (var i=0; i<particles.length; i++) {
+
+		//les regroupements qui partagent la meme valeur de propriete sont des
+		//candidats a la fusion : on ne les repousse pas, on les laisse approcher
+		var sameValue = this.targetedAttr!=="" && this[this.targetedAttr]!=="" &&
+			String(this[this.targetedAttr]).localeCompare(String(particles[i][particles[i].targetedAttr]))===0;
+
+		if(index!==i && particles[i].ids.length>1 && !sameValue){
+
+			var minDistance = this.radius*2 + particles[i].radius*2 + 10;
+			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
+
+			if(distance<minDistance && distance>0){
+
+				var x = (particles[i].x - this.x)/distance;
+				var y = (particles[i].y - this.y)/distance;
+
+				var push = (minDistance - distance)*.05*this.ids.length;
+
+				this.velocity.x -= x*push;
+				this.velocity.y -= y*push;
+			}
+		}
+	}
 }

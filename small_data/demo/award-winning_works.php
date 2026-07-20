@@ -29,6 +29,7 @@
 			</div>
 			<div id="sma_menu">
 				<div id="commons">
+					<p>Group by:</p>
 					<ul></ul>
 				</div>
 				<div id="calculations">

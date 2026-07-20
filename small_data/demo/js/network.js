@@ -300,21 +300,23 @@ function checkAttributes(attributes){
     var str = "";
     if(main_attributes[0].count>attr_treshold){
         str = main_attributes[0].name;
-        $("#commons p").html(str).on("click", setCommonAttr).css({"text-decoration": "underline", "cursor": "pointer"}); 
+        $("#commons p").html('Group by: <u>' + str + '</u>').on("click", setCommonAttr).css("cursor", "pointer"); 
     } else {
         str = main_attributes[0].name + ' ' + main_attributes[0].count;
-        $("#commons p").html(str);
+        $("#commons p").html('Group by: ' + str);
     }
 }
 function setCommonAttr(){
     sl_attribute = main_attributes[0].name;
-    $("#commons p" ).off("click").css({"text-decoration": "none", "cursor": "default"});  
+    $("#commons p" ).off("click").css("cursor", "default");
+    $("#commons p u").contents().unwrap();  
 }
 function allowGrouping(){
 
     for (var i=0; i<particles.length; i++) {
 
-        if(noiseField)particles[i].addNoiseField(2.);
+        //une particule ouverte (jaune) n'est plus agitee par le champ de bruit
+        if(noiseField && !particles[i].open)particles[i].addNoiseField(2.);
         particles[i].update(i, particles);
         particles[i].display();
 

@@ -284,7 +284,9 @@ function sma_animation(){
 function allowGrouping(){
 
     for (var i=0; i<particles.length; i++) {
-        if(noiseField)particles[i].addNoiseField(strength_noise_field);
+        //une particule ouverte (jaune) n'est plus agitee par le champ de bruit :
+        //elle se stabilise pour qu'on puisse cliquer sur ses membres
+        if(noiseField && !particles[i].open)particles[i].addNoiseField(strength_noise_field);
         particles[i].update(i, particles);
         particles[i].display();
     }

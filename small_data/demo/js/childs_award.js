@@ -36,7 +36,7 @@ function Child(config){
 }
 Child.prototype.getAwayFromCenter = function(t_x, t_y, t_radius){
 
-	var minDistance = 30*this.scale;
+	var minDistance = 12*this.scale;
 
 	var distance = dist(t_x, this.x, t_y, this.y);
 
@@ -45,8 +45,8 @@ Child.prototype.getAwayFromCenter = function(t_x, t_y, t_radius){
 		var x = t_x - this.x;
 		var y = t_y - this.y;
 
-		x *=-0.4;
-		y *=-0.4;
+		x *=-0.15;
+		y *=-0.15;
 
 		this.velocity.x+=x;
 		this.velocity.y+=y;

@@ -60,7 +60,11 @@ function Particle(config){
 
 }
 Particle.prototype.setSmallRadius = function(){
-	return this.radVar+1.*this.scale + this.radius_to_add*(this.records.length-1);
+	//croissance en racine carree (l'aire suit le nombre d'oeuvres) et plafond
+	//lie a la taille du canvas : les gros regroupements laissent de la place aux autres
+	var r = this.radVar+1.*this.scale + this.radius_to_add*2.*Math.sqrt(this.records.length-1);
+	var maxR = Math.min(this.canvas.width, this.canvas.height)/10.;
+	return Math.min(r, maxR);
 }
 Particle.prototype.resetIt = function(){
 	this.open=false;
@@ -75,6 +79,13 @@ Particle.prototype.openOrCloseIt = function(){
 	
 	// console.log("open close: ", this.radius, this.extra_rad, this.max_extra_rad);
 	if(!this.open){
+		//rayon d'ouverture dimensionne pour loger tous les membres (cercles bleus),
+		//dans la limite du canvas
+		var needed = 6.*Math.sqrt(this.records.length)*this.scale;
+		var maxOpen = Math.min(this.canvas.width, this.canvas.height)/4. - 20.;
+		var base = this.setSmallRadius();
+		this.max_extra_rad = Math.max(20.*this.scale, Math.min(Math.max(needed, base+20.*this.scale), maxOpen) - base);
+		this.open_step = Math.max(.5, this.max_extra_rad/40.);
 
 		this.opening=true;
 		// console.log('open it');
@@ -184,7 +195,7 @@ Particle.prototype.update = function(i, particles){
 		if(this.extra_rad<this.max_extra_rad){
 			
 			this.radius-=this.extra_rad;
-			this.extra_rad+=.5;
+			this.extra_rad+=this.open_step;
 			this.radius+=this.extra_rad;
 			
 			// console.log(this.radius, " ", this.extra_radius);
@@ -214,7 +225,7 @@ Particle.prototype.update = function(i, particles){
 		if(this.radius< rad_max)this.radius+=.1;
 			
 	} else if(!this.open){
-		if(this.radius>this.setSmallRadius())this.radius-=1.;
+		if(this.radius>this.setSmallRadius())this.radius=Math.max(this.setSmallRadius(), this.radius-3.);
 	}
 
 	for (var j=0; j<this.childs.length; j++) {
@@ -238,6 +249,12 @@ Particle.prototype.update = function(i, particles){
 
 	this.x+=this.velocity.x;
 	this.y+=this.velocity.y;
+
+	//les enfants (cercles bleus) suivent le deplacement de leur parent ouvert
+	for (var k=0; k<this.childs.length; k++) {
+		this.childs[k].x += this.velocity.x;
+		this.childs[k].y += this.velocity.y;
+	}
 
 	this.velocity.x*=.9;
 	this.velocity.y*=.9;
@@ -270,16 +287,15 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 				if(distance<minDistance && this.records.length >= particles[i].records.length){
 
 					//TODO UPDATE IT ? radius to add
-			    	var val=this.radius_to_add;
-			    		
-		    		for (var j=particles[i].records.length-1; j>=0; j--) {
-		    			var newRecord = particles[i].records.pop();
-    					this.records.push(newRecord);
-    					//WARNING HAVE ADDING A CONDITION CAN CAUSE BUG
-    					if(!this.open){
-    						this.radius+=val;
-    					}
-    				}
+			    	var val=this.radius_to_add; //conserve pour reference
+
+					for (var j=particles[i].records.length-1; j>=0; j--) {
+						var newRecord = particles[i].records.pop();
+						this.records.push(newRecord);
+					}
+
+					//rayon recalcule (racine carree + plafond), pas d'increment lineaire
+					if(!this.open)this.radius = this.setSmallRadius();
 
 		    		particles[i].alive=false;
 		    		break;
@@ -298,8 +314,13 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 
 	if(target_id>=0){
 		this.getCloserFrom(particles[target_id]);
-	} else {
+	} else if(!this.open){
+		//un regroupement ferme garde son evitement d'origine
 		this.getAwayFrom(index, particles);
+	} else {
+		//ouvert : ignore les petits noeuds isoles, mais s'ecarte des autres
+		//regroupements (verts ou jaunes) pour ne jamais les recouvrir
+		this.getAwayFromGroups(index, particles);
 	}
 }
 Particle.prototype.SearchCommonsAttrAndGetAwayFrom = function (arr, index){
@@ -543,4 +564,34 @@ Particle.prototype.drawLine = function(x1, y1, x2, y2, color){
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.stroke();
+}
+//evitement reserve aux regroupements : pousse douce, proportionnelle au
+//chevauchement ; premultipliee par records.length car update() divise la
+//vitesse par la taille du groupe
+Particle.prototype.getAwayFromGroups = function(index, particles){
+
+	for (var i=0; i<particles.length; i++) {
+
+		//les regroupements qui partagent la meme valeur de propriete sont des
+		//candidats a la fusion : on ne les repousse pas, on les laisse approcher
+		var sameValue = this.targetedAttr!=="" && this[this.targetedAttr]!=="" &&
+			String(this[this.targetedAttr]).localeCompare(String(particles[i][particles[i].targetedAttr]))===0;
+
+		if(index!==i && particles[i].records.length>1 && !sameValue){
+
+			var minDistance = this.radius*2 + particles[i].radius*2 + 10;
+			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
+
+			if(distance<minDistance && distance>0){
+
+				var x = (particles[i].x - this.x)/distance;
+				var y = (particles[i].y - this.y)/distance;
+
+				var push = (minDistance - distance)*.05*this.records.length;
+
+				this.velocity.x -= x*push;
+				this.velocity.y -= y*push;
+			}
+		}
+	}
 }
