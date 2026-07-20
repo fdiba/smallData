@@ -13,6 +13,7 @@
 	<script src="lib/perlin.js"></script>
 	<script src="js/variables.js"></script>
 	<script src="js/functions.js"></script>
+	<script src="js/sma_core.js"></script>
 	<script src="js/childs_euphonies.js"></script>
 	<script src="js/particles_euphonies.js"></script>
 	<script src="js/euphonies.js"></script>
