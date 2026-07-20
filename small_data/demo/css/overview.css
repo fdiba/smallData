@@ -112,3 +112,11 @@
 #selection{
 	margin: 1px 0;
 }
+
+/* --- resultats de recherche : cliquables --- */
+#results p{
+	cursor: pointer;
+}
+#results p:hover{
+	text-decoration: underline;
+}
