@@ -65,7 +65,6 @@
 					</tr>
 				</table>
 			</div>
-			<div id="listing"></div>
 			<div id="bnfData">
 			</div>
 		</div>

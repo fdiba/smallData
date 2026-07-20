@@ -64,15 +64,10 @@ function retrieveEuphonies(cat, numOfElements){
 
         var arr=str.split("|");
 
-        $("#listing").append('<ul></ul>');
-
         for (var i = 0; i < arr.length; i+=numOfElements) {
 
-            var li_class = "even";
-            if(i/numOfElements%2==0) li_class = "odd";
-
-            var elements = "";
-            var year = arr[i];
+            var tr_class = "even";
+            if(i/numOfElements%2==0) tr_class = "odd";
 
             //--------- SMA
             var obj = {edition: arr[i], year:arr[i+1], price:arr[i+2], imeb_id:arr[i+3],
@@ -86,82 +81,37 @@ function retrieveEuphonies(cat, numOfElements){
             //--------- TABLE
             $('#euphonies_table').append('<tr></tr>');
             var tr = $('#euphonies_table tr:last');
+            tr.attr('class', tr_class);
             //---------
 
             for (var j = 0; j < numOfElements; j++) {
 
-                //--------- TABLE
                 var value = arr[i+j];
                 if(j==numOfElements-1)value="<a target=\"_blank\" href=\"http://www.isni.org/isni/" + value + "\">"+ value +"</a>";
 
                 if(j!=8){ //8 = temp id
                     tr.append('<td>'+ value + '</td>');
                 }
-                //---------
-
-
-                if(j==0) elements += arr[i];
-                else elements += " "+ arr[i+j];
             }
 
-            // console.log(elements, " ", i, " ", i/numOfElements);
-
-            if(i!=0){
-
-                if(year!=prev_year){
-                    // console.log("test");
-                    $("#listing").append('<ul></ul>');
-                }
-                prev_year = year;
-
-            } else {
-                prev_year = year;
-            }
-
-            
-
-            var new_element = "<li " + li_class + " >" + elements +  "</li>";
-
-            // var ark_array=arr[i+numOfElements-1].split("/");
+            //--------- data.bnf.fr : clicking a row retrieves the matching records
             var isni=arr[i+numOfElements-1];
 
-            /*var ark = "http://data.bnf.fr/sparql?default-graph-uri=&query=PREFIX+foaf%3A+%3Chttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2F%3E%0D%0APREFIX+rdarelationships%3A+%3Chttp%3A%2F%2Frdvocab.info%2FRDARelationshipsWEMI%2F%3E%0D%0APREFIX+owl%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E%0D%0APREFIX+dcterms%3A+%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Fterms%2F%3E%0D%0APREFIX+bnf-onto%3A+%3Chttp%3A%2F%2Fdata.bnf.fr%2Fontology%2Fbnf-onto%2F%3E%0D%0ASELECT+DISTINCT+%3Fwork+%3FtitreOeuvre+%3FanneeOeuvre+%3Fedition+%3FtitreEdition+%3FdateEdition%0D%0AWHERE%0D%0A%7B%0D%0A%3Fwork+dcterms%3Acreator+%3Chttp%3A%2F%2Fdata.bnf.fr%2Fark%3A%2F"+
-            ark_array[0]+
-            "%2F"+
-            ark_array[1]+
-            "%23foaf%3APerson%3E+%3B%0D%0A%09dcterms%3Atitle+%3FtitreOeuvre+%3B%09%0D%0A%09bnf-onto%3AfirstYear+%3FanneeOeuvre+.%0D%0A%3Fedition+rdarelationships%3AworkManifested+%3Fwork+.%0D%0A%3Fedition+dcterms%3Atitle+%3FtitreEdition+%3B+%0D%0A%09bnf-onto%3AfirstYear+%3FdateEdition+.%0D%0A%0D%0A%7D&format=text%2Fhtml&timeout=0&should-sponge=&debug=on";
-
-            console.log(ark_array[0]);
-            console.log(ark_array[1]);*/
-
-            var ark = "http://data.bnf.fr/sparql?default-graph-uri=&query=PREFIX+foaf%3A+%3Chttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2F%3E%0D%0APREFIX+rdarelationships%3A+%3Chttp%3A%2F%2Frdvocab.info%2FRDARelationshipsWEMI%2F%3E%0D%0APREFIX+owl%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E%0D%0APREFIX+dcterms%3A+%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Fterms%2F%3E%0D%0APREFIX+bnf-onto%3A+%3Chttp%3A%2F%2Fdata.bnf.fr%2Fontology%2Fbnf-onto%2F%3E%0D%0APREFIX+isni%3A+%3Chttp%3A%2F%2Fisni.org%2Fontology%23%3E%0D%0ASELECT+DISTINCT+%3Fwork+%3FtitreOeuvre+%3FanneeOeuvre+%3Fedition+%3FtitreEdition+%3FdateEdition%0D%0AWHERE%0D%0A%7B%0D%0A++%0D%0A%3Fconcept+isni%3AidentifierValid+%22"
+            var ark = "https://data.bnf.fr/sparql?default-graph-uri=&query=PREFIX+foaf%3A+%3Chttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2F%3E%0D%0APREFIX+rdarelationships%3A+%3Chttp%3A%2F%2Frdvocab.info%2FRDARelationshipsWEMI%2F%3E%0D%0APREFIX+owl%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E%0D%0APREFIX+dcterms%3A+%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Fterms%2F%3E%0D%0APREFIX+bnf-onto%3A+%3Chttp%3A%2F%2Fdata.bnf.fr%2Fontology%2Fbnf-onto%2F%3E%0D%0APREFIX+isni%3A+%3Chttp%3A%2F%2Fisni.org%2Fontology%23%3E%0D%0ASELECT+DISTINCT+%3Fwork+%3FtitreOeuvre+%3FanneeOeuvre+%3Fedition+%3FtitreEdition+%3FdateEdition%0D%0AWHERE%0D%0A%7B%0D%0A++%0D%0A%3Fconcept+isni%3AidentifierValid+%22"
             + isni +
             "%22%3B%0D%0Afoaf%3Afocus+%3Fauteur.%0D%0A%3Fwork+dcterms%3Acreator+%3Fauteur+%3B%0D%0A++++dcterms%3Atitle+%3FtitreOeuvre+%3B++++%0D%0A++++bnf-onto%3AfirstYear+%3FanneeOeuvre+.%0D%0A%3Fedition+rdarelationships%3AworkManifested+%3Fwork+.%0D%0A%3Fedition+dcterms%3Atitle+%3FtitreEdition+%3B%0D%0A++++bnf-onto%3AfirstYear+%3FdateEdition+.%0D%0A%7D%0D%0A&format=text%2Fhtml&timeout=0&should-sponge=&debug=on";
 
+            tr.css("cursor", "pointer").data("foo", ark).click(function(){
 
-            /*var ark = "http://data.bnf.fr/sparql?default-graph-uri=&query=PREFIX+foaf%3A+%3Chttp%3A%2F%2Fxmlns.com%2Ffoaf%2F0.1%2F%3E%0D%0APREFIX+rdarelationships%3A+%3Chttp%3A%2F%2Frdvocab.info%2FRDARelationshipsWEMI%2F%3E%0D%0APREFIX+owl%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E%0D%0APREFIX+dcterms%3A+%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Fterms%2F%3E%0D%0APREFIX+bnf-onto%3A+%3Chttp%3A%2F%2Fdata.bnf.fr%2Fontology%2Fbnf-onto%2F%3E%0D%0ASELECT+DISTINCT+%3Fwork+%3FtitreOeuvre+%3FanneeOeuvre%0D%0AWHERE%0D%0A%7B%0D%0A%3Fwork+dcterms%3Acreator+%3Chttp%3A%2F%2Fdata.bnf.fr%2Fark%3A%2F"+
-            ark_array[0]+
-            "%2F"+
-            ark_array[1]+
-            "%23foaf%3APerson%3E+%3B%0D%0A%09dcterms%3Atitle+%3FtitreOeuvre+%3B%09%0D%0A%09bnf-onto%3AfirstYear+%3FanneeOeuvre+.%0D%0A%7D&format=text%2Fhtml&timeout=0&should-sponge=&debug=on";*/
+                var url = $(this).data("foo");
 
-            //arr[i+numOfElements-1]
+                $.post(url, function( data ) {
 
-            $('#listing ul:last').append(
-                $('<li>').append(elements).attr('class', li_class).data("foo", ark).click(function(){
-                    //console.log($(this).data("foo"));
+                  $('#bnfData').empty();
+                  $('#bnfData').append(data);
 
-                    var url = $(this).data("foo");
-
-                    $.post(url, function( data ) {
-                      //console.log(data);
-
-                      $('#bnfData').empty();
-                      $('#bnfData').append(data);
-
-                    });
-                })
-            );   
+                });
+            });
         }
 
         $("#info").append("<p>" + arr.length/numOfElements + "</p>");
