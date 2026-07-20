@@ -20,7 +20,7 @@ d3.csv("../data/smallData.csv", function(data){
   var svgWidth = iniWidth - margin.left - margin.right;
 
 
-  var sWidth = $(window).width();
+  var sWidth = window.innerWidth;
 
   if(sWidth - 75 < svgWidth){
     svgWidth = svgWidth - 250;
