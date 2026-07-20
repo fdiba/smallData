@@ -115,27 +115,32 @@ window.onload = function() {
             
             // console.log(arr[i+7]);
             
-            var obj = {year:year, rank:rank, misam:arr[i+2],
+            var obj = {year:year, rank:rank, rank_code:arr[i+1], misam:arr[i+2],
                         fn: arr[i+3], name: arr[i+4], title:arr[i+5], cat:cat, cat2:cat2,
+                        cat2_code:arr[i+9],
                         duration:arr[i+6], 
                         id:arr[i+7]};
 
-            if(objects.length<1)objects.push(obj);
-            else {
-
-                for (var k = 0; k < objects.length; k++) {
-
-                    if(obj.year >= objects[k].year){
-
-                        objects.splice(k, 0, obj);
-                        break;
-
-                    }
-                }
-                
-            }
+            objects.push(obj);
 
         }
+
+        // Tri : edition (recente d'abord) > category > sub category > price > last name
+        function cmpValues(a, b){
+            if(a===undefined || a===null || a==='') a='';
+            if(b===undefined || b===null || b==='') b='';
+            var na = parseFloat(a), nb = parseFloat(b);
+            if(!isNaN(na) && !isNaN(nb)) return na - nb;
+            return String(a).localeCompare(String(b), 'fr', {sensitivity: 'base'});
+        }
+
+        objects.sort(function(a, b){
+            return cmpValues(b.year, a.year)
+                || cmpValues(a.cat, b.cat)
+                || cmpValues(a.cat2_code, b.cat2_code)
+                || cmpValues(a.rank_code, b.rank_code)
+                || cmpValues(a.name, b.name);
+        });
 
         for (var j = 0; j < objects.length; j++) {
 

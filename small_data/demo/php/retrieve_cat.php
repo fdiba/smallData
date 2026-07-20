@@ -123,6 +123,7 @@
 							ON imeb_music.id_artist = imeb_artist.id');
 
 		$arr= array();
+		$rows= array();
 
 		while($row = $sth->fetch()) {
 
@@ -164,30 +165,20 @@
 
 		
 
-				if(sizeof($arr)<1){
-					array_push($arr, $year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni);
+				array_push($rows, array($year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni));
 
-				} else {
-
-					$new_arr = array($year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni);
-
-					for ($j=0;  $j<sizeof($arr); $j+=12) {
-
-						if((int)$year > (int)$arr[$j]){
-							array_splice($arr, $j, 0, $new_arr);
-							break;
-						} else if($j+12==sizeof($arr)){
-							//array_push($arr, 999, 999, $count);
-							array_push($arr, $year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni);
-							break;
-						}
-
-					}
-
-				}
-				
 			}
 
+		}
+
+		//--------- tri : edition (recente d'abord) puis nom de famille ---------//
+		usort($rows, function($a, $b){
+			if((int)$a[0] != (int)$b[0]) return (int)$b[0] - (int)$a[0];
+			return strcasecmp($a[5], $b[5]);
+		});
+
+		foreach($rows as $row_fields){
+			foreach($row_fields as $field) array_push($arr, $field);
 		}
 
 		//---------------
@@ -220,7 +211,8 @@
 							imeb_artist.id AS id_artist
 							FROM imeb_music
 							INNER JOIN imeb_artist
-							ON imeb_music.id_artist = imeb_artist.id');
+							ON imeb_music.id_artist = imeb_artist.id
+							ORDER BY imeb_artist.name ASC, imeb_artist.firstName ASC, imeb_music.title ASC');
 
 		$arr= array();
 		while($row = $sth->fetch()) {
