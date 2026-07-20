@@ -27,39 +27,32 @@
 
 	function retrieveAllComposersNamed($str){
 
-		$t=$str;
+		$terms = explode(' ', trim($str));
 
-		$terms = explode(' ', $str);
-		$where_str="";
+		//--------- requete preparee : un couple de LIKE par terme ---------//
+		$conditions = array();
+		$params = array();
 
-		$where_str = ' WHERE name LIKE \'%' . $terms[0] .'%\'
-							 OR firstName LIKE \'%' . $terms[0] . '%\'';
-
-		$req = 'SELECT id, firstName, name FROM imeb_artist';
-
-		
-		for ($j=0; $j < sizeof($terms); $j++) { 
-			if($j==0){
-				$where_str = ' WHERE name LIKE \'%' . $terms[$j] .'%\'
-							 OR firstName LIKE \'%' . $terms[$j] . '%\'';	
-			} else {
-				$where_str = ' OR name LIKE \'%' . $terms[$j] .'%\'
-							 OR firstName LIKE \'%' . $terms[$j] . '%\'';
-			}
-
-			$req .= $where_str;
+		foreach($terms as $term){
+			if($term==='') continue;
+			$conditions[] = '(name LIKE ? OR firstName LIKE ?)';
+			$params[] = '%' . $term . '%';
+			$params[] = '%' . $term . '%';
 		}
 
+		if(sizeof($conditions)<1) return;
+
+		$req = 'SELECT id, firstName, name FROM imeb_artist WHERE '
+				. implode(' OR ', $conditions);
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
 		//---------------
-		// SELECT id, firstName, name FROM artist WHERE name LIKE '%e%' 
-		$sth = $dbh->query($req);
+		$sth = $dbh->prepare($req);
+		$sth->execute($params);
 
 		$arr= array();
 		$results="";
-
 
 		while($row = $sth->fetch()) {
 			$id=$row['id'];
@@ -70,7 +63,7 @@
 
 		if(sizeof($arr)>0){
 			for($i=0; $i<sizeof($arr); $i++){
-				
+
 				if($i<sizeof($arr)-1)$results.=$arr[$i].'%';
 				else $results.=$arr[$i];
 
@@ -124,7 +117,7 @@
 								imeb_edition.ed_2005, imeb_edition.ed_2006,
 								imeb_edition.ed_2007, imeb_edition.ed_2008,
 								imeb_edition.ed_2009
-								
+
 							FROM imeb_artist
 							INNER JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id
@@ -135,14 +128,14 @@
 		$sth->setFetchMode(PDO::FETCH_ASSOC);
 
 		$str_all = "";
-	
+
 		while($row = $sth->fetch()) {
 
 			if(strlen($str_all)>0) $str_all .=  "%";
-			
+
 			$aId=$row['artist_id'];
-			
-			$count=0;			
+
+			$count=0;
 			if(isset($arr[$aId]))$count=$arr[$aId];
 
 			$str_all .= $aId."%". $row['ctry']."%".$row['c_id']."%".$count."%";
@@ -165,13 +158,13 @@
 	}
 	function retrieveAllCompositionsFrom02($aId){ //only index case 5
 
-		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');		
+		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
 		$years = array(1973, 1974, 1975, 1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009);
 
 		$result = "no result";
 
-		$sth = $dbh->query('SELECT imeb_artist.firstName, imeb_artist.name,
+		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name,
 							imeb_country.c_name AS \'ctry\',
 							imeb_edition.ed_1973, imeb_edition.ed_1974,
 							imeb_edition.ed_1975, imeb_edition.ed_1976,
@@ -192,13 +185,15 @@
 							imeb_edition.ed_2005, imeb_edition.ed_2006,
 							imeb_edition.ed_2007, imeb_edition.ed_2008,
 							imeb_edition.ed_2009
-							
+
 						FROM imeb_artist
 						INNER JOIN imeb_country
 						ON imeb_artist.id_country = imeb_country.id
 						INNER JOIN imeb_edition
 						ON imeb_artist.id = imeb_edition.artist_id
-						WHERE imeb_artist.id = ' . $aId );
+						WHERE imeb_artist.id = ?');
+
+		$sth->execute(array((int)$aId));
 
 		$sth->setFetchMode(PDO::FETCH_ASSOC);
 
@@ -224,18 +219,20 @@
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
-		$sth = $dbh->query('SELECT imeb_artist.firstName, imeb_artist.name,
+		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name,
 							imeb_music.id, imeb_music.title, imeb_music.duration,
 							imeb_music.misam, imeb_music.editions
 							FROM imeb_artist
 							INNER JOIN imeb_music
 							ON imeb_artist.id = imeb_music.id_artist
-							WHERE imeb_artist.id =' . $aId);
+							WHERE imeb_artist.id = ?');
+
+		$sth->execute(array((int)$aId));
 
 		$sth->setFetchMode(PDO::FETCH_ASSOC);
 
 		$str_all = "";
-	
+
 		while($row = $sth->fetch()) {
 			if(strlen($str_all)>0) $str_all .=  "%";
 			$str_all .= $row['id'] . "%" . $row['title'] . "%" . $row['duration'] . "%" . $row['misam'] . "%" . $row['editions'] . "%" . $row['firstName'] . "%" . $row['name'];
@@ -248,18 +245,20 @@
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
-		$sth = $dbh->query('SELECT imeb_artist.firstName, imeb_artist.name,
+		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name,
 							imeb_music.id, imeb_music.title, imeb_music.duration,
 							imeb_music.misam, imeb_music.editions
 							FROM imeb_artist
 							INNER JOIN imeb_music
 							ON imeb_artist.id = imeb_music.id_artist
-							WHERE imeb_artist.id =' . $aId);
+							WHERE imeb_artist.id = ?');
+
+		$sth->execute(array((int)$aId));
 
 		$sth->setFetchMode(PDO::FETCH_ASSOC);
 
 		$str_all = "";
-	
+
 		while($row = $sth->fetch()) {
 			if(strlen($str_all)>0) $str_all .=  "%";
 			$str_all .= $row['id'] . "%" . $row['title'] . "%" . $row['duration'] . "%" . $row['misam'] . "%" . $row['editions'];
@@ -273,21 +272,27 @@
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
+		//--------- l'annee sert de nom de colonne : validation stricte ---------//
+		$y = (int)$y;
+		if($y<1973 || $y>2009) return;
+
 		$ed_XXXX="ed_".$y;
 
-		$sth = $dbh->query('SELECT imeb_artist.id AS a_id, imeb_artist.firstName,
-							imeb_artist.name, ' . $ed_XXXX . ' 
+		$sth = $dbh->prepare('SELECT imeb_artist.id AS a_id, imeb_artist.firstName,
+							imeb_artist.name, ' . $ed_XXXX . '
 							FROM imeb_artist
 							INNER JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id
 							INNER JOIN imeb_edition
 							ON imeb_artist.id = imeb_edition.artist_id
-							WHERE imeb_country.id =' . $cId);
+							WHERE imeb_country.id = ?');
+
+		$sth->execute(array((int)$cId));
 
 		$sth->setFetchMode(PDO::FETCH_ASSOC);
 
 		$str_all = "";
-	
+
 		while($row = $sth->fetch()) {
 			if(strlen($str_all)>0) $str_all .=  "%";
 			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . $row[$ed_XXXX];
