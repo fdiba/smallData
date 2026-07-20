@@ -8,9 +8,7 @@ The application was created as part of a research project on the IMEB archives d
 
 The project starts from a simple observation: the data documenting this activity is neither large nor complex — a few thousand records. Its interest lies in its historical density rather than its volume. The approach is one of exploratory programming: the visualisations are not final renderings but reading instruments, built in the course of analysing the collection.
 
-🔗 **Live application:** [webodrome.fr/small_data](https://www.webodrome.fr/small_data/)
-
-📼 [Video walkthrough of the application](https://vimeo.com/237232737)
+The application is available online at [webodrome.fr/small_data](https://www.webodrome.fr/small_data/). A [video walkthrough](https://vimeo.com/237232737) presents the visualisations.
 
 ## The visualisations
 
@@ -79,11 +77,11 @@ The `imeb/` pages only require PHP and read their data directly from `imeb/data/
 
 ## Publications
 
-The project is documented in the following papers:
+The project is documented in the following publications:
 
-- Di Bartolo, F. (2017). [Visualising the Multimedia Archives of Bourges's Institute of Electroacoustic Music](https://doi.org/10.14236/ewic/EVA2017.33). In *EVA London 2017: Electronic Visualisation and the Arts*, BCS, London, pp. 138–143.
-- Di Bartolo, F. (2017). *Retracing the story of Bourges's Institute of Electroacoustic Music through exploratory programming and live visualizations*. In *Proceedings of ISEA2017 — 23rd International Symposium on Electronic Art*, Manizales, Colombia.
-- Di Bartolo, F. « Exploration du fonds IMEB : l'émergence computationnelle au service de la recherche d'informations » (on computational emergence, multi-agent systems and access to the IMEB archives).
+- Di Bartolo, F. (2017). Visualising the Multimedia Archives of Bourges's Institute of Electroacoustic Music. In *EVA London 2017: Electronic Visualisation and the Arts*, BCS, London, pp. 138–143. DOI: [10.14236/ewic/EVA2017.33](https://doi.org/10.14236/ewic/EVA2017.33) — HAL: [hal-01561573](https://hal.science/hal-01561573)
+- Di Bartolo, F. (2017). Retracing the story of Bourges's Institute of Electroacoustic Music through exploratory programming and live visualizations. In *Proceedings of ISEA2017 — 23rd International Symposium on Electronic Art*, Manizales, Colombia, pp. 391–397. HAL: [hal-01541237](https://hal.science/hal-01541237)
+- Di Bartolo, F. (2019). Exploration du fonds IMEB : l'émergence computationnelle au service de la recherche d'informations. In *L'émergence en musique*, Delatour France, pp. 139–156. HAL: [hal-02299684](https://hal.science/hal-02299684)
 
 ## Acknowledgments
 
