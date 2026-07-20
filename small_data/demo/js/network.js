@@ -64,21 +64,40 @@ function pauseSMA(event){
     if(noiseField) $(event.target).text("pause");
     else $(event.target).text("play");
 }
-function computeAll(){
+//remet la simulation a zero : appele a chaque clic sur compute all
+//ou compute traces, pour pouvoir relancer l'un apres l'autre a volonte
+function resetSimulation(){
 
-	usingCookie=false;
-	state=1;
-	running=true;
+    if(animation01)clearInterval(animation01);
 
-	document.getElementById('get_sl').removeEventListener("click", computeTraces);
-    document.getElementById('cp_all').removeEventListener("click", computeAll);
-
-    $("#cp_all").toggleClass('b_off b_on');
-
+    particles=[];
+    composers=[];
     counter001=0;
     pointer001=0;
-    composers=[];
+    counter002=0;
 
+    sl_attribute='';
+    main_attributes=[];
+    noiseField=true;
+    running=false;
+
+    $("#commons p").off("click").css("text-decoration", "none").empty();
+    $("#cookies").empty();
+    $("#titles").empty();
+    $("#sma_main_ctrl ul li:last").text("pause");
+
+    resetSMACanvas();
+}
+function computeAll(){
+
+    resetSimulation();
+
+    usingCookie=false;
+    state=1;
+    running=true;
+
+    $("#cp_all").removeClass('b_off').addClass('b_on');
+    $("#get_sl").removeClass('b_on').addClass('b_off');
 
     /*var id=allData[i];
     var ctry=allData[i+1];
@@ -96,24 +115,25 @@ function computeAll(){
 }
 function computeTraces(){
 
-	usingCookie=true;
-	state=0;
-	running=true;
+    resetSimulation();
 
-    document.getElementById('get_sl').removeEventListener("click", computeTraces);
-    document.getElementById('cp_all').removeEventListener("click", computeAll);
+    usingCookie=true;
+    state=0;
+    running=true;
 
-    $("#get_sl").toggleClass('b_off b_on');
+    $("#get_sl").removeClass('b_off').addClass('b_on');
+    $("#cp_all").removeClass('b_on').addClass('b_off');
 
-    /*var txt=$.cookie('ids');
-    $("#selection").empty().append('<p>');
-    $("#selection p").text(txt);*/
+    var saved = $.cookie('ids');
 
-    cookies = $.cookie('ids').split('%');
+    if(!saved){
+        $("#cookies").empty().append('<p>no navigation trace yet — browse composers in Overview first</p>');
+        $("#get_sl").removeClass('b_on').addClass('b_off');
+        running=false;
+        return;
+    }
 
-    counter001=0;
-    pointer001=0;
-    composers=[];
+    cookies = saved.split('%');
 
     for (var i=0; i<cookies.length; i+=2)composers.push({id:cookies[i], count:cookies[i+1]});
 

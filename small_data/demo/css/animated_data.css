@@ -4,53 +4,6 @@
 
 /* ---------- legende ---------- */
 
-#legend{
-	clear: both;
-	background: var(--sd-asphalt);
-	color: #ecf0f1;
-	padding: 10px 14px;
-	margin: 0 0 10px 0;
-	max-width: 1170px;
-	font-size: 12px;
-}
-#legend .lg-title{
-	margin: 0 0 6px 0;
-	font-weight: 600;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: #fff;
-}
-#legend .lg-cols{
-	display: flex;
-	flex-wrap: wrap;
-	gap: 24px;
-}
-#legend .lg-cols > div{
-	flex: 1 1 300px;
-}
-#legend p{
-	margin: 0 0 4px 0;
-}
-#legend ul{
-	margin: 0;
-	padding: 0;
-}
-#legend li{
-	margin: 0 0 3px 0;
-	color: #bdc3c7;
-}
-#legend li em{
-	color: #fff;
-	font-style: normal;
-}
-#legend .sq{
-	display: inline-block;
-	width: 11px;
-	height: 11px;
-	margin: 0 4px -1px 0;
-	border: 1px solid rgba(0, 0, 0, 0.35);
-}
-
 /* demos de la liste des compositeurs, memes codes que plus bas */
 #legend .demo{
 	display: inline-block;

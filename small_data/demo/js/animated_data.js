@@ -98,8 +98,8 @@ function editTitleInfo(sl_ctry, sl_year, numOfComposers, totalNumOfComposers, sl
 
     infos={c:sl_ctry, y:sl_year, nc:numOfComposers, tnc:totalNumOfComposers, sl:sl};
 
-    var mode = infos.sl ? 'showing this edition only — click to show all composers'
-                        : 'showing all composers — click to keep this edition only';
+    var mode = infos.sl ? 'showing this edition only | click to show all composers'
+                        : 'showing all composers | click to keep this edition only';
 
     var txt = infos.c + ', edition ' + infos.y +
             ' · this edition: ' + cp_infos.num + '/' + infos.nc + ' composers with archived works' +
@@ -158,8 +158,8 @@ function displayTitlesInfos(){
             var obj=titles[i];
             var div='<li>'+obj.t;
             if(obj.d) div += ' ('+obj.d+')';
-            if(obj.m) div += ' — MISAM '+obj.m;
-            if(obj.ed) div += ' — edition(s): '+obj.ed;
+            if(obj.m) div += ' | MISAM '+obj.m;
+            if(obj.ed) div += ' | edition(s): '+obj.ed;
             div += '</li>';
             $("#titles").append(div);
         }

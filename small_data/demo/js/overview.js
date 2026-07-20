@@ -295,7 +295,7 @@ function selectRect(x, y){
 
                     var arr=str.split("%");
                     var ctry=checkCountry(arr[2]);
-                    var txt=arr[0]+' '+arr[1]+' '+ctry+' '+arr[3];
+                    var txt='selected: '+arr[0]+' '+arr[1]+' ('+ctry+') | edition(s): '+arr[3];
 
                     $("#selection p").text(txt);
 
@@ -338,7 +338,7 @@ function selectRect(x, y){
                         // var txt=$.cookie('ids');
                         // console.log(txt);
 
-                        var txt = particles.length+' countries and '+cookies.length+' composers';
+                        var txt = 'consulted so far: '+cookies.length+' composer(s) from '+particles.length+' countr'+(particles.length>1 ? 'ies' : 'y');
                         $("#cookies").empty().append('<p>');
                         $("#cookies p").text(txt);
 
@@ -423,12 +423,12 @@ function getData(){
             if(numTitles>0)numComposersInCapsules++;
         }
 
-        var txt = "no selection";
+        var txt = "no selection — click a square to display a composer";
         $("#selection").empty().append('<p>');
         $("#selection p").append(txt);
 
         var num = allData.length / 5;
-        var txt2 = numComposersInCapsules+ " / " + num;
+        var txt2 = numComposersInCapsules+ " / " + num + " composers with archived works";
         $("#info p:eq(0)").text(txt2);
 
         processData();
@@ -484,7 +484,7 @@ function getParticleInfos(evt){
 
         var distance=dist(mouseX, particles[i].x, mouseY, particles[i].y)
         if(distance<=particles[i].radius*2){
-            var txt=particles[i].label+' '+ particles[i].iso+' '+ particles[i].ids.length;
+            var txt=particles[i].label+' ('+particles[i].iso+'): '+particles[i].ids.length+' composer(s) consulted';
             // console.log(txt);
             $("#cookies").empty().append('<p>');
             $("#cookies p").text(txt);

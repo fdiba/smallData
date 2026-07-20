@@ -3,13 +3,18 @@ function displayTitlesInfosGN(arr){
 
     $("#titles").empty();
     if(arr.length>0){
+        $("#titles").append('<em>'+arr.length+' archived work(s)</em>');
         for (var i=0; i<arr.length; i++) {
             var obj=arr[i];
-            var div='<li>'+obj.t+" "+obj.d+" "+obj.m+" "+obj.ed+'</li>';
+            var div='<li>'+obj.t;
+            if(obj.d) div += ' ('+obj.d+')';
+            if(obj.m) div += ' | MISAM '+obj.m;
+            if(obj.ed) div += ' | edition(s): '+obj.ed;
+            div += '</li>';
             $("#titles").append(div);
         }
-    } else { //TO DO REMOVE THIS CASE
-        var div='<li>no title</li>';
+    } else {
+        var div='<li>no archived work for this composer</li>';
         $("#titles").append(div);
     }
 
