@@ -45,6 +45,35 @@
 				    <ul id="titles"></ul>
 			    </div>
 		    </div>
+			<div id="legend">
+				<p class="lg-title">How to read this page</p>
+				<div class="lg-cols">
+					<div>
+						<p><strong>Table &amp; agents</strong></p>
+						<ul>
+							<li>the table lists the award-winning works of the Bourges competitions, sorted by edition, category, sub category, price and last name</li>
+							<li>on the canvas, each moving ellipse is an agent carrying one award-winning work</li>
+						</ul>
+					</div>
+					<div>
+						<p><strong>Agents</strong></p>
+						<ul>
+							<li><span class="sq" style="background:#bdc3c7"></span> an agent, still looking for others sharing a common property</li>
+							<li><span class="sq" style="background:#2ecc71"></span> a grouping &mdash; click it to open it</li>
+							<li><span class="sq" style="background:#f1c40f"></span> an opened grouping, showing its members</li>
+							<li><span class="sq" style="background:#3498db"></span> a single work inside an opened grouping &mdash; click it to display its details</li>
+						</ul>
+					</div>
+					<div>
+						<p><strong>Grouping</strong></p>
+						<ul>
+							<li>agents compare their properties as they move; candidate properties and their exchange counts appear in the white panel of the top bar, and a property (such as <em>edition</em> or <em>price</em>) becomes clickable once exchanged often enough</li>
+							<li>click that property name to let the agents regroup around it</li>
+							<li><em>reset</em> restarts the system, <em>pause</em> freezes it (the <em>p</em> key toggles the agents' drift)</li>
+						</ul>
+					</div>
+				</div>
+			</div>
 			<div id="main_table">
 				<table id="works_table">
 					<tr>

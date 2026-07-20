@@ -84,3 +84,7 @@ th{
 .even {
 	background: #C7C7C7;
 }
+/* --- legende : les agents sont des ellipses, pas des carres --- */
+#legend .sq{
+	border-radius: 50%;
+}

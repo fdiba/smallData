@@ -118,3 +118,8 @@ th{
 #works_table tr.odd{
 	background: #F6F6F6;
 }
+
+/* --- legende : les agents sont des ellipses, pas des carres --- */
+#legend .sq{
+	border-radius: 50%;
+}

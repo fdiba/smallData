@@ -131,3 +131,8 @@ th{
 	text-align: left;
 	font-size: .85em;
 }
+
+/* --- legende : les agents sont des ellipses, pas des carres --- */
+#legend .sq{
+	border-radius: 50%;
+}
