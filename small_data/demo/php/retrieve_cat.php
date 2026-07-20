@@ -206,44 +206,28 @@
 		//---------------
 
 
+		//--------- filtrage en SQL : seules les lignes utiles sont rapatriees ---------//
+		$where = '';
+		if($cat==1){ //International collection
+			$where = ' WHERE imeb_music.misam > 0 AND imeb_music.misam < 200000';
+		} else if($cat==2){ //IMEB collection
+			$where = ' WHERE imeb_music.misam >= 200000';
+		}
+
 		$sth = $dbh->query('SELECT imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
 							imeb_artist.id AS id_artist
 							FROM imeb_music
 							INNER JOIN imeb_artist
-							ON imeb_music.id_artist = imeb_artist.id
+							ON imeb_music.id_artist = imeb_artist.id'
+							. $where . '
 							ORDER BY imeb_artist.name ASC, imeb_artist.firstName ASC, imeb_music.title ASC');
 
 		$arr= array();
 		while($row = $sth->fetch()) {
 
-			$misam=$row['misam'];
-			$title=$row['title'];
-
-			$duration=$row['duration'];
-			// if(!$duration)$duration="00:00";
-			
-			$firstName=$row['firstName'];
-			$name=$row['name'];
-
-			$id=$row['id'];
-			$id_artist=$row['id_artist'];
-
-			if($cat==1){
-
-				if($misam<200000 && $misam!=null){
-					array_push($arr, $misam, $firstName, $name, $id_artist, $title, $duration, $id);
-				}
-
-			} else if ($cat==2){ //IMEB collection
-
-				if($misam>=200000 && $misam!=null){
-					array_push($arr, $misam, $firstName, $name, $id_artist, $title, $duration, $id);
-				}
-
-			} else {
-				array_push($arr, $misam, $firstName, $name, $id_artist, $title, $duration, $id);
-			}
+			array_push($arr, $row['misam'], $row['firstName'], $row['name'],
+						$row['id_artist'], $row['title'], $row['duration'], $row['id']);
 
 		}
 
