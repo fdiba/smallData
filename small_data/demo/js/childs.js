@@ -32,16 +32,15 @@ Child.prototype.getAwayFromCenter = function(t_x, t_y, t_radius){
 
 	var distance = dist(t_x, this.x, t_y, this.y);
 
-	if(distance<minDistance){
+	if(distance<minDistance && distance>0){
 
-		var x = t_x - this.x;
-		var y = t_y - this.y;
+		var x = (t_x - this.x)/distance;
+		var y = (t_y - this.y)/distance;
 
-		x *=-0.15;
-		y *=-0.15;
+		var push = (minDistance - distance)*.06;
 
-		this.velocity.x+=x;
-		this.velocity.y+=y;
+		this.velocity.x -= x*push;
+		this.velocity.y -= y*push;
 	}
 }
 Child.prototype.getCloseTo = function(t_x, t_y, t_radius){
@@ -49,16 +48,16 @@ Child.prototype.getCloseTo = function(t_x, t_y, t_radius){
 	var maxDistance = t_radius*2-8;
 	var distance = dist(t_x, this.x, t_y, this.y);
 
-	if(distance>maxDistance){
+	if(distance>maxDistance && distance>0){
 
-		var x = t_x - this.x;
-		var y = t_y - this.y;
+		//rappel proportionnel au depassement, pas a la distance brute
+		var x = (t_x - this.x)/distance;
+		var y = (t_y - this.y)/distance;
 
-		x *=0.1;
-		y *=0.1;
+		var pull = (distance - maxDistance)*.06;
 
-		this.velocity.x+=x;
-		this.velocity.y+=y;
+		this.velocity.x += x*pull;
+		this.velocity.y += y*pull;
 	}
 }
 Child.prototype.getAwayFrom = function(arr, radius, index){
@@ -70,21 +69,27 @@ Child.prototype.getAwayFrom = function(arr, radius, index){
 			var minDistance = this.radius*2+arr[i].radius*2+2;
 			var distance = dist(this.x, arr[i].x, this.y, arr[i].y);
 
-			if(distance<minDistance){
+			if(distance<minDistance && distance>0){
 
-				var x = arr[i].x - this.x;
-				var y = arr[i].y - this.y;
+				//ressort doux, proportionnel au chevauchement : glisse au lieu de sauter
+				var x = (arr[i].x - this.x)/distance;
+				var y = (arr[i].y - this.y)/distance;
 
-				x *=-0.2;
-				y *=-0.2;
+				var push = (minDistance - distance)*.08;
 
-				this.velocity.x+=x;
-				this.velocity.y+=y;
+				this.velocity.x -= x*push;
+				this.velocity.y -= y*push;
 			}
 		}
 	}
 }
 Child.prototype.reduceVelocityAndUseIt = function(coeff){
+	//derive lente et continue, pour ne jamais etre parfaitement immobile
+	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
+	this.driftT+=.02;
+	this.velocity.x += noise.perlin2(this.driftT, this.driftP)*.4;
+	this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*.4;
+
 	this.velocity.x*=coeff;
 	this.velocity.y*=coeff;
 
@@ -102,8 +107,14 @@ Child.prototype.display = function(){
 		ctx.fillStyle='rgba(85, 152, 219, .3)';
 	}
     
+	//respiration : le diametre se contracte brievement, par intermittence
+	if(this.breathT===undefined){ this.breathT=Math.random()*6.28; this.breathS=.02+Math.random()*.02; }
+	this.breathT+=this.breathS;
+	var s = Math.sin(this.breathT);
+	var breath = (s>.6) ? 1-((s-.6)/.4)*.3 : 1;
+
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius*2, 0, 2*Math.PI);
+    ctx.arc(this.x, this.y, this.radius*2*breath, 0, 2*Math.PI);
     ctx.fill();
     ctx.closePath();
 }

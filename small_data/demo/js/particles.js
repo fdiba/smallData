@@ -143,8 +143,12 @@ Particle.prototype.createNewChild=function(id, count){
 
 Particle.prototype.addNoiseField = function(coef){
 
-	var x = noise.perlin2(this.x, this.y);
-    var y = noise.perlin2(this.x+1000, this.y+1000);
+	//champ de bruit lisse et evolutif : la 3e dimension avance lentement
+	//avec le temps, les courants se reconfigurent au lieu de se figer
+	var t = Date.now()*.00006;
+
+	var x = noise.perlin3(this.x/150, this.y/150, t);
+    var y = noise.perlin3(this.x/150+7.31, this.y/150+3.17, t);
     
     x*=coef/this.ids.length;
     y*=coef/this.ids.length;
@@ -217,6 +221,20 @@ Particle.prototype.drawLine = function(x1, y1, x2, y2, color){
 }
 Particle.prototype.update = function(index, particles){
 
+	//derive lente et continue : les regroupements ne deviennent jamais
+	//totalement immobiles, meme quand plus rien ne fusionne
+	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
+	this.driftT+=.008;
+	if(this.ids.length>1){
+		var driftAmp = (this.open ? .5 : .3)*this.ids.length;
+		this.velocity.x += noise.perlin2(this.driftT, this.driftP)*driftAmp;
+		this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*driftAmp;
+	}
+
+
+	//les gris isoles s'ecartent doucement de leurs voisins isoles
+	//avec lesquels ils ne partagent pas la valeur de propriete ciblee
+	if(this.ids.length===1)this.separateFromLoners(index, particles);
 
 	if(this.opening){
 		if(this.extra_radius<this.max_extra_radius){
@@ -255,7 +273,7 @@ Particle.prototype.update = function(index, particles){
 		this.childs[i].getAwayFrom(this.childs, this.radius, i);
 		this.childs[i].getCloseTo(this.x, this.y, this.radius);
 		this.childs[i].getAwayFromCenter(this.x, this.y, this.radius);
-		this.childs[i].reduceVelocityAndUseIt(.3);
+		this.childs[i].reduceVelocityAndUseIt(.6); //plus d'inertie : glisse fluide
 	}
 
 	if(this.on)this.mergeNodesAndFindTarget(index, particles);
@@ -553,6 +571,34 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 				var y = (particles[i].y - this.y)/distance;
 
 				var push = (minDistance - distance)*.05*this.ids.length;
+
+				this.velocity.x -= x*push;
+				this.velocity.y -= y*push;
+			}
+		}
+	}
+}
+
+//separation douce entre agents isoles (gris) : proportionnelle au
+//chevauchement, ignoree entre candidats a la fusion (meme valeur)
+Particle.prototype.separateFromLoners = function(index, particles){
+
+	for (var i=0; i<particles.length; i++) {
+
+		if(index!==i && particles[i].ids.length===1){
+
+			if(this.targetedAttr!=="" &&
+				String(this[this.targetedAttr]).localeCompare(String(particles[i][particles[i].targetedAttr]))===0) continue;
+
+			var minDistance = this.radius*2 + particles[i].radius*2 + 6;
+			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
+
+			if(distance<minDistance && distance>0){
+
+				var x = (particles[i].x - this.x)/distance;
+				var y = (particles[i].y - this.y)/distance;
+
+				var push = (minDistance - distance)*.04;
 
 				this.velocity.x -= x*push;
 				this.velocity.y -= y*push;

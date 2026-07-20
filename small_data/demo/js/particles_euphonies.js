@@ -188,6 +188,20 @@ Particle.prototype.getInfoFrom=function(target){
 }
 Particle.prototype.update = function(i, particles){
 
+	//derive lente et continue : les regroupements ne deviennent jamais
+	//totalement immobiles, meme quand plus rien ne fusionne
+	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
+	this.driftT+=.008;
+	if(this.records.length>1){
+		var driftAmp = (this.open ? .5 : .3)*this.records.length;
+		this.velocity.x += noise.perlin2(this.driftT, this.driftP)*driftAmp;
+		this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*driftAmp;
+	}
+
+	//les gris isoles s'ecartent doucement de leurs voisins isoles
+	//avec lesquels ils ne partagent pas la valeur de propriete ciblee
+	if(this.records.length===1)this.separateFromLoners(i, particles);
+
 	if(this.opening){
 
 		// console.log("open close: ", this.radius, this.extra_radius, this.max_extra_radius);
@@ -220,9 +234,16 @@ Particle.prototype.update = function(i, particles){
 			this.childs.push(this.createNewChild(this.records[this.childs.length]));
 		}
 
-		var rad_max = this.setSmallRadius() + this.max_extra_rad;
+		//cible recalculee en continu : un cercle ouvert qui absorbe de
+		//nouveaux membres grandit pour continuer a tous les loger
+		var needed = 6.*Math.sqrt(this.records.length)*this.scale;
+		var maxOpen = Math.min(this.canvas.width, this.canvas.height)/4. - 20.;
+		var base = this.setSmallRadius();
+		this.max_extra_rad = Math.max(20.*this.scale, Math.min(Math.max(needed, base+20.*this.scale), maxOpen) - base);
 
-		if(this.radius< rad_max)this.radius+=.1;
+		var rad_max = base + this.max_extra_rad;
+
+		if(this.radius< rad_max)this.radius+=.5;
 			
 	} else if(!this.open){
 		if(this.radius>this.setSmallRadius())this.radius=Math.max(this.setSmallRadius(), this.radius-3.);
@@ -232,7 +253,7 @@ Particle.prototype.update = function(i, particles){
 		this.childs[j].getAwayFrom(this.childs, this.radius, j);
 		this.childs[j].getCloseTo(this.x, this.y, this.radius);
 		this.childs[j].getAwayFromCenter(this.x, this.y, this.radius);
-		this.childs[j].reduceVelocityAndUseIt(.3);
+		this.childs[j].reduceVelocityAndUseIt(.6); //plus d'inertie : glisse fluide
 	}
 
 	if(this.on)this.mergeNodesAndFindTarget(i, particles);
@@ -547,8 +568,12 @@ Particle.prototype.checkEdgesV1 = function(){
 }
 Particle.prototype.addNoiseField = function(coef){
 
-	var x = noise.perlin2(this.x, this.y);
-    var y = noise.perlin2(this.x+1000, this.y+1000);
+	//champ de bruit lisse et evolutif : la 3e dimension avance lentement
+	//avec le temps, les courants se reconfigurent au lieu de se figer
+	var t = Date.now()*.00006;
+
+	var x = noise.perlin3(this.x/150, this.y/150, t);
+    var y = noise.perlin3(this.x/150+7.31, this.y/150+3.17, t);
     
     x*=coef/this.records.length;
     y*=coef/this.records.length;
@@ -588,6 +613,34 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 				var y = (particles[i].y - this.y)/distance;
 
 				var push = (minDistance - distance)*.05*this.records.length;
+
+				this.velocity.x -= x*push;
+				this.velocity.y -= y*push;
+			}
+		}
+	}
+}
+
+//separation douce entre agents isoles (gris) : proportionnelle au
+//chevauchement, ignoree entre candidats a la fusion (meme valeur)
+Particle.prototype.separateFromLoners = function(index, particles){
+
+	for (var i=0; i<particles.length; i++) {
+
+		if(index!==i && particles[i].records.length===1){
+
+			if(this.targetedAttr!=="" &&
+				String(this[this.targetedAttr]).localeCompare(String(particles[i][particles[i].targetedAttr]))===0) continue;
+
+			var minDistance = this.radius*2 + particles[i].radius*2 + 6;
+			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
+
+			if(distance<minDistance && distance>0){
+
+				var x = (particles[i].x - this.x)/distance;
+				var y = (particles[i].y - this.y)/distance;
+
+				var push = (minDistance - distance)*.04;
 
 				this.velocity.x -= x*push;
 				this.velocity.y -= y*push;
