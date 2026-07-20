@@ -13,7 +13,6 @@
 			<h1 id="btn1"><a href="../">WEBODROME</a></h1>
 			<ul>
 				<li><a target="_blank" href="https://github.com/fdiba"><img src="../images/net/github.png" alt=""></a></li>
-				<li><a target="_blank" href="http://twitter.com/webodrome"><img src="../images/net/twitter.png" alt=""></a></li>
 			</ul>
 		</nav>
 	</header>
