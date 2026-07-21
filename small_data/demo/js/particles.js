@@ -741,9 +741,14 @@ Particle.prototype.computeOpenRadius = function(){
 	var usable = Math.sqrt(sum/0.55); //taux de remplissage 55%
 	var r = usable/1.4;               //la zone utile fait 70% du rayon dessine
 
+	//plancher base sur la taille FERMEE (stable) et non sur le rayon courant :
+	//se referer au rayon courant creait un effet cliquet qui faisait grossir
+	//tous les cercles ouverts jusqu'a la borne, quel que soit leur contenu
+	var closedT = 2.+1.*this.scale + 30.*(1.-Math.exp(-Math.sqrt(Math.max(0, this.ids.length-1))/8.))*this.scale;
+
 	//contrainte ferme : la taille de tous les cercles ouverts est bornee
-	//a une fraction modeste du canvas (diametre dessine ~1/5 du canvas)
+	//a une fraction modeste du canvas
 	var maxOpen = Math.min(this.canvas.width, this.canvas.height)/20.;
 
-	return Math.min(Math.max(r, this.radius+8.), maxOpen);
+	return Math.min(Math.max(r, closedT+8.), maxOpen);
 };
