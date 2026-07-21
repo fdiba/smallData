@@ -166,44 +166,46 @@ footer{
 
 	<ul class="rubriques">
 		<li>
-			<a target="_blank" rel="noopener" href="<?php echo $app ?>index.php">Overview</a>
+			<a href="<?php echo $app ?>index.php">Overview</a>
 			<span>Each square stands for one entry in the competition; its hue indicates the year of the edition. Clicking selects a composer and lists their works. Search by name, filter by number of records.</span>
 		</li>
 		<li>
-			<a target="_blank" rel="noopener" href="<?php echo $app ?>network.php">Network</a>
+			<a href="<?php echo $app ?>network.php">Network</a>
 			<span>A multi-agent system computes and displays navigation traces through the corpus, revealing proximities between composers and editions.</span>
 		</li>
 		<li>
-			<a target="_blank" rel="noopener" href="<?php echo $app ?>animated_data.php">Line Charts</a>
+			<a href="<?php echo $app ?>animated_data.php">Line Charts</a>
 			<span>How the number of participants evolved by country and by year. Any country can be isolated to follow its own curve.</span>
 		</li>
 		<li>
-			<a target="_blank" rel="noopener" href="<?php echo $app ?>categories.php">Categories</a>
+			<a href="<?php echo $app ?>categories.php">Categories</a>
 			<span>A flow diagram retracing how the competition's categories appeared, merged and disappeared across the editions.</span>
 		</li>
 		<li class="catalogue">
-			<a target="_blank" rel="noopener" href="<?php echo $app ?>award-winning_works.php">Award-Winning Works</a>
+			<a href="<?php echo $app ?>award-winning_works.php">Award-Winning Works</a>
 			<span>The complete table of award-winning works, with composer, duration, year and award category.</span>
 		</li>
 		<li class="catalogue">
-			<a target="_blank" rel="noopener" href="<?php echo $app ?>catalog.php?id=1">International Sound Archives</a>
+			<a href="<?php echo $app ?>catalog.php?id=1">International Sound Archives</a>
 			<span>Catalogue of the international sound collection assembled by the institute.</span>
 		</li>
 		<li class="catalogue">
-			<a target="_blank" rel="noopener" href="<?php echo $app ?>catalog.php?id=2">IMEB Sound Archives</a>
+			<a href="<?php echo $app ?>catalog.php?id=2">IMEB Sound Archives</a>
 			<span>Catalogue of the institute's own sound archives.</span>
 		</li>
 		<li class="catalogue">
-			<a target="_blank" rel="noopener" href="<?php echo $app ?>euphonies.php">Euphonies d'Or</a>
+			<a href="<?php echo $app ?>euphonies.php">Euphonies d'Or</a>
 			<span>The Euphonies d'Or roll of honour, with the persistent identifiers linking works to their records at the National Library of France.</span>
 		</li>
 	</ul>
 
 	<h2>Publications</h2>
 
-	<p class="pub">Florent Di Bartolo, <em>Visualising the Multimedia Archives of Bourges's Institute of Electroacoustic Music</em>, EVA London 2017 — Electronic Visualisation and the Arts, London, 2017.</p>
+	<p class="pub">Di Bartolo, F. (2017). <em>Visualising the Multimedia Archives of Bourges's Institute of Electroacoustic Music</em>. In EVA London 2017: Electronic Visualisation and the Arts, BCS, London, pp. 138&ndash;143. DOI: <a href="https://doi.org/10.14236/ewic/EVA2017.33" target="_blank" rel="noopener">10.14236/ewic/EVA2017.33</a> &mdash; HAL: <a href="https://hal.science/hal-01561573" target="_blank" rel="noopener">hal-01561573</a></p>
 
-	<p class="pub">Florent Di Bartolo, <em>Retracing the story of Bourges's Institute of Electroacoustic Music through exploratory programming and live visualizations</em>, ISEA2017 — 23rd International Symposium on Electronic Art, Manizales, 2017.</p>
+	<p class="pub">Di Bartolo, F. (2017). <em>Retracing the story of Bourges's Institute of Electroacoustic Music through exploratory programming and live visualizations</em>. In Proceedings of ISEA2017 &mdash; 23rd International Symposium on Electronic Art, Manizales, Colombia, pp. 391&ndash;397. HAL: <a href="https://hal.science/hal-01541237" target="_blank" rel="noopener">hal-01541237</a></p>
+
+	<p class="pub">Di Bartolo, F. (2019). <em>Exploration du fonds IMEB : l'&eacute;mergence computationnelle au service de la recherche d'informations</em>. In L'&eacute;mergence en musique, Delatour France, pp. 139&ndash;156. HAL: <a href="https://hal.science/hal-02299684" target="_blank" rel="noopener">hal-02299684</a></p>
 
 	<h2>Source code</h2>
 	<ul class="plain">
