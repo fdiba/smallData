@@ -588,8 +588,13 @@ Particle.prototype.addNoiseField = function(coef){
 	var x = noise.perlin3(this.x/150, this.y/150, t);
     var y = noise.perlin3(this.x/150+7.31, this.y/150+3.17, t);
     
-    x*=coef/this.records.length;
-    y*=coef/this.records.length;
+    //la force du champ diminue avec la TAILLE du cercle (masse ~ rayon),
+    //au lieu du seul nombre de membres : un gros cercle est moins deplace
+    //qu'un petit, et deux gris de tailles differentes reagissent differemment
+    var sizeFactor = this.radius/(2.*this.scale);
+    if(sizeFactor<.5)sizeFactor=.5;
+    x*=coef/sizeFactor;
+    y*=coef/sizeFactor;
 
 	this.velocity.x+=x;
 	this.velocity.y+=y;
