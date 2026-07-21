@@ -26,17 +26,15 @@ keywords:
 
 preferred-citation:
   type: conference-paper
-  title: "Visualising the Multimedia Archives of Bourges's Institute of Electroacoustic Music"
+  title: "Retracing the story of Bourges's Institute of Electroacoustic Music through exploratory programming and live visualizations"
   authors:
     - family-names: "Di Bartolo"
       given-names: "Florent"
       orcid: "https://orcid.org/0000-0002-4910-6936"
-  collection-title: "EVA London 2017: Electronic Visualisation and the Arts"
-  publisher:
-    name: "BCS Learning and Development Ltd"
+  collection-title: "Proceedings of ISEA2017: 23rd International Symposium on Electronic Art"
   location:
-    name: "London, UK"
+    name: "Manizales, Colombia"
   year: 2017
-  start: 138
-  end: 143
-  doi: "10.14236/ewic/EVA2017.33"
+  start: 391
+  end: 397
+  url: "https://hal.science/hal-01541237"

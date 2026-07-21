@@ -83,6 +83,14 @@ The project is documented in the following publications:
 - Di Bartolo, F. (2017). Retracing the story of Bourges's Institute of Electroacoustic Music through exploratory programming and live visualizations. In *Proceedings of ISEA2017 — 23rd International Symposium on Electronic Art*, Manizales, Colombia, pp. 391–397. HAL: [hal-01541237](https://hal.science/hal-01541237)
 - Di Bartolo, F. (2019). Exploration du fonds IMEB : l'émergence computationnelle au service de la recherche d'informations. In *L'émergence en musique*, Delatour France, pp. 139–156. HAL: [hal-02299684](https://hal.science/hal-02299684)
 
+## License
+
+The **source code** of this project (the PHP pages, the JavaScript visualisations and the Processing sketches written for it) is released under the MIT License — see [`LICENSE`](LICENSE).
+
+The **data** (`small_data/data/`, `imeb/data/`) is made available under the [Creative Commons Attribution 4.0 International licence (CC-BY 4.0)](https://creativecommons.org/licenses/by/4.0/): you may reuse and adapt it provided you give appropriate credit. Note that this dataset was compiled from the records of the international competitions organised by the IMEB, gathered by Christian Clozier and Françoise Barrière, whose archives were donated to the *Bibliothèque nationale de France*. The underlying documents and works remain the property of their respective rights holders, and any reuse should respect those rights.
+
+Bundled third-party libraries (jQuery, D3.js, and others under `lib/`, as well as the Box2D, ControlP5 and MidiBus libraries used by the Processing sketches) are distributed under their own respective licenses.
+
 ## Acknowledgments
 
 Thanks to Françoise Barrière and Christian Clozier for their lifework and for the documents and insights they shared; to the Audiovisual Department of the *Bibliothèque nationale de France* (Audrey Viault, Pascal Cordereix) and the Conservation service of the Music Department (Catherine Vallet-Collot); and to Geneviève Mathon and Azadeh Nilchiani for their support. The project was financially supported by the Labex Arts-H2H.
