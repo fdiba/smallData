@@ -30,8 +30,9 @@ function LineChart(config){
     //grey: silver, blue: peter river, emerald: green, green sea: dark green
 
     //couleurs attribuees aux pays surlignes (une par pays)
-    this.soloColors=["#3987e5", "#2aa42a", "#dc6791", "#c98500",
-                     "#1aa876", "#e06a36", "#9085e9", "#e66767"];
+    //pas de bleu ici : les lignes de base non surlignees sont deja bleues (this.colors[1])
+    this.soloColors=["#e74c3c", "#2aa42a", "#dc6791", "#c98500",
+                     "#1aa876", "#e06a36", "#9085e9", "#f5b041"];
 
     this.padding = 10;
     this.tickSize = 10;
