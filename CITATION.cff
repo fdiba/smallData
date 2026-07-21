@@ -1,9 +1,39 @@
 cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
 title: "Small Data: Visualising the IMEB Archives"
+abstract: >-
+  A set of interactive data visualisations retracing the history of the
+  international electroacoustic music competitions organised by Bourges's
+  Institute of Electroacoustic Music (IMEB) from 1973 to 2009, based on the
+  IMEB archives held at the Bibliothèque nationale de France.
 authors:
-  - family-names: Di Bartolo
-    given-names: Florent
+  - family-names: "Di Bartolo"
+    given-names: "Florent"
     orcid: "https://orcid.org/0000-0002-4910-6936"
     affiliation: "Université Gustave Eiffel"
 type: software
+repository-code: "https://github.com/fdiba/smallData"
 license: MIT
+keywords:
+  - digital humanities
+  - data visualisation
+  - multi-agent systems
+  - electroacoustic music
+  - IMEB
+  - digital archives
+
+preferred-citation:
+  type: conference-paper
+  title: "Visualising the Multimedia Archives of Bourges's Institute of Electroacoustic Music"
+  authors:
+    - family-names: "Di Bartolo"
+      given-names: "Florent"
+      orcid: "https://orcid.org/0000-0002-4910-6936"
+  collection-title: "EVA London 2017: Electronic Visualisation and the Arts"
+  publisher:
+    name: "BCS Learning and Development Ltd"
+  location:
+    name: "London, UK"
+  year: 2017
+  start: 138
+  end: 143
