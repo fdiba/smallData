@@ -297,13 +297,22 @@ function checkAttributes(attributes){
         }
     }
 
-    var str = "";
+    //la propriete est cliquable des qu'elle est identifiee ; le compteur
+    //d'echanges reste affiche tant que le seuil n'est pas atteint.
+    //IMPORTANT : la structure n'est construite qu'une seule fois — la
+    //reconstruire a chaque image detruisait le noeud <u> entre le mousedown
+    //et le mouseup d'un vrai clic, et le click ne se declenchait jamais.
+    var commons_p = $("#commons p");
+
+    if(commons_p.find('u').text() !== main_attributes[0].name){
+        commons_p.html('Group by: <u>' + main_attributes[0].name + '</u> <span class="gb-count"></span>')
+                 .off("click").on("click", setCommonAttr).css("cursor", "pointer");
+    }
+
     if(main_attributes[0].count>attr_treshold){
-        str = main_attributes[0].name;
-        $("#commons p").html('Group by: <u>' + str + '</u>').on("click", setCommonAttr).css("cursor", "pointer"); 
+        commons_p.find('.gb-count').text('');
     } else {
-        str = main_attributes[0].name + ' ' + main_attributes[0].count;
-        $("#commons p").html('Group by: ' + str);
+        commons_p.find('.gb-count').text('(' + main_attributes[0].count + ')');
     }
 }
 function setCommonAttr(){
