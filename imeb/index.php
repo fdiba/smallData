@@ -22,7 +22,6 @@
 		<div id="nav"></div>
 		<div id="charts">
 			<div id="pie01"><div class="tPie">Pays</div></div>
-			<div id="pie02"><div class="tPie">Studios</div></div>
 			<div id="pie03"><div class="tPie">Catégories</div></div>
 		</div>	
 	</div>

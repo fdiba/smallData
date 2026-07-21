@@ -17,40 +17,43 @@ resetVariables();
 editTitle(selectedYear);
 addTooltip(sceneWidth, sceneHeight);
 
-d3.csv("data/smallData.csv", function(data){
+// Donnees generees depuis la base (retrieve_awards.php) au lieu de
+// data/smallData.csv. Reponse : year%country%category%name%firstName%award repete.
+d3.text("retrieve_awards.php", function(error, text){
 
-	//console.log(data);
+	if(error || !text){ console.log("imeb: aucune donnee"); return; }
+
+	var raw = text.split("%");
+	var data = [];
+	for(var i=0; i+5 < raw.length; i+=6){
+		data.push({ year: raw[i], country: raw[i+1], category: raw[i+2],
+					name: raw[i+3], firstName: raw[i+4], award: raw[i+5], addon: '' });
+	}
+
 	table = data;
 
 	years.push({name: 'Panorama'});
 
 	for(key in data) {
-		
+
 		setYearsArray(data, key);
 
 		setArray(data, key, countries, 0);
 		setArray(data, key, categories, 1);
-		setArray(data, key, studios, 2);
-	
+
 	}
 
 	years.reverse();
 
-	var barWidth = 150,
-        barHeight = 20,
-        barOffset = 5;
-
     createSvg('#pie01', 'firstPie');
-    createSvg('#pie02', 'secondPie');
 	createSvg('#pie03', 'thirdPie');
 
     createMenu(years);
 
     createPie(sceneWidth, sceneHeight, '#firstPie', countries);
-    createPie(sceneWidth, sceneHeight, '#secondPie', studios);
     createPie(sceneWidth, sceneHeight, '#thirdPie', categories);
 
-    d3.select('#pie01').append('div').attr('id', 'awards');	
+    d3.select('#charts').append('div').attr('id', 'awards');  // listing sous les 2 camemberts	
     displayListingBasedOnSelection(data);
 });
 function createSvg(divName, idName){
@@ -186,11 +189,19 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 
 	if(panorama){
 
-		d3.select('#firstPie').attr('width', sceneWidth+340);
-		d3.select('#firstPie').select('.borderPie').attr('width', sceneWidth+340);
-
-		d3.select('#thirdPie').attr('width', sceneWidth+340);
-		d3.select('#thirdPie').select('.borderPie').attr('width', sceneWidth+340);
+		//largeur calculee d'apres le nombre reel de colonnes de la legende,
+		//pour que les noms ne chevauchent plus la colonne de droite
+		if(svgId.search('#firstPie')==0){
+			var nCols1 = Math.ceil(array.length / 17);
+			var w1 = sceneWidth + 80 + nCols1 * 120;
+			d3.select('#firstPie').attr('width', w1);
+			d3.select('#firstPie').select('.borderPie').attr('width', w1);
+		} else if(svgId.search('#thirdPie')==0){
+			var nCols3 = Math.ceil(array.length / 11);
+			var w3 = sceneWidth + 80 + nCols3 * 150;
+			d3.select('#thirdPie').attr('width', w3);
+			d3.select('#thirdPie').select('.borderPie').attr('width', w3);
+		}
 
 	} else if(array.length>7 && svgId.search('#firstPie')==0) {
 		
@@ -233,10 +244,10 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 
 		    	if(svgId.search('#firstPie')==0){
 		    		columnLength = 17;
-		    		rowWidth = 100;
+		    		rowWidth = 120;
 		    	} else {
 		    		columnLength = 11;
-		    		rowWidth = 140;
+		    		rowWidth = 150;
 		    	}
 
 		    	var pos = i%columnLength;
@@ -314,11 +325,14 @@ function addLegend(colors, pie, path, arc, sWidth, sHeight, svgId, array){
 
 	  	});
 
-	legend.append('text')
+	var legendText = legend.append('text')
   		.attr('x', legendRectSize + legendSpacing)
   		.attr('y', legendRectSize - legendSpacing)
-  		//.text(function(d) { return d.toUpperCase(); });
-  		.text(function(d) { return d; });
+  		//les noms longs (Bosnie-Herzegovine...) sont tronques pour ne pas
+  		//deborder sur la colonne de droite ; nom complet en infobulle
+  		.text(function(d) { return d.length > 15 ? d.substring(0, 14) + '\u2026' : d; });
+
+  	legendText.append('title').text(function(d) { return d; });
 }
 function setArray(data, key, array, propertyId){
 
@@ -450,7 +464,6 @@ function createMenu(years){
 					for(var j=0; j<table.length; j++) {
 						setArray(table, j, countries, 0);
 						setArray(table, j, categories, 1);
-						setArray(table, j, studios, 2);
 					}
 					
 					d3.select('#awards').selectAll("*").remove();
@@ -459,11 +472,9 @@ function createMenu(years){
 
 					//TODO animate it
 					d3.select('#firstPie').selectAll("*").remove();
-					d3.select('#secondPie').selectAll("*").remove();
 					d3.select('#thirdPie').selectAll("*").remove();
 
 					createPie(sceneWidth, sceneHeight, '#firstPie', countries);
-					createPie(sceneWidth, sceneHeight, '#secondPie', studios);
 					createPie(sceneWidth, sceneHeight, '#thirdPie', categories);
 
 				}
@@ -535,7 +546,6 @@ function displayListingBasedOnSelection(data){
 			var addon = data[i].addon;
 			if(addon!=="") award += " "+addon;
 
-			if(award.search('M')==0)award="Mention";
 			if(country=='')country = "Inconnu";
 
 			var str = '';

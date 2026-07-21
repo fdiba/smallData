@@ -50,7 +50,8 @@ rect.disabled {
 	stroke-width: 4;
 }
 #awards{
-	padding: 0 0 2px 0;
+	clear: both;          /* passe sous les deux camemberts (Pays + Categories) */
+	padding: 12px 0 2px 0;
 }
 #awards p{
 	padding: 0 5px;
