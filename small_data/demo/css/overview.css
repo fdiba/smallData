@@ -108,6 +108,10 @@
 	padding: 0;
 	margin: 0;
 	display: block;
+	cursor: pointer;              /* les resultats sont cliquables */
+}
+#results p:hover{
+	text-decoration: underline;
 }
 #selection{
 	margin: 1px 0;
