@@ -113,10 +113,9 @@
 	margin: 1px 0;
 }
 
-/* --- resultats de recherche : cliquables --- */
-#results p{
-	cursor: pointer;
-}
-#results p:hover{
-	text-decoration: underline;
+/* La liste des oeuvres (zone violette) a une hauteur bornee : elle defile
+   a l'interieur au lieu de pousser la rubrique "How to read" vers le bas. */
+#titles{
+	max-height: 300px;
+	overflow-y: auto;
 }
