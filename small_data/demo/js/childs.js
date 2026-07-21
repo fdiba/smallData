@@ -105,7 +105,7 @@ Child.prototype.display = function(){
 
 	//apparition en fondu : chaque membre nait transparent
 	if(this.appearAlpha===undefined)this.appearAlpha=0;
-	if(this.appearAlpha<1)this.appearAlpha=Math.min(1, this.appearAlpha+.05);
+	if(!this.dying && this.appearAlpha<1)this.appearAlpha=Math.min(1, this.appearAlpha+.05);
 	ctx.globalAlpha=this.appearAlpha;
 
 	if(this.count>0){

@@ -252,7 +252,7 @@ function shareInformation(){
     for (var i=0; i<particles.length; i++) {
         
         if(noiseField){
-            particles[i].addNoiseField(10.);
+            particles[i].addNoiseField(5.); //agitation reduite
 
             var attributes = particles[i].SearchCommonsAndGetAwayFrom22(i, particles);
 
@@ -325,7 +325,7 @@ function allowGrouping(){
     for (var i=0; i<particles.length; i++) {
 
         //une particule ouverte (jaune) n'est plus agitee par le champ de bruit
-        if(noiseField && !particles[i].open)particles[i].addNoiseField(2.);
+        if(noiseField && !particles[i].open)particles[i].addNoiseField(.8); //agitation reduite
         particles[i].update(i, particles);
         particles[i].display();
 

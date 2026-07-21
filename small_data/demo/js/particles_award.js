@@ -82,11 +82,12 @@ Particle.prototype.openOrCloseIt = function(){
 	if(!this.open){
 		//rayon d'ouverture dimensionne pour loger tous les membres (cercles bleus),
 		//dans la limite du canvas
-		var needed = 9.*Math.sqrt(this.records.length)*this.scale;
+		var sq = Math.sqrt(this.records.length);
+		var needed = 9.*sq/(1.+sq/28.)*this.scale; //croissance compressee pour les gros groupes
 		var maxOpen = Math.min(this.canvas.width, this.canvas.height)/4. - 20.;
 		var base = this.setSmallRadius();
 		this.max_extra_rad = Math.max(20.*this.scale, Math.min(Math.max(needed, base+20.*this.scale), maxOpen) - base);
-		this.open_step = Math.max(.5, this.max_extra_rad/40.);
+		this.open_step = Math.max(.25, this.max_extra_rad/90.); //ouverture lente
 
 		this.opening=true;
 		// console.log('open it');
@@ -205,6 +206,11 @@ Particle.prototype.update = function(i, particles){
 
 	if(this.opening){
 
+		//les membres commencent a apparaitre des le debut de l'ouverture,
+		//en fondu, chacun seulement quand il a de la place
+		var toAdd = Math.max(1, Math.ceil(this.records.length/120));
+		while(toAdd-- > 0 && this.tryAddChild());
+
 		// console.log("open close: ", this.radius, this.extra_radius, this.max_extra_radius);
 
 		if(this.extra_rad<this.max_extra_rad){
@@ -227,26 +233,27 @@ Particle.prototype.update = function(i, particles){
 
 	} else if(this.open){
 
-		//les membres apparaissent au fil des images (plusieurs par image
-		//pour les tres gros groupes), chacun en fondu d'opacite
+		//les membres apparaissent au fil des images, chacun seulement
+		//quand il a de la place dans le disque
 		var toAdd = Math.max(1, Math.ceil(this.records.length/120));
-		while(toAdd-- > 0 && this.childs.length < this.records.length){
-			this.childs.push(this.createNewChild(this.records[this.childs.length]));
-		}
+		while(toAdd-- > 0 && this.tryAddChild());
 
 		//cible recalculee en continu : un cercle ouvert qui absorbe de
 		//nouveaux membres grandit pour continuer a tous les loger
-		var needed = 9.*Math.sqrt(this.records.length)*this.scale;
+		var sq = Math.sqrt(this.records.length);
+		var needed = 9.*sq/(1.+sq/28.)*this.scale; //croissance compressee pour les gros groupes
 		var maxOpen = Math.min(this.canvas.width, this.canvas.height)/4. - 20.;
 		var base = this.setSmallRadius();
 		this.max_extra_rad = Math.max(20.*this.scale, Math.min(Math.max(needed, base+20.*this.scale), maxOpen) - base);
 
 		var rad_max = base + this.max_extra_rad;
 
-		if(this.radius< rad_max)this.radius+=.5;
+		if(this.radius< rad_max)this.radius+=.25; //croissance lente
 			
 	} else if(!this.open){
-		if(this.radius>this.setSmallRadius())this.radius=Math.max(this.setSmallRadius(), this.radius-3.);
+		var target = this.setSmallRadius();
+		if(this.radius>target)this.radius=Math.max(target, this.radius-3.);
+		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25); //croissance lente apres fusion
 	}
 
 	for (var j=0; j<this.childs.length; j++) {
@@ -320,8 +327,7 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 						this.records.push(newRecord);
 					}
 
-					//rayon recalcule (racine carree + plafond), pas d'increment lineaire
-					if(!this.open)this.radius = this.setSmallRadius();
+					//la croissance vers le nouveau rayon se fait progressivement dans update()
 
 		    		particles[i].alive=false;
 		    		break;
@@ -655,3 +661,41 @@ Particle.prototype.separateFromLoners = function(index, particles){
 		}
 	}
 }
+
+//ajoute un membre seulement s'il y a de la place pour lui : capacite du
+//disque respectee, et emplacement libre trouve avant de le faire naitre
+Particle.prototype.tryAddChild = function(){
+
+	if(this.childs.length >= this.records.length)return false;
+
+	var usable = this.radius*2*.7;
+
+	//capacite globale : combien de membres tiennent dans la zone utile
+	var slot = 320.*this.scale*this.scale;
+	var capacity = Math.max(1, Math.floor((Math.PI*usable*usable)/slot));
+	if(this.childs.length >= capacity)return false;
+
+	//emplacement : quelques essais aleatoires, on garde une position libre
+	for (var t=0; t<12; t++) {
+
+		var a = Math.random()*2*Math.PI;
+		var r = Math.sqrt(Math.random())*Math.max(1, usable-8);
+		var px = this.x + Math.cos(a)*r;
+		var py = this.y + Math.sin(a)*r;
+
+		var free = true;
+		for (var j=0; j<this.childs.length; j++) {
+			var d = dist(px, this.childs[j].x, py, this.childs[j].y);
+			if(d < this.childs[j].radius*2 + 9){ free=false; break; }
+		}
+
+		if(free){
+			var c = this.createNewChild(this.records[this.childs.length]);
+			c.x = px; c.y = py;
+			this.childs.push(c);
+			return true;
+		}
+	}
+
+	return false;
+};

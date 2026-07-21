@@ -51,12 +51,19 @@ function Particle(config){
 	this.titles=[];
 
 	this.lastNodeSelected=false;
+
+	//rotation des membres affiches quand tous ne tiennent pas dans le disque
+	this.memberCursor=0;
+	this.rotT=0;
 }
 Particle.prototype.openOrCloseIt = function(){
 
 	this.open=!this.open;
 
 	if(this.open){
+
+		//cible d'ouverture d'apres la surface reelle des membres
+		this.max_extra_radius = Math.max(10., this.computeOpenRadius() - this.radius);
 
 		this.opening=true;
 
@@ -226,7 +233,7 @@ Particle.prototype.update = function(index, particles){
 	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
 	this.driftT+=.008;
 	if(this.ids.length>1){
-		var driftAmp = (this.open ? .5 : .3)*this.ids.length;
+		var driftAmp = (this.open ? .4 : .2)*this.ids.length; //derive plus douce
 		this.velocity.x += noise.perlin2(this.driftT, this.driftP)*driftAmp;
 		this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*driftAmp;
 	}
@@ -237,12 +244,17 @@ Particle.prototype.update = function(index, particles){
 	if(this.ids.length===1)this.separateFromLoners(index, particles);
 
 	if(this.opening){
+
+		//les membres commencent a apparaitre des le debut de l'ouverture,
+		//chacun seulement quand il a de la place
+		this.tryAddChild();
+
 		if(this.extra_radius<this.max_extra_radius){
 			this.radius-=this.extra_radius;
-			this.extra_radius+=.5;
+			this.extra_radius+=.25; //ouverture lente
 			this.radius+=this.extra_radius;
 			// console.log(this.radius, " ", this.extra_radius);
-		} else if(this.extra_radius==this.max_extra_radius){
+		} else { //cible atteinte ou depassee : fin d'ouverture
 			this.opening=false;
 
 			// var txt = this.ids.toString();
@@ -252,25 +264,54 @@ Particle.prototype.update = function(index, particles){
 		}
 	} else if(this.open){
 
-		if(this.childs.length < this.ids.length){
-			this.childs.push(this.createNewChild(this.ids[this.childs.length], this.counts[this.childs.length]));
+		this.tryAddChild();
+
+		//rotation continue : quand des membres restent invisibles faute de
+		//place, les affiches fondent tour a tour pour leur ceder la place
+		if(this.childs.length < this.ids.length && this.childs.length > 0){
+			this.rotT++;
+			if(this.rotT>40){
+				for (var rc=0; rc<this.childs.length; rc++) {
+					if(!this.childs[rc].dying && !this.childs[rc].lastNodeSelected){
+						this.childs[rc].dying = true;
+						this.rotT = 0;
+						break;
+					}
+				}
+			}
+		} else {
+			this.rotT = 0;
 		}
 
-		var rad_max = 2.+1.*this.scale + this.radius_to_add*(this.ids.length-1) + this.max_extra_radius;
+		//cible recalculee en continu : le disque suit la surface reelle
+		//de ses membres, absorptions comprises
+		var rad_max = this.computeOpenRadius();
 
-		if(this.radius< rad_max)this.radius+=.1;
+		if(this.radius< rad_max)this.radius+=.25;
 
 	} else if(!this.open){
-		if(this.radius>2.+1.*this.scale + this.radius_to_add*(this.ids.length-1)){
-			this.radius-=1.;
-		}
+		//taille fermee a saturation douce : les tres gros pays (USA, FRA)
+		//plafonnent vers ~33 au lieu de croitre lineairement sans limite
+		var target = 2.+1.*this.scale + 30.*(1.-Math.exp(-Math.sqrt(this.ids.length-1)/8.))*this.scale;
+		if(this.radius>target)this.radius=Math.max(target, this.radius-1.);
+		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25); //croissance lente apres fusion
 	}
 
-	for (var i = 0; i < this.childs.length; i++) {
-		this.childs[i].getAwayFrom(this.childs, this.radius, i);
-		this.childs[i].getCloseTo(this.x, this.y, this.radius);
-		this.childs[i].getAwayFromCenter(this.x, this.y, this.radius);
-		this.childs[i].reduceVelocityAndUseIt(.6); //plus d'inertie : glisse fluide
+	for (var i = this.childs.length-1; i >= 0; i--) {
+
+		var ch = this.childs[i];
+
+		//disparition progressive : le diametre fond, puis retrait
+		if(ch.dying){
+			ch.radius *= .9;
+			ch.appearAlpha = Math.min(ch.appearAlpha===undefined ? 1 : ch.appearAlpha, ch.radius/3.);
+			if(ch.radius < .3){ this.childs.splice(i, 1); continue; }
+		}
+
+		ch.getAwayFrom(this.childs, this.radius, i);
+		ch.getCloseTo(this.x, this.y, this.radius);
+		ch.getAwayFromCenter(this.x, this.y, this.radius);
+		ch.reduceVelocityAndUseIt(.6); //plus d'inertie : glisse fluide
 	}
 
 	if(this.on)this.mergeNodesAndFindTarget(index, particles);
@@ -282,8 +323,8 @@ Particle.prototype.update = function(index, particles){
     this.velocity.x /= this.ids.length;
     this.velocity.y /= this.ids.length;
 
-    //un cercle ouvert se deplace calmement : vitesse plafonnee bien plus bas
-    var maxSpeed = this.open ? 1.2 : this.maxSpeed;
+    //vitesses etagees : ouvert tres calme, vert pose, gris tranquille
+    var maxSpeed = this.open ? 1.2 : (this.ids.length>1 ? 2. : 2.8);
 
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
 	this.velocity.y = Math.min(Math.max(this.velocity.y, -maxSpeed), maxSpeed);
@@ -401,13 +442,12 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 				if((distance<minDistance && this.ids.length >= particles[i].ids.length) || engulfed){
 
 					//TODO UPDATE IT ? radius to add
-			    	var val=this.radius_to_add;
-			    		
 		    		for (var j=particles[i].ids.length-1; j>=0; j--) {
     					this.ids.push(particles[i].ids.pop());
     					this.counts.push(particles[i].counts.pop());
-    					this.radius+=val;
     				}
+
+		    		//la croissance vers le nouveau rayon se fait progressivement dans update()
 
 		    		particles[i].alive=false;
 		    		break;
@@ -503,7 +543,24 @@ Particle.prototype.display = function(){
 	    ctx.textAlign = "center";
 	    ctx.textBaseline = "middle";
 
-	    ctx.fillText(this.iso, this.x, this.y);
+	    if(this.ids.length>=50){
+
+	    	//deux lignes (nom + effectif) : le bloc entier reste centre
+	    	//sur le cercle, le nom decale d'une demi-ligne vers le haut
+	    	ctx.fillText(this.iso, this.x, this.y - 7*this.scale);
+
+	    	var referenced = 0;
+	    	for (var j=0; j<this.counts.length; j++) {
+	    		if(this.counts[j]>0)referenced++;
+	    	}
+
+	    	ctx.font = (8*this.scale) + "pt Calibri";
+	    	ctx.fillText(referenced + '/' + this.ids.length + ' composers', this.x, this.y + 7*this.scale);
+	    	ctx.font = this.font;
+
+	    } else {
+	    	ctx.fillText(this.iso, this.x, this.y);
+	    }
 
     }
 
@@ -610,3 +667,83 @@ Particle.prototype.separateFromLoners = function(index, particles){
 		}
 	}
 }
+
+//ajoute un membre seulement s'il y a de la place pour lui : capacite du
+//disque respectee, et emplacement libre trouve avant de le faire naitre
+Particle.prototype.tryAddChild = function(){
+
+	if(this.childs.length >= this.ids.length)return false;
+
+	//prochain membre a faire apparaitre : curseur circulaire qui saute les
+	//membres deja affiches — la rotation parcourt tout le monde a l'infini
+	var idx = -1;
+	for (var t2=0; t2<this.ids.length; t2++) {
+		var cand = (this.memberCursor + t2) % this.ids.length;
+		var shown = false;
+		for (var j2=0; j2<this.childs.length; j2++) {
+			if(this.childs[j2].id === this.ids[cand]){ shown=true; break; }
+		}
+		if(!shown){ idx = cand; break; }
+	}
+	if(idx<0)return false;
+
+	var usable = this.radius*2*.7;
+
+	//capacite : somme des diametres reels des bleus presents + le candidat
+	var sum = 0;
+	for (var j=0; j<this.childs.length; j++) {
+		var dj = this.childs[j].radius*2 + 2.;
+		sum += dj*dj;
+	}
+	var dc = (this.counts[idx]>0 ? 6. : 2.)*this.scale + 2.;
+	sum += dc*dc;
+	if(sum > 0.55*usable*usable)return false;
+
+	//emplacement : quelques essais aleatoires, on garde une position libre
+	for (var t=0; t<20; t++) {
+
+		var a = Math.random()*2*Math.PI;
+		var r = Math.sqrt(Math.random())*Math.max(1, usable-8);
+		var px = this.x + Math.cos(a)*r;
+		var py = this.y + Math.sin(a)*r;
+
+		var free = true;
+		for (var j=0; j<this.childs.length; j++) {
+			var d = dist(px, this.childs[j].x, py, this.childs[j].y);
+			var cd = (this.counts[idx]>0 ? 6. : 2.)*this.scale;
+			if(d < this.childs[j].radius*2 + cd + 2){ free=false; break; }
+		}
+
+		if(free){
+			var c = this.createNewChild(this.ids[idx], this.counts[idx]);
+			c.x = px; c.y = py;
+			this.childs.push(c);
+			this.memberCursor = (idx+1)%this.ids.length;
+			return true;
+		}
+	}
+
+	return false;
+};
+
+//taille du disque ouvert calculee d'apres la surface reelle de ses membres :
+//un composer sans oeuvre archivee est minuscule et compte pour tres peu
+Particle.prototype.computeOpenRadius = function(){
+
+	//taille conditionnee uniquement au nombre et aux diametres reels
+	//des cercles bleus deja presents a l'interieur
+	var sum = 0;
+	for (var i=0; i<this.childs.length; i++) {
+		var d = this.childs[i].radius*2 + 2.; //diametre dessine + espacement
+		sum += d*d;
+	}
+
+	var usable = Math.sqrt(sum/0.55); //taux de remplissage 55%
+	var r = usable/1.4;               //la zone utile fait 70% du rayon dessine
+
+	//contrainte ferme : la taille de tous les cercles ouverts est bornee
+	//a une fraction modeste du canvas (diametre dessine ~1/5 du canvas)
+	var maxOpen = Math.min(this.canvas.width, this.canvas.height)/20.;
+
+	return Math.min(Math.max(r, this.radius+8.), maxOpen);
+};
