@@ -110,6 +110,7 @@ function computeAll(){
     if(composers.length>0){
         animation01=setInterval(sma_animation, 1000/30);
         document.getElementById('myCanvas').addEventListener("click", getParticleInfos);
+        document.getElementById('myCanvas').addEventListener("dblclick", closeParticleOnDblClick);
     }
 
 }
@@ -140,8 +141,33 @@ function computeTraces(){
     if(composers.length>0){
         animation01=setInterval(sma_animation, 1000/30);
         document.getElementById('myCanvas').addEventListener("click", getParticleInfos);
+        document.getElementById('myCanvas').addEventListener("dblclick", closeParticleOnDblClick);
     }
 
+}
+//fermeture au double-clic : referme le cercle ouvert vise
+function closeParticleOnDblClick(evt){
+
+    var cv = canvas.getBoundingClientRect();
+
+    var mouseX = evt.clientX - cv.left;
+    var mouseY = evt.clientY - cv.top;
+
+    for (var i=0; i<particles.length; i++) {
+
+        if(particles[i].open && !particles[i].opening){
+
+            var distance=dist(mouseX, particles[i].x, mouseY, particles[i].y);
+
+            if(distance<=particles[i].radius*2){
+                particles[i].openOrCloseIt();
+                $("#cookies").empty().append('<p>'+ particles.length + ' nodes</p>');
+                $("#titles").empty();
+                removePreviousSelection();
+                break;
+            }
+        }
+    }
 }
 function getParticleInfos(evt){
     
@@ -166,9 +192,9 @@ function getParticleInfos(evt){
                     child_targeted = particles[i].processChilds(mouseX, mouseY);
                 }
 
-                if(!child_targeted && !particles[i].opening){
+                //le simple clic ouvre ; la fermeture se fait au double-clic
+                if(!child_targeted && !particles[i].opening && !particles[i].open){
                     particles[i].openOrCloseIt();
-                    if(!particles[i].open)$("#cookies").empty().append('<p>'+ particles.length + ' nodes</p>');
                     $("#titles").empty();
                     removePreviousSelection();
                 }

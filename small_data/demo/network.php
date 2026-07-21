@@ -60,7 +60,7 @@
 					<ul>
 						<li><span class="sq" style="background:#bdc3c7"></span> a composer, still looking for others sharing a common property</li>
 						<li><span class="sq" style="background:#2ecc71"></span> a grouping of composers &mdash; click it to open it</li>
-						<li><span class="sq" style="background:#f1c40f"></span> an opened grouping, showing its members</li>
+						<li><span class="sq" style="background:#f1c40f"></span> an opened grouping, showing its members &mdash; double-click it to close it</li>
 						<li><span class="sq" style="background:#3498db"></span> a composer inside an opened grouping &mdash; click it to list their archived works</li>
 					</ul>
 				</div>
