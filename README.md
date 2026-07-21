@@ -30,12 +30,11 @@ To respect copyright law, the online version references the archived composition
 smallData/
 ├── small_data/            Main web application (PHP + JavaScript)
 │   ├── index.php          Landing page
-│   ├── data/smallData.csv Award-winning works dataset
 │   └── demo/              The visualisations
 │       ├── index.php      Overview (interactive index)
 │       ├── network.php    Multi-agent system / live visualisation
 │       ├── animated_data.php  Line charts
-│       ├── categories.php Sankey diagram of categories
+│       ├── categories.php Sankey diagram of categories (reads from the database)
 │       ├── award-winning_works.php
 │       ├── catalog.php    Sound archives catalogues
 │       ├── euphonies.php  Euphonies d'Or
@@ -73,7 +72,7 @@ The web application requires a PHP server with a MySQL database.
 2. Create a MySQL database named `imeb` and provide a PDO connection script at `../access/connexion.php` (relative to the document root) exposing a `$dbh` handle used by the scripts in `small_data/demo/php/`.
 3. Populate the database with the Processing sketches (`rebuild_database/`, `update_db_with_csv/`), or adapt them to your own data. They require [Processing](https://processing.org) with the BezierSQLib library, and read the MySQL credentials from an `access.txt` file placed in each sketch folder. The `sma_database/` sketch additionally requires the Box2D for Processing, ControlP5 and The MidiBus libraries.
 
-The `imeb/` pages only require PHP and read their data directly from `imeb/data/smallData.csv`.
+All of the `small_data/` visualisations, including the Categories flow diagram, read from the MySQL database. The separate `imeb/` companion pages only require PHP and read their data directly from `imeb/data/smallData.csv`.
 
 ## Publications
 
@@ -87,7 +86,7 @@ The project is documented in the following publications:
 
 The **source code** of this project (the PHP pages, the JavaScript visualisations and the Processing sketches written for it) is released under the MIT License — see [`LICENSE`](LICENSE).
 
-The **data** (`small_data/data/`, `imeb/data/`) is made available under the [Creative Commons Attribution 4.0 International licence (CC-BY 4.0)](https://creativecommons.org/licenses/by/4.0/): you may reuse and adapt it provided you give appropriate credit. Note that this dataset was compiled from the records of the international competitions organised by the IMEB, gathered by Christian Clozier and Françoise Barrière, whose archives were donated to the *Bibliothèque nationale de France*. The underlying documents and works remain the property of their respective rights holders, and any reuse should respect those rights.
+The **data** shipped in the repository (`imeb/data/`) is made available under the [Creative Commons Attribution 4.0 International licence (CC-BY 4.0)](https://creativecommons.org/licenses/by/4.0/): you may reuse and adapt it provided you give appropriate credit. The main `small_data/` application draws its data from a MySQL database (not included in this repository — see *Running the application*), built from the same sources. This dataset was compiled from the records of the international competitions organised by the IMEB, gathered by Christian Clozier and Françoise Barrière, whose archives were donated to the *Bibliothèque nationale de France*. The underlying documents and works remain the property of their respective rights holders, and any reuse should respect those rights.
 
 Bundled third-party libraries (jQuery, D3.js, and others under `lib/`, as well as the Box2D, ControlP5 and MidiBus libraries used by the Processing sketches) are distributed under their own respective licenses.
 

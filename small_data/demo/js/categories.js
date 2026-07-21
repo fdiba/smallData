@@ -4,7 +4,17 @@ var links = [];
 var colors;
 var svgWidth;
 
-d3.csv("../data/smallData.csv", function(data){
+// Donnees generees depuis la base (php/retrieve_categories.php) au lieu
+// du fichier data/smallData.csv. Reponse : annee%categorie%nom repete.
+d3.text("php/retrieve_categories.php", function(error, text){
+
+  if(error || !text){ console.log('categories: aucune donnee'); return; }
+
+  var raw = text.split("%");
+  var data = [];
+  for(var i=0; i+2 < raw.length; i+=3){
+    data.push({ year: raw[i], category: raw[i+1], name: raw[i+2] });
+  }
 
   data.reverse();
 
