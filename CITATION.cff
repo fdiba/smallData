@@ -14,6 +14,8 @@ authors:
 type: software
 repository-code: "https://github.com/fdiba/smallData"
 license: MIT
+version: 1.0.0
+date-released: "2026-07-21"
 keywords:
   - digital humanities
   - data visualisation
@@ -37,3 +39,4 @@ preferred-citation:
   year: 2017
   start: 138
   end: 143
+  doi: "10.14236/ewic/EVA2017.33"
