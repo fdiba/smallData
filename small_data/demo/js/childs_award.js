@@ -53,7 +53,10 @@ Child.prototype.getAwayFromCenter = function(t_x, t_y, t_radius){
 }
 Child.prototype.getCloseTo = function(t_x, t_y, t_radius){
 
-	var maxDistance = t_radius*2-8;
+	//les membres restent bien a l'interieur du disque : ils ne
+	//s'approchent jamais du bord du cercle jaune
+	var maxDistance = t_radius*2*.7 - this.radius*2;
+	if(maxDistance<10)maxDistance = 10;
 	var distance = dist(t_x, this.x, t_y, this.y);
 
 	if(distance>maxDistance && distance>0){
@@ -108,6 +111,11 @@ Child.prototype.display = function(){
 
 	var ctx=this.context;
 
+	//apparition en fondu : chaque membre nait transparent
+	if(this.appearAlpha===undefined)this.appearAlpha=0;
+	if(this.appearAlpha<1)this.appearAlpha=Math.min(1, this.appearAlpha+.05);
+	ctx.globalAlpha=this.appearAlpha;
+
 	if(this.lastNodeSelected)ctx.fillStyle=this.colors[1];
 	else ctx.fillStyle=this.colors[0];//blue
 
@@ -121,4 +129,6 @@ Child.prototype.display = function(){
     ctx.arc(this.x, this.y, this.radius*2*breath, 0, 2*Math.PI);
     ctx.fill();
     ctx.closePath();
+
+	ctx.globalAlpha=1;
 }

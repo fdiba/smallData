@@ -41,7 +41,7 @@ function Particle(config){
 	this.radius_to_add=config.addRadiusVal;
 
 	this.open=false;
-	this.max_extra_radius=20.*this.scale;
+	this.max_extra_radius=32.*this.scale; //agrandi : les membres restent loin du bord
 	this.extra_radius=0.;
 	this.opening=false;
 
@@ -249,9 +249,6 @@ Particle.prototype.update = function(index, particles){
 			var txt = this.ids.length+' composers';
 			$("#selection p").text(txt);
 
-		 	for (var i = 0; i < this.ids.length; i++) {
-		 		this.childs.push(this.createNewChild(this.ids[i], this.counts[i]));
-		 	}
 		}
 	} else if(this.open){
 
@@ -285,7 +282,8 @@ Particle.prototype.update = function(index, particles){
     this.velocity.x /= this.ids.length;
     this.velocity.y /= this.ids.length;
 
-    var maxSpeed = this.maxSpeed;
+    //un cercle ouvert se deplace calmement : vitesse plafonnee bien plus bas
+    var maxSpeed = this.open ? 1.2 : this.maxSpeed;
 
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
 	this.velocity.y = Math.min(Math.max(this.velocity.y, -maxSpeed), maxSpeed);
@@ -393,9 +391,14 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 				var minDistance = Math.min(this.radius, particles[i].radius);
 				var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
 
+				//fusion au recouvrement total : un cercle ferme de meme label
+				//entierement recouvert par ce disque est absorbe
+				var engulfed = !particles[i].open &&
+					distance + particles[i].radius*2 <= this.radius*2;
+
 				//if two nodes are sharing the same property and are colliding
 				//and if the targeted particle has less child than this one --> eat it
-				if(distance<minDistance && this.ids.length >= particles[i].ids.length){
+				if((distance<minDistance && this.ids.length >= particles[i].ids.length) || engulfed){
 
 					//TODO UPDATE IT ? radius to add
 			    	var val=this.radius_to_add;
@@ -555,10 +558,10 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 
 	for (var i=0; i<particles.length; i++) {
 
-		//les regroupements qui partagent la meme valeur de propriete sont des
+		//les regroupements qui partagent le meme label (pays) sont des
 		//candidats a la fusion : on ne les repousse pas, on les laisse approcher
-		var sameValue = this.targetedAttr!=="" && this[this.targetedAttr]!=="" &&
-			String(this[this.targetedAttr]).localeCompare(String(particles[i][particles[i].targetedAttr]))===0;
+		var sameValue = this.label!=="" &&
+			String(this.label).localeCompare(String(particles[i].label))===0;
 
 		if(index!==i && particles[i].ids.length>1 && !sameValue){
 
@@ -570,7 +573,7 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 				var x = (particles[i].x - this.x)/distance;
 				var y = (particles[i].y - this.y)/distance;
 
-				var push = (minDistance - distance)*.05*this.ids.length;
+				var push = Math.min((minDistance - distance)*.03, 1.)*this.ids.length;
 
 				this.velocity.x -= x*push;
 				this.velocity.y -= y*push;
@@ -587,8 +590,9 @@ Particle.prototype.separateFromLoners = function(index, particles){
 
 		if(index!==i && particles[i].ids.length===1){
 
-			if(this.targetedAttr!=="" &&
-				String(this[this.targetedAttr]).localeCompare(String(particles[i][particles[i].targetedAttr]))===0) continue;
+			//meme label (pays) -> candidats a la fusion, on ne les separe pas
+			if(this.label!=="" &&
+				String(this.label).localeCompare(String(particles[i].label))===0) continue;
 
 			var minDistance = this.radius*2 + particles[i].radius*2 + 6;
 			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);

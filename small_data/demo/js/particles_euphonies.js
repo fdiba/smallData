@@ -81,7 +81,7 @@ Particle.prototype.openOrCloseIt = function(){
 	if(!this.open){
 		//rayon d'ouverture dimensionne pour loger tous les membres (cercles bleus),
 		//dans la limite du canvas
-		var needed = 6.*Math.sqrt(this.records.length)*this.scale;
+		var needed = 9.*Math.sqrt(this.records.length)*this.scale;
 		var maxOpen = Math.min(this.canvas.width, this.canvas.height)/4. - 20.;
 		var base = this.setSmallRadius();
 		this.max_extra_rad = Math.max(20.*this.scale, Math.min(Math.max(needed, base+20.*this.scale), maxOpen) - base);
@@ -222,21 +222,20 @@ Particle.prototype.update = function(i, particles){
 			var txt = this.records.length+' elements';
 			$("#selection p").text(txt);
 
-		 	for (var i = 0; i < this.records.length; i++) {
-		 		this.childs.push(this.createNewChild(this.records[i]));
-		 	}
 		}
 
 	} else if(this.open){
 
-		if(this.childs.length < this.records.length){
-			// console.log(this.childs.length, " ", this.records.length);
+		//les membres apparaissent au fil des images (plusieurs par image
+		//pour les tres gros groupes), chacun en fondu d'opacite
+		var toAdd = Math.max(1, Math.ceil(this.records.length/120));
+		while(toAdd-- > 0 && this.childs.length < this.records.length){
 			this.childs.push(this.createNewChild(this.records[this.childs.length]));
 		}
 
 		//cible recalculee en continu : un cercle ouvert qui absorbe de
 		//nouveaux membres grandit pour continuer a tous les loger
-		var needed = 6.*Math.sqrt(this.records.length)*this.scale;
+		var needed = 9.*Math.sqrt(this.records.length)*this.scale;
 		var maxOpen = Math.min(this.canvas.width, this.canvas.height)/4. - 20.;
 		var base = this.setSmallRadius();
 		this.max_extra_rad = Math.max(20.*this.scale, Math.min(Math.max(needed, base+20.*this.scale), maxOpen) - base);
@@ -303,9 +302,14 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 				var minDistance = Math.min(this.radius, particles[i].radius);
 				var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
 
+				//fusion au recouvrement total : un cercle ferme de meme propriete
+				//entierement recouvert par ce disque est absorbe
+				var engulfed = !particles[i].open &&
+					distance + particles[i].radius*2 <= this.radius*2;
+
 				//if two nodes are sharing the same property and are colliding
 				//and if the targeted particle has less child than this one --> eat it
-				if(distance<minDistance && this.records.length >= particles[i].records.length){
+				if((distance<minDistance && this.records.length >= particles[i].records.length) || engulfed){
 
 					//TODO UPDATE IT ? radius to add
 			    	var val=this.radius_to_add; //conserve pour reference
