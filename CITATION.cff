@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: "Small Data: Visualising the IMEB Archives"
+authors:
+  - family-names: Di Bartolo
+    given-names: Florent
+    orcid: "https://orcid.org/0000-0002-4910-6936"
+    affiliation: "Université Gustave Eiffel"
+type: software
+license: MIT
