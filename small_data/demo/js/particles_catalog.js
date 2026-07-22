@@ -19,6 +19,14 @@ var GREY_REPULSION = .1;
 //dosee par l'alignement). Stable, ne peut pas provoquer d'oscillation.
 var AVOID_STRENGTH = 1.4;
 
+//Raideur du "coussin" de bord pour les groupes (verts/jaunes) : ressort doux
+//perpendiculaire au mur, proportionnel a l'enfoncement. Monter = bord plus ferme.
+var BORDER_PUSH = .03;
+
+//Tampon d'hysteresis du wrap toroidal des gris (px) : evite les teleportations
+//en boucle a la couture. Le gris reapparait en retrait de cette marge du bord.
+var WRAP_MARGIN = 30;
+
 function Particle(config){
 
 	this.canvasId=config.canvasId;
@@ -583,29 +591,43 @@ Particle.prototype.checkEdgesV2 = function(){
 
 	if(this.records.length>1){
 
+		//coussin doux : ressort PERPENDICULAIRE au(x) mur(s) le(s) plus proche(s),
+		//proportionnel a l'enfoncement dans la marge (0 au bord de la marge,
+		//croissant vers le mur). Le groupe longe la bordure et glisse, au lieu
+		//d'etre catapulte vers le centre (ancien comportement saccade).
+		//Premultiplie par records.length car update() divise la vitesse par la masse.
 		var border = this.radius*2+25;
+		var W = this.canvas.width, H = this.canvas.height;
+		var fx = 0, fy = 0;
 
-		if(this.x<border || this.x>this.canvas.width-border ||
-			this.y<border || this.y>this.canvas.height-border){
+		if(this.x < border)            fx += (border - this.x);
+		else if(this.x > W - border)   fx -= (this.x - (W - border));
 
-			var x = this.canvas.width/2 - this.x;
-			var y = this.canvas.height/2 - this.y;
-			
-			x *=1.;
-			y *=1.;
+		if(this.y < border)            fy += (border - this.y);
+		else if(this.y > H - border)   fy -= (this.y - (H - border));
 
-			this.velocity.x+=x;
-			this.velocity.y+=y;
-
+		if(fx !== 0 || fy !== 0){
+			var k = BORDER_PUSH * this.records.length;
+			this.velocity.x += fx * k;
+			this.velocity.y += fy * k;
 		}
 
 	} else {
 
-		if(this.x<0)this.x=this.canvas.width;
-		else if(this.x>this.canvas.width)this.x=0;
+		//espace toroidal (wrap) pour les gris, avec HYSTERESIS. Sans tampon, le
+		//wrap reposait le gris pile sur le bord oppose : au moindre bruit vers
+		//l'exterieur il re-franchissait aussitot -> teleportations en boucle a la
+		//couture. On ne wrappe donc que si le gris est franchement sorti (au-dela
+		//de WRAP_MARGIN) et il reapparait EN RETRAIT du bord oppose : il doit
+		//traverser le tampon avant de pouvoir re-wrapper -> fin des allers-retours.
+		var m = WRAP_MARGIN;
+		//au wrap, on retire l'elan (l'axe traverse) : le gris repart du bruit
+		//local au lieu d'etre relance vers le bord -> pas de re-wrap immediat
+		if(this.x < -m)                         { this.x = this.canvas.width - m; this.velocity.x = 0; }
+		else if(this.x > this.canvas.width + m) { this.x = m;                     this.velocity.x = 0; }
 
-		if(this.y<0)this.y=this.canvas.height;
-		else if(this.y>this.canvas.height)this.y=0;
+		if(this.y < -m)                          { this.y = this.canvas.height - m; this.velocity.y = 0; }
+		else if(this.y > this.canvas.height + m) { this.y = m;                      this.velocity.y = 0; }
 
 	}
 	
@@ -627,7 +649,7 @@ Particle.prototype.addNoiseField = function(coef){
 
 	var x = noise.perlin3(this.x/150, this.y/150, t);
     var y = noise.perlin3(this.x/150+7.31, this.y/150+3.17, t);
-    
+
     //la force du champ diminue avec la TAILLE du cercle (masse ~ rayon).
     //Plancher a 1 (etait .5) : les petits cercles (gris) ne sont PLUS
     //sur-propulses par le bruit ; les gros regroupements restent attenues.

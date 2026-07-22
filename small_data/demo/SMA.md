@@ -25,10 +25,11 @@ Le SMA anime un `<canvas>` où chaque **agent** (cercle) porte une ou plusieurs
 > `particles_award.js` et `particles_euphonies.js` (copies quasi identiques de
 > catalog) **et** sur `particles.js` (network — variante : `ids`/`label` au lieu
 > de `records`/`targetedAttr`, boucle propre dans `network.js`). `avoidGroupsAhead`
-> y est actif, et network est **aligné sur catalog** : `GREY_NOISE = .35` et bruit
-> de phase 2 = `5` (dans `network.js`, `allowGrouping`, `addNoiseField(5.)`).
-> **Non porté** : `particles_interactive_index.js` (modèle différent, à « range »,
-> sans fusion/séparation classique — les réglages ne s'y appliquent pas).
+> y est actif, et network est **aligné sur catalog** : `GREY_NOISE = .35`, bruit de
+> phase 1 = `10` et phase 2 = `5` (dans `network.js`). Le **coussin de bord**
+> (groupes) et l'**hystérésis du wrap** (gris) sont désormais sur les **quatre**
+> fichiers. **Non porté** : `particles_interactive_index.js` (modèle différent, à
+> « range », sans fusion/séparation classique — les réglages ne s'y appliquent pas).
 
 ---
 
@@ -161,8 +162,11 @@ plus se dégager (voir le bug corrigé en §7).
   `display` (fondu d'apparition + « respiration »).
 
 **Bords**
-- `checkEdgesV2` : les **groupes** sont rappelés vers le centre s'ils s'approchent
-  du bord ; les **gris** isolés **traversent** (wrap) d'un bord à l'autre.
+- `checkEdgesV2` : les **groupes** rencontrent un **coussin doux** (mur invisible
+  élastique) près du bord — répulsion perpendiculaire proportionnelle à
+  l'enfoncement, ils longent la bordure au lieu d'être renvoyés au centre (voir
+  §7 g). Les **gris** isolés **traversent** (wrap toroïdal) d'un bord à l'autre,
+  avec une **hystérésis** qui empêche les téléportations en boucle (voir §7 h).
 
 ---
 
@@ -237,6 +241,9 @@ progressivement, puis repart quand il se dégage.
   divise **pas** la vitesse totale : les forces de séparation restent pleines.
 - **S'applique aux gris ET aux groupes** (verts/jaunes) — un groupe qui percute
   ralentit aussi (mesuré : un vert en collision monte à ~2,3 de masse puis se pose).
+- ⚠️ `updateMass` doit tourner pour **tous** (pas seulement les gris) : sinon un
+  groupe hérite d'une `collMass` **figée** (jamais résorbée) et devient
+  **immobile**. Bug rencontré puis corrigé sur network (portage manuel).
 - **Uniquement en phase 2** : `update()` (et donc `updateMass`) n'est jamais appelé
   en phase 1, la masse n'y est donc pas modifiée.
 - ⚠️ **Bug corrigé** : une première version divisait *toute* la vitesse par la
@@ -251,6 +258,45 @@ progressivement, puis repart quand il se dégage.
 **Réglages** : `COLL_GAIN` (`0.4`, force d'accumulation), `COLL_DECAY` (`0.94`,
 persistance — plus haut = la masse s'attarde), `COLL_MAX` (`6`, plafond anti-gel),
 `COLL_MARGIN` (`10`, portée de détection). Tous en tête de `particles_catalog.js`.
+
+### g) Coussin de bord pour les groupes (`checkEdgesV2`)
+Objectif : supprimer le mouvement saccadé des groupes (verts/jaunes) en bordure
+de cadre.
+- Ancien comportement : dès qu'un groupe entrait dans la bande de bord, on lui
+  ajoutait une vitesse **vers le centre** d'intensité = distance au centre
+  (des centaines de px) → écrêtée à `maxSpeed`, elle le **catapultait** au centre,
+  il repartait vers le bord, etc. → rebond saccadé (mesuré : ~100 inversions de
+  cap sur 270 images, pointes de vitesse à 3,6).
+- Nouveau : un **ressort perpendiculaire au mur** le plus proche, proportionnel à
+  l'enfoncement dans la marge (0 au bord de la marge, croissant vers le mur),
+  sommé sur les 4 murs. Le groupe **longe** la bordure et glisse. Prémultiplié par
+  `records.length` (car `update()` divise par la masse). Réglage : `BORDER_PUSH`
+  (`.03`, raideur ; monter = bord plus ferme).
+- Mesuré : pointes de vitesse 3,6 → 0,12 ; inversions de cap 100 → 4 ; le groupe
+  reste dans le cadre. **Appliqué à catalog, award, euphonies et network** (pour
+  network, `k = BORDER_PUSH * this.ids.length`).
+
+### h) Wrap toroïdal des gris avec hystérésis (`checkEdgesV2`, branche gris)
+Objectif : garder l'espace toroïdal pour les gris (ils passent d'un bord à
+l'autre) mais supprimer les **téléportations en boucle** de certains d'entre eux.
+- Cause : le wrap reposait le gris **pile sur le bord opposé** (`x = largeur`), et
+  le champ de bruit n'est pas continu à la « couture » (il pousse vers l'extérieur
+  des deux côtés). Résultat : au moindre bruit sortant, le gris re-franchissait
+  aussitôt → allers-retours `LRLRLR` (jusqu'à ~11 sur 800 images pour un même gris).
+- Correctif : **hystérésis**. On ne wrappe que si le gris est franchement sorti
+  (au-delà de `WRAP_MARGIN`), et il **réapparaît en retrait** de cette marge du
+  bord opposé ; on **remet à zéro la vitesse sur l'axe traversé** pour qu'il
+  reparte du bruit local au lieu d'être relancé vers le bord. Il doit alors
+  traverser le tampon avant tout nouveau wrap.
+- Mesuré : **plus aucun gris ne wrappe deux fois** (oscillation éliminée), les
+  wraps restants sont des passages uniques normaux ; vitesse des gris inchangée.
+- Réglage : `WRAP_MARGIN` (`30` px ; monter = tampon plus large, mais « saut » de
+  réapparition un peu plus grand). Une tentative de bruit torique (champ continu)
+  a été écartée : elle n'éliminait pas le ping-pong et alourdissait le calcul.
+- **Appliqué aux quatre SMA.** Nuance : l'hystérésis supprime le ping-pong sur des
+  gris isolés ; en scène dense (groupes présents), un gris poussé en continu par
+  un groupe peut encore franchir le bord de temps en temps — comportement
+  identique sur catalog et ses jumeaux (vérifié : catalog == award).
 
 **Réglages rapides** (dans `particles_catalog.js`) :
 
@@ -269,6 +315,8 @@ persistance — plus haut = la masse s'attarde), `COLL_MAX` (`6`, plafond anti-g
 | `COLL_MAX` | plafond de masse de collision (anti-gel) | `6` |
 | `COLL_MARGIN` | portée de détection d'une collision | `10` |
 | `GREY_REPULSION` | force de répulsion gris↔groupe (douceur) | `.1` |
+| `BORDER_PUSH` | raideur du coussin de bord des groupes | `.03` |
+| `WRAP_MARGIN` | tampon d'hystérésis du wrap toroïdal des gris (px) | `30` |
 | `maxSpeed` (constructeur) | vitesse max d'un agent | `4.` |
 | `numberOfNodesOnDisplayMax` (`catalog.js`) | nb max d'agents affichés | `400` |
 | `strength_noise_field` (`sma_core.js`) | force du champ de bruit | `10` |

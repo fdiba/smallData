@@ -19,6 +19,14 @@ var GREY_REPULSION = .1;
 //dosee par l'alignement). Stable, ne peut pas provoquer d'oscillation.
 var AVOID_STRENGTH = 1.4;
 
+//Raideur du "coussin" de bord pour les groupes (verts/jaunes) : ressort doux
+//perpendiculaire au mur, proportionnel a l'enfoncement. Monter = bord plus ferme.
+var BORDER_PUSH = .03;
+
+//Tampon d'hysteresis du wrap toroidal des gris (px) : evite les teleportations
+//en boucle a la couture. Le gris reapparait en retrait de cette marge du bord.
+var WRAP_MARGIN = 30;
+
 function Particle(config){
 
 	this.canvasId=config.canvasId;
@@ -579,29 +587,37 @@ Particle.prototype.checkEdgesV2 = function(){
 
 	if(this.records.length>1){
 
+		//coussin doux : ressort PERPENDICULAIRE au mur le plus proche,
+		//proportionnel a l'enfoncement : le groupe longe la bordure et glisse
+		//au lieu d'etre catapulte vers le centre (fini le saccade au bord).
+		//Premultiplie par la masse car update() divise la vitesse par elle.
 		var border = this.radius*2+25;
+		var W = this.canvas.width, H = this.canvas.height;
+		var fx = 0, fy = 0;
 
-		if(this.x<border || this.x>this.canvas.width-border ||
-			this.y<border || this.y>this.canvas.height-border){
+		if(this.x < border)            fx += (border - this.x);
+		else if(this.x > W - border)   fx -= (this.x - (W - border));
 
-			var x = this.canvas.width/2 - this.x;
-			var y = this.canvas.height/2 - this.y;
-			
-			x *=1.;
-			y *=1.;
+		if(this.y < border)            fy += (border - this.y);
+		else if(this.y > H - border)   fy -= (this.y - (H - border));
 
-			this.velocity.x+=x;
-			this.velocity.y+=y;
-
+		if(fx !== 0 || fy !== 0){
+			var k = BORDER_PUSH * this.records.length;
+			this.velocity.x += fx * k;
+			this.velocity.y += fy * k;
 		}
 
 	} else {
 
-		if(this.x<0)this.x=this.canvas.width;
-		else if(this.x>this.canvas.width)this.x=0;
+		//espace toroidal (wrap) avec HYSTERESIS : evite les teleportations en
+		//boucle a la couture. Le gris reapparait EN RETRAIT du bord oppose et
+		//on remet la vitesse a zero sur l'axe traverse (il repart du bruit local).
+		var m = WRAP_MARGIN;
+		if(this.x < -m)                         { this.x = this.canvas.width - m; this.velocity.x = 0; }
+		else if(this.x > this.canvas.width + m) { this.x = m;                     this.velocity.x = 0; }
 
-		if(this.y<0)this.y=this.canvas.height;
-		else if(this.y>this.canvas.height)this.y=0;
+		if(this.y < -m)                          { this.y = this.canvas.height - m; this.velocity.y = 0; }
+		else if(this.y > this.canvas.height + m) { this.y = m;                      this.velocity.y = 0; }
 
 	}
 	
