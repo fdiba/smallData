@@ -70,6 +70,7 @@ function retrieveData(cat, numOfElements){
         var i = 0;
         var prevArtist = null;
         var groupIndex = -1;
+        var memberIndex = 0;
 
         // Affichage par lots : le tableau se remplit progressivement
         // et le navigateur reste reactif entre deux lots.
@@ -92,16 +93,25 @@ function retrieveData(cat, numOfElements){
 
                 // Une seule cellule par compositeur, etendue sur toutes ses oeuvres.
                 var newGroup = (w.id_artist !== prevArtist);
-                if(newGroup){ groupIndex++; prevArtist = w.id_artist; }
+                if(newGroup){ groupIndex++; memberIndex = 0; prevArtist = w.id_artist; }
+                else { memberIndex++; }
 
-                html += (groupIndex % 2 === 0) ? '<tr class="odd">' : '<tr class="even">';
+                // Meme code couleur que award-winning_works.php :
+                //  - la cellule compositeur (fusionnee) prend une teinte alternee par groupe
+                //  - chaque oeuvre d'un meme compositeur recoit une teinte alternee
+                var grpParity = (groupIndex % 2 === 0) ? 'grp-cell-a' : 'grp-cell-b';
+                var memParity = ((groupIndex + memberIndex) % 2 === 0) ? 'mem-a' : 'mem-b';
+
+                html += newGroup ? '<tr class="group-start">' : '<tr>';
 
                 if(newGroup){
-                    html += '<td class="composer" rowspan="' + runLength[i] + '">'
+                    html += '<td class="composer grp-cell ' + grpParity + '" rowspan="' + runLength[i] + '">'
                           + w.fn + ' ' + w.ln + '</td>';
                 }
 
-                html += '<td>' + w.title + '</td><td>' + w.duration + '</td><td>' + w.misam + '</td></tr>';
+                html += '<td class="' + memParity + '">' + w.title + '</td>'
+                      + '<td class="' + memParity + '">' + w.duration + '</td>'
+                      + '<td class="' + memParity + '">' + w.misam + '</td></tr>';
             }
 
             // Une seule insertion par lot au lieu de deux par ligne

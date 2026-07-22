@@ -90,33 +90,31 @@ th{
 	clear: both;
 }
 
-#works_table tr:nth-child(even){
-	background: #C7C7C7;
-}
-#works_table tr:nth-child(odd){
-	background: #F6F6F6;
-}
-.even {
-	background: #C7C7C7;
-}
-.odd{
-	background: #F6F6F6;
-}
 /* --- regroupement par compositeur (catalog.js) --- */
-#works_table td.composer{
+/* meme code couleur que award-winning_works.php */
+#works_table td{
 	vertical-align: top;
+}
+#works_table td.composer{
 	font-weight: bold;
 }
-/* le zebrage suit le groupe compositeur, pas la ligne */
-#works_table tr:nth-child(even),
-#works_table tr:nth-child(odd){
-	background: none;
+/* cellule compositeur (fusionnee) : teinte alternee par groupe */
+#works_table .grp-cell.grp-cell-a{
+	background: #C1C1C1;
 }
-#works_table tr.even{
-	background: #C7C7C7;
+#works_table .grp-cell.grp-cell-b{
+	background: #D6D6D6;
 }
-#works_table tr.odd{
+/* cellules-oeuvres : teinte alternee par oeuvre a l'interieur d'un compositeur */
+#works_table .mem-a{
 	background: #F6F6F6;
+}
+#works_table .mem-b{
+	background: #E4E4E4;
+}
+/* trait de separation entre compositeurs */
+#works_table tr.group-start > td{
+	border-top: 2px solid #16A085;
 }
 
 /* --- legende : les agents sont des ellipses, pas des carres --- */
