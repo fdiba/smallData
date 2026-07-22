@@ -180,6 +180,10 @@ function shareInformation(){
 
         }
 
+        //les gris se separent aussi en PHASE 1 (meme logique qu'en phase 2),
+        //sinon ils restent agglutines tant qu'aucun groupement n'est choisi.
+        if(particles[i].records.length===1)particles[i].separateFromLoners(i, particles);
+
         particles[i].checkEdgesV1();
 
         particles[i].updateBeforeMerging();

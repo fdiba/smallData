@@ -213,6 +213,11 @@ Objectif : les gris ne se collent pas les uns aux autres.
 - Les gris de même valeur (candidats à fusionner entre eux) ne sont pas séparés.
 - Mesuré (scène réaliste, bruit activé) : ~0,3 chevauchement gris/gris par image
   (négligeable).
+- **Appelée aussi en PHASE 1** (dans `sma_core.js`, `shareInformation`) : sans ça,
+  tant qu'aucun groupement n'est choisi (cas par défaut d'award), les gris
+  restaient agglutinés. Corrige l'agglutination sur catalog/award/euphonies
+  (chevauchements 10,4 → 0,4). Network a sa propre boucle (`network.js`) : à
+  reporter là-bas si on veut le même effet en phase 1.
 
 ### d) Nervosité des gris en phase 2 : le champ de bruit
 Diagnostic : en phase 2, chaque agent non ouvert reçoit
