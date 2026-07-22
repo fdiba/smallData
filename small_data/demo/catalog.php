@@ -1,10 +1,18 @@
 <?php
 	
 	$title = "Sound Archives";
-	if(isset($_GET["id"])){
-		if($_GET["id"]==1)$title = "IMEB International Sound Archives";
-		else if($_GET["id"]==2)$title = "IMEB Sound Archives";
-		else if($_GET["id"]==3)header('Location: '.'euphonies.php');;
+	$id = isset($_GET["id"]) ? intval($_GET["id"]) : 0;
+	if($id==1)$title = "IMEB International Sound Archives";
+	else if($id==2)$title = "IMEB Sound Archives";
+	else if($id==3)header('Location: '.'euphonies.php');
+
+	// Texte propre a chaque phonotheque pour la rubrique "How to read"
+	if($id==1){
+		$coll_desc  = "This page shows the <strong>International Sound Archives</strong> &mdash; the IMEB's <em>Phonothèque A</em>, said &laquo;&nbsp;Extérieure&nbsp;&raquo;: electroacoustic works by outside composers, gathered by the IMEB (catalogue index 100&thinsp;000).";
+		$table_desc = "the table lists the works of the International collection (Phonothèque A), grouped by composer";
+	} else {
+		$coll_desc  = "This page shows the <strong>IMEB Sound Archives</strong> &mdash; the IMEB's <em>Phonothèque B</em>: works produced in the institute's own studios (catalogue index 200&thinsp;000).";
+		$table_desc = "the table lists the works of the IMEB collection (Phonothèque B), grouped by composer";
 	}
 
 ?>
@@ -56,17 +64,20 @@
 				    <ul id="titles"></ul>
 			    </div>
 		    </div>
-<?php if(isset($_GET["id"]) && $_GET["id"]==2){ ?>
+<?php if($id==1 || $id==2){ ?>
 			<div id="legend">
 				<p class="lg-title">How to read this page</p>
+				<p class="lg-intro"><?php echo $coll_desc ?> The IMEB assembled two sound archives: the <em>International Sound Archives</em> (Phonothèque A, &laquo;&nbsp;Extérieure&nbsp;&raquo;) and the <em>IMEB Sound Archives</em> (Phonothèque B).</p>
 				<div class="lg-cols">
 					<div>
-						<p><strong>Table &amp; agents</strong></p>
+						<p><strong>Table<?php if($id==2) echo ' &amp; agents'; ?></strong></p>
 						<ul>
-							<li>the table lists the archived works of the IMEB collection, grouped by composer</li>
-							<li>on the canvas, each moving ellipse is an agent carrying one archived work</li>
-						</ul>
+							<li><?php echo $table_desc ?></li>
+							<li>the composer cell is shared across all of their works; the background alternates to separate composers and, within a composer, their pieces</li>
+<?php if($id==2){ ?>							<li>on the canvas, each moving ellipse is an agent carrying one archived work</li>
+<?php } ?>						</ul>
 					</div>
+<?php if($id==2){ ?>
 					<div>
 						<p><strong>Agents</strong></p>
 						<ul>
@@ -84,6 +95,7 @@
 							<li><em>reset</em> restarts the system, <em>pause</em> freezes it (the <em>p</em> key toggles the agents' drift)</li>
 						</ul>
 					</div>
+<?php } ?>
 				</div>
 			</div>
 			<?php } ?>

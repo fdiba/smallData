@@ -90,6 +90,12 @@ th{
 	clear: both;
 }
 
+/* Intro de la rubrique "How to read" : rappelle de quelle phonotheque il s'agit */
+#legend .lg-intro{
+	margin: 0 0 10px 0;
+	max-width: 80ch;
+}
+
 /* --- regroupement par compositeur (catalog.js) --- */
 /* meme code couleur que award-winning_works.php */
 #works_table td{
