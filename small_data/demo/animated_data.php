@@ -37,6 +37,7 @@
 		</div>
 		<div id="legend">
 			<p class="lg-title">How to read this page</p>
+			<p class="lg-note">Coverage &mdash; this chart is knowingly incomplete. The competition minutes have been fully entered for the editions from <em>1973 to 1994</em>; those from <em>1996 to 2009</em> are only partially processed, so their participant counts are under-estimated. A selection is therefore flagged <em>complete data</em> up to 1994 and <em>incomplete data</em> from 1996 on (next to the page title). No competition was held in <em>1995</em> (36 editions in all), so the timeline skips that year and the lines join 1994 directly to 1996.</p>
 			<div class="lg-cols">
 				<div>
 					<p><strong>Timeline (top strip)</strong></p>
