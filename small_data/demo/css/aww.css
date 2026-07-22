@@ -75,11 +75,29 @@ th{
 	width: 1064px;
 }
 
-#works_table tr:nth-child(even){
-	background: #C7C7C7;
+/* --- regroupement par edition + category + sub category + price --- */
+#works_table td{
+	vertical-align: top;
 }
-#works_table tr:nth-child(odd){
+/* bloc fusionne (edition/category/sub category/price) : teinte alternee
+   par groupe -> deux groupes voisins se distinguent */
+#works_table .grp-cell.grp-cell-a{
+	background: #C1C1C1;
+}
+#works_table .grp-cell.grp-cell-b{
+	background: #D6D6D6;
+}
+/* cellules-membres : teinte alternee par oeuvre -> on separe les
+   elements rassembles a l'interieur d'un meme groupe */
+#works_table .mem-a{
 	background: #F6F6F6;
+}
+#works_table .mem-b{
+	background: #E4E4E4;
+}
+/* trait de separation entre groupes */
+#works_table tr.group-start > td{
+	border-top: 2px solid #16A085;
 }
 .even {
 	background: #C7C7C7;

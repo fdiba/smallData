@@ -82,10 +82,10 @@
 						<th>category</th>
 						<th>sub category</th>
 						<th>price</th>
-						<th>imeb id</th>
 						<th>first name</th>
 						<th>last name</th>
 						<th>title</th>
+						<th>imeb id</th>
 					</tr>
 				</table>
 			</div>

@@ -39,14 +39,17 @@ function retrieveEuphonies(cat, numOfElements){
             tr.attr('class', tr_class);
             //---------
 
-            for (var j = 0; j < numOfElements; j++) {
+            // ordre des colonnes : edition, year, category, sub category, price,
+            // first name, last name, title, duration, imeb id, isni
+            // (le champ 8 = temp id n'est pas affiche)
+            var colOrder = [0, 1, 9, 10, 2, 4, 5, 6, 7, 3, 11];
+            for (var j = 0; j < colOrder.length; j++) {
 
-                var value = arr[i+j];
-                if(j==numOfElements-1)value="<a target=\"_blank\" href=\"https://isni.org/isni/" + value + "\">"+ value +"</a>";
+                var idx = colOrder[j];
+                var value = arr[i+idx];
+                if(idx==11)value="<a target=\"_blank\" href=\"https://isni.org/isni/" + value + "\">"+ value +"</a>";
 
-                if(j!=8){ //8 = temp id
-                    tr.append('<td>'+ value + '</td>');
-                }
+                tr.append('<td>'+ value + '</td>');
             }
 
             //--------- data.bnf.fr : clicking a row retrieves the matching records

@@ -83,15 +83,15 @@
 					<tr>
 						<th>edition</th>
 						<th>year</th>
+						<th>category</th>
+						<th>sub category</th>
 						<th>price</th>
-						<th>imeb id</th>
 						<th>first name</th>
 						<th>last name</th>
 						<th>title</th>
 						<th>duration</th>
 						<!-- <th>temp id</th> -->
-						<th>category</th>
-						<th>sub category</th>
+						<th>imeb id</th>
 						<th>isni</th>
 					</tr>
 				</table>

@@ -89,6 +89,19 @@ window.onload = function() {
                 || cmpValues(a.name, b.name);
         });
 
+        // Regroupement : les lignes partageant edition + category + sub category + price
+        // sont deja contigues (cf. tri ci-dessus). On fusionne leurs 4 premieres
+        // cellules avec un rowspan pour les rassembler visuellement.
+        function groupKey(o){ return o.year + '|' + o.cat + '|' + o.cat2 + '|' + o.rank; }
+
+        // Couleurs de fond :
+        //  - le bloc fusionne (edition/category/sub category/price) prend une
+        //    teinte alternee par groupe -> deux groupes voisins se distinguent ;
+        //  - chaque oeuvre d'un meme groupe recoit une teinte alternee -> on
+        //    separe visuellement les elements rassembles.
+        var groupIndex = -1;
+        var memberIndex = 0;
+
         for (var j = 0; j < objects.length; j++) {
 
             //--------- SMA
@@ -105,10 +118,34 @@ window.onload = function() {
             //--------- TABLE
             $('#works_table').append('<tr></tr>');
             var tr = $('#works_table tr:last');
-            var tds = '<td>'+ objects[j].year + '</td>' + '<td>'+ objects[j].cat + '</td>'
-            + '<td>'+ objects[j].cat2 + '</td>' + '<td>'+ objects[j].rank + '</td>'
-            + '<td>'+ objects[j].misam + '</td>' + '<td>'+ objects[j].fn + '</td>'
-            + '<td>'+ objects[j].name + '</td>' + '<td>'+ objects[j].title + '</td>';
+
+            // premiere ligne d'un groupe (edition + category + sub category + price) ?
+            var isNewGroup = (j===0) || groupKey(objects[j-1]) !== groupKey(objects[j]);
+
+            if(isNewGroup){ groupIndex++; memberIndex = 0; }
+            else memberIndex++;
+
+            // teinte du bloc fusionne (par groupe) et des cellules-membres
+            // (alternee par oeuvre, decalee selon le groupe)
+            var grpParity = (groupIndex % 2 === 0) ? 'grp-cell-a' : 'grp-cell-b';
+            var memParity = ((groupIndex + memberIndex) % 2 === 0) ? 'mem-a' : 'mem-b';
+
+            var tds = '';
+            if(isNewGroup){
+                // taille du groupe -> rowspan sur les 4 colonnes communes
+                var span = 1;
+                for(var k=j+1; k<objects.length && groupKey(objects[k])===groupKey(objects[j]); k++) span++;
+                tr.addClass('group-start');
+                tds += '<td class="grp-cell '+grpParity+'" rowspan="'+span+'">'+ objects[j].year + '</td>'
+                     + '<td class="grp-cell '+grpParity+'" rowspan="'+span+'">'+ objects[j].cat + '</td>'
+                     + '<td class="grp-cell '+grpParity+'" rowspan="'+span+'">'+ objects[j].cat2 + '</td>'
+                     + '<td class="grp-cell '+grpParity+'" rowspan="'+span+'">'+ objects[j].rank + '</td>';
+            }
+            // imeb id (misam) place en derniere colonne
+            tds += '<td class="'+memParity+'">'+ objects[j].fn + '</td>'
+                 + '<td class="'+memParity+'">'+ objects[j].name + '</td>'
+                 + '<td class="'+memParity+'">'+ objects[j].title + '</td>'
+                 + '<td class="'+memParity+'">'+ objects[j].misam + '</td>';
             tr.append(tds);
             //---------
 
