@@ -267,7 +267,7 @@ Particle.prototype.update = function(index, particles){
 	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
 	this.driftT+=.008;
 	if(this.ids.length>1){
-		var driftAmp = (this.open ? .4 : .2)*this.ids.length/(1+this.collMass); //derive plus douce, freinee par la masse de collision
+		var driftAmp = (this.open ? .5 : .4)*this.ids.length/(1+this.collMass); //derive un peu plus vive (etait .4/.2), freinee par la masse de collision
 		this.velocity.x += noise.perlin2(this.driftT, this.driftP)*driftAmp;
 		this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*driftAmp;
 	}
