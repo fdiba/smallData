@@ -1,3 +1,16 @@
+//--- Reglages du comportement des agents (portes depuis particles_catalog.js) ---
+//Agitation des gris (meme valeur que catalog).
+var GREY_NOISE = .35;
+//Ralentissement cumulatif/temporaire par collision (masse).
+var COLL_GAIN  = .4;
+var COLL_DECAY = .94;
+var COLL_MAX   = 6;
+var COLL_MARGIN= 10;
+//Repulsion douce d'un gris qui s'ecarte d'un groupe non compatible.
+var GREY_REPULSION = .1;
+//Evitement anticipe radial (stable) des groupes par un gris.
+var AVOID_STRENGTH = 1.4;
+
 function Particle(config){
 
 	this.canvasId=config.canvasId;
@@ -20,12 +33,14 @@ function Particle(config){
 	this.scale = config.scale;
 
 	this.label=config.label;
-	this.radius=Math.random()*2+1.*this.scale;
+	this.radVar=Math.random()*2;   //variation de taille persistante (comme catalog)
+	this.radius=this.radVar+1.*this.scale;
 
 	this.on = false;
 	this.maxSpeed = 4.;
 
 	this.velocity={x:0, y:0};
+	this.collMass=0;   //masse temporaire accumulee par les collisions
 
 	this.alpha=.2;
 	this.fillAlpha = .1;
@@ -161,9 +176,15 @@ Particle.prototype.addNoiseField = function(coef){
     //au lieu du seul nombre de membres : un gros cercle est moins deplace
     //qu'un petit, et deux gris de tailles differentes reagissent differemment
     var sizeFactor = this.radius/(2.*this.scale);
-    if(sizeFactor<.5)sizeFactor=.5;
+    if(sizeFactor<1)sizeFactor=1;   //plancher 1 : pas de sur-propulsion des petits (gris)
     x*=coef/sizeFactor;
     y*=coef/sizeFactor;
+
+	//agitation reduite pour les gris (reglable via GREY_NOISE)
+	if(this.ids.length===1){ x*=GREY_NOISE; y*=GREY_NOISE; }
+
+	//la masse de collision freine la PROPULSION (a = F/masse), pas la separation
+	if(this.collMass){ var cd = 1/(1+this.collMass); x*=cd; y*=cd; }
 
 	this.velocity.x+=x;
 	this.velocity.y+=y;
@@ -238,7 +259,7 @@ Particle.prototype.update = function(index, particles){
 	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
 	this.driftT+=.008;
 	if(this.ids.length>1){
-		var driftAmp = (this.open ? .4 : .2)*this.ids.length; //derive plus douce
+		var driftAmp = (this.open ? .4 : .2)*this.ids.length/(1+this.collMass); //derive plus douce, freinee par la masse de collision
 		this.velocity.x += noise.perlin2(this.driftT, this.driftP)*driftAmp;
 		this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*driftAmp;
 	}
@@ -247,6 +268,12 @@ Particle.prototype.update = function(index, particles){
 	//les gris isoles s'ecartent doucement de leurs voisins isoles
 	//avec lesquels ils ne partagent pas la valeur de propriete ciblee
 	if(this.ids.length===1)this.separateFromLoners(index, particles);
+
+	//evitement anticipe (radial, stable) des groupes non compatibles
+	if(this.ids.length===1)this.avoidGroupsAhead(index, particles);
+
+	//masse de collision : ralentissement cumulatif et temporaire
+	if(this.ids.length===1)this.updateMass(index, particles);
 
 	if(this.opening){
 
@@ -297,7 +324,7 @@ Particle.prototype.update = function(index, particles){
 	} else if(!this.open){
 		//taille fermee a saturation douce : les tres gros pays (USA, FRA)
 		//plafonnent vers ~33 au lieu de croitre lineairement sans limite
-		var target = 2.+1.*this.scale + 30.*(1.-Math.exp(-Math.sqrt(this.ids.length-1)/8.))*this.scale;
+		var target = this.radVar+1.*this.scale + 30.*(1.-Math.exp(-Math.sqrt(this.ids.length-1)/8.))*this.scale;
 		if(this.radius>target)this.radius=Math.max(target, this.radius-1.);
 		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25); //croissance lente apres fusion
 	}
@@ -409,14 +436,18 @@ Particle.prototype.getAwayFrom = function(index, particles){
 
 	if(target_id>=0){
 
-		var x = particles[target_id].x - this.x;
-		var y = particles[target_id].y - this.y;
-
-		x *= .3;
-		y *= .3;
-
-		this.velocity.x -=x;
-		this.velocity.y -=y;
+		//repulsion DOUCE, proportionnelle au chevauchement (etait distance*.3,
+		//trop brutale : elle ejectait le gris)
+		var dx = particles[target_id].x - this.x;
+		var dy = particles[target_id].y - this.y;
+		var d = Math.sqrt(dx*dx + dy*dy);
+		if(d>0){
+			var minD = this.radius*2 + particles[target_id].radius*2 + 10;
+			var overlap = minD - d;
+			var push = overlap*GREY_REPULSION;
+			this.velocity.x -= (dx/d)*push;
+			this.velocity.y -= (dy/d)*push;
+		}
 
 		//console.log("labels:", this.label, particles[target_id].label);
 
@@ -472,10 +503,10 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 	}
 
 	if(target_id>=0)this.getCloserFrom(particles[target_id]);
-	//un regroupement ouvert ignore les petits noeuds isoles
-	//mais s'ecarte des autres regroupements pour ne pas les recouvrir
-	else if(!this.open)this.getAwayFrom(index, particles);
-	else this.getAwayFromGroups(index, particles);
+	//les regroupements (verts ET jaunes) s'ecartent des autres regroupements
+	//non compatibles ; un gris isole garde sa repulsion reactive
+	else if(this.ids.length>1)this.getAwayFromGroups(index, particles);
+	else this.getAwayFrom(index, particles);
 	
 }
 Particle.prototype.display = function(){
@@ -627,7 +658,7 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 
 		if(index!==i && particles[i].ids.length>1 && !sameValue){
 
-			var minDistance = this.radius*2 + particles[i].radius*2 + 10;
+			var minDistance = this.radius*2 + particles[i].radius*2 + 28;
 			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
 
 			if(distance<minDistance && distance>0){
@@ -656,7 +687,7 @@ Particle.prototype.separateFromLoners = function(index, particles){
 			if(this.label!=="" &&
 				String(this.label).localeCompare(String(particles[i].label))===0) continue;
 
-			var minDistance = this.radius*2 + particles[i].radius*2 + 6;
+			var minDistance = this.radius*2 + particles[i].radius*2 + 12;
 			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
 
 			if(distance<minDistance && distance>0){
@@ -664,7 +695,7 @@ Particle.prototype.separateFromLoners = function(index, particles){
 				var x = (particles[i].x - this.x)/distance;
 				var y = (particles[i].y - this.y)/distance;
 
-				var push = (minDistance - distance)*.04;
+				var push = (minDistance - distance)*.08;
 
 				this.velocity.x -= x*push;
 				this.velocity.y -= y*push;
@@ -757,3 +788,56 @@ Particle.prototype.computeOpenRadius = function(){
 
 	return Math.min(Math.max(r, closedT+8.), maxOpen);
 };
+
+//evitement anticipe des groupes (radial, stable) : un gris qui se dirige vers un
+//groupe non compatible est repousse a l'oppose, dose par l'alignement. Nulle des
+//qu'il se detourne -> pas d'oscillation, il se degage toujours.
+Particle.prototype.avoidGroupsAhead = function(index, particles){
+
+	var speed = Math.sqrt(this.velocity.x*this.velocity.x + this.velocity.y*this.velocity.y);
+	if(speed < .01)return;
+
+	var vx = this.velocity.x/speed, vy = this.velocity.y/speed;
+	var ahead = 85*this.scale;
+
+	for (var i=0; i<particles.length; i++) {
+
+		if(index===i)continue;
+		var o = particles[i];
+		if(o.ids.length<=1)continue;
+
+		var sameValue = this.label!=="" && String(this.label).localeCompare(String(o.label))===0;
+		if(sameValue)continue;
+
+		var dx = o.x - this.x, dy = o.y - this.y;
+		var distance = Math.sqrt(dx*dx + dy*dy);
+		var reach = ahead + o.radius*2 + this.radius*2;
+		if(distance<=0 || distance>reach)continue;
+
+		var align = (dx*vx + dy*vy)/distance;
+		if(align<=0)continue;
+
+		var proximity = 1 - distance/reach;
+		var push = proximity*align*AVOID_STRENGTH*this.scale;
+		this.velocity.x -= (dx/distance)*push;
+		this.velocity.y -= (dy/distance)*push;
+	}
+}
+
+//masse de collision : chaque contact alourdit temporairement la particule
+//(cumulatif), et cette masse se resorbe quand les contacts cessent.
+Particle.prototype.updateMass = function(index, particles){
+
+	this.collMass *= COLL_DECAY;
+
+	var contacts = 0;
+	for (var i=0; i<particles.length; i++) {
+		if(index===i)continue;
+		var minTouch = this.radius*2 + particles[i].radius*2 + COLL_MARGIN;
+		var d = dist(this.x, particles[i].x, this.y, particles[i].y);
+		if(d>0 && d<minTouch)contacts++;
+	}
+
+	if(contacts>0)this.collMass += contacts*COLL_GAIN;
+	if(this.collMass>COLL_MAX)this.collMass=COLL_MAX;
+}

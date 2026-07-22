@@ -1,3 +1,24 @@
+//Intensite du champ de bruit appliquee aux agents GRIS en phase 2
+//(1 = comme les autres cercles, <1 = plus calme/moins nerveux).
+//Reglage rapide de la nervosite des gris. Voir addNoiseField().
+var GREY_NOISE = .35;
+
+//--- ralentissement cumulatif par collision (masse temporaire) ---
+//Chaque contact alourdit la particule (elle ralentit), et la masse se resorbe
+//quand les contacts cessent. Voir updateMass() et la masse effective d'update().
+var COLL_GAIN  = .4;    //masse ajoutee par voisin en contact et par image (cumulatif)
+var COLL_DECAY = .94;   //resorption par image (temporaire ; plus haut = persiste)
+var COLL_MAX   = 6;     //plafond : evite qu'une particule ne se fige totalement
+var COLL_MARGIN= 10;    //marge de detection : la proximite compte, pas que le chevauchement
+
+//Force de repulsion d'un gris qui s'ecarte d'un groupe non compatible.
+//Proportionnelle au chevauchement (douce). Baisser = repulsion plus faible.
+var GREY_REPULSION = .1;
+
+//Force d'evitement ANTICIPE des groupes par un gris (poussee radiale a l'oppose,
+//dosee par l'alignement). Stable, ne peut pas provoquer d'oscillation.
+var AVOID_STRENGTH = 1.4;
+
 function Particle(config){
 
 	this.canvasId=config.canvasId;
@@ -40,6 +61,7 @@ function Particle(config){
 	this.radius = this.setSmallRadius();
 
 	this.velocity={x:0, y:0};
+	this.collMass=0;   //masse temporaire accumulee par les collisions
 
 	this.fillAlpha = .1;
 	this.maxSpeed = 4.;
@@ -76,6 +98,7 @@ Particle.prototype.resetIt = function(){
 	this.radius = this.setSmallRadius();
 	this.fillAlpha = .1;
 	this.velocity={x:0, y:0};
+	this.collMass=0;
 }
 Particle.prototype.openOrCloseIt = function(){
 	
@@ -198,7 +221,8 @@ Particle.prototype.update = function(i, particles){
 	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
 	this.driftT+=.008;
 	if(this.records.length>1){
-		var driftAmp = (this.open ? .5 : .3)*this.records.length;
+		//derive des groupes, freinee par la masse de collision (comme le bruit)
+		var driftAmp = (this.open ? .5 : .3)*this.records.length/(1+this.collMass);
 		this.velocity.x += noise.perlin2(this.driftT, this.driftP)*driftAmp;
 		this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*driftAmp;
 	}
@@ -206,6 +230,15 @@ Particle.prototype.update = function(i, particles){
 	//les gris isoles s'ecartent doucement de leurs voisins isoles
 	//avec lesquels ils ne partagent pas la valeur de propriete ciblee
 	if(this.records.length===1)this.separateFromLoners(i, particles);
+
+	//evitement anticipe : un gris qui se dirige vers un groupe (vert/jaune)
+	//avec lequel il ne cherche PAS a fusionner l'esquive avant le contact
+	if(this.records.length===1)this.avoidGroupsAhead(i, particles);
+
+	//masse de collision : ralentissement cumulatif et temporaire en cas de contact.
+	//Applique aux GRIS comme aux groupes (verts/jaunes). Note : update() n'est
+	//appele qu'en phase 2 -> la masse n'est jamais modifiee en phase 1.
+	this.updateMass(i, particles);
 
 	if(this.opening){
 
@@ -270,6 +303,9 @@ Particle.prototype.update = function(i, particles){
 
 	this.checkEdgesV2();
 
+	//division par la masse du groupe (les gros bougent moins). La masse de
+	//collision, elle, ne freine QUE la propulsion (bruit/derive), pas les forces
+	//de separation -> un agent coince peut toujours se degager (aucun verrou).
 	this.velocity.x /= this.records.length;
     this.velocity.y /= this.records.length;
 
@@ -349,13 +385,13 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 
 	if(target_id>=0){
 		this.getCloserFrom(particles[target_id]);
-	} else if(!this.open){
-		//un regroupement ferme garde son evitement d'origine
-		this.getAwayFrom(index, particles);
-	} else {
-		//ouvert : ignore les petits noeuds isoles, mais s'ecarte des autres
-		//regroupements (verts ou jaunes) pour ne jamais les recouvrir
+	} else if(this.records.length>1){
+		//les regroupements (verts ET jaunes) s'ecartent des autres
+		//regroupements avec lesquels ils ne partagent pas la propriete ciblee
 		this.getAwayFromGroups(index, particles);
+	} else {
+		//un gris isole garde sa repulsion reactive
+		this.getAwayFrom(index, particles);
 	}
 }
 Particle.prototype.SearchCommonsAttrAndGetAwayFrom = function (arr, index){
@@ -457,16 +493,19 @@ Particle.prototype.getAwayFrom = function(index, particles){
 
 	if(target_id>=0){
 
-		var x = particles[target_id].x - this.x;
-		var y = particles[target_id].y - this.y;
+		//repulsion DOUCE, proportionnelle au chevauchement (etait distance*.3,
+		//trop brutale : elle ejectait le gris). Le gris s'ecarte sans etre projete.
+		var dx = particles[target_id].x - this.x;
+		var dy = particles[target_id].y - this.y;
+		var d = Math.sqrt(dx*dx + dy*dy);
 
-		x *= .3;
-		y *= .3;
-
-		this.velocity.x -=x;
-		this.velocity.y -=y;
-
-
+		if(d>0){
+			var minD = this.radius*2 + particles[target_id].radius*2 + 10;
+			var overlap = minD - d;                 //>0 : cible choisie dans minDistance
+			var push = overlap*GREY_REPULSION;
+			this.velocity.x -= (dx/d)*push;
+			this.velocity.y -= (dy/d)*push;
+		}
 	}
 }
 Particle.prototype.display = function(){
@@ -589,13 +628,22 @@ Particle.prototype.addNoiseField = function(coef){
 	var x = noise.perlin3(this.x/150, this.y/150, t);
     var y = noise.perlin3(this.x/150+7.31, this.y/150+3.17, t);
     
-    //la force du champ diminue avec la TAILLE du cercle (masse ~ rayon),
-    //au lieu du seul nombre de membres : un gros cercle est moins deplace
-    //qu'un petit, et deux gris de tailles differentes reagissent differemment
+    //la force du champ diminue avec la TAILLE du cercle (masse ~ rayon).
+    //Plancher a 1 (etait .5) : les petits cercles (gris) ne sont PLUS
+    //sur-propulses par le bruit ; les gros regroupements restent attenues.
     var sizeFactor = this.radius/(2.*this.scale);
-    if(sizeFactor<.5)sizeFactor=.5;
+    if(sizeFactor<1)sizeFactor=1;
     x*=coef/sizeFactor;
     y*=coef/sizeFactor;
+
+	//agitation reduite pour les gris : derive plus douce, moins nerveuse.
+	//GREY_NOISE global pour regler finement (1 = comme les autres).
+	if(this.records.length===1){ x*=GREY_NOISE; y*=GREY_NOISE; }
+
+	//la masse de collision freine la PROPULSION (a = F/masse) : un agent qui
+	//percute recoit moins de poussee du bruit, donc se calme -- SANS etre
+	//bloque, car les forces de separation ne passent pas par la masse.
+	if(this.collMass){ var cd = 1/(1+this.collMass); x*=cd; y*=cd; }
 
 	this.velocity.x+=x;
 	this.velocity.y+=y;
@@ -623,7 +671,8 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 
 		if(index!==i && particles[i].records.length>1 && !sameValue){
 
-			var minDistance = this.radius*2 + particles[i].radius*2 + 10;
+			//marge de respiration entre groupes non compatibles (etait +10)
+			var minDistance = this.radius*2 + particles[i].radius*2 + 28;
 			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
 
 			if(distance<minDistance && distance>0){
@@ -651,7 +700,8 @@ Particle.prototype.separateFromLoners = function(index, particles){
 			if(this.targetedAttr!=="" &&
 				String(this[this.targetedAttr]).localeCompare(String(particles[i][particles[i].targetedAttr]))===0) continue;
 
-			var minDistance = this.radius*2 + particles[i].radius*2 + 6;
+			//marge de respiration un peu plus large : les gris ne se collent pas
+			var minDistance = this.radius*2 + particles[i].radius*2 + 12;
 			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
 
 			if(distance<minDistance && distance>0){
@@ -659,12 +709,81 @@ Particle.prototype.separateFromLoners = function(index, particles){
 				var x = (particles[i].x - this.x)/distance;
 				var y = (particles[i].y - this.y)/distance;
 
-				var push = (minDistance - distance)*.04;
+				//separation renforcee (etait .04) : ils s'ecartent plus nettement
+				var push = (minDistance - distance)*.08;
 
 				this.velocity.x -= x*push;
 				this.velocity.y -= y*push;
 			}
 		}
+	}
+}
+
+//masse de collision : chaque contact (surfaces qui se touchent) alourdit
+//temporairement la particule (cumulatif), et cette masse se resorbe quand les
+//contacts cessent. Elle est injectee dans la masse effective en fin d'update()
+//-> une particule qui percute beaucoup ralentit, puis repart en se degageant.
+Particle.prototype.updateMass = function(index, particles){
+
+	this.collMass *= COLL_DECAY;              //resorption progressive (temporaire)
+
+	var contacts = 0;
+	for (var i=0; i<particles.length; i++) {
+		if(index===i)continue;
+		var minTouch = this.radius*2 + particles[i].radius*2 + COLL_MARGIN;
+		var d = dist(this.x, particles[i].x, this.y, particles[i].y);
+		if(d>0 && d<minTouch)contacts++;
+	}
+
+	if(contacts>0)this.collMass += contacts*COLL_GAIN;   //cumulatif
+	if(this.collMass>COLL_MAX)this.collMass=COLL_MAX;    //plafond anti-gel
+}
+
+//evitement anticipe des groupes : un agent gris regarde DEVANT lui (dans le
+//sens de son deplacement) et, s'il fonce vers un regroupement (vert/jaune)
+//avec lequel il ne partage pas la valeur ciblee (donc pas un candidat a la
+//fusion), il devie legerement sur le cote pour le contourner au lieu de
+//buter dessus. Un groupe deja derriere ou hors trajectoire est ignore.
+Particle.prototype.avoidGroupsAhead = function(index, particles){
+
+	var speed = Math.sqrt(this.velocity.x*this.velocity.x + this.velocity.y*this.velocity.y);
+	if(speed < .01)return;                       //pas de cap clair : rien a esquiver
+
+	var vx = this.velocity.x/speed, vy = this.velocity.y/speed;   //direction (unitaire)
+	var ahead = 85*this.scale;                   //distance d'anticipation
+
+	for (var i=0; i<particles.length; i++) {
+
+		if(index===i)continue;
+
+		var o = particles[i];
+		if(o.records.length<=1)continue;         //on n'esquive que les GROUPES (verts/jaunes)
+
+		//candidat a la fusion (meme valeur de propriete ciblee) : on le laisse approcher
+		var sameValue = this.targetedAttr!=="" && this[this.targetedAttr]!=="" &&
+			String(this[this.targetedAttr]).localeCompare(String(o[o.targetedAttr]))===0;
+		if(sameValue)continue;
+
+		var dx = o.x - this.x, dy = o.y - this.y;
+		var distance = Math.sqrt(dx*dx + dy*dy);
+		var reach = ahead + o.radius*2 + this.radius*2;
+		if(distance<=0 || distance>reach)continue;
+
+		//alignement : a quel point on FONCE vers le groupe (cos de l'angle entre
+		//notre cap et la direction du groupe). <=0 -> on s'en eloigne deja :
+		//AUCUNE poussee, l'agent se degage librement (corrige le blocage).
+		var align = (dx*vx + dy*vy)/distance;
+		if(align<=0)continue;
+
+		//poussee RADIALE, a l'oppose du groupe. Stable : la direction ne depend
+		//PAS du signe de la vitesse (contrairement a une esquive perpendiculaire
+		//qui faisait tourner le vecteur vitesse et s'auto-entretenait). Dosee par
+		//proximite x alignement : franche si on fonce dessus, nulle des qu'on se
+		//detourne. Ne bloque jamais un candidat a la fusion (ecarte plus haut).
+		var proximity = 1 - distance/reach;      //0..1
+		var push = proximity*align*AVOID_STRENGTH*this.scale;
+		this.velocity.x -= (dx/distance)*push;
+		this.velocity.y -= (dy/distance)*push;
 	}
 }
 
