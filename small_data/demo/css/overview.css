@@ -75,6 +75,23 @@
 #ctrl_bar #searchBoxBtn:hover,
 #ctrl_bar #filtersBtn:hover{ background: #fff; }
 
+/* ---------- Deux colonnes ---------- */
+/* Colonne gauche = canvas + legende "How to read" (solidaires : la legende
+   reste toujours collee sous le canvas, quelle que soit la hauteur de la
+   boite violette). Colonne droite = petit canvas SMA + infos (dont la boite
+   violette #titles qui peut s'etendre librement). */
+#board::after{ content: ""; display: table; clear: both; }
+#left_col{ float: left; }
+#right_col{ float: left; margin-left: 15px; }
+#left_col #myCanvas{ float: none; display: block; }
+/* border-box : la largeur fixee par le JS (= largeur du canvas) inclut le
+   padding, donc la legende a exactement la meme largeur que la dataviz. */
+#left_col #legend{ float: none; clear: none; box-sizing: border-box; }
+/* meme decalage que #allCanvas (colonne gauche) pour degager le menu fixe :
+   sinon le haut du SMA passe sous la barre de navigation. */
+#right_col #sma{ float: none; display: block; margin-top: calc(var(--sd-bar-h) + 8px); }
+#right_col #infos{ float: none; clear: none; }
+
 /* ---------- Colonne d'information et canvas ---------- */
 
 #cookies, #selection, #titles, #results{
@@ -117,9 +134,17 @@
 	margin: 1px 0;
 }
 
-/* La liste des oeuvres (zone violette) a une hauteur bornee : elle defile
-   a l'interieur au lieu de pousser la rubrique "How to read" vers le bas. */
+/* La liste des oeuvres (zone violette) s'adapte a son contenu : pas de
+   hauteur bornee. La legende "How to read" reste maitrisee cote canvas
+   (largeur calee sur le canvas, hauteur du canvas ajustee au contenu). */
 #titles{
-	max-height: 300px;
-	overflow-y: auto;
+	height: auto;
 }
+/* Distinction de chaque oeuvre par un fond alterne (comme les tables),
+   en deux nuances de violet pour rester lisible sur texte blanc. */
+#titles li{
+	list-style: none;
+	padding: 2px 6px;
+}
+#titles li.t-a{ background: #9b59b6; }
+#titles li.t-b{ background: #8145a0; }

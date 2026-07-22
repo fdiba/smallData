@@ -166,6 +166,12 @@ function resetSaturation(sat){
 
 function calculateMinHeightAndCreateRectangles(step, threshold){
 
+    // On repart d'un etat propre a chaque (re)calcul : positions a zero et
+    // hauteur remise a zero pour qu'elle puisse RETRECIR quand il y a moins
+    // d'elements (filtre "num of records"), pas seulement grandir.
+    resetPositions();
+    minHeight = 0;
+
     for (var i=0; i<allData.length-4; i+=5) {
 
         //---------- get data ----------//
@@ -372,8 +378,17 @@ function selectRect(x, y){
     }
 }
 function resetCanvasSize(){
-    if(canvas.height<minHeight)canvas.height=minHeight;
+    // Le canvas epouse la hauteur reelle du contenu (peut grandir ou retrecir),
+    // pour ne pas laisser de zone vide et laisser remonter la legende "How to".
+    canvas.height = minHeight + yDist;
     if(canvas.width>maxWidth)canvas.width=maxWidth+5; //+5 DEBUG
+    // La legende "How to read" ne doit jamais etre plus large que le canvas :
+    // on cale sa largeur sur celle du canvas.
+    var lg = document.getElementById('legend');
+    if(lg){
+        lg.style.maxWidth = canvas.width + 'px';
+        lg.style.width = canvas.width + 'px';
+    }
 }
 function resetPositions(){
     xPos = xLeftOffset;
@@ -443,7 +458,7 @@ function processData002(numberMinOfParticipation){
     rectangles=[];
 
     calculateMinHeightAndCreateRectangles(1, numberMinOfParticipation);
-    // resetCanvasSize();
+    resetCanvasSize();   // reajuste la hauteur du canvas au contenu filtre
     drawRectanglesAndAddInteractivity();
 }
 function processData(){

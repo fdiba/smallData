@@ -6,7 +6,7 @@ function displayTitlesInfosGN(arr){
         $("#titles").append('<em>'+arr.length+' archived work(s)</em>');
         for (var i=0; i<arr.length; i++) {
             var obj=arr[i];
-            var div='<li>'+obj.t;
+            var div='<li class="'+(i%2===0 ? 't-a' : 't-b')+'">'+obj.t;
             if(obj.d) div += ' ('+obj.d+')';
             if(obj.m) div += ' | MISAM '+obj.m;
             if(obj.ed) div += ' | edition(s): '+obj.ed;

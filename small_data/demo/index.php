@@ -43,19 +43,13 @@
 			</div>
 			<div id="filtersBtn"></div>
 		</div>
-		<div id="allCanvas">
+			<div id="board">
+				<div id="left_col">
+					<div id="allCanvas">
 			<canvas id="myCanvas" width="500" height="500">
 	            Votre navigateur ne supporte pas les canvas.
 		    </canvas>
-		    <canvas id="sma" width="250" height="250">
-		    </canvas>
-		</div>
-		<div id="infos">
-			<div id="cookies"></div>
-		    <div id="selection"><p>no selection</p></div>
-		    <ul id="titles"></ul>
-		    <ul id="results"></ul>
-	    </div>
+					</div>
 		<div id="legend">
 			<p class="lg-title">How to read this page</p>
 			<div class="lg-cols">
@@ -85,6 +79,18 @@
 				</div>
 			</div>
 		</div>
+				</div>
+				<div id="right_col">
+		    <canvas id="sma" width="250" height="250">
+		    </canvas>
+		<div id="infos">
+			<div id="cookies"></div>
+		    <div id="selection"><p>no selection</p></div>
+		    <ul id="titles"></ul>
+		    <ul id="results"></ul>
+	    </div>
+				</div>
+			</div>
  	</div>
 </body>
 </html>
