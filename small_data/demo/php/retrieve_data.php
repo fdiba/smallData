@@ -81,8 +81,10 @@
 
 		//---------------
 
+		// exclure les oeuvres marquees hors du repertoire (colonne statut)
 		$sth = $dbh->query('SELECT imeb_music.id, imeb_music.id_artist
-							FROM imeb_music');
+							FROM imeb_music
+							WHERE imeb_music.statut <> \'hors_repertoire\'');
 
 		$arr= array();
 		while($row = $sth->fetch()) {
@@ -225,7 +227,8 @@
 							FROM imeb_artist
 							INNER JOIN imeb_music
 							ON imeb_artist.id = imeb_music.id_artist
-							WHERE imeb_artist.id = ?');
+							WHERE imeb_artist.id = ?
+							AND imeb_music.statut <> \'hors_repertoire\'');
 
 		$sth->execute(array((int)$aId));
 
@@ -251,7 +254,8 @@
 							FROM imeb_artist
 							INNER JOIN imeb_music
 							ON imeb_artist.id = imeb_music.id_artist
-							WHERE imeb_artist.id = ?');
+							WHERE imeb_artist.id = ?
+							AND imeb_music.statut <> \'hors_repertoire\'');
 
 		$sth->execute(array((int)$aId));
 
