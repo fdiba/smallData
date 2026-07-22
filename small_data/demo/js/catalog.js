@@ -62,11 +62,32 @@ function retrieveData(cat, numOfElements){
             }
         }
 
-        var table = document.getElementById('works_table');
-        // Toutes les lignes doivent aller dans le meme tbody : une insertion
-        // directe sur <table> cree un tbody par lot, et un rowspan ne peut
-        // pas s'etendre d'un tbody a l'autre (colonnes decalees).
-        var tbody = table.tBodies[0] || table;
+        var table  = document.getElementById('works_table');
+        var table2 = document.getElementById('works_table_2');
+        // Toutes les lignes d'un meme tableau doivent aller dans le meme tbody :
+        // une insertion directe sur <table> cree un tbody par lot, et un rowspan
+        // ne peut pas s'etendre d'un tbody a l'autre (colonnes decalees).
+        var tbodyA = table.tBodies[0] || table;
+        var tbodyB = table2 ? (table2.tBodies[0] || table2) : null;
+
+        // --- repartition sur deux colonnes cote a cote ---
+        // On coupe la liste en deux a une FRONTIERE DE COMPOSITEUR (jamais au
+        // milieu d'un groupe, sinon le rowspan de la cellule compositeur serait
+        // casse). Le point de coupure est le premier debut de groupe atteint
+        // apres la moitie des lignes, pour equilibrer la hauteur des colonnes.
+        var splitIndex = works.length;   // defaut : tout dans la colonne de gauche
+        if(table2 && works.length > 1){
+            var half = works.length / 2;
+            var best = -1, bestDist = Infinity;
+            for (var s = 1; s < works.length; s++) {
+                if(works[s].id_artist !== works[s-1].id_artist){
+                    var d = Math.abs(s - half);
+                    if(d < bestDist){ bestDist = d; best = s; }
+                }
+            }
+            if(best !== -1) splitIndex = best;   // sinon (1 seul compositeur) tout a gauche
+        }
+
         var i = 0;
         var prevArtist = null;
         var groupIndex = -1;
@@ -76,7 +97,7 @@ function retrieveData(cat, numOfElements){
         // et le navigateur reste reactif entre deux lots.
         function renderChunk(){
 
-            var html = "";
+            var htmlA = "", htmlB = "";
             var stop = Math.min(i + CHUNK, works.length);
 
             for (; i < stop; i++) {
@@ -102,20 +123,24 @@ function retrieveData(cat, numOfElements){
                 var grpParity = (groupIndex % 2 === 0) ? 'grp-cell-a' : 'grp-cell-b';
                 var memParity = ((groupIndex + memberIndex) % 2 === 0) ? 'mem-a' : 'mem-b';
 
-                html += newGroup ? '<tr class="group-start">' : '<tr>';
+                var row = newGroup ? '<tr class="group-start">' : '<tr>';
 
                 if(newGroup){
-                    html += '<td class="composer grp-cell ' + grpParity + '" rowspan="' + runLength[i] + '">'
+                    row += '<td class="composer grp-cell ' + grpParity + '" rowspan="' + runLength[i] + '">'
                           + w.fn + ' ' + w.ln + '</td>';
                 }
 
-                html += '<td class="' + memParity + '">' + w.title + '</td>'
+                row += '<td class="' + memParity + '">' + w.title + '</td>'
                       + '<td class="' + memParity + '">' + w.duration + '</td>'
                       + '<td class="' + memParity + '">' + w.misam + '</td></tr>';
+
+                // avant le point de coupure -> colonne de gauche, sinon droite
+                if(i < splitIndex) htmlA += row; else htmlB += row;
             }
 
-            // Une seule insertion par lot au lieu de deux par ligne
-            tbody.insertAdjacentHTML('beforeend', html);
+            // Une seule insertion par lot et par colonne
+            if(htmlA) tbodyA.insertAdjacentHTML('beforeend', htmlA);
+            if(htmlB && tbodyB) tbodyB.insertAdjacentHTML('beforeend', htmlB);
 
             $("#loading").text(Math.min(i, total) + " / " + total);
 
@@ -123,6 +148,8 @@ function retrieveData(cat, numOfElements){
                 setTimeout(renderChunk, 0);
             } else {
                 $("#loading").remove();
+                // si tout tient dans la colonne de gauche, on masque la seconde
+                if(table2 && splitIndex >= works.length){ table2.classList.add('is-empty'); }
                 if(cat != null){
                     $("#info").append("<p>" + total + " (provisionnal count)</p>");
                 } else {

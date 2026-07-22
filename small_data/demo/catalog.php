@@ -100,7 +100,15 @@
 			</div>
 			<?php } ?>
 		<div id="main_table">
-			<table id="works_table">
+			<table id="works_table" class="works_table">
+				<tr>
+					<th>composer</th>
+					<th>title</th>
+					<th>duration</th>
+					<th>imeb id</th>
+				</tr>
+			</table>
+			<table id="works_table_2" class="works_table">
 				<tr>
 					<th>composer</th>
 					<th>title</th>

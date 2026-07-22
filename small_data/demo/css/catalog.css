@@ -85,9 +85,23 @@ th{
 	margin: 0;
 	padding: 0;
 }
-#works_table{
-	width: 600px;
+/* conteneur des deux tableaux : cote a cote, retour a la ligne si trop etroit */
+#main_table{
 	clear: both;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: 24px;
+}
+.works_table{
+	width: 600px;
+	/* sur ecran etroit, chaque tableau peut retrecir plutot que deborder */
+	flex: 1 1 480px;
+	max-width: 600px;
+}
+/* second tableau masque quand il ne recoit aucune oeuvre (peu de donnees) */
+.works_table.is-empty{
+	display: none;
 }
 
 /* Intro de la rubrique "How to read" : rappelle de quelle phonotheque il s'agit */
@@ -98,28 +112,28 @@ th{
 
 /* --- regroupement par compositeur (catalog.js) --- */
 /* meme code couleur que award-winning_works.php */
-#works_table td{
+.works_table td{
 	vertical-align: top;
 }
-#works_table td.composer{
+.works_table td.composer{
 	font-weight: bold;
 }
 /* cellule compositeur (fusionnee) : teinte alternee par groupe */
-#works_table .grp-cell.grp-cell-a{
+.works_table .grp-cell.grp-cell-a{
 	background: #C1C1C1;
 }
-#works_table .grp-cell.grp-cell-b{
+.works_table .grp-cell.grp-cell-b{
 	background: #D6D6D6;
 }
 /* cellules-oeuvres : teinte alternee par oeuvre a l'interieur d'un compositeur */
-#works_table .mem-a{
+.works_table .mem-a{
 	background: #F6F6F6;
 }
-#works_table .mem-b{
+.works_table .mem-b{
 	background: #E4E4E4;
 }
 /* trait de separation entre compositeurs */
-#works_table tr.group-start > td{
+.works_table tr.group-start > td{
 	border-top: 2px solid #16A085;
 }
 
