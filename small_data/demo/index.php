@@ -52,6 +52,7 @@
 					</div>
 		<div id="legend">
 			<p class="lg-title">How to read this page</p>
+			<p class="lg-note">Coverage &mdash; this index is knowingly incomplete. The competition minutes have been fully entered for the editions from <em>1973 to 1994</em>; those from <em>1996 to 2009</em> are only partially processed, so the later editions are under-represented and some participations are missing. No competition was held in <em>1995</em> (36 editions in all), so no square carries that year.</p>
 			<div class="lg-cols">
 				<div>
 					<p><strong>The index</strong></p>

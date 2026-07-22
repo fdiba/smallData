@@ -87,6 +87,14 @@
 /* border-box : la largeur fixee par le JS (= largeur du canvas) inclut le
    padding, donc la legende a exactement la meme largeur que la dataviz. */
 #left_col #legend{ float: none; clear: none; box-sizing: border-box; }
+/* Note de completude du "How to read" : liseree violette (comme le line chart). */
+#legend .lg-note{
+	margin: 0 0 8px 0;
+	padding: 4px 0 4px 10px;
+	border-left: 3px solid var(--sd-amethyst);
+	color: #ecf0f1;
+}
+#legend .lg-note em{ color: #fff; font-style: normal; font-weight: 600; }
 /* meme decalage que #allCanvas (colonne gauche) pour degager le menu fixe :
    sinon le haut du SMA passe sous la barre de navigation. */
 #right_col #sma{ float: none; display: block; margin-top: calc(var(--sd-bar-h) + 8px); }
