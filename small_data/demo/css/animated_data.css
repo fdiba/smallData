@@ -93,6 +93,12 @@
 	max-width: 440px;
 	margin: 0;
 }
+/* Distinction de chaque oeuvre par un fond alterne (comme dans Overview),
+   en deux nuances de violet pour rester lisible sur texte clair. */
 #titles li{
-	padding: 1px 0;
+	list-style: none;
+	padding: 2px 6px;
+	color: #ecf0f1;
 }
+#titles li.t-a{ background: #9b59b6; }
+#titles li.t-b{ background: #8145a0; }

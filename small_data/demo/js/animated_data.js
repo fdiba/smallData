@@ -2,9 +2,11 @@ var init=false;
 var allData;
 var canvas, context;
 var cv_nav, ctx_nav;
+//1995 volontairement absent : le concours n'a pas eu lieu cette annee-la
+//(36 editions de 1973 a 2009). Il ne peut donc pas etre selectionne dans le menu.
 var years=[1, 1973, 1974, 1975, 1976, 1977, 1978, 1979,
 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989,
-1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 1999,
 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009];
 var sl_years=[];
 var inBtwYears=[];
@@ -156,7 +158,8 @@ function displayTitlesInfos(){
     if(titles.length>0){
         for (var i=0; i<titles.length; i++) {
             var obj=titles[i];
-            var div='<li>'+obj.t;
+            //fond violet alterne (t-a/t-b) pour bien separer chaque oeuvre, comme dans Overview
+            var div='<li class="'+(i%2===0 ? 't-a' : 't-b')+'">'+obj.t;
             if(obj.d) div += ' ('+obj.d+')';
             if(obj.m) div += ' | MISAM '+obj.m;
             if(obj.ed) div += ' | edition(s): '+obj.ed;

@@ -84,6 +84,7 @@ LineChart.prototype.requestData = function(mouseX, mouseY){
         for (var j=0; j<points.length; j++) {
             
             var p=points[j];
+            if(p.skip) continue; //1995 : creneau sans concours, non selectionnable
             var distance = dist(p.x, mouseX, p.y, mouseY);
 
             if(distance < cp.value && this.numSolos===0){
@@ -447,6 +448,17 @@ LineChart.prototype.drawLine = function(obj, color, strokeWidth, init){
 
         var x=xPos*this.scaleX+xOffset;
         var y=this.yPos(yPos);
+
+        //1995 : le concours n'a pas eu lieu cette annee-la.
+        //On garde la graduation "95" sur l'axe (dessinee par drawXAxis)
+        //mais la ligne saute ce point et relie directement 1994 a 1996
+        //(pas de chute a zero). Le point reste dans le tableau, marque
+        //"skip", pour ne pas decaler la correspondance index <-> annee.
+        if(this.minYear + i === 1995){
+            points.push({x: x, y:y, skip:true});
+            xPos += 5;
+            continue;
+        }
 
         if(i===0){
             ctx.beginPath();
