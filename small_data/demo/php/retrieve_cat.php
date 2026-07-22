@@ -213,6 +213,8 @@
 		} else if($cat==2){ //IMEB collection
 			$where = ' WHERE imeb_music.misam >= 200000';
 		}
+		// exclure les oeuvres marquees hors du repertoire (colonne statut)
+		if($where !== '') $where .= ' AND imeb_music.statut <> \'hors_repertoire\'';
 
 		$sth = $dbh->query('SELECT imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
