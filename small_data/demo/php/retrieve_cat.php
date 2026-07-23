@@ -1,9 +1,11 @@
 <?php
 
 	$cat=$_POST['cat'];
+	// filtre pays optionnel (menu "Country" de catalog.php?id=1, Phono A)
+	$country = isset($_POST['country']) ? intval($_POST['country']) : 0;
 
 	if($cat==1 || $cat==2){
-		retrieve_cat($cat);
+		retrieve_cat($cat, $country);
 	} else if($cat==3){
 		retrieve_euphonies();
 	} else {
@@ -199,7 +201,7 @@
 
 	}
 
-	function retrieve_cat($cat){
+	function retrieve_cat($cat, $country=0){
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
@@ -215,6 +217,8 @@
 		}
 		// exclure les oeuvres marquees hors du repertoire (colonne statut)
 		if($where !== '') $where .= ' AND imeb_music.statut <> \'hors_repertoire\'';
+		// filtre pays : menu "Country" de la Phono A (id=1). intval() securise.
+		if($cat==1 && $country>0) $where .= ' AND imeb_artist.id_country = ' . intval($country);
 
 		$sth = $dbh->query('SELECT imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,

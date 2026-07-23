@@ -56,7 +56,15 @@
 			</div>
 		</div>
 		<div id="middle">
+<?php if($id==1){ ?>
+			<div id="countries">
+				<p>Country:</p>
+				<ul></ul>
+			</div>
+<?php } ?>
 			<div id="main_container">
+<?php if($id==1){ ?>				<div id="sma_note"></div>
+<?php } ?>
 				<canvas id="myCanvas" width="500" height="500">Votre navigateur ne supporte pas les canvas.</canvas>
 				<div id="infos">
 					<div id="cookies"></div>
@@ -70,14 +78,16 @@
 				<p class="lg-intro">The IMEB's holdings form the <em>Fonds MISAME</em>, whose <em>Répertoire général</em> &mdash; compiled by Christian Clozier &mdash; brings together 1&thinsp;946 composers, 6&thinsp;612 works and 63 countries, split into two phonothèques: the <em>International Sound Archives</em> (Phonothèque A, &laquo;&nbsp;Extérieure&nbsp;&raquo;) and the <em>IMEB Sound Archives</em> (Phonothèque B). <?php echo $coll_desc ?></p>
 				<div class="lg-cols">
 					<div>
-						<p><strong>Table<?php if($id==2) echo ' &amp; agents'; ?></strong></p>
+						<p><strong>Table<?php if($id==1 || $id==2) echo ' &amp; agents'; ?></strong></p>
 						<ul>
 							<li><?php echo $table_desc ?></li>
 							<li>the composer cell is shared across all of their works; the background alternates to separate composers and, within a composer, their pieces</li>
-<?php if($id==2){ ?>							<li>on the canvas, each moving ellipse is an agent carrying one archived work</li>
+<?php if($id==1){ ?>							<li>Phonothèque A is large, so it is explored <strong>one country at a time</strong>: pick a <em>country</em> in the Country menu to filter the table and build the visualization for that country's composers; pick another country to switch, or <em>All works</em> to show the full table again</li>
+<?php } ?>
+<?php if($id==1 || $id==2){ ?>							<li>on the canvas, each moving ellipse is an agent carrying one archived work</li>
 <?php } ?>						</ul>
 					</div>
-<?php if($id==2){ ?>
+<?php if($id==1 || $id==2){ ?>
 					<div>
 						<p><strong>Agents</strong></p>
 						<ul>

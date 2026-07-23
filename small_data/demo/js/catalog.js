@@ -3,26 +3,48 @@
 
 numberOfNodesOnDisplayMax = 400;
 
+// Phono A : en dessous de ce nombre d'OEUVRES, une portion-pays n'affiche pas le
+// SMA (trop peu d'agents pour un regroupement parlant) — seul le tableau filtre
+// s'affiche. (C'est le nombre affiche entre parentheses dans le menu Country.)
+var SMA_MIN_WORKS = 20;
+
 window.onload = function() {
 
 	var cat = $.urlParam('id');
 
-	if(cat==1 || cat==2)retrieveData(cat, 7);
-	else retrieveData(-999, 7);
-
     if(cat==2){
-
+        // Phono B : SMA sur toute la collection (petit fonds, ~470 oeuvres).
         initSMA(1200, 800);
+        startSMA();
+        retrieveData(2, 7);
 
     } else if(cat==1){
-        $("#myCanvas").hide();
+        // Phono A : trop d'oeuvres (~4380) pour un seul SMA (voir SMA.md §11)
+        // -> navigation PAR PAYS. On choisit un pays dans le menu "Country" pour
+        // construire le SMA (et filtrer la table). "All works" revient au tableau
+        // complet. Le canvas n'est visible QUE lorsqu'un pays est selectionne.
+        initSMA(1200, 800);
+        startSMA();               // boucle lancee UNE seule fois (records vide au depart)
+        buildCountryMenu();       // remplit le menu "Country"
+        retrieveData(1, 7, 0);    // tableau complet au depart, sans SMA
+        $("#myCanvas").hide();    // etat initial = tableau complet -> pas de viz
         $("#infos").hide();
-        $("#sma_main_ctrl").hide();
-        $("#sma_menu").hide();
+
+    } else {
+        retrieveData(-999, 7);
     }
 
 };
-function retrieveData(cat, numOfElements){
+
+//incremente a chaque nouveau chargement (clic pays / tableau complet) : une
+//reponse AJAX arrivee en retard est ignoree si un autre chargement a ete
+//lance entre-temps (evite de melanger deux portions).
+var _catLoadSeq = 0;
+
+function retrieveData(cat, numOfElements, country){
+
+    var doSMA  = (cat == 2) || (cat == 1 && (+country) > 0);
+    var myLoad = ++_catLoadSeq;
 
     var CHUNK = 200;   // nombre de lignes inserees par lot
 
@@ -31,9 +53,11 @@ function retrieveData(cat, numOfElements){
     $.ajax({
         url: 'php/retrieve_cat.php',
         type: "POST",
-        data: {cat: cat}
+        data: {cat: cat, country: country || 0}
 
     }).done(function(str) {
+
+        if(myLoad !== _catLoadSeq) return;   // chargement perime : on abandonne
 
         var arr = str.split("%");
 
@@ -47,6 +71,23 @@ function retrieveData(cat, numOfElements){
                         duration: arr[k+5], id: arr[k+6]});
         }
         var total = works.length;
+
+        // Combien d'oeuvres dans cette portion ? En dessous du seuil, on
+        // n'affiche pas le SMA (canvas masque + note) : le tableau filtre suffit.
+        // Ne concerne que la navigation par pays (Phono A).
+        var showSMA = doSMA;
+        if(cat == 1 && (+country) > 0){
+            showSMA = (total >= SMA_MIN_WORKS);
+            if(showSMA){
+                $("#sma_note").hide();
+                $("#myCanvas").show();
+                $("#infos").show();
+            } else {
+                $("#myCanvas").hide();
+                $("#infos").hide();
+                $("#sma_note").text('Too few works (' + total + ') to build the visualization — showing the table only.').show();
+            }
+        }
 
         // Longueur de chaque serie contigue d'oeuvres d'un meme compositeur,
         // pour le rowspan de la cellule composer. Calculee sur les series
@@ -97,6 +138,8 @@ function retrieveData(cat, numOfElements){
         // et le navigateur reste reactif entre deux lots.
         function renderChunk(){
 
+            if(myLoad !== _catLoadSeq) return;   // un autre chargement a demarre : stop
+
             var htmlA = "", htmlB = "";
             var stop = Math.min(i + CHUNK, works.length);
 
@@ -104,8 +147,9 @@ function retrieveData(cat, numOfElements){
 
                 var w = works[i];
 
-                //--------- SMA (inchange)
-                if(cat == 2){
+                //--------- SMA : Phono B (tout) ou Phono A filtree par pays
+                //           (seulement si assez de compositeurs, cf. showSMA)
+                if(showSMA){
                     records.push({imeb_id: w.misam, fn: w.fn, ln: w.ln,
                                   id: w.id,
                                   title: w.title, duration: w.duration});
@@ -164,10 +208,92 @@ function retrieveData(cat, numOfElements){
         $("#loading").text("loading failed");
     });
 
-    //--------- SMA
-    if(cat==2){
-        startSMA();
-    }
-    //---------
+}
 
+//====================================================================
+// Phono A (id=1) : navigation PAR PAYS
+//--------------------------------------------------------------------
+// Le fonds A (~4380 oeuvres) est trop grand pour un seul SMA (voir SMA.md
+// §11). On affiche une PORTION a la fois : les oeuvres d'un pays. 63 pays
+// sur 65 tiennent sous le plafond (<= 400 oeuvres) et se consolident
+// entierement ; USA (614) et France (573) debordent et sont ecoules par le
+// flux progressif existant. Changer de pays remet le SMA a zero.
+//====================================================================
+
+// Remet a zero le SMA pour charger une nouvelle portion (nouveau pays).
+function resetSMAForPortion(){
+    resetAll();                 // pointer001=0, particles=[], sl_attribute="", attributes_count=[], menu "Group by" vide...
+    records = [];               // ...mais resetAll ne vide pas le pool : on le fait ici
+    $("#calculations ul").empty();
+    $("#cookies").empty();
+    $("#titles").empty();
+    $("#selection").empty();
+    $("#sma_note").hide();      // masque une eventuelle note "trop peu de compositeurs"
+}
+
+// Vide la table d'oeuvres (garde les entetes) avant de la reconstruire.
+function clearCatalogTable(){
+    var hdr = '<tr><th>composer</th><th>title</th><th>duration</th><th>imeb id</th></tr>';
+    var t1 = document.getElementById('works_table');
+    var t2 = document.getElementById('works_table_2');
+    if(t1){ t1.innerHTML = hdr; t1.classList.remove('is-empty'); }
+    if(t2){ t2.innerHTML = hdr; t2.classList.remove('is-empty'); }
+    $("#listing").empty();
+    $("#loading").remove();
+    $("#info p").not(':first').remove();   // enleve les compteurs, garde le <p> d'origine
+}
+
+// Construit le menu "Country" a partir de php/retrieve_countries.php.
+function buildCountryMenu(){
+    $.ajax({ url: 'php/retrieve_countries.php', type: "POST" })
+     .done(function(str){
+        var ul = $("#countries ul");
+        ul.empty();
+
+        // bouton : revenir au tableau complet (sans SMA)
+        var allLi = $('<li class="all-works">All works (full table)</li>')
+                      .css("text-decoration", "underline");
+        allLi.on("click", showFullTable);
+        ul.append(allLi);
+
+        if(!str) return;
+        var arr = str.split("%");
+        for(var k = 0; k + 2 < arr.length; k += 3){
+            var cid = arr[k], cname = arr[k+1], cnt = arr[k+2];
+            var li = $('<li></li>')
+                       .attr("data-cid", cid)
+                       .text(cname + " (" + cnt + ")")
+                       .css("text-decoration", "underline");
+            (function(id, nm, el){
+                el.on("click", function(){ selectCountry(id, nm, el); });
+            })(cid, cname, li);
+            ul.append(li);
+        }
+     })
+     .fail(function(){
+        $("#countries ul").empty().append('<li>countries: loading failed</li>');
+     });
+}
+
+// Clic sur un pays : reset SMA + table, puis chargement de la portion.
+// La visibilite du canvas est decidee dans retrieveData selon le nombre de
+// compositeurs (seuil SMA_MIN_ARTISTS).
+function selectCountry(cid, name, liEl){
+    resetSMAForPortion();
+    clearCatalogTable();
+    $("#countries ul li").css("font-weight", "normal");
+    if(liEl) liEl.css("font-weight", "bold");
+    $("#cookies").empty().append('<p>country: ' + name + '</p>');
+    retrieveData(1, 7, cid);     // filtre la table + (si assez de compositeurs) alimente le SMA
+}
+
+// Bouton "All works" : tableau complet, canvas masque (pas de viz).
+function showFullTable(){
+    resetSMAForPortion();
+    clearCatalogTable();
+    $("#myCanvas").hide();       // tableau complet -> on masque la viz
+    $("#infos").hide();
+    $("#countries ul li").css("font-weight", "normal");
+    $("#countries ul li.all-works").css("font-weight", "bold");
+    retrieveData(1, 7, 0);       // country=0 -> pas de push SMA
 }

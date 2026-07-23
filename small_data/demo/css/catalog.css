@@ -14,6 +14,67 @@ th{
 	text-align: center;
 	vertical-align: middle;
 }
+/* menu "Country" (Phono A / catalog.php?id=1) : BANDE sous la barre de controle,
+   pas dans la barre fixe (64 pays -> trop large pour la barre, qui deborderait et
+   recouvrirait le contenu). Fond blanc, pleine largeur, liens qui reviennent a la
+   ligne, defilement si necessaire. */
+#middle > #countries{
+	background: #fff;
+	color: #2c3e50;
+	box-sizing: border-box;
+	padding: 6px 10px;
+	margin: 0 0 8px 0;
+	/* meme largeur que le canvas SMA (initSMA(1200,800)) pour que la bande
+	   pays coincide exactement avec la visualisation en dessous */
+	width: 1200px;
+	max-width: 100%;
+}
+/* le menu Country assure deja le degagement sous la barre fixe : le canvas suit
+   directement, sans re-appliquer la marge haute */
+#middle > #countries + #main_container{
+	margin-top: 0;
+}
+#countries > p{
+	margin: 0 0 4px 0;
+	padding: 0;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	font-size: 12px;
+}
+#countries ul{
+	padding: 0;
+	margin: 0;
+	max-height: 108px;         /* ~4-5 lignes ; defile au-dela */
+	overflow-y: auto;
+}
+#countries li{
+	display: inline-block;
+	padding: 1px 8px;
+	cursor: pointer;
+	white-space: nowrap;
+	font-size: 13px;
+}
+#countries li:hover{
+	background: #eef2f3;
+}
+#countries li.all-works{
+	font-style: italic;
+	font-weight: 600;
+}
+/* note affichee quand une portion-pays a trop peu d'oeuvres pour le SMA
+   (masquee par defaut ; montree via jQuery) */
+#sma_note{
+	display: none;
+	box-sizing: border-box;
+	width: 1200px;
+	max-width: 100%;
+	background: #fff;
+	color: #2c3e50;
+	padding: 10px 12px;
+	margin: 0 0 8px 0;
+	font-style: italic;
+}
 #calculations{
 	padding: 5px;
 	min-width: 250px;
