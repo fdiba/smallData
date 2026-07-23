@@ -23,6 +23,67 @@ var counter002 = 0;
 
 var scale = 1;
  
+//==================================================================
+// GRILLE SPATIALE (hachage spatial) - voir sma_core.js pour le detail.
+// Copie locale pour la page network (qui ne charge pas sma_core.js).
+// Iso-comportement : pre-selection de candidats, filtrage exact inchange.
+//------------------------------------------------------------------
+var SMA_USE_GRID = true;
+var SMA_GRID_CELL = 80;
+var SMA_GRID_SLACK = 16;
+var smaGrid = null;
+var smaGridReady = false;
+var smaMaxRadius = 1;
+var _smaScratch = [];
+function SpatialGrid(width, height, cellSize){
+    this.cellSize = cellSize;
+    this.cols = Math.max(1, Math.ceil(width/cellSize));
+    this.rows = Math.max(1, Math.ceil(height/cellSize));
+    this.cells = [];
+}
+SpatialGrid.prototype.build = function(items){
+    this.cells = [];
+    var cs = this.cellSize, cols = this.cols, rows = this.rows;
+    for(var i=0; i<items.length; i++){
+        var p = items[i];
+        var cx = Math.floor(p.x/cs); if(cx<0)cx=0; else if(cx>=cols)cx=cols-1;
+        var cy = Math.floor(p.y/cs); if(cy<0)cy=0; else if(cy>=rows)cy=rows-1;
+        var k = cx + cy*cols;
+        (this.cells[k] || (this.cells[k]=[])).push(i);
+    }
+};
+SpatialGrid.prototype.queryRadius = function(x, y, radius, out){
+    out.length = 0;
+    var cs = this.cellSize, cols = this.cols, rows = this.rows;
+    var minCx = Math.floor((x-radius)/cs); if(minCx<0)minCx=0;
+    var maxCx = Math.floor((x+radius)/cs); if(maxCx>=cols)maxCx=cols-1;
+    var minCy = Math.floor((y-radius)/cs); if(minCy<0)minCy=0;
+    var maxCy = Math.floor((y+radius)/cs); if(maxCy>=rows)maxCy=rows-1;
+    for(var cy=minCy; cy<=maxCy; cy++){
+        var rowBase = cy*cols;
+        for(var cx=minCx; cx<=maxCx; cx++){
+            var cell = this.cells[cx + rowBase];
+            if(cell)for(var i=0; i<cell.length; i++)out.push(cell[i]);
+        }
+    }
+    if(out.length>1)out.sort(function(a,b){return a-b;});
+    return out;
+};
+function buildSMAGrid(){
+    if(!canvas)return;
+    if(!smaGrid || smaGrid.cellSize!==SMA_GRID_CELL
+        || smaGrid.cols!==Math.max(1,Math.ceil(canvas.width/SMA_GRID_CELL))
+        || smaGrid.rows!==Math.max(1,Math.ceil(canvas.height/SMA_GRID_CELL))){
+        smaGrid = new SpatialGrid(canvas.width, canvas.height, SMA_GRID_CELL);
+    }
+    smaGrid.build(particles);
+    var mr = 1;
+    for(var i=0; i<particles.length; i++)if(particles[i].radius>mr)mr=particles[i].radius;
+    smaMaxRadius = mr;
+    smaGridReady = true;
+}
+//==================================================================
+
 window.onload = function() {
 
 	canvas = document.getElementById('myCanvas');
@@ -275,6 +336,8 @@ function sma_animation(){
 }
 function shareInformation(){
 
+    smaGridReady=false;
+
     for (var i=0; i<particles.length; i++) {
         
         if(noiseField){
@@ -347,6 +410,8 @@ function setCommonAttr(){
     $("#commons p u").contents().unwrap();  
 }
 function allowGrouping(){
+
+    buildSMAGrid();
 
     for (var i=0; i<particles.length; i++) {
 

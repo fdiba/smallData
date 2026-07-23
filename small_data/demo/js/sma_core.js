@@ -25,6 +25,88 @@ var counter002 = 0;
 var strength_noise_field=10;
 //-----------
 
+//====================================================================
+// GRILLE SPATIALE (hachage spatial) — accelere les passes de voisinage
+//--------------------------------------------------------------------
+// Objectif : remplacer les boucles O(n^2) (chaque agent teste TOUS les
+// autres) par des requetes locales O(n). La grille decoupe le canvas en
+// cellules carrees ; on n'inspecte que les cellules couvrant le rayon
+// d'interaction, donc quelques voisins au lieu des ~400 agents.
+//
+// ISO-COMPORTEMENT : la grille ne fait que PRE-SELECTIONNER des candidats.
+// Chaque passe applique ensuite EXACTEMENT la meme condition de distance
+// qu'avant. Le rayon de requete est un majorant conservateur (rayon max
+// courant + marge SMA_GRID_SLACK pour le deplacement d'un agent depuis la
+// construction de la grille) -> l'ensemble des candidats est un SUR-ensemble
+// des vrais voisins, et le filtrage exact redonne un resultat identique.
+//--------------------------------------------------------------------
+var SMA_USE_GRID = true;  //false = ancien parcours O(n^2) (pour comparaison/debug ; comportement identique)
+var SMA_GRID_CELL = 80;   //taille d'une cellule (px). Reglage perf, sans effet sur le comportement.
+var SMA_GRID_SLACK = 16;  //marge (px) de securite du rayon de requete. Couvre le deplacement
+                          //intra-image d'un voisin deja mis a jour (<= maxSpeed*sqrt2 ~ 5.7px)
+                          //avec une marge large -> l'ensemble des candidats reste un sur-ensemble
+                          //strict des vrais voisins, resultat identique au parcours O(n^2).
+var smaGrid = null;       //instance courante de SpatialGrid
+var smaGridReady = false; //true uniquement en PHASE 2 (regroupement), quand la grille est fiable
+var smaMaxRadius = 1;     //plus grand rayon parmi les agents (borne le rayon de requete)
+var _smaScratch = [];     //tampon reutilise pour les resultats de requete (evite le GC)
+
+function SpatialGrid(width, height, cellSize){
+    this.cellSize = cellSize;
+    this.cols = Math.max(1, Math.ceil(width/cellSize));
+    this.rows = Math.max(1, Math.ceil(height/cellSize));
+    this.cells = [];   //cells[cx + cy*cols] = tableau d'indices dans `particles`
+}
+SpatialGrid.prototype.build = function(items){
+    this.cells = [];
+    var cs = this.cellSize, cols = this.cols, rows = this.rows;
+    for(var i=0; i<items.length; i++){
+        var p = items[i];
+        var cx = Math.floor(p.x/cs); if(cx<0)cx=0; else if(cx>=cols)cx=cols-1;
+        var cy = Math.floor(p.y/cs); if(cy<0)cy=0; else if(cy>=rows)cy=rows-1;
+        var k = cx + cy*cols;
+        (this.cells[k] || (this.cells[k]=[])).push(i);
+    }
+};
+//remplit `out` avec les indices des agents dont la cellule chevauche le
+//disque (x,y,radius). `out` est vide au retour puis rempli ; renvoie `out`.
+SpatialGrid.prototype.queryRadius = function(x, y, radius, out){
+    out.length = 0;
+    var cs = this.cellSize, cols = this.cols, rows = this.rows;
+    var minCx = Math.floor((x-radius)/cs); if(minCx<0)minCx=0;
+    var maxCx = Math.floor((x+radius)/cs); if(maxCx>=cols)maxCx=cols-1;
+    var minCy = Math.floor((y-radius)/cs); if(minCy<0)minCy=0;
+    var maxCy = Math.floor((y+radius)/cs); if(maxCy>=rows)maxCy=rows-1;
+    for(var cy=minCy; cy<=maxCy; cy++){
+        var rowBase = cy*cols;
+        for(var cx=minCx; cx<=maxCx; cx++){
+            var cell = this.cells[cx + rowBase];
+            if(cell)for(var i=0; i<cell.length; i++)out.push(cell[i]);
+        }
+    }
+    //ordre croissant : reproduit l'ordre de l'ancien parcours 0..n-1, donc
+    //l'accumulation des forces (addition flottante, non associative) est
+    //IDENTIQUE au bit pres. Bonus : simulation deterministe et reproductible.
+    if(out.length>1)out.sort(function(a,b){return a-b;});
+    return out;
+};
+//(re)construit la grille a partir de `particles` et met a jour smaMaxRadius.
+//Appele une fois par image, au debut de chaque phase (positions = debut d'image).
+function buildSMAGrid(){
+    if(!canvas)return;
+    if(!smaGrid || smaGrid.cellSize!==SMA_GRID_CELL
+        || smaGrid.cols!==Math.max(1,Math.ceil(canvas.width/SMA_GRID_CELL))
+        || smaGrid.rows!==Math.max(1,Math.ceil(canvas.height/SMA_GRID_CELL))){
+        smaGrid = new SpatialGrid(canvas.width, canvas.height, SMA_GRID_CELL);
+    }
+    smaGrid.build(particles);
+    var mr = 1;
+    for(var i=0; i<particles.length; i++)if(particles[i].radius>mr)mr=particles[i].radius;
+    smaMaxRadius = mr;
+    smaGridReady = true;   //fiable a partir de maintenant (phase 2)
+}
+//====================================================================
+
 //prepare le canvas et les controles communs (menu reset/pause, touche 'p')
 function initSMA(w, h){
 
@@ -167,6 +249,13 @@ function removePreviousSelection(){
     }
 }
 function shareInformation(){
+
+    //PHASE 1 : pas de grille. Les agents bougent DEUX fois par image (deplacement
+    //en ligne dans SearchCommons... puis updateBeforeMerging) et se "wrappent"
+    //(checkEdgesV1) en cours d'image -> une grille figee en debut d'image
+    //deviendrait incoherente. Le cout O(n^2) reste faible ici : les agents sont
+    //ajoutes un par image, donc n est petit tant qu'on est en phase 1.
+    smaGridReady = false;
 
     for (var i=0; i<particles.length; i++) {
 
@@ -312,6 +401,8 @@ function sma_animation(){
 
 }
 function allowGrouping(){
+
+    buildSMAGrid();   //grille reconstruite en debut de phase (positions = debut d'image)
 
     for (var i=0; i<particles.length; i++) {
         //une particule ouverte (jaune) n'est plus agitee par le champ de bruit :

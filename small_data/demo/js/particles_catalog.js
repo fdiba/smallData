@@ -27,6 +27,12 @@ var BORDER_PUSH = .03;
 //en boucle a la couture. Le gris reapparait en retrait de cette marge du bord.
 var WRAP_MARGIN = 30;
 
+//Rayon de recherche d'un partenaire de fusion "de proximite" (px). Un agent
+//cherche d'abord avec qui merger dans ce voisinage (via la grille) ; s'il n'y a
+//aucun compatible aussi pres, il elargit a tout le canvas. Plus petit = structure
+//plus locale (clusters), fusion au loin plus tardive. Voir mergeNodesAndFindTarget.
+var MERGE_NEIGHBORHOOD = 260;
+
 function Particle(config){
 
 	this.canvasId=config.canvasId;
@@ -337,62 +343,25 @@ Particle.prototype.update = function(i, particles){
 }
 Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 
-	var maxDistance = 9999;
-	var target_id = -1;
-
-	var targetedAttrName = this.targetedAttr;
 	var targetedAttrValue = this[this.targetedAttr];
 
-	// console.log("targetedAttr: " + targetedAttrName + " " + targetedAttrValue);
+	//VOISINAGE D'ABORD : on cherche un partenaire compatible PRES de soi (via la
+	//grille, dans MERGE_NEIGHBORHOOD) ; s'il n'y a aucun compatible aussi pres, on
+	//ELARGIT a tout le canvas. Les agents se regroupent ainsi localement (clusters)
+	//avant de fusionner au loin -> le systeme se structure tout seul, organiquement.
+	//Le rayon couvre aussi les cas de "manger" (recouvrement, ~this.radius*2).
+	var qr = Math.max(MERGE_NEIGHBORHOOD, this.radius*2 + 2*smaMaxRadius) + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
 
-	for (var i=0; i<particles.length; i++) {
-
-		if(index!=i){
-
-			if(targetedAttrValue.localeCompare(particles[i][particles[i].targetedAttr])===0 &&
-				particles[i][particles[i].targetedAttr] !== ""){
-
-				// console.log(this.targetedAttr, " ", this[targetedAttr], " ", particles[i].targetedAttr);
-
-				var minDistance = Math.min(this.radius, particles[i].radius);
-				var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
-
-				//fusion au recouvrement total : un cercle ferme de meme propriete
-				//entierement recouvert par ce disque est absorbe
-				var engulfed = !particles[i].open &&
-					distance + particles[i].radius*2 <= this.radius*2;
-
-				//if two nodes are sharing the same property and are colliding
-				//and if the targeted particle has less child than this one --> eat it
-				if((distance<minDistance && this.records.length >= particles[i].records.length) || engulfed){
-
-					//TODO UPDATE IT ? radius to add
-			    	var val=this.radius_to_add; //conserve pour reference
-
-					for (var j=particles[i].records.length-1; j>=0; j--) {
-						var newRecord = particles[i].records.pop();
-						this.records.push(newRecord);
-					}
-
-					//la croissance vers le nouveau rayon se fait progressivement dans update()
-
-		    		particles[i].alive=false;
-		    		break;
-
-		    	//if the particle has less child than the target --> follow the target
-				} else if(this.records.length<=particles[i].records.length){
-
-					if(distance<maxDistance){
-						maxDistance=distance;
-						target_id=i;
-					}
-				}
-			}	
-		}
+	var t = this.seekMergeTarget(index, particles, cand, targetedAttrValue);   //1) voisinage
+	if(t===-2) return;                                                          //fusion faite
+	if(t<0 && cand){                                                            //2) rien pres -> plus loin
+		t = this.seekMergeTarget(index, particles, null, targetedAttrValue);
+		if(t===-2) return;
 	}
 
-	if(target_id>=0){
-		this.getCloserFrom(particles[target_id]);
+	if(t>=0){
+		this.getCloserFrom(particles[t]);
 	} else if(this.records.length>1){
 		//les regroupements (verts ET jaunes) s'ecartent des autres
 		//regroupements avec lesquels ils ne partagent pas la propriete ciblee
@@ -401,6 +370,46 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 		//un gris isole garde sa repulsion reactive
 		this.getAwayFrom(index, particles);
 	}
+}
+//Cherche un partenaire de fusion parmi `cand` (indices issus de la grille) ou,
+//si cand==null, parmi TOUS les agents. Meme propriete ciblee requise.
+//- MANGE (absorbe) un compatible recouvert/plus petit -> renvoie -2 (fusion faite) ;
+//- sinon renvoie l'index du compatible le PLUS PROCHE a suivre (>=0), ou -1 si aucun.
+Particle.prototype.seekMergeTarget = function(index, particles, cand, targetedAttrValue){
+
+	var maxDistance = 9999;
+	var target_id = -1;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
+		if(index===i)continue;
+
+		var p = particles[i];
+
+		if(targetedAttrValue.localeCompare(p[p.targetedAttr])!==0 || p[p.targetedAttr]==="")continue;
+
+		var minDistance = Math.min(this.radius, p.radius);
+		var distance = dist(this.x, p.x, this.y, p.y);
+
+		//fusion au recouvrement total : un cercle ferme de meme propriete
+		//entierement recouvert par ce disque est absorbe
+		var engulfed = !p.open && distance + p.radius*2 <= this.radius*2;
+
+		//meme propriete + collision + ce disque est le plus gros -> il MANGE l'autre
+		if((distance<minDistance && this.records.length >= p.records.length) || engulfed){
+
+			for (var j=p.records.length-1; j>=0; j--) this.records.push(p.records.pop());
+			p.alive=false;
+			return -2;   //fusion faite
+
+		//sinon, s'il est plus gros ou egal -> candidat a SUIVRE (le plus proche gagne)
+		} else if(this.records.length<=p.records.length){
+			if(distance<maxDistance){ maxDistance=distance; target_id=i; }
+		}
+	}
+	return target_id;
 }
 Particle.prototype.SearchCommonsAttrAndGetAwayFrom = function (arr, index){
 
@@ -480,7 +489,15 @@ Particle.prototype.getAwayFrom = function(index, particles){
 	var target_id = -1;
 	var target_numOfChilds = -1;
 
-	for (var i=0; i<particles.length; i++) {
+	//voisins candidats via la grille (rayon = seuil max conservateur + marge).
+	//Le filtrage exact ci-dessous redonne un resultat identique a l'ancien parcours.
+	var qr = this.radius*2 + 2*smaMaxRadius + 10 + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
 
 		if(index!==i
 			&& this[this.targetedAttr].localeCompare(particles[i][particles[i].targetedAttr])!==0){
@@ -693,7 +710,13 @@ Particle.prototype.drawLine = function(x1, y1, x2, y2, color){
 //vitesse par la taille du groupe
 Particle.prototype.getAwayFromGroups = function(index, particles){
 
-	for (var i=0; i<particles.length; i++) {
+	var qr = this.radius*2 + 2*smaMaxRadius + 28 + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
 
 		//les regroupements qui partagent la meme valeur de propriete sont des
 		//candidats a la fusion : on ne les repousse pas, on les laisse approcher
@@ -724,7 +747,13 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 //chevauchement, ignoree entre candidats a la fusion (meme valeur)
 Particle.prototype.separateFromLoners = function(index, particles){
 
-	for (var i=0; i<particles.length; i++) {
+	var qr = this.radius*2 + 2*smaMaxRadius + 12 + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
 
 		if(index!==i && particles[i].records.length===1){
 
@@ -758,8 +787,13 @@ Particle.prototype.updateMass = function(index, particles){
 
 	this.collMass *= COLL_DECAY;              //resorption progressive (temporaire)
 
+	var qr = this.radius*2 + 2*smaMaxRadius + COLL_MARGIN + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
 	var contacts = 0;
-	for (var i=0; i<particles.length; i++) {
+	for (var c=0; c<N; c++) {
+		var i = cand ? cand[c] : c;
 		if(index===i)continue;
 		var minTouch = this.radius*2 + particles[i].radius*2 + COLL_MARGIN;
 		var d = dist(this.x, particles[i].x, this.y, particles[i].y);
@@ -783,7 +817,15 @@ Particle.prototype.avoidGroupsAhead = function(index, particles){
 	var vx = this.velocity.x/speed, vy = this.velocity.y/speed;   //direction (unitaire)
 	var ahead = 85*this.scale;                   //distance d'anticipation
 
-	for (var i=0; i<particles.length; i++) {
+	//rayon de requete = portee maximale (ahead + rayons max) + marge : sur-ensemble
+	//des vrais voisins, le test exact `distance>reach` filtre ensuite a l'identique.
+	var qr = ahead + 2*smaMaxRadius + this.radius*2 + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
 
 		if(index===i)continue;
 

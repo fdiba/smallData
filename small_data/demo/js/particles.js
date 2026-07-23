@@ -19,6 +19,8 @@ var BORDER_PUSH = .03;
 //en boucle a la couture. Le gris reapparait en retrait de cette marge du bord.
 var WRAP_MARGIN = 30;
 
+var MERGE_NEIGHBORHOOD = 260;
+
 function Particle(config){
 
 	this.canvasId=config.canvasId;
@@ -422,7 +424,13 @@ Particle.prototype.getAwayFrom = function(index, particles){
 	var target_id = -1;
 	var target_numOfChilds = -1;
 
-	for (var i=0; i<particles.length; i++) {
+	var qr = this.radius*2 + 2*smaMaxRadius + 10 + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
 
 		if(index!==i
 			&& this.label.localeCompare(particles[i].label)!==0
@@ -465,59 +473,51 @@ Particle.prototype.getAwayFrom = function(index, particles){
 }
 Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 
-	var maxDistance = 9999;
-	var target_id = -1;
+	//VOISINAGE D'ABORD (voir catalog) : partenaire compatible proche via la grille,
+	//repli global si rien a proximite. Le systeme se structure localement.
+	var qr = Math.max(MERGE_NEIGHBORHOOD, this.radius*2 + 2*smaMaxRadius) + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
 
-	for (var i=0; i<particles.length; i++) {
-
-		//if(index!=i && this.ids.length>0 && particles[i].ids.length>0){
-		if(index!=i){
-
-			if(this.label.localeCompare(particles[i].label)===0){
-
-				var minDistance = Math.min(this.radius, particles[i].radius);
-				var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
-
-				//fusion au recouvrement total : un cercle ferme de meme label
-				//entierement recouvert par ce disque est absorbe
-				var engulfed = !particles[i].open &&
-					distance + particles[i].radius*2 <= this.radius*2;
-
-				//if two nodes are sharing the same property and are colliding
-				//and if the targeted particle has less child than this one --> eat it
-				if((distance<minDistance && this.ids.length >= particles[i].ids.length) || engulfed){
-
-					//TODO UPDATE IT ? radius to add
-		    		for (var j=particles[i].ids.length-1; j>=0; j--) {
-    					this.ids.push(particles[i].ids.pop());
-    					this.counts.push(particles[i].counts.pop());
-    				}
-
-		    		//la croissance vers le nouveau rayon se fait progressivement dans update()
-
-		    		particles[i].alive=false;
-		    		break;
-
-		    	//if the particle has less child than the target --> follow the target
-				//} else if(this.ids.length<=particles[i].ids.length){
-				} else if(this.ids.length<=particles[i].ids.length){
-
-					if(distance<maxDistance){
-						maxDistance=distance;
-						target_id=i;
-					}
-
-				}
-			}	
-		}
+	var t = this.seekMergeTarget(index, particles, cand);
+	if(t===-2) return;
+	if(t<0 && cand){
+		t = this.seekMergeTarget(index, particles, null);
+		if(t===-2) return;
 	}
 
-	if(target_id>=0)this.getCloserFrom(particles[target_id]);
+	if(t>=0)this.getCloserFrom(particles[t]);
 	//les regroupements (verts ET jaunes) s'ecartent des autres regroupements
 	//non compatibles ; un gris isole garde sa repulsion reactive
 	else if(this.ids.length>1)this.getAwayFromGroups(index, particles);
 	else this.getAwayFrom(index, particles);
-	
+}
+Particle.prototype.seekMergeTarget = function(index, particles, cand){
+
+	var maxDistance = 9999;
+	var target_id = -1;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
+		if(index===i)continue;
+
+		var p = particles[i];
+		if(this.label.localeCompare(p.label)!==0)continue;
+
+		var minDistance = Math.min(this.radius, p.radius);
+		var distance = dist(this.x, p.x, this.y, p.y);
+		var engulfed = !p.open && distance + p.radius*2 <= this.radius*2;
+
+		if((distance<minDistance && this.ids.length >= p.ids.length) || engulfed){
+			for (var j=p.ids.length-1; j>=0; j--){ this.ids.push(p.ids.pop()); this.counts.push(p.counts.pop()); }
+			p.alive=false;
+			return -2;
+		} else if(this.ids.length<=p.ids.length){
+			if(distance<maxDistance){ maxDistance=distance; target_id=i; }
+		}
+	}
+	return target_id;
 }
 Particle.prototype.display = function(){
 	
@@ -681,7 +681,13 @@ Particle.prototype.checkEdgesV2 = function(){
 //vitesse par la taille du groupe
 Particle.prototype.getAwayFromGroups = function(index, particles){
 
-	for (var i=0; i<particles.length; i++) {
+	var qr = this.radius*2 + 2*smaMaxRadius + 28 + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
 
 		//les regroupements qui partagent le meme label (pays) sont des
 		//candidats a la fusion : on ne les repousse pas, on les laisse approcher
@@ -711,7 +717,13 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 //chevauchement, ignoree entre candidats a la fusion (meme valeur)
 Particle.prototype.separateFromLoners = function(index, particles){
 
-	for (var i=0; i<particles.length; i++) {
+	var qr = this.radius*2 + 2*smaMaxRadius + 12 + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
 
 		if(index!==i && particles[i].ids.length===1){
 
@@ -832,7 +844,13 @@ Particle.prototype.avoidGroupsAhead = function(index, particles){
 	var vx = this.velocity.x/speed, vy = this.velocity.y/speed;
 	var ahead = 85*this.scale;
 
-	for (var i=0; i<particles.length; i++) {
+	var qr = ahead + 2*smaMaxRadius + this.radius*2 + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
 
 		if(index===i)continue;
 		var o = particles[i];
@@ -867,8 +885,13 @@ Particle.prototype.updateMass = function(index, particles){
 
 	this.collMass *= COLL_DECAY;
 
+	var qr = this.radius*2 + 2*smaMaxRadius + COLL_MARGIN + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
 	var contacts = 0;
-	for (var i=0; i<particles.length; i++) {
+	for (var c=0; c<N; c++) {
+		var i = cand ? cand[c] : c;
 		if(index===i)continue;
 		var minTouch = this.radius*2 + particles[i].radius*2 + COLL_MARGIN;
 		var d = dist(this.x, particles[i].x, this.y, particles[i].y);

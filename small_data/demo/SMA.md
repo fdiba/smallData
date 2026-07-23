@@ -3,7 +3,7 @@
 Document de référence pour comprendre et continuer à améliorer l'animation à
 agents (les « cercles ») utilisée dans les visualisations IMEB.
 
-Dernière mise à jour : 2026-07-22.
+Dernière mise à jour : 2026-07-23.
 
 ---
 
@@ -30,6 +30,13 @@ Le SMA anime un `<canvas>` où chaque **agent** (cercle) porte une ou plusieurs
 > (groupes) et l'**hystérésis du wrap** (gris) sont désormais sur les **quatre**
 > fichiers. **Non porté** : `particles_interactive_index.js` (modèle différent, à
 > « range », sans fusion/séparation classique — les réglages ne s'y appliquent pas).
+
+> **Grille spatiale (2026-07-23)** : les passes de voisinage de la **phase 2**
+> (séparation, évitement, masse de collision) n'examinent plus tous les agents mais
+> seulement ceux d'une **grille spatiale** — passage de O(n²) à ~O(n), **sans changer
+> le comportement** (résultat validé **bit-identique**). Détail en **§8**. Portée sur
+> les **quatre** SMA (catalog/award/euphonies via `sma_core.js` ; network via une copie
+> dans `network.js`).
 
 ---
 
@@ -339,7 +346,78 @@ Objectif : supprimer **entièrement** les téléportations d'un bord à l'autre 
 
 ---
 
-## 8. Points d'attention / pistes
+## 8. Grille spatiale (accélération O(n²) → ~O(n))
+
+En phase 2, plusieurs forces (`separateFromLoners`, `avoidGroupsAhead`,
+`updateMass`, `getAwayFrom`, `getAwayFromGroups`) parcouraient **tous** les agents
+à chaque image — soit ~4-5 passes en O(n²). À 400 agents c'est le coût dominant.
+La grille spatiale remplace ces parcours par des **requêtes locales**.
+
+**Où :** le noyau de la grille est dans `sma_core.js` (partagé par
+catalog/award/euphonies) ; `network.js` en a une **copie** (il ne charge pas
+`sma_core.js` et a sa propre boucle). Aucun nouveau fichier, aucun `<script>` en plus.
+
+**Comment ça marche :**
+- Le canvas est découpé en **cellules carrées** (`SMA_GRID_CELL`, défaut `80px`).
+  `buildSMAGrid()` (re)range tous les agents dans leur cellule **au début de chaque
+  image de phase 2** (dans `allowGrouping()`).
+- Chaque passe locale appelle `smaGrid.queryRadius(x, y, rayon, tampon)` qui ne
+  renvoie que les agents des cellules couvrant son rayon d'interaction, puis applique
+  **exactement le même test de distance qu'avant**. On n'examine plus ~400 agents
+  mais quelques voisins.
+
+**Iso-comportement (garanti, pas seulement « proche ») :** la grille ne fait que
+**pré-sélectionner des candidats**. Le rayon de requête est un **majorant
+conservateur** (rayon d'interaction max courant + marge `SMA_GRID_SLACK`, qui couvre
+le déplacement intra-image d'un voisin déjà mis à jour) → l'ensemble des candidats est
+un **sur-ensemble** des vrais voisins. Les candidats sont **triés par index croissant**
+pour reproduire l'ordre de l'ancien parcours, donc l'accumulation des forces (addition
+flottante, non associative) est **identique au bit près**. Validé **bit-identique**
+(écart max = 0, mêmes fusions, mêmes bornes, aucune oscillation) sur les 4 SMA, et
+sur plusieurs graines et tailles de cellule.
+
+**Phase 1 non gridée (volontaire) :** en phase 1 les agents bougent **deux fois par
+image** (déplacement en ligne dans `SearchCommons…` puis `updateBeforeMerging`) et se
+« wrappent » (`checkEdgesV1`) en cours d'image — une grille figée en début d'image y
+deviendrait incohérente. Le drapeau **`smaGridReady`** n'est vrai qu'en phase 2 ; en
+phase 1 les méthodes retombent sur le parcours complet (coût faible : les agents sont
+ajoutés un par image, `n` reste petit).
+
+**Fusion « voisinage d'abord » (2026-07-23) :** `mergeNodesAndFindTarget` ne
+parcourt plus tout le canvas. Il interroge la grille dans un **voisinage**
+(`MERGE_NEIGHBORHOOD`, défaut `260px`) pour trouver un partenaire compatible **près
+de soi** ; **seulement si** ce voisinage ne contient aucun compatible, il **élargit**
+à une passe globale (repli). Le « manger » (recouvrement) reste couvert car le rayon
+de requête englobe `this.radius*2`. La logique est isolée dans un helper
+`seekMergeTarget(index, particles, cand[, valeur])` appelé une première fois sur les
+candidats de la grille, une seconde (repli) sur tout le tableau. Résultat : les agents
+se regroupent **localement** (clusters) avant de fusionner au loin — le système se
+structure tout seul, organiquement — et la **phase 2 est désormais entièrement ~O(n)**
+(plus aucune passe globale systématique). Le repli global garantit la **convergence**
+(aucun isolé bloqué même si son seul compatible est loin).
+
+Validé (headless, même graine) : convergence **identique** au global d'origine
+(mêmes fusions, 1 cluster par valeur à terme, 0 isolé restant, 0 hors-borne, 0
+oscillation) sur les 4 SMA ; en pratique le partenaire le plus proche est presque
+toujours local, donc le regroupement reste le même **mais calculé localement**.
+
+**Gains mesurés (phase 2, headless, grille + fusion locale vs version d'origine, même
+graine) :** catalog ~**3,8×**, award ~**5,2×**, euphonies ~**5,2×**, network ~**3,4×**.
+(La grille seule donnait déjà ~4,4× ; la fusion locale y ajoute la localisation de la
+dernière passe globale.)
+
+**Réglages** (`sma_core.js`, et copie dans `network.js`) :
+
+| Constante | Rôle | Défaut |
+|---|---|---|
+| `SMA_USE_GRID` | `true` = grille ; `false` = ancien parcours O(n²) (comparaison/debug, comportement identique) | `true` |
+| `SMA_GRID_CELL` | taille d'une cellule (px) — réglage perf pur, sans effet sur le comportement | `80` |
+| `SMA_GRID_SLACK` | marge du rayon de requête (px) — couvre le déplacement intra-image d'un voisin | `16` |
+| `MERGE_NEIGHBORHOOD` (`particles_*.js`) | rayon de recherche d'un partenaire de fusion « de proximité » (px) ; en-dessous → recherche globale de repli | `260` |
+
+---
+
+## 9. Points d'attention / pistes
 
 - **Duplication** : `particles_catalog/award/euphonies.js` sont désormais
   synchronisés ; `particles.js` (network) l'est aussi, avec les mêmes valeurs que
@@ -357,17 +435,18 @@ Objectif : supprimer **entièrement** les téléportations d'un bord à l'autre 
   `max_extra_radius` de façon cohérente et un `else` simple : rien à changer.
   Rappel pour l'avenir : ne pas écrire `extra_rad==max_extra_rad` (jamais égal
   exactement car `extra_rad` dépasse `max_extra_rad` par pas de `open_step`).
-- **Coût** : plusieurs passes en O(n²) par image (fusion, séparation, évitement,
-  confinement). À 400 agents ça tient, mais pour aller plus haut il faudrait une
-  **grille spatiale** (n'examiner que les voisins d'une cellule) au lieu de tout
-  parcourir.
+- **Coût** : la **grille spatiale est en place** (§8) **et la fusion est « voisinage
+  d'abord »** — la **phase 2 est désormais entièrement ~O(n)**, plus aucune passe
+  globale systématique. Prochaine étape prévue : comportement **boids** (alignement +
+  cohésion sur les voisins de la grille) pour un mouvement encore plus organique.
+  `particles_interactive_index.js` n'a pas de grille (modèle différent).
 - **Idées de ressenti** : freinage progressif (et non seulement latéral) à
   l'approche d'un vert ; « personal space » léger autour de tous les verts, pas
   seulement ceux droit devant ; amortir davantage juste après une fusion.
 
 ---
 
-## 9. Comment tester sans base de données
+## 10. Comment tester sans base de données
 
 Un **harnais autoportant** peut charger les vrais `sma_core.js` +
 `particles_catalog.js` en simulant `retrieve_cat.php` : stubber `$.ajax` pour
@@ -375,3 +454,8 @@ renvoyer une chaîne `%`, fixer une graine (`Math.random`, `noise.seed`), pilote
 les images à la main (`sma_animation()` en boucle) et mesurer positions /
 vitesses / contacts. C'est ainsi qu'ont été validés les réglages du §7 (avant /
 après, graines identiques, en Chromium *headless*).
+
+La **grille spatiale** (§8) se valide de la même façon en comparant `SMA_USE_GRID = true`
+vs `false` à graine identique : les états doivent être **bit-identiques** (écart max = 0).
+C'est ce qui a été mesuré sur les quatre SMA (et sur plusieurs graines / tailles de
+cellule), en plus du gain de vitesse par image.
