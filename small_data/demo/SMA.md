@@ -401,6 +401,37 @@ Validé (headless, même graine) : convergence **identique** au global d'origine
 oscillation) sur les 4 SMA ; en pratique le partenaire le plus proche est presque
 toujours local, donc le regroupement reste le même **mais calculé localement**.
 
+**Suivi du plus proche, quelle que soit la taille (2026-07-23).** À l'origine un
+groupe ne « suivait » (ne se dirigeait vers) que les compatibles **plus gros ou
+égaux** (`this.records.length <= p.records.length`). Conséquence indésirable : un vert
+plus gros **ignorait** un voisin compatible plus petit — il ne l'absorbait qu'au
+contact — et partait vers un compatible **plus gros mais lointain**. Deux verts côte à
+côte de tailles différentes ne fusionnaient donc pas entre eux. Corrigé : dans
+`seekMergeTarget`, on suit désormais le compatible **le plus proche quelle que soit sa
+taille** (la règle « le plus gros absorbe le plus petit au contact » est inchangée).
+Deux compatibles voisins se rejoignent et fusionnent **avant** de viser un compatible
+plus loin. Vérifié sur un cas ciblé (A=6 et B=4 côte à côte, C=10 au loin) : A et B
+fusionnent sur place (survivant à ~x430) pendant que C reste au loin, puis le groupe
+issu de A+B rejoint C ensuite. Bonus : la convergence est **plus rapide** (plus de
+fusions locales par image), toujours 0 hors-borne. Appliqué aux **quatre** SMA
+(network : `ids.length`).
+
+**Attraction de fusion à pleine force pour les groupes (2026-07-23).** Effet de bord
+du « voisinage d'abord » : plusieurs clusters de **même valeur** peuvent se former, et
+s'ils sont gros ils **n'arrivaient plus à se rejoindre** (network : « plusieurs verts
+USA » qui stagnent). Cause : `getCloserFrom` (attraction vers la cible de fusion) était
+**divisée par la masse** dans `update()` — un gros cluster était donc attiré très
+faiblement, tandis que la dérive/bruit restaient à pleine force et dominaient. Correctif :
+`getCloserFrom` est **prémultipliée par la masse** (`records.length` / `ids.length`),
+comme le sont déjà la séparation et l'évitement — l'attraction survit à la division et
+les clusters de même valeur convergent à pleine vitesse (bornée par `maxSpeed`).
+Mesuré (network, cas dur : 200 agents d'un même label → 1 seul cluster attendu) : sans
+correctif, **stagnation à 2 clusters** de l'image ~500 à ~900 (jonction seulement vers
+1400) ; avec correctif, **fusion complète dès ~500**. Un **garde-fou dur** a été ajouté
+en fin d'`update()` (un groupe ne sort jamais du cadre) car une attraction forte près
+d'un bord pouvait faire déborder de quelques px le coussin de bord : 0 hors-borne
+après. Appliqué aux **quatre** SMA.
+
 **Gains mesurés (phase 2, headless, grille + fusion locale vs version d'origine, même
 graine) :** catalog ~**3,8×**, award ~**5,2×**, euphonies ~**5,2×**, network ~**3,4×**.
 (La grille seule donnait déjà ~4,4× ; la fusion locale y ajoute la localisation de la

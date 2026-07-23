@@ -13,9 +13,7 @@ authors:
     affiliation: "Université Gustave Eiffel"
 type: software
 repository-code: "https://github.com/fdiba/smallData"
-license: MIT
-version: 1.0.0
-date-released: "2026-07-21"
+license: PolyForm-Noncommercial-1.0.0
 keywords:
   - digital humanities
   - data visualisation
@@ -26,15 +24,16 @@ keywords:
 
 preferred-citation:
   type: conference-paper
-  title: "Retracing the story of Bourges's Institute of Electroacoustic Music through exploratory programming and live visualizations"
+  title: "Visualising the Multimedia Archives of Bourges's Institute of Electroacoustic Music"
   authors:
     - family-names: "Di Bartolo"
       given-names: "Florent"
       orcid: "https://orcid.org/0000-0002-4910-6936"
-  collection-title: "Proceedings of ISEA2017: 23rd International Symposium on Electronic Art"
+  collection-title: "EVA London 2017: Electronic Visualisation and the Arts"
+  publisher:
+    name: "BCS Learning and Development Ltd"
   location:
-    name: "Manizales, Colombia"
+    name: "London, UK"
   year: 2017
-  start: 391
-  end: 397
-  url: "https://hal.science/hal-01541237"
+  start: 138
+  end: 143

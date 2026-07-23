@@ -21,6 +21,8 @@ var WRAP_MARGIN = 30;
 
 var MERGE_NEIGHBORHOOD = 260;
 
+var MERGE_MASS_EXP = 0.25;
+
 function Particle(config){
 
 	this.canvasId=config.canvasId;
@@ -376,6 +378,12 @@ Particle.prototype.update = function(index, particles){
 	this.x+=this.velocity.x;
 	this.y+=this.velocity.y;
 
+	if(this.ids.length>1){
+		var W=this.canvas.width, H=this.canvas.height;
+		if(this.x<0)this.x=0; else if(this.x>W)this.x=W;
+		if(this.y<0)this.y=0; else if(this.y>H)this.y=H;
+	}
+
 	//les enfants (cercles bleus) suivent le deplacement de leur parent ouvert
 	for (var k=0; k<this.childs.length; k++) {
 		this.childs[k].x += this.velocity.x;
@@ -412,8 +420,9 @@ Particle.prototype.getCloserFrom = function(target){
 	var x = target.x - this.x;
 	var y = target.y - this.y;
 
-	x *= 0.3;
-	y *= 0.3;
+	var m = Math.pow(this.ids.length, MERGE_MASS_EXP);
+	x *= 0.3 * m;
+	y *= 0.3 * m;
 
 	this.velocity.x += x;
 	this.velocity.y += y;
@@ -513,7 +522,7 @@ Particle.prototype.seekMergeTarget = function(index, particles, cand){
 			for (var j=p.ids.length-1; j>=0; j--){ this.ids.push(p.ids.pop()); this.counts.push(p.counts.pop()); }
 			p.alive=false;
 			return -2;
-		} else if(this.ids.length<=p.ids.length){
+		} else {
 			if(distance<maxDistance){ maxDistance=distance; target_id=i; }
 		}
 	}

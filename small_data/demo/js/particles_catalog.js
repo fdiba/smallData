@@ -331,6 +331,16 @@ Particle.prototype.update = function(i, particles){
 	this.x+=this.velocity.x;
 	this.y+=this.velocity.y;
 
+	//garde-fou dur : un GROUPE (vert/jaune) ne sort jamais du cadre. Le coussin de
+	//bord (checkEdgesV2) le freine en douceur, mais une attraction de fusion forte
+	//pres d'un bord pouvait le faire deborder de quelques px -> on rattrape ici le
+	//depassement residuel. Invisible en pratique (n'agit que sur le rare debordement).
+	if(this.records.length>1){
+		var W=this.canvas.width, H=this.canvas.height;
+		if(this.x<0)this.x=0; else if(this.x>W)this.x=W;
+		if(this.y<0)this.y=0; else if(this.y>H)this.y=H;
+	}
+
 	//les enfants (cercles bleus) suivent le deplacement de leur parent ouvert
 	for (var k=0; k<this.childs.length; k++) {
 		this.childs[k].x += this.velocity.x;
@@ -404,8 +414,13 @@ Particle.prototype.seekMergeTarget = function(index, particles, cand, targetedAt
 			p.alive=false;
 			return -2;   //fusion faite
 
-		//sinon, s'il est plus gros ou egal -> candidat a SUIVRE (le plus proche gagne)
-		} else if(this.records.length<=p.records.length){
+		//sinon : candidat a SUIVRE (le plus proche gagne), QUELLE QUE SOIT sa taille.
+		//Auparavant on ne suivait que les compatibles plus gros/egaux : un vert plus
+		//gros ignorait donc un voisin compatible plus petit et filait vers un compatible
+		//lointain. Desormais deux compatibles cote a cote se rejoignent et fusionnent
+		//avant de viser un compatible plus loin (le "manger" ci-dessus gere qui absorbe
+		//qui au contact). Un gris (records=1) suivait deja le plus proche : inchange.
+		} else {
 			if(distance<maxDistance){ maxDistance=distance; target_id=i; }
 		}
 	}
@@ -477,8 +492,15 @@ Particle.prototype.getCloserFrom = function(target){
 	var x = target.x - this.x;
 	var y = target.y - this.y;
 
-	x *= 0.3;
-	y *= 0.3;
+	//attraction de fusion PREMULTIPLIEE par la masse (comme la separation et
+	//l'evitement) : update() divise la vitesse par records.length, ce qui, sans
+	//compensation, rendait un gros cluster quasi immobile -> deux gros clusters de
+	//meme valeur n'arrivaient plus a se rejoindre (la derive/bruit dominait). Avec
+	//la premultiplication, l'attraction survit a la division -> les clusters de meme
+	//valeur convergent a pleine vitesse (bornee par maxSpeed) et se consolident.
+	var m = this.records.length;
+	x *= 0.3 * m;
+	y *= 0.3 * m;
 
 	this.velocity.x += x;
 	this.velocity.y += y;

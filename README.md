@@ -83,7 +83,7 @@ The project is documented in the following publications:
 
 ## License
 
-The **source code** of this project (the PHP pages, the JavaScript visualisations and the Processing sketches written for it) is released under the MIT License — see [`LICENSE`](LICENSE).
+The **source code** of this project (the PHP pages, the JavaScript visualisations and the Processing sketches written for it) is released under the **PolyForm Noncommercial License 1.0.0** — see [`LICENSE`](LICENSE). It may be used, modified and shared for any noncommercial purpose (personal use, research, teaching, and noncommercial organisations), with the required copyright notice preserved. **Commercial use is not permitted** under this licence; for commercial licensing, please contact the author.
 
 The project's **data** is not distributed in this repository: the application reads it from a MySQL database built from the sources described under *Running the application*. That dataset was compiled from the records of the international competitions organised by the IMEB, gathered by Christian Clozier and Françoise Barrière, whose archives were donated to the *Bibliothèque nationale de France*; the underlying documents and works remain the property of their respective rights holders. Should the data be redistributed, please do so under the [Creative Commons Attribution 4.0 International licence (CC-BY 4.0)](https://creativecommons.org/licenses/by/4.0/) — with appropriate credit — and in respect of those rights.
 

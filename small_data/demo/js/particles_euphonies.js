@@ -29,6 +29,11 @@ var WRAP_MARGIN = 30;
 
 var MERGE_NEIGHBORHOOD = 260;
 
+//Compensation de masse de l'attraction de fusion (getCloserFrom). 0 = aucune
+//(comportement d'origine : gros = lents, ORGANIQUE) ; 1 = totale (uniforme,
+//robotique) ; entre = compromis. Reglable.
+var MERGE_MASS_EXP = 0;
+
 function Particle(config){
 
 	this.canvasId=config.canvasId;
@@ -382,7 +387,7 @@ Particle.prototype.seekMergeTarget = function(index, particles, cand, targetedAt
 			for (var j=p.records.length-1; j>=0; j--) this.records.push(p.records.pop());
 			p.alive=false;
 			return -2;
-		} else if(this.records.length<=p.records.length){
+		} else {
 			if(distance<maxDistance){ maxDistance=distance; target_id=i; }
 		}
 	}
@@ -454,8 +459,9 @@ Particle.prototype.getCloserFrom = function(target){
 	var x = target.x - this.x;
 	var y = target.y - this.y;
 
-	x *= 0.3;
-	y *= 0.3;
+	var m = Math.pow(this.records.length, MERGE_MASS_EXP);
+	x *= 0.3 * m;
+	y *= 0.3 * m;
 
 	this.velocity.x += x;
 	this.velocity.y += y;
@@ -574,6 +580,12 @@ Particle.prototype.updateBeforeMerging = function(){
 
 	this.x+=this.velocity.x;
 	this.y+=this.velocity.y;
+
+	if(this.records.length>1){
+		var W=this.canvas.width, H=this.canvas.height;
+		if(this.x<0)this.x=0; else if(this.x>W)this.x=W;
+		if(this.y<0)this.y=0; else if(this.y>H)this.y=H;
+	}
 
 	this.velocity.x*=.9;
 	this.velocity.y*=.9;
