@@ -33,6 +33,15 @@ var WRAP_MARGIN = 30;
 //plus locale (clusters), fusion au loin plus tardive. Voir mergeNodesAndFindTarget.
 var MERGE_NEIGHBORHOOD = 260;
 
+//Compensation de masse de l'attraction de fusion (getCloserFrom). 0 = aucune
+//(comportement d'origine : gros = lents, mouvement ORGANIQUE ; catalog/award/
+//euphonies se consolident tres bien ainsi) ; 1 = totale (tous a maxSpeed,
+//mouvement uniforme/robotique) ; entre les deux = compromis. Sur catalog l'exp 0
+//donne deja ~64% du temps sous maxSpeed avec une bonne variance -> on le garde.
+//(network, dont les groupes ont maxSpeed=2, utilise 0.25 pour se rejoindre plus
+//vite sans devenir robotique.)
+var MERGE_MASS_EXP = 0;
+
 function Particle(config){
 
 	this.canvasId=config.canvasId;
@@ -492,13 +501,15 @@ Particle.prototype.getCloserFrom = function(target){
 	var x = target.x - this.x;
 	var y = target.y - this.y;
 
-	//attraction de fusion PREMULTIPLIEE par la masse (comme la separation et
-	//l'evitement) : update() divise la vitesse par records.length, ce qui, sans
-	//compensation, rendait un gros cluster quasi immobile -> deux gros clusters de
-	//meme valeur n'arrivaient plus a se rejoindre (la derive/bruit dominait). Avec
-	//la premultiplication, l'attraction survit a la division -> les clusters de meme
-	//valeur convergent a pleine vitesse (bornee par maxSpeed) et se consolident.
-	var m = this.records.length;
+	//attraction de fusion compensee PARTIELLEMENT en fonction de la masse.
+	//update() divise la vitesse par records.length : sans compensation (exposant 0)
+	//un gros cluster est quasi immobile -> les clusters de meme valeur ne se
+	//rejoignent plus. Compensation TOTALE (exposant 1) -> tous filent a maxSpeed =
+	//mouvement uniforme, robotique, on perd l'organique. Compromis : exposant 0.5
+	//(racine) -> acceleration ~ 1/sqrt(masse), les gros restent plus LENTS que les
+	//petits (organique preserve) mais assez tires pour finir par se rejoindre.
+	//Regler via MERGE_MASS_EXP (haut du fichier).
+	var m = Math.pow(this.records.length, MERGE_MASS_EXP);
 	x *= 0.3 * m;
 	y *= 0.3 * m;
 
