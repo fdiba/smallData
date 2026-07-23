@@ -348,11 +348,15 @@ Objectif : supprimer **entièrement** les téléportations d'un bord à l'autre 
   quatre fichiers (+ `network.js` pour le bruit de phase 2, qui vit dans sa boucle
   propre, pas dans `sma_core.js`). `particles_interactive_index.js` suit un autre
   modèle. À terme, envisager de **factoriser** un cœur commun paramétré.
-- **Bug latent** : dans `update()`, la branche `else if(this.extra_radius==this.max_extra_radius)`
-  teste `extra_radius`/`max_extra_radius` (avec un « i ») alors que les champs
-  s'appellent `extra_rad`/`max_extra_rad`. La condition est donc toujours fausse
-  (marqué `TODO BUG` dans le code) ; la sortie d'ouverture se fait par la
-  croissance de rayon, mais ça mériterait d'être nettoyé.
+- **Bug latent — CORRIGÉ (2026-07)** : dans `update()`, bloc `if(this.opening){…}`,
+  la branche de fin d'ouverture testait `else if(this.extra_radius==this.max_extra_radius)`
+  (champs avec un « i » qui n'existent pas ; les vrais sont `extra_rad`/`max_extra_rad`).
+  Les deux valaient `undefined`, et `undefined==undefined` vaut `true`, donc ça
+  « marchait » par accident. Remplacé par un simple **`} else {`** sur catalog,
+  award et euphonies. `particles.js` (network) utilisait déjà `extra_radius`/
+  `max_extra_radius` de façon cohérente et un `else` simple : rien à changer.
+  Rappel pour l'avenir : ne pas écrire `extra_rad==max_extra_rad` (jamais égal
+  exactement car `extra_rad` dépasse `max_extra_rad` par pas de `open_step`).
 - **Coût** : plusieurs passes en O(n²) par image (fusion, séparation, évitement,
   confinement). À 400 agents ça tient, mais pour aller plus haut il faudrait une
   **grille spatiale** (n'examiner que les voisins d'une cellule) au lieu de tout

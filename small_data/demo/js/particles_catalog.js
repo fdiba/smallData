@@ -265,7 +265,7 @@ Particle.prototype.update = function(i, particles){
 			
 			// console.log(this.radius, " ", this.extra_radius);
 		
-		} else if(this.extra_radius==this.max_extra_radius){ //TODO BUG ERASE SUDDEN RADIUS BUMP!!!
+		} else {   //extra_rad a atteint/depasse max_extra_rad : fin de l'ouverture
 
 			this.opening=false;
 
