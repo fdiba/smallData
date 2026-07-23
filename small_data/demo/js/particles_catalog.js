@@ -19,6 +19,23 @@ var GREY_REPULSION = .1;
 //dosee par l'alignement). Stable, ne peut pas provoquer d'oscillation.
 var AVOID_STRENGTH = 1.4;
 
+//Separation entre groupes (verts/jaunes) NON compatibles : force de repulsion et
+//marge de respiration (px). Monter GROUP_REPULSION = les verts se traversent moins
+//(se collent a cote au lieu de passer au travers) ; GROUP_MARGIN = espace garde.
+var GROUP_REPULSION = .2;
+var GROUP_MARGIN = 28;
+
+//Vitesse minimale (px/image) garantie VERS le partenaire de fusion le plus proche :
+//un compatible ne recule jamais par rapport a sa cible -> deux groupes compatibles
+//eloignes se rejoignent inexorablement, meme a travers une foule, sans aller plus
+//vite. 0 = desactive (ancien comportement, ou les gros pouvaient rester bloques).
+var MERGE_CREEP = .4;
+
+//Priorite de passage par la masse : le plus lourd va tout droit, le plus leger fait
+//le tour. Applique a la separation entre groupes et a l'evitement anticipe.
+//0 = symetrique (comme avant) ; 1 = priorite pleine (defaut).
+var MASS_PRIORITY = 1;
+
 //Raideur du "coussin" de bord pour les groupes (verts/jaunes) : ressort doux
 //perpendiculaire au mur, proportionnel a l'enfoncement. Monter = bord plus ferme.
 var BORDER_PUSH = .03;
@@ -239,6 +256,9 @@ Particle.prototype.getInfoFrom=function(target){
 }
 Particle.prototype.update = function(i, particles){
 
+	this.mHas=false;   //remis a vrai par mergeNodesAndFindTarget s'il a une cible de fusion
+	this.yieldW=0;     //0..1 : a quel point cet agent CEDE a un non-compatible plus lourd (suspend le creep)
+
 	//derive lente et continue : les regroupements ne deviennent jamais
 	//totalement immobiles, meme quand plus rien ne fusionne
 	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
@@ -262,6 +282,13 @@ Particle.prototype.update = function(i, particles){
 	//Applique aux GRIS comme aux groupes (verts/jaunes). Note : update() n'est
 	//appele qu'en phase 2 -> la masse n'est jamais modifiee en phase 1.
 	this.updateMass(i, particles);
+
+	//separation entre groupes non compatibles : TOUJOURS active (meme quand ce
+	//groupe poursuit une cible de fusion). Sans ca, un vert en train de rejoindre
+	//son partenaire traversait les autres verts sur son chemin. Desormais il les
+	//CONTOURNE / se colle a cote au lieu de passer au travers. Les groupes de meme
+	//valeur ne sont pas repousses (getAwayFromGroups les ignore) -> ils fusionnent.
+	if(this.records.length>1)this.getAwayFromGroups(i, particles);
 
 	if(this.opening){
 
@@ -332,6 +359,27 @@ Particle.prototype.update = function(i, particles){
 	this.velocity.x /= this.records.length;
     this.velocity.y /= this.records.length;
 
+	//APPROCHE INEXORABLE vers la cible de fusion : on garantit une composante de
+	//vitesse minimale (MERGE_CREEP) DIRIGEE vers le partenaire compatible. Le
+	//mouvement tangentiel (contourner les autres groupes) reste libre, mais l'agent
+	//ne RECULE jamais par rapport a sa cible -> deux gros verts compatibles finissent
+	//toujours par se rejoindre, meme a travers une foule (ils se frayent un chemin),
+	//SANS avoir besoin d'aller plus vite. N'agit que quand il est freine/bloque
+	//(sinon l'attraction donne deja plus que le creep).
+	if(this.mHas){
+		var mdx=this.mTX-this.x, mdy=this.mTY-this.y, mdl=Math.sqrt(mdx*mdx+mdy*mdy);
+		if(mdl>1){
+			var mux=mdx/mdl, muy=mdy/mdl;
+			var vin=this.velocity.x*mux + this.velocity.y*muy;   //composante vers la cible
+			//creep SUSPENDU quand l'agent cede a un non-compatible plus lourd (yieldW->1) :
+			//il n'insiste pas tout droit, il est libre de CONTOURNER ; une fois degage
+			//(yieldW->0) le creep reprend a plein -> approche inexorable reprise.
+			var yw=this.yieldW; if(yw>1)yw=1; else if(yw<0)yw=0;
+			var creepEff=MERGE_CREEP*(1-yw);
+			if(vin<creepEff){ var add=creepEff-vin; this.velocity.x+=mux*add; this.velocity.y+=muy*add; }
+		}
+	}
+
     var maxSpeed = this.maxSpeed;
 
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
@@ -381,14 +429,15 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 
 	if(t>=0){
 		this.getCloserFrom(particles[t]);
-	} else if(this.records.length>1){
-		//les regroupements (verts ET jaunes) s'ecartent des autres
-		//regroupements avec lesquels ils ne partagent pas la propriete ciblee
-		this.getAwayFromGroups(index, particles);
-	} else {
+		//memorise la cible pour l'approche inexorable (creep) appliquee dans update()
+		this.mTX=particles[t].x; this.mTY=particles[t].y; this.mHas=true;
+	} else if(this.records.length===1){
 		//un gris isole garde sa repulsion reactive
 		this.getAwayFrom(index, particles);
 	}
+	//NB : la separation entre groupes non compatibles est desormais appliquee a
+	//CHAQUE image dans update() (et plus seulement ici quand il n'y a pas de cible)
+	//-> les verts se contournent meme en pleine poursuite d'une fusion.
 }
 //Cherche un partenaire de fusion parmi `cand` (indices issus de la grille) ou,
 //si cand==null, parmi TOUS les agents. Meme propriete ciblee requise.
@@ -743,7 +792,7 @@ Particle.prototype.drawLine = function(x1, y1, x2, y2, color){
 //vitesse par la taille du groupe
 Particle.prototype.getAwayFromGroups = function(index, particles){
 
-	var qr = this.radius*2 + 2*smaMaxRadius + 28 + SMA_GRID_SLACK;
+	var qr = this.radius*2 + 2*smaMaxRadius + GROUP_MARGIN + SMA_GRID_SLACK;
 	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
 	var N = cand ? cand.length : particles.length;
 
@@ -758,8 +807,8 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 
 		if(index!==i && particles[i].records.length>1 && !sameValue){
 
-			//marge de respiration entre groupes non compatibles (etait +10)
-			var minDistance = this.radius*2 + particles[i].radius*2 + 28;
+			//marge de respiration entre groupes non compatibles
+			var minDistance = this.radius*2 + particles[i].radius*2 + GROUP_MARGIN;
 			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
 
 			if(distance<minDistance && distance>0){
@@ -767,7 +816,20 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 				var x = (particles[i].x - this.x)/distance;
 				var y = (particles[i].y - this.y)/distance;
 
-				var push = (minDistance - distance)*.05*this.records.length;
+				//PRIORITE PAR LA MASSE : le plus LOURD tient son cap (va tout droit),
+				//le plus LEGER fait le tour. yieldF = 1 si masses egales (comportement
+				//inchange), ->2 si ce groupe est plus leger que le voisin (il cede plus),
+				//->0 s'il est plus lourd (il ne bouge quasiment pas). MASS_PRIORITY dose
+				//l'effet (0 = symetrique comme avant).
+				var mThis=this.records.length, mO=particles[i].records.length;
+				var yieldF = (1-MASS_PRIORITY) + MASS_PRIORITY*(2*mO/(mThis+mO));
+
+				//a quel point CE groupe est plus leger que ce voisin (0 si egal/plus lourd,
+				//->1 si beaucoup plus leger) : sert a suspendre son creep pour contourner.
+				var w = MASS_PRIORITY*((2*mO/(mThis+mO)) - 1);
+				if(w>this.yieldW)this.yieldW=w;
+
+				var push = (minDistance - distance)*GROUP_REPULSION*this.records.length*yieldF;
 
 				this.velocity.x -= x*push;
 				this.velocity.y -= y*push;
@@ -889,7 +951,15 @@ Particle.prototype.avoidGroupsAhead = function(index, particles){
 		var proximity = 1 - distance/reach;      //0..1
 		//premultiplie par records.length car update() divise la vitesse par la
 		//masse : sans ca un GROUPE (lourd) n'esquiverait quasiment pas.
-		var push = proximity*align*AVOID_STRENGTH*this.scale*this.records.length;
+		//PRIORITE PAR LA MASSE : un agent leger esquive FORT l'obstacle plus lourd
+		//(il fait le tour) ; un agent plus lourd que l'obstacle l'esquive a peine (il
+		//va tout droit et c'est l'autre qui s'ecarte). yieldF = 1 si masses egales.
+		var mThis=this.records.length, mO=o.records.length;
+		var yieldF = (1-MASS_PRIORITY) + MASS_PRIORITY*(2*mO/(mThis+mO));
+		//obstacle plus lourd DEVANT soi -> on cede : suspend le creep pour contourner
+		var wa = MASS_PRIORITY*((2*mO/(mThis+mO)) - 1);
+		if(wa>this.yieldW)this.yieldW=wa;
+		var push = proximity*align*AVOID_STRENGTH*this.scale*this.records.length*yieldF;
 
 		//RADIALE (s'ecarter) + TANGENTIELLE (contourner) : quand la cible est
 		//droit derriere l'obstacle, la seule composante radiale freine sans

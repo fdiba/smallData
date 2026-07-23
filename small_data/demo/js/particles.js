@@ -23,6 +23,20 @@ var MERGE_NEIGHBORHOOD = 260;
 
 var MERGE_MASS_EXP = 0.25;
 
+//Separation entre groupes NON compatibles : force + marge (px). Monter
+//GROUP_REPULSION = les verts se traversent moins (se collent a cote).
+var GROUP_REPULSION = .35;
+var GROUP_MARGIN = 45;
+
+//Vitesse min (px/image) garantie VERS le partenaire de fusion : un compatible
+//ne recule jamais -> les groupes eloignes se rejoignent inexorablement, meme
+//a travers une foule, sans aller plus vite. 0 = desactive.
+var MERGE_CREEP = .8;
+
+//Priorite de passage par la masse : le plus lourd va tout droit, le plus
+//leger fait le tour. 0 = symetrique (avant) ; 1 = priorite pleine.
+var MASS_PRIORITY = 1;
+
 function Particle(config){
 
 	this.canvasId=config.canvasId;
@@ -266,6 +280,8 @@ Particle.prototype.drawLine = function(x1, y1, x2, y2, color){
 }
 Particle.prototype.update = function(index, particles){
 
+	this.mHas=false; this.yieldW=0;
+
 	//derive lente et continue : les regroupements ne deviennent jamais
 	//totalement immobiles, meme quand plus rien ne fusionne
 	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
@@ -288,6 +304,10 @@ Particle.prototype.update = function(index, particles){
 	//(gris ET groupes) -> la masse se resorbe aussi sur les groupes, sinon un
 	//groupe herite d'une collMass figee et devient immobile.
 	this.updateMass(index, particles);
+
+	//separation entre groupes non compatibles : TOUJOURS active (meme en
+	//poursuite d'une fusion) -> les verts se contournent au lieu de se traverser.
+	if(this.ids.length>1)this.getAwayFromGroups(index, particles);
 
 	if(this.opening){
 
@@ -368,6 +388,16 @@ Particle.prototype.update = function(index, particles){
 
     this.velocity.x /= this.ids.length;
     this.velocity.y /= this.ids.length;
+
+    //approche inexorable vers la cible de fusion (voir catalog) : composante de
+    //vitesse minimale garantie vers le partenaire, jamais reculer.
+    if(this.mHas){
+        var mdx=this.mTX-this.x, mdy=this.mTY-this.y, mdl=Math.sqrt(mdx*mdx+mdy*mdy);
+        if(mdl>1){
+            var mux=mdx/mdl, muy=mdy/mdl, vin=this.velocity.x*mux+this.velocity.y*muy;
+            var yw=this.yieldW; if(yw>1)yw=1; else if(yw<0)yw=0; var creepEff=MERGE_CREEP*(1-yw); if(vin<creepEff){ var madd=creepEff-vin; this.velocity.x+=mux*madd; this.velocity.y+=muy*madd; }
+        }
+    }
 
     //vitesses etagees : ouvert tres calme, vert pose, gris tranquille
     var maxSpeed = this.open ? 1.2 : (this.ids.length>1 ? 2. : 2.8);
@@ -494,11 +524,10 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 		if(t===-2) return;
 	}
 
-	if(t>=0)this.getCloserFrom(particles[t]);
-	//les regroupements (verts ET jaunes) s'ecartent des autres regroupements
-	//non compatibles ; un gris isole garde sa repulsion reactive
-	else if(this.ids.length>1)this.getAwayFromGroups(index, particles);
-	else this.getAwayFrom(index, particles);
+	if(t>=0){ this.getCloserFrom(particles[t]); this.mTX=particles[t].x; this.mTY=particles[t].y; this.mHas=true; }
+	//un gris isole garde sa repulsion reactive ; la separation entre groupes
+	//non compatibles est desormais TOUJOURS active (dans update())
+	else if(this.ids.length===1)this.getAwayFrom(index, particles);
 }
 Particle.prototype.seekMergeTarget = function(index, particles, cand){
 
@@ -690,7 +719,7 @@ Particle.prototype.checkEdgesV2 = function(){
 //vitesse par la taille du groupe
 Particle.prototype.getAwayFromGroups = function(index, particles){
 
-	var qr = this.radius*2 + 2*smaMaxRadius + 28 + SMA_GRID_SLACK;
+	var qr = this.radius*2 + 2*smaMaxRadius + GROUP_MARGIN + SMA_GRID_SLACK;
 	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
 	var N = cand ? cand.length : particles.length;
 
@@ -705,7 +734,7 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 
 		if(index!==i && particles[i].ids.length>1 && !sameValue){
 
-			var minDistance = this.radius*2 + particles[i].radius*2 + 28;
+			var minDistance = this.radius*2 + particles[i].radius*2 + GROUP_MARGIN;
 			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
 
 			if(distance<minDistance && distance>0){
@@ -713,7 +742,9 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 				var x = (particles[i].x - this.x)/distance;
 				var y = (particles[i].y - this.y)/distance;
 
-				var push = Math.min((minDistance - distance)*.03, 1.)*this.ids.length;
+				var mThis=this.ids.length, mO=particles[i].ids.length;
+				var yieldF = (1-MASS_PRIORITY) + MASS_PRIORITY*(2*mO/(mThis+mO)); var wg = MASS_PRIORITY*((2*mO/(mThis+mO))-1); if(wg>this.yieldW)this.yieldW=wg;
+				var push = (minDistance - distance)*GROUP_REPULSION*this.ids.length*yieldF;
 
 				this.velocity.x -= x*push;
 				this.velocity.y -= y*push;
@@ -877,7 +908,9 @@ Particle.prototype.avoidGroupsAhead = function(index, particles){
 		if(align<=0)continue;
 
 		var proximity = 1 - distance/reach;
-		var push = proximity*align*AVOID_STRENGTH*this.scale*this.ids.length;
+		var mThisA=this.ids.length, mOA=o.ids.length;
+		var yieldFA = (1-MASS_PRIORITY) + MASS_PRIORITY*(2*mOA/(mThisA+mOA)); var wa = MASS_PRIORITY*((2*mOA/(mThisA+mOA))-1); if(wa>this.yieldW)this.yieldW=wa;
+		var push = proximity*align*AVOID_STRENGTH*this.scale*this.ids.length*yieldFA;
 		//radiale (s'ecarter) + tangentielle (contourner) ; cote choisi par la
 		//direction de l'obstacle (stable) -> pas d'oscillation.
 		var ux = dx/distance, uy = dy/distance;

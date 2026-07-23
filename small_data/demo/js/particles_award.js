@@ -34,6 +34,20 @@ var MERGE_NEIGHBORHOOD = 260;
 //robotique) ; entre = compromis. Reglable.
 var MERGE_MASS_EXP = 0;
 
+//Separation entre groupes NON compatibles : force + marge (px). Monter
+//GROUP_REPULSION = les verts se traversent moins (se collent a cote).
+var GROUP_REPULSION = .2;
+var GROUP_MARGIN = 28;
+
+//Vitesse min (px/image) garantie VERS le partenaire de fusion : un compatible
+//ne recule jamais -> les groupes eloignes se rejoignent inexorablement, meme
+//a travers une foule, sans aller plus vite. 0 = desactive.
+var MERGE_CREEP = .4;
+
+//Priorite de passage par la masse : le plus lourd va tout droit, le plus
+//leger fait le tour. 0 = symetrique (avant) ; 1 = priorite pleine.
+var MASS_PRIORITY = 1;
+
 function Particle(config){
 
 	this.canvasId=config.canvasId;
@@ -228,6 +242,8 @@ Particle.prototype.getInfoFrom=function(target){
 }
 Particle.prototype.update = function(i, particles){
 
+	this.mHas=false; this.yieldW=0;   //remis a vrai par mergeNodesAndFindTarget
+
 	//derive lente et continue : les regroupements ne deviennent jamais
 	//totalement immobiles, meme quand plus rien ne fusionne
 	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
@@ -251,6 +267,10 @@ Particle.prototype.update = function(i, particles){
 	//Applique aux GRIS comme aux groupes (verts/jaunes). Note : update() n'est
 	//appele qu'en phase 2 -> la masse n'est jamais modifiee en phase 1.
 	this.updateMass(i, particles);
+
+	//separation entre groupes non compatibles : TOUJOURS active (meme en
+	//poursuite d'une fusion) -> les verts se contournent au lieu de se traverser.
+	if(this.records.length>1)this.getAwayFromGroups(i, particles);
 
 	if(this.opening){
 
@@ -321,6 +341,16 @@ Particle.prototype.update = function(i, particles){
 	this.velocity.x /= this.records.length;
     this.velocity.y /= this.records.length;
 
+	//approche inexorable vers la cible de fusion (voir catalog) : composante de
+	//vitesse minimale garantie vers le partenaire, jamais reculer.
+	if(this.mHas){
+		var mdx=this.mTX-this.x, mdy=this.mTY-this.y, mdl=Math.sqrt(mdx*mdx+mdy*mdy);
+		if(mdl>1){
+			var mux=mdx/mdl, muy=mdy/mdl, vin=this.velocity.x*mux+this.velocity.y*muy;
+			var yw=this.yieldW; if(yw>1)yw=1; else if(yw<0)yw=0; var creepEff=MERGE_CREEP*(1-yw); if(vin<creepEff){ var madd=creepEff-vin; this.velocity.x+=mux*madd; this.velocity.y+=muy*madd; }
+		}
+	}
+
     var maxSpeed = this.maxSpeed;
 
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
@@ -358,9 +388,8 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 
 	if(t>=0){
 		this.getCloserFrom(particles[t]);
-	} else if(this.records.length>1){
-		this.getAwayFromGroups(index, particles);
-	} else {
+		this.mTX=particles[t].x; this.mTY=particles[t].y; this.mHas=true;
+	} else if(this.records.length===1){
 		this.getAwayFrom(index, particles);
 	}
 }
@@ -699,7 +728,7 @@ Particle.prototype.drawLine = function(x1, y1, x2, y2, color){
 //vitesse par la taille du groupe
 Particle.prototype.getAwayFromGroups = function(index, particles){
 
-	var qr = this.radius*2 + 2*smaMaxRadius + 28 + SMA_GRID_SLACK;
+	var qr = this.radius*2 + 2*smaMaxRadius + GROUP_MARGIN + SMA_GRID_SLACK;
 	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
 	var N = cand ? cand.length : particles.length;
 
@@ -715,7 +744,7 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 		if(index!==i && particles[i].records.length>1 && !sameValue){
 
 			//marge de respiration entre groupes non compatibles (etait +10)
-			var minDistance = this.radius*2 + particles[i].radius*2 + 28;
+			var minDistance = this.radius*2 + particles[i].radius*2 + GROUP_MARGIN;
 			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
 
 			if(distance<minDistance && distance>0){
@@ -723,7 +752,9 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 				var x = (particles[i].x - this.x)/distance;
 				var y = (particles[i].y - this.y)/distance;
 
-				var push = (minDistance - distance)*.05*this.records.length;
+				var mThis=this.records.length, mO=particles[i].records.length;
+				var yieldF = (1-MASS_PRIORITY) + MASS_PRIORITY*(2*mO/(mThis+mO)); var wg = MASS_PRIORITY*((2*mO/(mThis+mO))-1); if(wg>this.yieldW)this.yieldW=wg;
+				var push = (minDistance - distance)*GROUP_REPULSION*this.records.length*yieldF;
 
 				this.velocity.x -= x*push;
 				this.velocity.y -= y*push;
@@ -841,7 +872,9 @@ Particle.prototype.avoidGroupsAhead = function(index, particles){
 		//proximite x alignement : franche si on fonce dessus, nulle des qu'on se
 		//detourne. Ne bloque jamais un candidat a la fusion (ecarte plus haut).
 		var proximity = 1 - distance/reach;      //0..1
-		var push = proximity*align*AVOID_STRENGTH*this.scale*this.records.length;
+		var mThisA=this.records.length, mOA=o.records.length;
+		var yieldFA = (1-MASS_PRIORITY) + MASS_PRIORITY*(2*mOA/(mThisA+mOA)); var wa = MASS_PRIORITY*((2*mOA/(mThisA+mOA))-1); if(wa>this.yieldW)this.yieldW=wa;
+		var push = proximity*align*AVOID_STRENGTH*this.scale*this.records.length*yieldFA;
 		//radiale (s'ecarter) + tangentielle (contourner) ; cote choisi par la
 		//direction de l'obstacle (stable) -> pas d'oscillation.
 		var ux = dx/distance, uy = dy/distance;
