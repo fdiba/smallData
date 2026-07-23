@@ -34,3 +34,16 @@
 #legend .sq{
 	border-radius: 50%;
 }
+
+/* La boite violette (#titles) separe chaque oeuvre par un fond alterne, en deux
+   nuances de violet (comme Overview et les line charts). Le JS partage
+   (displayTitlesInfosGN) produit deja les <li class="t-a"/"t-b"> ; il ne manquait
+   que le style cote network. */
+#titles{ height: auto; }
+#titles li{
+	list-style: none;
+	padding: 2px 6px;
+	color: #ecf0f1;
+}
+#titles li.t-a{ background: #9b59b6; }
+#titles li.t-b{ background: #8145a0; }
