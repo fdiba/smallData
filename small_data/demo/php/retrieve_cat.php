@@ -217,8 +217,8 @@
 		}
 		// exclure les oeuvres marquees hors du repertoire (colonne statut)
 		if($where !== '') $where .= ' AND imeb_music.statut <> \'hors_repertoire\'';
-		// filtre pays : menu "Country" de la Phono A (id=1). intval() securise.
-		if($cat==1 && $country>0) $where .= ' AND imeb_artist.id_country = ' . intval($country);
+		// filtre pays : menu "Country" (Phono A id=1 ET Phono B id=2). intval() securise.
+		if(($cat==1 || $cat==2) && $country>0) $where .= ' AND imeb_artist.id_country = ' . intval($country);
 
 		$sth = $dbh->query('SELECT imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,

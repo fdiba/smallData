@@ -11,11 +11,17 @@
 
 	require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
+	// phonotheque : cat=2 -> Phono B (misam >= 200000), sinon Phono A.
+	$cat = isset($_POST['cat']) ? intval($_POST['cat']) : 1;
+	$range = ($cat == 2)
+		? 'imeb_music.misam >= 200000'
+		: 'imeb_music.misam > 0 AND imeb_music.misam < 200000';
+
 	$sth = $dbh->query('SELECT imeb_country.id, imeb_country.c_name, COUNT(*) AS n
 						FROM imeb_music
 						INNER JOIN imeb_artist  ON imeb_music.id_artist  = imeb_artist.id
 						INNER JOIN imeb_country ON imeb_artist.id_country = imeb_country.id
-						WHERE imeb_music.misam > 0 AND imeb_music.misam < 200000
+						WHERE ' . $range . '
 						  AND imeb_music.statut <> \'hors_repertoire\'
 						GROUP BY imeb_country.id, imeb_country.c_name
 						ORDER BY n DESC, imeb_country.c_name ASC');

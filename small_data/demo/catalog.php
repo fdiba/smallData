@@ -56,14 +56,14 @@
 			</div>
 		</div>
 		<div id="middle">
-<?php if($id==1){ ?>
+<?php if($id==1 || $id==2){ ?>
 			<div id="countries">
 				<p>Country:</p>
 				<ul></ul>
 			</div>
 <?php } ?>
 			<div id="main_container">
-<?php if($id==1){ ?>				<div id="sma_note"></div>
+<?php if($id==1 || $id==2){ ?>				<div id="sma_note"></div>
 <?php } ?>
 				<canvas id="myCanvas" width="500" height="500">Votre navigateur ne supporte pas les canvas.</canvas>
 				<div id="infos">
@@ -83,6 +83,8 @@
 							<li><?php echo $table_desc ?></li>
 							<li>the composer cell is shared across all of their works; the background alternates to separate composers and, within a composer, their pieces</li>
 <?php if($id==1){ ?>							<li>Phonothèque A is large, so it is explored <strong>one country at a time</strong>: pick a <em>country</em> in the Country menu to filter the table and build the visualization for that country's composers; pick another country to switch, or <em>All works</em> to show the full table again</li>
+<?php } ?>
+<?php if($id==2){ ?>							<li>by default <em>All works</em> shows the whole collection on the canvas; you can also pick a <em>country</em> in the Country menu to filter the table and the visualization to that country's composers</li>
 <?php } ?>
 <?php if($id==1 || $id==2){ ?>							<li>on the canvas, each moving ellipse is an agent carrying one archived work</li>
 <?php } ?>						</ul>

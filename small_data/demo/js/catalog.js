@@ -8,27 +8,27 @@ numberOfNodesOnDisplayMax = 400;
 // s'affiche. (C'est le nombre affiche entre parentheses dans le menu Country.)
 var SMA_MIN_WORKS = 20;
 
+// id de la phonotheque courante (1 = Phono A, 2 = Phono B), lu au chargement et
+// reutilise par le menu Country (selectCountry / showFullTable).
+var _catId = 0;
+
 window.onload = function() {
 
 	var cat = $.urlParam('id');
+	_catId = parseInt(cat, 10) || 0;
 
-    if(cat==2){
-        // Phono B : SMA sur toute la collection (petit fonds, ~470 oeuvres).
+    if(cat==1 || cat==2){
+        // Les deux phonotheques ont le menu "Country" + le bouton "All works".
+        // Difference de DEFAUT :
+        //  - Phono A (id=1) : trop d'oeuvres (~4380) pour un seul SMA (SMA.md §11)
+        //    -> "All works" = tableau complet SANS SMA ; le SMA n'apparait qu'en
+        //    choisissant un pays (et si >= SMA_MIN_WORKS oeuvres).
+        //  - Phono B (id=2) : petit fonds (~470) -> "All works" affiche le SMA sur
+        //    TOUT par defaut ; un pays filtre. Le SMA n'est jamais masque.
         initSMA(1200, 800);
-        startSMA();
-        retrieveData(2, 7);
-
-    } else if(cat==1){
-        // Phono A : trop d'oeuvres (~4380) pour un seul SMA (voir SMA.md §11)
-        // -> navigation PAR PAYS. On choisit un pays dans le menu "Country" pour
-        // construire le SMA (et filtrer la table). "All works" revient au tableau
-        // complet. Le canvas n'est visible QUE lorsqu'un pays est selectionne.
-        initSMA(1200, 800);
-        startSMA();               // boucle lancee UNE seule fois (records vide au depart)
-        buildCountryMenu();       // remplit le menu "Country"
-        retrieveData(1, 7, 0);    // tableau complet au depart, sans SMA
-        $("#myCanvas").hide();    // etat initial = tableau complet -> pas de viz
-        $("#infos").hide();
+        startSMA();               // boucle lancee UNE seule fois
+        buildCountryMenu();       // remplit le menu "Country" (pays de la bonne phono)
+        retrieveData(cat, 7, 0);  // etat initial = "All works" (retrieveData gere le canvas)
 
     } else {
         retrieveData(-999, 7);
@@ -72,11 +72,18 @@ function retrieveData(cat, numOfElements, country){
         }
         var total = works.length;
 
-        // Combien d'oeuvres dans cette portion ? En dessous du seuil, on
-        // n'affiche pas le SMA (canvas masque + note) : le tableau filtre suffit.
-        // Ne concerne que la navigation par pays (Phono A).
+        // Visibilite du SMA + du canvas.
         var showSMA = doSMA;
-        if(cat == 1 && (+country) > 0){
+        if(cat == 1 && (+country) === 0){
+            // Phono A "All works" : trop d'oeuvres (~4380) pour un seul SMA
+            // (SMA.md §11) -> jamais de SMA, tableau seul.
+            showSMA = false;
+            $("#myCanvas").hide();
+            $("#infos").hide();
+            $("#sma_note").hide();
+        } else if(cat == 1 || cat == 2){
+            // Portion (un pays, ou "tout" en Phono B) : SMA seulement si assez
+            // d'oeuvres. MEME SEUIL SMA_MIN_WORKS pour les deux phonotheques.
             showSMA = (total >= SMA_MIN_WORKS);
             if(showSMA){
                 $("#sma_note").hide();
@@ -243,16 +250,19 @@ function clearCatalogTable(){
     $("#info p").not(':first').remove();   // enleve les compteurs, garde le <p> d'origine
 }
 
-// Construit le menu "Country" a partir de php/retrieve_countries.php.
+// Construit le menu "Country" a partir de php/retrieve_countries.php
+// (pays de la phonotheque courante _catId).
 function buildCountryMenu(){
-    $.ajax({ url: 'php/retrieve_countries.php', type: "POST" })
+    $.ajax({ url: 'php/retrieve_countries.php', type: "POST", data: { cat: _catId } })
      .done(function(str){
         var ul = $("#countries ul");
         ul.empty();
 
-        // bouton : revenir au tableau complet (sans SMA)
+        // bouton : "All works" -> tableau complet (+ SMA sur tout en Phono B).
+        // Actif par defaut (etat de depart de la page).
         var allLi = $('<li class="all-works">All works (full table)</li>')
-                      .css("text-decoration", "underline");
+                      .css("text-decoration", "underline")
+                      .css("font-weight", "bold");
         allLi.on("click", showFullTable);
         ul.append(allLi);
 
@@ -276,24 +286,23 @@ function buildCountryMenu(){
 }
 
 // Clic sur un pays : reset SMA + table, puis chargement de la portion.
-// La visibilite du canvas est decidee dans retrieveData selon le nombre de
-// compositeurs (seuil SMA_MIN_ARTISTS).
+// La visibilite du canvas est decidee dans retrieveData (seuil SMA_MIN_WORKS en
+// Phono A ; toujours affiche en Phono B).
 function selectCountry(cid, name, liEl){
     resetSMAForPortion();
     clearCatalogTable();
     $("#countries ul li").css("font-weight", "normal");
     if(liEl) liEl.css("font-weight", "bold");
     $("#cookies").empty().append('<p>country: ' + name + '</p>');
-    retrieveData(1, 7, cid);     // filtre la table + (si assez de compositeurs) alimente le SMA
+    retrieveData(_catId, 7, cid); // filtre la table + (selon la phono) alimente le SMA
 }
 
-// Bouton "All works" : tableau complet, canvas masque (pas de viz).
+// Bouton "All works" : tableau complet. Phono A -> canvas masque (retrieveData) ;
+// Phono B -> SMA sur tout (retrieveData montre le canvas).
 function showFullTable(){
     resetSMAForPortion();
     clearCatalogTable();
-    $("#myCanvas").hide();       // tableau complet -> on masque la viz
-    $("#infos").hide();
     $("#countries ul li").css("font-weight", "normal");
     $("#countries ul li.all-works").css("font-weight", "bold");
-    retrieveData(1, 7, 0);       // country=0 -> pas de push SMA
+    retrieveData(_catId, 7, 0);  // country=0 -> Phono A: pas de SMA ; Phono B: SMA sur tout
 }
