@@ -278,7 +278,7 @@ Particle.prototype.update = function(index, particles){
 	if(this.ids.length===1)this.separateFromLoners(index, particles);
 
 	//evitement anticipe (radial, stable) des groupes non compatibles
-	if(this.ids.length===1)this.avoidGroupsAhead(index, particles);
+	this.avoidGroupsAhead(index, particles);
 
 	//masse de collision : ralentissement cumulatif et temporaire, pour TOUS
 	//(gris ET groupes) -> la masse se resorbe aussi sur les groupes, sinon un
@@ -649,15 +649,29 @@ Particle.prototype.checkEdgesV2 = function(){
 
 	} else {
 
-		//espace toroidal (wrap) avec HYSTERESIS : evite les teleportations en
-		//boucle a la couture. Le gris reapparait EN RETRAIT du bord oppose et
-		//on remet la vitesse a zero sur l'axe traverse (il repart du bruit local).
-		var m = WRAP_MARGIN;
-		if(this.x < -m)                         { this.x = this.canvas.width - m; this.velocity.x = 0; }
-		else if(this.x > this.canvas.width + m) { this.x = m;                     this.velocity.x = 0; }
+		//pas d'espace torique : quand un gris est sorti d'une certaine distance
+		//(WRAP_MARGIN), au lieu de le "wrapper" au bord oppose (source des
+		//teleportations en boucle a la couture), on le fait REAPPARAITRE a un
+		//endroit LIBRE au hasard sur le canvas, en FONDU (opacite + taille via
+		//fillAlpha remis a 0). Plus de couture, plus de pop brutal.
+		var W = this.canvas.width, H = this.canvas.height, m = WRAP_MARGIN;
+		if(this.x < -m || this.x > W + m || this.y < -m || this.y > H + m){
 
-		if(this.y < -m)                          { this.y = this.canvas.height - m; this.velocity.y = 0; }
-		else if(this.y > this.canvas.height + m) { this.y = m;                      this.velocity.y = 0; }
+			var nx, ny, placed = false;
+			for(var a=0; a<25 && !placed; a++){
+				nx = 40 + Math.random()*(W-80);
+				ny = 40 + Math.random()*(H-80);
+				placed = true;
+				for(var b=0; b<particles.length; b++){
+					var o = particles[b];
+					if(o===this)continue;
+					if(dist(nx, o.x, ny, o.y) < this.radius*2 + o.radius*2 + 20){ placed=false; break; }
+				}
+			}
+			this.x = nx; this.y = ny;
+			this.velocity.x = 0; this.velocity.y = 0;
+			this.fillAlpha = 0;   //reapparition progressive : fondu + grossissement
+		}
 
 	}
 	
@@ -836,9 +850,14 @@ Particle.prototype.avoidGroupsAhead = function(index, particles){
 		if(align<=0)continue;
 
 		var proximity = 1 - distance/reach;
-		var push = proximity*align*AVOID_STRENGTH*this.scale;
-		this.velocity.x -= (dx/distance)*push;
-		this.velocity.y -= (dy/distance)*push;
+		var push = proximity*align*AVOID_STRENGTH*this.scale*this.ids.length;
+		//radiale (s'ecarter) + tangentielle (contourner) ; cote choisi par la
+		//direction de l'obstacle (stable) -> pas d'oscillation.
+		var ux = dx/distance, uy = dy/distance;
+		var tx = -uy, ty = ux;
+		if(vx*tx + vy*ty < 0){ tx = -tx; ty = -ty; }
+		this.velocity.x += (-ux*.7 + tx)*push;
+		this.velocity.y += (-uy*.7 + ty)*push;
 	}
 }
 

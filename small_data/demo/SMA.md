@@ -165,8 +165,8 @@ plus se dégager (voir le bug corrigé en §7).
 - `checkEdgesV2` : les **groupes** rencontrent un **coussin doux** (mur invisible
   élastique) près du bord — répulsion perpendiculaire proportionnelle à
   l'enfoncement, ils longent la bordure au lieu d'être renvoyés au centre (voir
-  §7 g). Les **gris** isolés **traversent** (wrap toroïdal) d'un bord à l'autre,
-  avec une **hystérésis** qui empêche les téléportations en boucle (voir §7 h).
+  §7 g). Les **gris** isolés, eux, ne « wrappent » plus : sortis d'une certaine
+  distance, ils **réapparaissent en fondu à un endroit libre au hasard** (voir §7 h).
 
 ---
 
@@ -180,12 +180,24 @@ Réglages de « ressenti » dans `particles_catalog.js`.
 > de 1 quand les poussées s'annulent, aucune issue) et l'utiliser pour réduire
 > vitesse et bruit. Historique conservé ici, mais **absent du code actuel**.
 
-### a) Évitement anticipé des verts par les gris (`avoidGroupsAhead`)
-Objectif : ne plus « boxer » contre les verts vers lesquels on se dirige.
+### a) Évitement anticipé des groupes (`avoidGroupsAhead`)
+Objectif : ne plus « boxer » ni **plonger** à travers un groupe non compatible —
+y compris quand un agent file en ligne droite vers sa cible de fusion.
+- **S'applique à TOUS les agents** (gris ET groupes ; auparavant gris seulement).
+  La poussée est **prémultipliée par la masse** (`records.length` / `ids.length`)
+  pour qu'un gros groupe esquive vraiment (sinon la division par la masse dans
+  `update()` l'annulerait).
 - Regarde `ahead = 85px` devant. Si un groupe **non compatible** est dans cette
   portée et qu'on se dirige vers lui (`align = cos(angle) > 0`), on applique une
-  poussée **radiale, à l'opposé du groupe**, dosée par `proximité × align ×
-  AVOID_STRENGTH`.
+  poussée **radiale (s'écarter) + tangentielle (contourner)**, dosée par
+  `proximité × align × AVOID_STRENGTH × masse`. La tangentielle permet de **passer
+  autour** quand la cible est droit derrière l'obstacle (le radial seul ne faisait
+  que freiner). Le côté de contournement est choisi par rapport à la direction de
+  l'obstacle (pas au signe brut de la vitesse) → **pas d'oscillation** (vérifié :
+  taux d'inversion inchangé).
+- La **cible de fusion est ignorée** (même valeur), donc les regroupements se font
+  toujours. Mesuré : un agent qui fonçait à ~4 px du centre d'un obstacle passe
+  désormais à ~21 px (le contourne) ; 12/12 fusions préservées sur les 4 SMA.
 - **N'agit jamais** sur un candidat à la fusion (même valeur ciblée) → les
   regroupements se font toujours.
 - ⚠️ **Version corrigée** : la première version poussait *perpendiculairement*
@@ -281,27 +293,25 @@ de cadre.
   reste dans le cadre. **Appliqué à catalog, award, euphonies et network** (pour
   network, `k = BORDER_PUSH * this.ids.length`).
 
-### h) Wrap toroïdal des gris avec hystérésis (`checkEdgesV2`, branche gris)
-Objectif : garder l'espace toroïdal pour les gris (ils passent d'un bord à
-l'autre) mais supprimer les **téléportations en boucle** de certains d'entre eux.
-- Cause : le wrap reposait le gris **pile sur le bord opposé** (`x = largeur`), et
-  le champ de bruit n'est pas continu à la « couture » (il pousse vers l'extérieur
-  des deux côtés). Résultat : au moindre bruit sortant, le gris re-franchissait
-  aussitôt → allers-retours `LRLRLR` (jusqu'à ~11 sur 800 images pour un même gris).
-- Correctif : **hystérésis**. On ne wrappe que si le gris est franchement sorti
-  (au-delà de `WRAP_MARGIN`), et il **réapparaît en retrait** de cette marge du
-  bord opposé ; on **remet à zéro la vitesse sur l'axe traversé** pour qu'il
-  reparte du bruit local au lieu d'être relancé vers le bord. Il doit alors
-  traverser le tampon avant tout nouveau wrap.
-- Mesuré : **plus aucun gris ne wrappe deux fois** (oscillation éliminée), les
-  wraps restants sont des passages uniques normaux ; vitesse des gris inchangée.
-- Réglage : `WRAP_MARGIN` (`30` px ; monter = tampon plus large, mais « saut » de
-  réapparition un peu plus grand). Une tentative de bruit torique (champ continu)
-  a été écartée : elle n'éliminait pas le ping-pong et alourdissait le calcul.
-- **Appliqué aux quatre SMA.** Nuance : l'hystérésis supprime le ping-pong sur des
-  gris isolés ; en scène dense (groupes présents), un gris poussé en continu par
-  un groupe peut encore franchir le bord de temps en temps — comportement
-  identique sur catalog et ses jumeaux (vérifié : catalog == award).
+### h) Réapparition des gris en fondu (`checkEdgesV2`, branche gris)
+Objectif : supprimer **entièrement** les téléportations d'un bord à l'autre (et le
+« pop » brutal), tout en gardant des gris qui vont et viennent sur le canvas.
+- **Abandon du wrap toroïdal.** Le wrap reposait le gris près du bord opposé ; le
+  champ de bruit n'étant pas continu à la « couture », il re-franchissait aussitôt
+  → allers-retours `LRLRLR`. Les correctifs successifs (hystérésis, bruit torique)
+  n'éliminaient pas totalement le problème.
+- **Nouveau (proposé par l'auteur) :** quand un gris est sorti d'une certaine
+  distance (`WRAP_MARGIN`), il **réapparaît à un endroit LIBRE au hasard** sur le
+  canvas (recherche d'un point sans voisin, jusqu'à 25 essais), vitesse remise à
+  zéro, et **`fillAlpha` remis à 0** → il **réapparaît en fondu** (l'opacité ET la
+  taille des gris sont pilotées par `fillAlpha` dans `display`). Plus de couture,
+  plus de pop, et cela redistribue les gris (moins d'agglutination).
+- Mesuré : réapparitions toujours **à l'intérieur** (0 près du bord → plus aucun
+  ping-pong possible), **0 chevauchement** au spawn, toutes en fondu ; ~12–32
+  réapparitions / plusieurs centaines d'images (occasionnel). 12/12 fusions, aucune
+  erreur. **Appliqué aux quatre SMA.**
+- Réglage : `WRAP_MARGIN` (`30` px = distance parcourue hors-champ avant de
+  réapparaître). Le fondu dépend de `display()` (appelé par la boucle d'animation).
 
 **Réglages rapides** (dans `particles_catalog.js`) :
 
@@ -321,7 +331,7 @@ l'autre) mais supprimer les **téléportations en boucle** de certains d'entre e
 | `COLL_MARGIN` | portée de détection d'une collision | `10` |
 | `GREY_REPULSION` | force de répulsion gris↔groupe (douceur) | `.1` |
 | `BORDER_PUSH` | raideur du coussin de bord des groupes | `.03` |
-| `WRAP_MARGIN` | tampon d'hystérésis du wrap toroïdal des gris (px) | `30` |
+| `WRAP_MARGIN` | distance hors-champ avant réapparition d'un gris (px) | `30` |
 | `maxSpeed` (constructeur) | vitesse max d'un agent | `4.` |
 | `numberOfNodesOnDisplayMax` (`catalog.js`) | nb max d'agents affichés | `400` |
 | `strength_noise_field` (`sma_core.js`) | force du champ de bruit | `10` |

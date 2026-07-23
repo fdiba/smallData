@@ -241,7 +241,7 @@ Particle.prototype.update = function(i, particles){
 
 	//evitement anticipe : un gris qui se dirige vers un groupe (vert/jaune)
 	//avec lequel il ne cherche PAS a fusionner l'esquive avant le contact
-	if(this.records.length===1)this.avoidGroupsAhead(i, particles);
+	this.avoidGroupsAhead(i, particles);
 
 	//masse de collision : ralentissement cumulatif et temporaire en cas de contact.
 	//Applique aux GRIS comme aux groupes (verts/jaunes). Note : update() n'est
@@ -614,20 +614,29 @@ Particle.prototype.checkEdgesV2 = function(){
 
 	} else {
 
-		//espace toroidal (wrap) pour les gris, avec HYSTERESIS. Sans tampon, le
-		//wrap reposait le gris pile sur le bord oppose : au moindre bruit vers
-		//l'exterieur il re-franchissait aussitot -> teleportations en boucle a la
-		//couture. On ne wrappe donc que si le gris est franchement sorti (au-dela
-		//de WRAP_MARGIN) et il reapparait EN RETRAIT du bord oppose : il doit
-		//traverser le tampon avant de pouvoir re-wrapper -> fin des allers-retours.
-		var m = WRAP_MARGIN;
-		//au wrap, on retire l'elan (l'axe traverse) : le gris repart du bruit
-		//local au lieu d'etre relance vers le bord -> pas de re-wrap immediat
-		if(this.x < -m)                         { this.x = this.canvas.width - m; this.velocity.x = 0; }
-		else if(this.x > this.canvas.width + m) { this.x = m;                     this.velocity.x = 0; }
+		//pas d'espace torique : quand un gris est sorti d'une certaine distance
+		//(WRAP_MARGIN), au lieu de le "wrapper" au bord oppose (source des
+		//teleportations en boucle a la couture), on le fait REAPPARAITRE a un
+		//endroit LIBRE au hasard sur le canvas, en FONDU (opacite + taille via
+		//fillAlpha remis a 0). Plus de couture, plus de pop brutal.
+		var W = this.canvas.width, H = this.canvas.height, m = WRAP_MARGIN;
+		if(this.x < -m || this.x > W + m || this.y < -m || this.y > H + m){
 
-		if(this.y < -m)                          { this.y = this.canvas.height - m; this.velocity.y = 0; }
-		else if(this.y > this.canvas.height + m) { this.y = m;                      this.velocity.y = 0; }
+			var nx, ny, placed = false;
+			for(var a=0; a<25 && !placed; a++){
+				nx = 40 + Math.random()*(W-80);
+				ny = 40 + Math.random()*(H-80);
+				placed = true;
+				for(var b=0; b<particles.length; b++){
+					var o = particles[b];
+					if(o===this)continue;
+					if(dist(nx, o.x, ny, o.y) < this.radius*2 + o.radius*2 + 20){ placed=false; break; }
+				}
+			}
+			this.x = nx; this.y = ny;
+			this.velocity.x = 0; this.velocity.y = 0;
+			this.fillAlpha = 0;   //reapparition progressive : fondu + grossissement
+		}
 
 	}
 	
@@ -761,11 +770,11 @@ Particle.prototype.updateMass = function(index, particles){
 	if(this.collMass>COLL_MAX)this.collMass=COLL_MAX;    //plafond anti-gel
 }
 
-//evitement anticipe des groupes : un agent gris regarde DEVANT lui (dans le
-//sens de son deplacement) et, s'il fonce vers un regroupement (vert/jaune)
-//avec lequel il ne partage pas la valeur ciblee (donc pas un candidat a la
-//fusion), il devie legerement sur le cote pour le contourner au lieu de
-//buter dessus. Un groupe deja derriere ou hors trajectoire est ignore.
+//evitement anticipe des groupes : TOUT agent (gris comme groupe, y compris quand
+//il fonce vers une cible de fusion) regarde DEVANT lui et, s'il se dirige vers un
+//regroupement (vert/jaune) avec lequel il ne partage pas la valeur ciblee (donc
+//pas sa cible de fusion), il le CONTOURNE (poussee radiale + tangentielle) au lieu
+//de plonger dessus. Un groupe deja derriere ou hors trajectoire est ignore.
 Particle.prototype.avoidGroupsAhead = function(index, particles){
 
 	var speed = Math.sqrt(this.velocity.x*this.velocity.x + this.velocity.y*this.velocity.y);
@@ -803,9 +812,20 @@ Particle.prototype.avoidGroupsAhead = function(index, particles){
 		//proximite x alignement : franche si on fonce dessus, nulle des qu'on se
 		//detourne. Ne bloque jamais un candidat a la fusion (ecarte plus haut).
 		var proximity = 1 - distance/reach;      //0..1
-		var push = proximity*align*AVOID_STRENGTH*this.scale;
-		this.velocity.x -= (dx/distance)*push;
-		this.velocity.y -= (dy/distance)*push;
+		//premultiplie par records.length car update() divise la vitesse par la
+		//masse : sans ca un GROUPE (lourd) n'esquiverait quasiment pas.
+		var push = proximity*align*AVOID_STRENGTH*this.scale*this.records.length;
+
+		//RADIALE (s'ecarter) + TANGENTIELLE (contourner) : quand la cible est
+		//droit derriere l'obstacle, la seule composante radiale freine sans
+		//passer autour. Le cote de contournement est choisi par rapport a la
+		//DIRECTION de l'obstacle (stable), pas au signe de la vitesse -> pas
+		//d'oscillation auto-entretenue.
+		var ux = dx/distance, uy = dy/distance;   //vers l'obstacle
+		var tx = -uy, ty = ux;                    //perpendiculaire (tangente)
+		if(vx*tx + vy*ty < 0){ tx = -tx; ty = -ty; }   //cote deja amorce par le cap
+		this.velocity.x += (-ux*.7 + tx)*push;
+		this.velocity.y += (-uy*.7 + ty)*push;
 	}
 }
 
