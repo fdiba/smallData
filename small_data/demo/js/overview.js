@@ -79,10 +79,18 @@ window.onload = function() {
     //----------------------------------//
 
     document.getElementById('searchBoxBtn').addEventListener("click", getSearchTerms);
+    // valider par la touche Entree quand le champ "composer name" a le focus
+    document.getElementById('searchTerms').addEventListener("keydown", function(e){
+        if(e.key === "Enter" || e.keyCode === 13){ e.preventDefault(); getSearchTerms(); }
+    });
 
     //----------------------------------//
 
     document.getElementById('filtersBtn').addEventListener("click", filterData);
+    // valider par la touche Entree quand le champ "num of records >=" a le focus
+    document.getElementById('numOfRecords').addEventListener("keydown", function(e){
+        if(e.key === "Enter" || e.keyCode === 13){ e.preventDefault(); filterData(); }
+    });
 
     //----------------------------------//
 
