@@ -41,4 +41,6 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
-small_data/demo/SMA.md
+# Docs .md locales (référence) hors git ; seul README.md est suivi
+*.md
+!README.md
