@@ -236,8 +236,8 @@ function createNewRectangle(aId, c, count, anchor){
 
     if( xPos>canvas.width-xRightOffset){
 
-        //use to resize canvas width
-        maxWidth = canvas.width-xRightOffset+1;
+        // retour a la ligne : la largeur du canvas est fixe (definie a l'onload),
+        // on ne touche plus a maxWidth ici sinon elle derive a chaque recalcul.
 
         xPos = xLeftOffset;
         yPos += yDist;
@@ -392,7 +392,9 @@ function resetCanvasSize(){
     // Le canvas epouse la hauteur reelle du contenu (peut grandir ou retrecir),
     // pour ne pas laisser de zone vide et laisser remonter la legende "How to".
     canvas.height = minHeight + yDist;
-    if(canvas.width>maxWidth)canvas.width=maxWidth+5; //+5 DEBUG
+    // largeur constante entre le chargement initial et chaque filtrage :
+    // on la recale toujours sur maxWidth (qui, lui, ne bouge plus).
+    canvas.width = maxWidth;
     // La legende "How to read" ne doit jamais etre plus large que le canvas :
     // on cale sa largeur sur celle du canvas.
     var lg = document.getElementById('legend');
