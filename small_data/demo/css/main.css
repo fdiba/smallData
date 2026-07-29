@@ -304,6 +304,20 @@ ul{
 	text-transform: uppercase;
 	color: #fff;
 }
+/* Intro / note "How to read" (toutes pages) : largeur de lecture confortable,
+   texte justifie, et emphase (em) en blanc gras SANS italique. */
+#legend .lg-intro,
+#legend .lg-note{
+	max-width: 80ch;
+	text-align: justify;
+	margin: 0 0 10px 0;
+}
+#legend .lg-intro em,
+#legend .lg-note em{
+	font-style: normal;
+	color: #fff;
+	font-weight: 600;
+}
 #legend .lg-cols{
 	display: flex;
 	flex-wrap: wrap;
@@ -322,6 +336,7 @@ ul{
 #legend li{
 	margin: 0 0 3px 0;
 	color: #bdc3c7;
+	text-align: justify;
 }
 #legend li em{
 	color: #fff;

@@ -51,6 +51,7 @@
 		    </div>
 			<div id="legend">
 				<p class="lg-title">How to read this page</p>
+					<p class="lg-intro">The <em>Euphonies d'Or</em> are honorary distinctions awarded in <strong>three retrospective rounds</strong>, not one &mdash; <strong>35 works</strong> in all, which is why this page lists more than twenty: <em>20</em> at the competition's 20th anniversary in <em>1992</em> (the finest works of 1973&ndash;1991), <em>10</em> more in <em>2004</em> (chosen among the prizes of 1993&ndash;2003), and a final <em>5</em> in <em>2010</em> (for 2005&ndash;2009). The <em>edition</em> column marks which round each work belongs to.</p>
 				<div class="lg-cols">
 					<div>
 						<p><strong>Table &amp; agents</strong></p>

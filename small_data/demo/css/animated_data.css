@@ -28,7 +28,7 @@
 	padding: 4px 0 4px 10px;
 	border-left: 3px solid var(--sd-amethyst);
 	color: #ecf0f1;
-	max-width: 1150px;
+	/* largeur de lecture (80ch) centralisee dans main.css */
 }
 #legend .lg-note em{
 	color: #fff;

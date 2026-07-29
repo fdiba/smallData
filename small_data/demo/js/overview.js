@@ -118,6 +118,9 @@ window.onload = function() {
 
     $("#titles").css({"clear": "both"});
 
+    // la note "Coverage" n'apparait que lorsque num of records < 1 (defaut = 1)
+    updateCoverageNote(parseInt($('#numOfRecords').val()));
+
     setTimeout(getData(), 5000);
     
     //getData();
@@ -454,7 +457,11 @@ function getData(){
         var txt2 = numComposersInCapsules+ " / " + num + " composers with archived works";
         $("#info p:eq(0)").text(txt2);
 
-        processData();
+        // construire l'index selon le champ "num of records >=" (defaut 1)
+        var n = parseInt($('#numOfRecords').val());
+        if(Number.isInteger(n) && n >= 1) processData002(n);
+        else processData();
+        updateCoverageNote(n);
 
     });
 }
@@ -609,18 +616,30 @@ function filterData(){
     } else if (Number.isInteger(year_01)){
         console.log("year_01");
     } else if (Number.isInteger(numOfRecords)){
-        console.log("numOfRecords");
-        if(numOfRecords>=0)processData002(numOfRecords);
+        if(numOfRecords>=0){ processData002(numOfRecords); updateCoverageNote(numOfRecords); }
     } else {
-        console.log(year_01, year_02, numOfRecords);
-        processData002(0);
+        processData002(0); updateCoverageNote(0);
     }
 
+}
+
+// La partie "this index is knowingly incomplete… participations are missing"
+// ne concerne que la vue complete (tous les participants). On l'affiche seulement
+// quand num of records == 0 ; au-dela (>0, on ne montre que les compositeurs ayant
+// au moins une oeuvre), on la retire. Le reste du texte (1995) reste toujours la.
+function updateCoverageNote(n){
+    if(Number.isInteger(n) && n <= 0) $('#lg-incomplete').show();
+    else $('#lg-incomplete').hide();
 }
 
 function getSearchTerms(){
 
     var terms = $('#searchTerms').val();
+
+    // une recherche par nom repart d'un etat neutre : on reinitialise la fiche
+    // du compositeur precedemment selectionne (boite orange + boite violette)
+    $("#selection").empty().append('<p>no selection</p>');
+    $("#titles").empty();
 
     if(terms==""){
         $("#results").empty();

@@ -9,7 +9,10 @@ function displayTitlesInfosGN(arr){
             var div='<li class="'+(i%2===0 ? 't-a' : 't-b')+'">'+obj.t;
             if(obj.d) div += ' ('+obj.d+')';
             if(obj.m) div += ' | MISAM '+obj.m;
-            if(obj.ed) div += ' | edition(s): '+obj.ed;
+            if(obj.ed){
+                var edCount = (''+obj.ed).split(',').length;
+                div += ' | ' + (edCount === 1 ? 'edition' : 'editions') + ': ' + obj.ed;
+            }
             div += '</li>';
             $("#titles").append(div);
         }

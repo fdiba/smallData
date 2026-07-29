@@ -38,7 +38,7 @@
 				<form id="formFilters">
 				    <!-- <input id="year_01" type="text"> -->
 				    <!-- <input id="year_02" type="text"> -->
-				    <input id="numOfRecords" type="text" value="0">
+				    <input id="numOfRecords" type="text" value="1">
 				</form>
 			</div>
 			<div id="filtersBtn"></div>
@@ -52,7 +52,7 @@
 					</div>
 		<div id="legend">
 			<p class="lg-title">How to read this page</p>
-			<p class="lg-note">Coverage &mdash; this index is knowingly incomplete. The competition minutes have been fully entered for the editions from <em>1973 to 1994</em>; those from <em>1996 to 2009</em> are only partially processed, so the later editions are under-represented and some participations are missing. No competition was held in <em>1995</em> (36 editions in all), so no square carries that year.</p>
+			<p class="lg-note">Coverage &mdash; <span id="lg-incomplete" style="display:none">with <em>num of records</em> set to <em>0</em>, every participant is listed and this index is then knowingly incomplete &mdash; the competition minutes have been fully entered for the editions from <em>1973 to 1994</em>, but those from <em>1996 to 2009</em> are only partially processed, so the later editions are under-represented and some participations are missing. </span>No competition was held in <em>1995</em> (36 editions in all), so no square carries that year.</p>
 			<div class="lg-cols">
 				<div>
 					<p><strong>The index</strong></p>
