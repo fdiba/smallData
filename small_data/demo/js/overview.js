@@ -676,7 +676,7 @@ function getSearchTerms(){
 
                 createComposersListing(numOfElements);
 
-                editRectanglesColorBasedOnQueryWithComposerId(composers[0]);
+                showAndHighlightComposer(composers[0]);
 
             } else {
 
@@ -742,11 +742,30 @@ function createComposersListing(num){
 
     $("#results p").click(function(evt) {
         var id = $(evt.target).text().split(' ')[0];
-        editRectanglesColorBasedOnQueryWithComposerId(id);
+        showAndHighlightComposer(id);
     });
 
     // console.log(composers.length/num, arr.length);
 
+}
+// Surligne un compositeur issu de la recherche. S'il est absent de l'index
+// actuellement dessine (ex. "faber 0" alors que num of records >= 1, donc filtre),
+// on reconstruit l'index complet (num of records = 0) pour le rendre visible,
+// puis on le surligne.
+function showAndHighlightComposer(composerId){
+
+    var present = false;
+    for(var j=0; j<rectangles.length; j++){
+        if(rectangles[j].id===composerId){ present = true; break; }
+    }
+
+    if(!present){
+        $('#numOfRecords').val(0);
+        processData002(0);
+        updateCoverageNote(0);
+    }
+
+    editRectanglesColorBasedOnQueryWithComposerId(composerId);
 }
 function editRectanglesColorBasedOnQueryWithComposerId(composerId){
 
