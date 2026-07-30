@@ -409,6 +409,8 @@ LineChart.prototype.resetCountries = function(){
         this.drawRectangle(ctx, this.solo_btns[i], bWidth, this.colors[1]); //inactif -> gris
     }
     this.numSolos=0;
+    this.selectedLines=[];   // "reset all" vide AUSSI les lignes colorees au clic
+    this.cleared=true;
     this.hoverIdx=-1;
     if(this.hl)for (var i=0; i<this.hl.length; i++)this.hl[i]=0;
     this.redrawLineChart();
