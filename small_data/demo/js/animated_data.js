@@ -71,11 +71,25 @@ window.onload = function() {
 	document.getElementById('selection').addEventListener("click", toggleYearSl);
 
 	// canvas.width = $(document).width()-25; //context left pad = 10;
-    setCanvasWidthAndHeight();    
+    setCanvasWidthAndHeight();
+
+    // les boites d'info (orange #selection + liste #composers) prennent EXACTEMENT
+    // la largeur de la legende "How to read".
+    syncInfoBoxWidths();
 
     getData();
 };
 //----------------- functions -----------------//
+function syncInfoBoxWidths(){
+    var lg = document.getElementById('legend');
+    if(!lg) return;
+    var w = Math.round(lg.getBoundingClientRect().width);
+    var ids = ['selection', 'composers'];
+    for(var i=0; i<ids.length; i++){
+        var e = document.getElementById(ids[i]);
+        if(e){ e.style.boxSizing = 'border-box'; e.style.width = w + 'px'; e.style.maxWidth = w + 'px'; }
+    }
+}
 function setCanvasWidthAndHeight(displaySeveralYears){
     if(displaySeveralYears){
         canvas.width=maxChartWidth;
@@ -103,14 +117,16 @@ function editTitleInfo(sl_ctry, sl_year, numOfComposers, totalNumOfComposers, sl
     var mode = infos.sl ? 'showing this edition only | click to show all composers'
                         : 'showing all composers | click to keep this edition only';
 
-    var txt = infos.c + ', edition ' + infos.y +
+    // Le texte tient sur DEUX lignes : la 1re resume la selection, la 2e commence
+    // par "showing ..." (mode courant + action au clic).
+    var line1 = infos.c + ', edition ' + infos.y +
             ' · this edition: ' + cp_infos.num + '/' + infos.nc + ' composers with archived works' +
             ' · all editions: ' + cp_infos.all + '/' + infos.tnc +
-            ' · records: ' + cp_infos.titles + '/' + cp_infos.all_titles +
-            ' · ' + mode;
+            ' · records: ' + cp_infos.titles + '/' + cp_infos.all_titles;
 
-	$("#selection").empty().append('<p>');
-    $("#selection p").text(txt);
+	$("#selection").empty();
+    $("#selection").append($('<p>').text(line1));
+    $("#selection").append($('<p>').text(mode));
 }
 function getNumComposersInCapsulesAndTitles(cId, year, composers){
 
@@ -162,7 +178,7 @@ function displayTitlesInfos(){
             var div='<li class="'+(i%2===0 ? 't-a' : 't-b')+'">'+obj.t;
             if(obj.d) div += ' ('+obj.d+')';
             if(obj.m) div += ' | MISAM '+obj.m;
-            if(obj.ed) div += ' | edition(s): '+obj.ed;
+            if(obj.ed){ var nEd=(''+obj.ed).split(',').length; div += ' | '+(nEd===1 ? 'edition' : 'editions')+': '+obj.ed; }
             div += '</li>';
             $("#titles").append(div);
         }
@@ -171,6 +187,18 @@ function displayTitlesInfos(){
         $("#titles").append(div);
     }
 
+    matchComposersHeight();
+}
+// La liste des compositeurs (gauche) s'etend en hauteur pour rejoindre la boite
+// violette (droite) quand celle-ci est longue : les deux colonnes cote a cote
+// finissent alors a la meme hauteur. Sens unique : on n'agrandit que #composers.
+function matchComposersHeight(){
+    var comp=document.getElementById('composers'), tit=document.getElementById('titles');
+    if(!comp || !tit) return;
+    comp.style.minHeight='';                             // repart de la hauteur naturelle
+    if(getComputedStyle(tit).display==='none') return;   // boite violette vide/masquee
+    var th=tit.offsetHeight;
+    if(th>comp.offsetHeight) comp.style.minHeight=th+'px';
 }
 function displayCpInfos(){
 
@@ -229,6 +257,7 @@ function displayCpInfos(){
 
         }
     }
+    matchComposersHeight();
 }
 //---------------------------------------------//
 function updateSlData(){

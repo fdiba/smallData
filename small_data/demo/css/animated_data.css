@@ -117,3 +117,10 @@
 }
 #titles li.t-a{ background: #9b59b6; }
 #titles li.t-b{ background: #8145a0; }
+
+/* La liste des compositeurs et la boite des oeuvres ne s'affichent que
+   lorsqu'elles contiennent quelque chose (sinon barres vides inutiles). */
+#composers:empty,
+#titles:empty{
+	display: none;
+}
