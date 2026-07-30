@@ -94,6 +94,11 @@ window.onload = function() {
     canvas.width = 1200*scale;
     canvas.height = 800*scale;
 
+    // la legende "How to read" epouse EXACTEMENT la largeur du canvas
+    // (sinon max-width:1170px + padding la laissaient ~2px plus etroite).
+    var lg_ = document.getElementById('legend');
+    if(lg_){ lg_.style.boxSizing='border-box'; lg_.style.width=canvas.width+'px'; lg_.style.maxWidth=canvas.width+'px'; }
+
     getDataV2();
 
     $(document).keypress(function(e) {
