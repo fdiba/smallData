@@ -38,7 +38,12 @@
 			</div>
 		</div>
 		<div id="middle">
+			<div id="years">
+				<p>Year</p>
+				<ul></ul>
+			</div>
 			<div id="main_container">
+				<div id="sma_note"></div>
 				<canvas id="myCanvas" width="500" height="500">Votre navigateur ne supporte pas les canvas.</canvas>
 				<div id="infos">
 					<div id="cookies"></div>
