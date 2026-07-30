@@ -58,7 +58,9 @@ function LineChart(config){
     this.hoverIdx=-1;   //index de la ligne actuellement survolee (-1 = aucune)
     this.hl=[];         //surbrillance ANIMEE par ligne (0 = bleu/arriere-plan, 1 = jaune/avant)
     this._hoverAnimating=false;
-    this.selection=null; //point selectionne au clic {ctryId, yearId} : persiste pendant le survol
+    //lignes selectionnees au clic : chacune {ctryId, yearId}. L'ordre = ordre des
+    //clics -> couleur attribuee (clickColor). Clic dans le vide = on vide ce tableau.
+    this.selectedLines=[];
 
     this.resetCanvas();
     this.drawXAxis();
@@ -79,12 +81,15 @@ LineChart.prototype.resetCanvas = function(){
 LineChart.prototype.requestData = function(mouseX, mouseY){
 
     // Ligne ciblee = celle actuellement survolee (en jaune) si elle est visible,
-    // sinon la plus proche du curseur. Ainsi le point selectionne appartient
-    // TOUJOURS a la ligne mise en avant, et un clic sur la ligne la selectionne.
+    // sinon la plus proche du curseur.
     var i = (this.hoverIdx>=0 && this.isVisible(this.hoverIdx))
             ? this.hoverIdx : this.findNearestLine(mouseX, mouseY);
 
-    if(i>=0){
+    // On ne considere le clic "SUR une ligne" que s'il est assez proche d'elle
+    // (survolee, ou a <=20px). Sinon c'est un clic dans l'espace VIDE entre lignes.
+    var onLine = (i>=0) && (this.hoverIdx===i || this.distanceToLine(i, mouseX, mouseY) <= 20);
+
+    if(onLine){
 
         // annee (point non saute) la plus proche SUR cette ligne
         var arr=this.data[i].arr, bj=-1, bd=1e9;
@@ -101,17 +106,22 @@ LineChart.prototype.requestData = function(mouseX, mouseY){
             var value = parseInt(this.data[i].arr[bj]);
             var cId   = parseInt(this.data[i].cId);
 
-            this.selection = {ctryId:i, yearId:bj};   // persiste pendant le survol
+            // deja coloree -> on deplace seulement son point ; sinon on l'AJOUTE
+            // (elle prend la prochaine couleur de la palette de clic).
+            var k=this.selectedIndexOf(i);
+            if(k>=0) this.selectedLines[k].yearId=bj;
+            else     this.selectedLines.push({ctryId:i, yearId:bj});
+
             this.cleared=false;
-            this.redrawLineChart();                    // redessine tout + le cercle de selection
+            this.redrawLineChart();                    // redessine tout + les points colores
             this.retrieveData(cId, year, value);
             return;
         }
     }
 
-    // clic loin de toute ligne -> deselection
-    if(!this.cleared || this.selection){
-        this.selection=null;
+    // clic dans le vide (entre les lignes) -> on DECOLORE toutes les lignes
+    if(this.selectedLines.length){
+        this.selectedLines=[];
         this.cleared=true;
         this.redrawLineChart();
     }
@@ -195,6 +205,28 @@ LineChart.prototype.refreshLegendButtons = function(){
         this.drawRectangle(ctx, this.solo_btns[i], bWidth, col);
     }
 };
+// palette des lignes SELECTIONNEES AU CLIC. Meme famille que la palette du menu
+// mais SANS bleu (les lignes non selectionnees sont deja bleues, this.colors[1]) :
+// une ligne cliquee doit se distinguer du bleu par defaut.
+LineChart.prototype.clickPalette = ["#1abc9c","#9b59b6","#e67e22","#e74c3c","#2ecc71",
+                                    "#16a085","#d35400","#8e44ad","#c0392b","#27ae60"];
+LineChart.prototype.clickColor = function(k){ return this.clickPalette[k % this.clickPalette.length]; };
+// rang d'un pays dans les lignes cliquees (ordre des clics), ou -1 si non selectionne
+LineChart.prototype.selectedIndexOf = function(ctryId){
+    for (var k=0;k<this.selectedLines.length;k++){ if(this.selectedLines[k].ctryId===ctryId) return k; }
+    return -1;
+};
+// couleur de base d'une ligne. PRIORITE au menu : une ligne affichee via le menu
+// d'isolement garde SA couleur de legende (le carre du menu et la ligne doivent
+// rester coherents). La couleur de CLIC ne s'applique donc qu'aux lignes NON
+// isolees par le menu ; sinon bleu par defaut.
+LineChart.prototype.baseColor = function(idx){
+    var menu=this.soloColor(idx);
+    if(menu) return menu;                       // ligne du menu -> code couleur de la legende
+    var k=this.selectedIndexOf(idx);
+    if(k>=0) return this.clickColor(k);         // ligne coloree au clic (hors menu)
+    return this.colors[1];                       // bleu par defaut
+};
 LineChart.prototype.redrawLineChart = function(){
     
     this.resetCanvas();
@@ -210,45 +242,53 @@ LineChart.prototype.redrawLineChart = function(){
     var anyHl=0;
     for (var i=0;i<data.length;i++){ var v=hl[i]||0; if(v>anyHl)anyHl=v; }
 
-    // on ne dessine QUE les pays visibles (actifs, ou tous si aucun actif),
-    // de la ligne la MOINS surlignee a la PLUS surlignee (la survolee en dernier)
+    // Ordre de dessin (du fond vers le dessus) : lignes bleues par defaut EN DESSOUS,
+    // puis les lignes COLOREES (clic ou menu) par-dessus, puis la ligne SURVOLEE tout
+    // en haut. Cle continue = (coloree?1:0) + 2*hl : le survol (hl->1) domine, et a
+    // survol egal une ligne coloree passe devant une bleue.
+    var self=this;
+    function zKey(i){
+        var colored = (self.soloColor(i) || self.selectedIndexOf(i)>=0) ? 1 : 0;
+        return colored + 2*(hl[i]||0);
+    }
     var order=[];
     for (var i=0;i<data.length;i++){ if(this.isVisible(i))order.push(i); }
-    order.sort(function(a,b){ return (hl[a]||0)-(hl[b]||0); });
+    order.sort(function(a,b){ return zKey(a)-zKey(b); });
 
     for (var o=0;o<order.length;o++){
         var idx=order[o];
         var h=hl[idx]||0;                          // 0..1 (surbrillance animee)
-        // couleur de base : couleur de palette si le pays est isole via le menu,
-        // bleu sinon (affichage par defaut). Vire au jaune au survol (fondu).
-        var base=this.soloColor(idx) || BLUE;
+        // couleur de base : couleur de clic si la ligne est selectionnee, sinon
+        // couleur d'isolement du menu, sinon bleu. Vire au jaune au survol (fondu).
+        var base=this.baseColor(idx);
         var color=lerpHexColor(base, YELLOW, h);
         var alpha=1 - 0.7*(anyHl - h);             // les autres lignes visibles s'attenuent au survol
         if(alpha<0)alpha=0; else if(alpha>1)alpha=1;
         this.context.globalAlpha=alpha;
-        this.drawLine(data[idx], color, 1, false);
+        // les lignes SELECTIONNEES au clic sont legerement plus epaisses
+        var lw=(this.selectedIndexOf(idx)>=0) ? 2 : 1;
+        this.drawLine(data[idx], color, lw, false);
     }
     this.context.globalAlpha=1;
 
-    // cercle du point selectionne (clic) : redessine a chaque frame -> persiste
-    // pendant le survol, toujours bien visible ; suit la couleur de sa ligne
-    if(this.selection){
-        var s=this.selection, sd=data[s.ctryId];
-        if(sd && this.isVisible(s.ctryId)){
-            var sx=s.yearId*5*this.scaleX + this.x;
-            var sy=this.yPos(sd.arr[s.yearId]);
-            var shl=hl[s.ctryId]||0;
-            var sbase=this.soloColor(s.ctryId) || BLUE;
-            var ctx=this.context;
-            ctx.lineWidth=2;
-            ctx.strokeStyle="#ecf0f1";
-            ctx.fillStyle=lerpHexColor(sbase, YELLOW, shl); //couleur de la ligne, jaune au survol (fondu)
-            ctx.beginPath();
-            ctx.arc(sx, sy, this.pointRadius*2, 0, 2*Math.PI);
-            ctx.stroke();
-            ctx.fill();
-            ctx.closePath();
-        }
+    // un cercle par ligne SELECTIONNEE au clic : couleur de clic de la ligne
+    // (jaune au survol, en fondu), cercle blanc, redessine a chaque frame -> persiste.
+    for (var s=0; s<this.selectedLines.length; s++){
+        var sel=this.selectedLines[s], sd=data[sel.ctryId];
+        if(!sd || !this.isVisible(sel.ctryId)) continue;
+        var sx=sel.yearId*5*this.scaleX + this.x;
+        var sy=this.yPos(sd.arr[sel.yearId]);
+        var shl=hl[sel.ctryId]||0;
+        var sbase=this.baseColor(sel.ctryId);      // meme couleur que sa ligne (clic OU menu)
+        var ctx=this.context;
+        ctx.lineWidth=2;
+        ctx.strokeStyle="#ecf0f1";
+        ctx.fillStyle=lerpHexColor(sbase, YELLOW, shl);
+        ctx.beginPath();
+        ctx.arc(sx, sy, this.pointRadius*2, 0, 2*Math.PI);
+        ctx.stroke();
+        ctx.fill();
+        ctx.closePath();
     }
 }
 LineChart.prototype.getLongestValueWidth = function(){
