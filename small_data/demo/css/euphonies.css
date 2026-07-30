@@ -120,6 +120,11 @@ th{
 #bnfData h2{
 	font-size: 1em;
 	margin: 0 0 5px 0;
+	color: #fff;   /* "Notices data.bnf.fr" lisible sur le fond sombre */
+}
+/* message "Aucune notice..." : blanc lui aussi (sinon noir sur fond sombre) */
+#bnfData > p{
+	color: #fff;
 }
 #bnfData table{
 	border-collapse: collapse;
@@ -135,4 +140,12 @@ th{
 /* --- legende : les agents sont des ellipses, pas des carres --- */
 #legend .sq{
 	border-radius: 50%;
+}
+
+/* La legende "How to read" a EXACTEMENT la largeur du tableau (1200px)
+   (sinon max-width:1170px + padding la laissaient ~2px plus etroite). */
+#legend{
+	box-sizing: border-box;
+	width: 1200px;
+	max-width: 1200px;
 }
