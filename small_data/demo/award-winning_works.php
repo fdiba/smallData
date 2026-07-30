@@ -53,6 +53,7 @@
 		    </div>
 			<div id="legend">
 				<p class="lg-title">How to read this page</p>
+				<p class="lg-intro">The Bourges International Competition of Electroacoustic Music, founded by the GMEB (later <em>IMEB</em>) in <em>1973</em>, was held almost every year until <em>2009</em> &mdash; 36 editions in all, with none in <em>1995</em>. It drew works from composers across dozens of countries: until <em>1977</em> entries shared a single ranking, after which they were split into categories and sub&nbsp;categories. Over the decades its distinctions took many forms &mdash; from the early numbered <em>Prix</em> to the <em>Grand&nbsp;Prix</em>, the <em>Magistère</em>, the <em>Résidence</em>, the <em>Prix&nbsp;CIME</em> and the retrospective <em>Euphonies&nbsp;d'Or</em>. This table gathers the award-winning works of those editions, grouped by edition, category, sub category and prize.</p>
 				<div class="lg-cols">
 					<div>
 						<p><strong>Table &amp; agents</strong></p>
