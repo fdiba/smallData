@@ -11,7 +11,7 @@
     <script src="lib/jquery.cookie.js"></script>
     <script src="js/variables.js"></script>
     <script src="js/functions.js"></script>
-    <script src="js/particles_interactive_index.js"></script>
+    <script src="js/overview_sma.js"></script>
 	<script src="js/overview.js"></script>
 </head>
 <body>

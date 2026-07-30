@@ -36,11 +36,7 @@ var animation2;
 
 var maxWidth;
 
-//---------- sma -------------//
-var cv_sma, ctx_sma;
-var particles=[];
-var animation01;
-
+//---------- sma (moteur : voir js/overview_sma.js) -------------//
 var count002=0;
 
 //---------- query results -------------//
@@ -67,10 +63,9 @@ window.onload = function() {
  
     //----------------------------------//
 
-    cv_sma = document.getElementById('sma');
-    cv_sma.width=350;
-    ctx_sma = cv_sma.getContext('2d');
-    resetSMACanvas();
+    // SMA de l'overview : agents = compositeurs consultes, regroupes par pays
+    // (moteur auto-contenu dans js/overview_sma.js). Meme taille de canvas.
+    OverviewSMA.init(document.getElementById('sma'));
 
     //----------------------------------//
 
@@ -314,7 +309,10 @@ function selectRect(x, y){
 
                     var arr=str.split("%");
                     var ctry=checkCountry(arr[2]);
-                    var txt='selected: '+arr[0]+' '+arr[1]+' ('+ctry+') | edition(s): '+arr[3];
+                    // "edition" au singulier si une seule, "editions" au pluriel sinon
+                    var nEd=(''+arr[3]).split(',').length;
+                    var edLabel=(nEd===1 ? 'edition' : 'editions');
+                    var txt='selected: '+arr[0]+' '+arr[1]+' ('+ctry+') | '+edLabel+': '+arr[3];
 
                     $("#selection p").text(txt);
 
@@ -346,20 +344,10 @@ function selectRect(x, y){
 
                         $.cookie('ids', str);
                         
-                        particles.push(createNewParticle(nAId, ctry, count002));
-
-                        if(particles.length===1){
-                            animation01=setInterval(sma_animation, 1000/30);
-                            document.getElementById('sma').addEventListener("click", getParticleInfos);
-                        }
-
-                        //read cookies
-                        // var txt=$.cookie('ids');
-                        // console.log(txt);
-
-                        var txt = 'consulted so far: '+cookies.length+' composer(s) from '+particles.length+' countr'+(particles.length>1 ? 'ies' : 'y');
-                        $("#cookies").empty().append('<p>');
-                        $("#cookies p").text(txt);
+                        // un agent par compositeur consulte ; il apparait en gris
+                        // puis fusionne avec les siens (meme pays) -> groupe vert.
+                        // Le compteur "consulted so far" est gere par le module.
+                        OverviewSMA.addComposer({country: ctry, fn: arr[0], ln: arr[1], id: nAId, count: count002});
 
                     }
                 });
@@ -511,72 +499,10 @@ function drawRectanglesAndAddInteractivity(){
     canvas.addEventListener("mousedown", getInfo, false);
 }
 //-----------------------------------//
-//--------- sma function ------------//
-function resetSMACanvas(){
-    ctx_sma.fillStyle=h_colors[0];
-    ctx_sma.fillRect(0, 0, cv_sma.width, cv_sma.height);
-}
-function getParticleInfos(evt){
-    
-    var cv = cv_sma.getBoundingClientRect();
-
-    var mouseX = evt.clientX - cv.left;
-    var mouseY = evt.clientY - cv.top;
-
-    for (var i=0; i<particles.length; i++) {
-
-        var distance=dist(mouseX, particles[i].x, mouseY, particles[i].y)
-        if(distance<=particles[i].radius*2){
-            var txt=particles[i].label+' ('+particles[i].iso+'): '+particles[i].ids.length+' composer(s) consulted';
-            // console.log(txt);
-            $("#cookies").empty().append('<p>');
-            $("#cookies p").text(txt);
-            break;
-        }
-    }
-}
-function createNewParticle(id, ctry, count){
-    // console.log(ctry);
-    return new Particle({
-        canvasId: "sma",
-        count:count,
-        addRadiusVal: 1,
-        id: id,
-        label: ctry,
-        x:Math.random()*(cv_sma.width-8*2)+8, //8=particule radius*2
-        y:Math.random()*(cv_sma.height-8*2)+8
-    });
-}
-//-----------------------------------//
 //------------ animations -----------//
-function sma_animation(){
-
-    resetSMACanvas();
-
-    for (var i=0; i<particles.length; i++) {
-        particles[i].update();
-        //if(particles[i].ids.length<2)particles[i].addNoiseField(2.);
-        particles[i].addNoiseField(2);
-        particles[i].checkEdges();
-        
-        particles[i].display();
-
-        particles[i].getAwayOrCloserFrom(i, particles);
-    }
-
-    removeDeadParticles();
-
-}
-function removeDeadParticles(){
-    
-    for (var i=particles.length-1; i>=0; i--) {
-        if(particles[i].ids.length<1){
-            // console.log("particles.length: ", particles.length);
-            particles.splice(i, 1);
-            // console.log("particles.length: ", particles.length);
-        }
-    }
-}
+// (Le SMA — agents/compositeurs consultes regroupes par pays — vit desormais
+//  dans js/overview_sma.js, moteur auto-contenu. Ne restent ici que la grille
+//  de l'index et son animation de bruit.)
 function noise_animation(){
 
     for(var i=0; i<rectangles.length; i++){
