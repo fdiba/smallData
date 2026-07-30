@@ -55,6 +55,11 @@ function LineChart(config){
 
     this.sl_ctry="";
 
+    this.hoverIdx=-1;   //index de la ligne actuellement survolee (-1 = aucune)
+    this.hl=[];         //surbrillance ANIMEE par ligne (0 = bleu/arriere-plan, 1 = jaune/avant)
+    this._hoverAnimating=false;
+    this.selection=null; //point selectionne au clic {ctryId, yearId} : persiste pendant le survol
+
     this.resetCanvas();
     this.drawXAxis();
     this.drawYAxis();
@@ -72,60 +77,43 @@ LineChart.prototype.resetCanvas = function(){
     this.context.fillRect(0, 0, this.w, this.h);
 }
 LineChart.prototype.requestData = function(mouseX, mouseY){
-    
-    var lines=this.lines;
-    var ctx=this.context;
-    var cp={x:-999, y:-999, value:20};//closest point
 
-    for (var i=0; i<lines.length; i++) {
-        
-        var points=lines[i];
+    // Ligne ciblee = celle actuellement survolee (en jaune) si elle est visible,
+    // sinon la plus proche du curseur. Ainsi le point selectionne appartient
+    // TOUJOURS a la ligne mise en avant, et un clic sur la ligne la selectionne.
+    var i = (this.hoverIdx>=0 && this.isVisible(this.hoverIdx))
+            ? this.hoverIdx : this.findNearestLine(mouseX, mouseY);
 
-        for (var j=0; j<points.length; j++) {
-            
-            var p=points[j];
-            if(p.skip) continue; //1995 : creneau sans concours, non selectionnable
-            var distance = dist(p.x, mouseX, p.y, mouseY);
+    if(i>=0){
 
-            if(distance < cp.value && this.numSolos===0){
-                cp={x:p.x, y:p.y, value:distance, ctryId:i, yearId:j};
-            } else if(distance < cp.value && this.solo_btns[i]){
-                if(this.solo_btns[i].state)cp={x:p.x, y:p.y, value:distance, ctryId:i, yearId:j};
-            }
+        // annee (point non saute) la plus proche SUR cette ligne
+        var arr=this.data[i].arr, bj=-1, bd=1e9;
+        for (var j=0; j<arr.length; j++){
+            if(this.minYear + j === 1995) continue;
+            var px=j*5*this.scaleX + this.x, py=this.yPos(arr[j]);
+            var d=dist(px, mouseX, py, mouseY);
+            if(d<bd){ bd=d; bj=j; }
+        }
+
+        if(bj>=0){
+            this.sl_ctry = this.data[i].ctry;
+            var year  = parseInt(bj) + this.minYear;
+            var value = parseInt(this.data[i].arr[bj]);
+            var cId   = parseInt(this.data[i].cId);
+
+            this.selection = {ctryId:i, yearId:bj};   // persiste pendant le survol
+            this.cleared=false;
+            this.redrawLineChart();                    // redessine tout + le cercle de selection
+            this.retrieveData(cId, year, value);
+            return;
         }
     }
 
-    if(cp.value<20){
-
-        this.sl_ctry = this.data[cp.ctryId].ctry;
-
-        var year = parseInt(cp.yearId) + this.minYear;
-        var value = parseInt(this.data[cp.ctryId].arr[cp.yearId]);
-        var cId = parseInt(this.data[cp.ctryId].cId);
-
-        this.redrawLineChart();
-
-        //le cercle de selection prend la couleur de la ligne cliquee,
-        //avec un anneau clair pour rester visible sur le fond sombre
-        var sl_btn = this.solo_btns[cp.ctryId];
-        var lineColor = (sl_btn && sl_btn.state && sl_btn.color) ? sl_btn.color : this.colors[1];
-
-        ctx.lineWidth=2;
-        ctx.strokeStyle="#ecf0f1";
-        ctx.fillStyle=lineColor;
-        ctx.beginPath();
-        ctx.arc(cp.x, cp.y, this.pointRadius*2, 0, 2*Math.PI);
-        ctx.stroke();
-        ctx.fill();
-        ctx.closePath();
-
-        this.cleared=false; //one year selected
-
-        this.retrieveData(cId, year, value);
-
-    } else if(!this.cleared) {
-        this.redrawLineChart();
+    // clic loin de toute ligne -> deselection
+    if(!this.cleared || this.selection){
+        this.selection=null;
         this.cleared=true;
+        this.redrawLineChart();
     }
 }
 LineChart.prototype.retrieveData = function(cId, year, value){
@@ -155,81 +143,57 @@ LineChart.prototype.retrieveData = function(cId, year, value){
 LineChart.prototype.editData = function(mouseX, mouseY){
 
     var bWidth=this.bWidth;
-    var btns=this.lg_btns;
     var solos=this.solo_btns;
-    var touched=false;
 
-    for (var i=0; i<btns.length; i++) { //remove country
-        
-        if(mouseX>=btns[i].x && mouseX<=btns[i].x+bWidth && mouseY>=btns[i].y && mouseY<=btns[i].y+bWidth){
-            
-            btns[i].state = !btns[i].state;
+    // option "reset" en tete de la liste : remet tous les pays a l'etat par defaut
+    if(this.resetBtn && mouseX>=this.resetBtn.x && mouseX<=this.resetBtn.x+this.resetBtn.w
+        && mouseY>=this.resetBtn.y && mouseY<=this.resetBtn.y+this.resetBtn.h){
+        this.resetCountries();
+        return;
+    }
 
-            this.drawRectangle(this.context, btns[i], bWidth, this.colors[1]);            
-
+    // UN SEUL bouton par pays : l'activer n'affiche QUE les pays actives (les autres
+    // deviennent invisibles) ; le desactiver revient a tout afficher si plus aucun
+    // n'est actif. Les lignes restent toujours bleues (pas de couleur specifique).
+    for (var i=0; i<solos.length; i++) {
+        if(mouseX>=solos[i].x && mouseX<=solos[i].x+bWidth && mouseY>=solos[i].y && mouseY<=solos[i].y+bWidth){
+            solos[i].state = !solos[i].state;
+            this.numSolos += solos[i].state ? 1 : -1;
+            // le rang (donc la couleur) des pays actifs suivants change : on
+            // redessine tous les carres du menu pour garder carre <-> ligne coherents
+            this.refreshLegendButtons();
             this.redrawLineChart();
-
-            touched=true;
             break;
-        } 
-    }
-
-    if(!touched){ //highlight country
-
-        for (var i=0; i<solos.length; i++) {
-
-            if(mouseX>=solos[i].x && mouseX<=solos[i].x+bWidth && mouseY>=solos[i].y && mouseY<=solos[i].y+bWidth){
-
-                solos[i].state = !solos[i].state;
-
-                if(solos[i].state){
-                    solos[i].color = this.pickSoloColor();
-                    this.numSolos++;
-                } else {
-                    solos[i].color = null;
-                    this.numSolos--;
-                }
-
-                this.drawRectangle(this.context, solos[i], bWidth, solos[i].color || this.colors[2]);
-
-                this.redrawLineChart();
-
-                touched=true;
-                break;
-            }
         }
-    }
-
-
-    //display infos
-    if(touched && this.numSolos>0){
-        
-        /*var arr;
-        if(this.numSolos>0)arr=solos;
-        else arr=btns;*/
-
-        var arr=solos;
-
-        $("#selection").empty();
-        for (var i=0; i<arr.length; i++) {
-            if(arr[i].state){
-                var txt='<p>'+this.data[i].arr+" - "+this.data[i].ctry+" ID "+this.data[i].cId+'</p>';
-                $("#selection").append(txt);
-            }
-        }
-    } else if(touched){
-        $("#selection p").text("no selection");
     }
 }
-LineChart.prototype.pickSoloColor = function(){
-    var used = [];
-    for (var i=0; i<this.solo_btns.length; i++) {
-        if(this.solo_btns[i].state && this.solo_btns[i].color)used.push(this.solo_btns[i].color);
+//un pays est VISIBLE s'il est actif, ou si aucun pays n'est actif (etat par defaut = tout affiche)
+LineChart.prototype.isVisible = function(i){
+    return this.numSolos>0 ? !!(this.solo_btns[i] && this.solo_btns[i].state) : true;
+};
+// palette categorielle "flat-UI" accordee a l'application (turquoise, bleu,
+// amethyste, carotte, alizarine, emeraude, vert-mer, citrouille, wisteria,
+// bleu-belize, grenade, nephritis). Le JAUNE (#f1c40f) est reserve au survol /
+// point selectionne : on ne le met pas dans la palette pour eviter la confusion.
+LineChart.prototype.soloPalette = ["#1abc9c","#3498db","#9b59b6","#e67e22","#e74c3c",
+                                   "#2ecc71","#16a085","#d35400","#8e44ad","#2980b9",
+                                   "#c0392b","#27ae60"];
+// couleur attribuee a un pays ACTIVE via le menu (isolement) : couleur stable,
+// selon son rang parmi les pays actifs (ordre des donnees). null hors mode solo.
+LineChart.prototype.soloColor = function(i){
+    if(this.numSolos<=0 || !this.solo_btns[i] || !this.solo_btns[i].state) return null;
+    var rank=0;
+    for (var k=0;k<i;k++){ if(this.solo_btns[k] && this.solo_btns[k].state) rank++; }
+    return this.soloPalette[rank % this.soloPalette.length];
+};
+// redessine les carres du menu avec la couleur attribuee a chaque pays actif
+// (gris si inactif) -> le carre du menu et sa ligne partagent la meme couleur.
+LineChart.prototype.refreshLegendButtons = function(){
+    var ctx=this.context, bWidth=this.bWidth;
+    for (var i=0;i<this.solo_btns.length;i++){
+        var col=this.soloColor(i) || this.colors[1];
+        this.drawRectangle(ctx, this.solo_btns[i], bWidth, col);
     }
-    for (var j=0; j<this.soloColors.length; j++) {
-        if(used.indexOf(this.soloColors[j])===-1)return this.soloColors[j];
-    }
-    return this.soloColors[this.numSolos % this.soloColors.length];
 };
 LineChart.prototype.redrawLineChart = function(){
     
@@ -238,26 +202,52 @@ LineChart.prototype.redrawLineChart = function(){
     this.drawYAxis();
 
 
-    // console.log('numSolos:', this.numSolos);
-    var alpha=1;
-    if(this.numSolos>0)alpha=.3;
-    else alpha=1;
-
-    this.context.globalAlpha=alpha;
-
     var data=this.data;
-    var btns=this.lg_btns;
-    var solos=this.solo_btns;
+    var hl=this.hl || (this.hl=[]);
+    var YELLOW="#f1c40f", BLUE=this.colors[1];
 
-    for (var i = 0; i < data.length; i++) {
-        if(btns[i].state && !solos[i].state)this.drawLine(data[i], this.colors[1], 1, false);
+    // niveau de surbrillance global (0 = aucun survol) : sert a attenuer les autres
+    var anyHl=0;
+    for (var i=0;i<data.length;i++){ var v=hl[i]||0; if(v>anyHl)anyHl=v; }
+
+    // on ne dessine QUE les pays visibles (actifs, ou tous si aucun actif),
+    // de la ligne la MOINS surlignee a la PLUS surlignee (la survolee en dernier)
+    var order=[];
+    for (var i=0;i<data.length;i++){ if(this.isVisible(i))order.push(i); }
+    order.sort(function(a,b){ return (hl[a]||0)-(hl[b]||0); });
+
+    for (var o=0;o<order.length;o++){
+        var idx=order[o];
+        var h=hl[idx]||0;                          // 0..1 (surbrillance animee)
+        // couleur de base : couleur de palette si le pays est isole via le menu,
+        // bleu sinon (affichage par defaut). Vire au jaune au survol (fondu).
+        var base=this.soloColor(idx) || BLUE;
+        var color=lerpHexColor(base, YELLOW, h);
+        var alpha=1 - 0.7*(anyHl - h);             // les autres lignes visibles s'attenuent au survol
+        if(alpha<0)alpha=0; else if(alpha>1)alpha=1;
+        this.context.globalAlpha=alpha;
+        this.drawLine(data[idx], color, 1, false);
     }
+    this.context.globalAlpha=1;
 
-    this.context.globalAlpha = 1;
-
-    if(this.numSolos>0){
-        for (var i = 0; i < data.length; i++) {
-            if(solos[i].state)this.drawLine(data[i], solos[i].color || this.colors[2], 2, false);
+    // cercle du point selectionne (clic) : redessine a chaque frame -> persiste
+    // pendant le survol, toujours bien visible ; suit la couleur de sa ligne
+    if(this.selection){
+        var s=this.selection, sd=data[s.ctryId];
+        if(sd && this.isVisible(s.ctryId)){
+            var sx=s.yearId*5*this.scaleX + this.x;
+            var sy=this.yPos(sd.arr[s.yearId]);
+            var shl=hl[s.ctryId]||0;
+            var sbase=this.soloColor(s.ctryId) || BLUE;
+            var ctx=this.context;
+            ctx.lineWidth=2;
+            ctx.strokeStyle="#ecf0f1";
+            ctx.fillStyle=lerpHexColor(sbase, YELLOW, shl); //couleur de la ligne, jaune au survol (fondu)
+            ctx.beginPath();
+            ctx.arc(sx, sy, this.pointRadius*2, 0, 2*Math.PI);
+            ctx.stroke();
+            ctx.fill();
+            ctx.closePath();
         }
     }
 }
@@ -371,30 +361,44 @@ LineChart.prototype.drawRectangle = function(ctx, btn, bWidth, color){
     ctx.fillStyle = color;
     ctx.fillRect(btn.x, btn.y, bWidth, bWidth);
 }
+//remet tous les pays a l'etat par defaut : tous affiches, aucun surligne (solo)
+LineChart.prototype.resetCountries = function(){
+    var ctx=this.context, bWidth=this.bWidth;
+    for (var i=0; i<this.solo_btns.length; i++){
+        this.solo_btns[i].state=false;
+        this.drawRectangle(ctx, this.solo_btns[i], bWidth, this.colors[1]); //inactif -> gris
+    }
+    this.numSolos=0;
+    this.hoverIdx=-1;
+    if(this.hl)for (var i=0; i<this.hl.length; i++)this.hl[i]=0;
+    this.redrawLineChart();
+};
 LineChart.prototype.drawLegend = function(){
 
     var arr = this.data;
     var ctx = this.context;
-    var xPos = 1255, yPos = 25;
+    var xPos = 1255, yPos = 42;   // decale pour laisser la place a l'option "reset" en haut
 
     ctx.font = this.font;
-    ctx.fillStyle = "#ecf0f1";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
+
+    // option cliquable "reset" en tete de la liste des pays
+    ctx.fillStyle = "#f1c40f";
+    ctx.fillText("reset all", xPos-38, 18);
+    this.resetBtn = {x: xPos-38, y: 6, w: 120, h: 22};
+
+    ctx.fillStyle = "#ecf0f1";
 
     var bWidth=this.bWidth;
 
     for (var i=0; i<arr.length; i++) {
 
-        this.lg_btns.push({x:xPos-38, y:yPos-6, state:true});
+        // un seul carre par pays : le bouton d'isolement (toujours bleu)
         this.solo_btns.push({x:xPos-22, y:yPos-6, state:false});
-        
-        var btn = this.lg_btns[this.lg_btns.length-1];
-        this.drawRectangle(ctx, btn, bWidth, this.colors[1]);
-
         var solo = this.solo_btns[this.solo_btns.length-1];
-        this.drawRectangle(ctx, solo, bWidth, this.colors[2]);
-        
+        this.drawRectangle(ctx, solo, bWidth, this.colors[1]);
+
         ctx.fillStyle = "#ecf0f1";
 
         var ctry_id=arr[i].cId;
@@ -480,7 +484,116 @@ LineChart.prototype.drawLine = function(obj, color, strokeWidth, init){
         ctx.moveTo(x, y);
 
         xPos += 5;
-        
+
     }
-    this.lines.push(points);
+    // (this.lines n'est plus utilise : la detection au clic/survol recalcule
+    //  la geometrie a partir des donnees, ce qui evite une fuite memoire)
+};
+
+//interpolation de couleur (hex -> hex) pour le fondu progressif du survol
+function hexToRgb(h){
+    h=(''+h).replace('#','');
+    if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return {r:parseInt(h.substr(0,2),16), g:parseInt(h.substr(2,2),16), b:parseInt(h.substr(4,2),16)};
+}
+function lerpHexColor(a, b, t){
+    var ca=hexToRgb(a), cb=hexToRgb(b);
+    return 'rgb(' + Math.round(ca.r+(cb.r-ca.r)*t) + ',' +
+                    Math.round(ca.g+(cb.g-ca.g)*t) + ',' +
+                    Math.round(ca.b+(cb.b-ca.b)*t) + ')';
+}
+//distance d'un point (px,py) au segment [a,b] — pour detecter la ligne survolee
+function distToSegment(px, py, ax, ay, bx, by){
+    var dx=bx-ax, dy=by-ay;
+    var len2=dx*dx + dy*dy;
+    var t = len2 ? ((px-ax)*dx + (py-ay)*dy)/len2 : 0;
+    if(t<0)t=0; else if(t>1)t=1;
+    var cx=ax + t*dx, cy=ay + t*dy;
+    var ex=px-cx, ey=py-cy;
+    return Math.sqrt(ex*ex + ey*ey);
+}
+//trouve la ligne (pays) la plus proche du curseur, -1 si aucune assez proche
+LineChart.prototype.findNearestLine = function(mouseX, mouseY){
+    var data=this.data;
+    var best=-1, bestDist=14;   //seuil de proximite (px)
+    for (var i=0; i<data.length; i++){
+        if(!this.isVisible(i)) continue;   //on ne survole que les lignes affichees
+        var arr=data[i].arr, pts=[];
+        for (var j=0; j<arr.length; j++){
+            if(this.minYear + j === 1995) continue; //segment 1994->1996 direct
+            pts.push({x: j*5*this.scaleX + this.x, y: this.yPos(arr[j])});
+        }
+        if(pts.length===1){
+            var d0=dist(pts[0].x, mouseX, pts[0].y, mouseY);
+            if(d0<bestDist){ bestDist=d0; best=i; }
+        }
+        for (var k=0; k<pts.length-1; k++){
+            var d=distToSegment(mouseX, mouseY, pts[k].x, pts[k].y, pts[k+1].x, pts[k+1].y);
+            if(d<bestDist){ bestDist=d; best=i; }
+        }
+    }
+    return best;
+};
+//distance minimale du curseur a la ligne (pays) i
+LineChart.prototype.distanceToLine = function(i, mouseX, mouseY){
+    var arr=this.data[i].arr, pts=[];
+    for (var j=0; j<arr.length; j++){
+        if(this.minYear + j === 1995) continue;
+        pts.push({x: j*5*this.scaleX + this.x, y: this.yPos(arr[j])});
+    }
+    if(pts.length===1) return dist(pts[0].x, mouseX, pts[0].y, mouseY);
+    var best=1e9;
+    for (var k=0; k<pts.length-1; k++){
+        var d=distToSegment(mouseX, mouseY, pts[k].x, pts[k].y, pts[k+1].x, pts[k+1].y);
+        if(d<best)best=d;
+    }
+    return best;
+};
+//survol : met en avant la ligne la plus proche et attenue les autres.
+//HYSTERESIS : tant que le curseur reste assez proche de la ligne deja survolee
+//(seuil de relachement > seuil d'accroche), on la garde. Sans ca, dans les zones
+//denses (nombreuses lignes plates en bas), la ligne survolee sauterait d'une a
+//l'autre a chaque pixel et l'ensemble clignoterait.
+LineChart.prototype.hover = function(mouseX, mouseY){
+    if(this.hoverIdx>=0 && this.isVisible(this.hoverIdx)){
+        if(this.distanceToLine(this.hoverIdx, mouseX, mouseY) <= 24) return; //on garde la ligne courante
+    }
+    var idx=this.findNearestLine(mouseX, mouseY);
+    if(idx !== this.hoverIdx){
+        this.hoverIdx=idx;
+        this.startHoverAnim();   //transition progressive (couleur + opacite)
+    }
+};
+LineChart.prototype.clearHover = function(){
+    if(this.hoverIdx !== -1){
+        this.hoverIdx=-1;
+        this.startHoverAnim();   //retour progressif au bleu / premier plan
+    }
+};
+//fondu progressif de la surbrillance, image par image : chaque ligne fait evoluer
+//sa valeur hl (0..1) vers sa cible (1 si survolee, 0 sinon). hl pilote a la fois
+//la COULEUR (bleu<->jaune) et l'OPACITE (avant-plan<->arriere-plan) dans redraw.
+LineChart.prototype.startHoverAnim = function(){
+    if(this._hoverAnimating) return;
+    this._hoverAnimating=true;
+    var self=this;
+    function step(){
+        var settled=self.stepHoverAnim();
+        self.redrawLineChart();
+        if(settled) self._hoverAnimating=false;
+        else requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+};
+LineChart.prototype.stepHoverAnim = function(){
+    if(!this.hl)this.hl=[];
+    var settled=true;
+    for (var i=0; i<this.data.length; i++){
+        var target=(i===this.hoverIdx) ? 1 : 0;
+        var cur=this.hl[i]||0;
+        var diff=target-cur;
+        if(Math.abs(diff)>0.01){ this.hl[i]=cur + diff*0.2; settled=false; }
+        else this.hl[i]=target;
+    }
+    return settled;
 };

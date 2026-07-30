@@ -100,8 +100,16 @@
 
 /* ---------- liste des oeuvres d'un compositeur ---------- */
 
+/* #content sert d'ancre : la boite violette est positionnee en absolu par
+   rapport a lui (voir positionTitlesBox dans animated_data.js). */
+#content{ position: relative; }
 #titles{
-	float: left;
+	/* placee en JS a hauteur du "How to read", a sa droite (position absolue ->
+	   hors flux : la colonne de gauche - barre orange + compositeurs - ne bouge
+	   pas, meme quand la liste des oeuvres est longue). Repli sous les
+	   compositeurs si la fenetre est trop etroite (positionTitlesBox). */
+	position: absolute;
+	box-sizing: border-box;
 	word-wrap: break-word;
 	min-width: 220px;
 	min-height: 20px;

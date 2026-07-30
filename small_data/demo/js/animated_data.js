@@ -67,8 +67,13 @@ window.onload = function() {
 
     document.getElementById('cv_nav').addEventListener("click", selectData);
     document.getElementById('myCanvas').addEventListener("click", editData);
+    // survol : met en avant la ligne la plus proche du curseur (line chart)
+    document.getElementById('myCanvas').addEventListener("mousemove", hoverData);
+    document.getElementById('myCanvas').addEventListener("mouseleave", clearHoverData);
 	document.getElementById('get_all').addEventListener("click", getData);
 	document.getElementById('selection').addEventListener("click", toggleYearSl);
+	// la boite violette suit le "How to read" quand la fenetre change de largeur
+	window.addEventListener("resize", positionTitlesBox);
 
 	// canvas.width = $(document).width()-25; //context left pad = 10;
     setCanvasWidthAndHeight();
@@ -187,18 +192,42 @@ function displayTitlesInfos(){
         $("#titles").append(div);
     }
 
+    positionTitlesBox();
     matchComposersHeight();
 }
-// La liste des compositeurs (gauche) s'etend en hauteur pour rejoindre la boite
-// violette (droite) quand celle-ci est longue : les deux colonnes cote a cote
-// finissent alors a la meme hauteur. Sens unique : on n'agrandit que #composers.
+// La boite violette (#titles) remonte a hauteur du "How to read" (#legend) et se
+// place a sa droite, dans l'espace laisse vide par la legende. Position absolue
+// (hors flux) -> la colonne de gauche (barre orange + compositeurs) ne bouge pas,
+// meme quand la liste des oeuvres est longue. Si la place a droite est trop
+// reduite (fenetre etroite), on repasse au flux normal (sous les compositeurs).
+function positionTitlesBox(){
+    var tit=document.getElementById('titles'),
+        lg=document.getElementById('legend'),
+        content=document.getElementById('content');
+    if(!tit || !lg || !content) return;
+    if(getComputedStyle(tit).display==='none') return;   // vide/masquee
+    var gap=14;
+    var left = lg.offsetLeft + lg.offsetWidth + gap;
+    var avail = content.clientWidth - left - 5;           // -5 : petite marge droite
+    if(avail < 240){
+        // pas assez de place a droite : retour au flux normal (repli sous la liste)
+        tit.style.position='';
+        tit.style.top='';
+        tit.style.left='';
+        tit.style.maxWidth='';
+        return;
+    }
+    tit.style.position='absolute';
+    tit.style.top  = lg.offsetTop + 'px';
+    tit.style.left = left + 'px';
+    tit.style.maxWidth = Math.min(avail, 440) + 'px';
+}
+// Depuis que la boite violette remonte a droite de la legende, elle n'est plus
+// cote a cote avec les compositeurs : on garde ces derniers a leur hauteur
+// naturelle (plus d'extension pour s'aligner sur les oeuvres).
 function matchComposersHeight(){
-    var comp=document.getElementById('composers'), tit=document.getElementById('titles');
-    if(!comp || !tit) return;
-    comp.style.minHeight='';                             // repart de la hauteur naturelle
-    if(getComputedStyle(tit).display==='none') return;   // boite violette vide/masquee
-    var th=tit.offsetHeight;
-    if(th>comp.offsetHeight) comp.style.minHeight=th+'px';
+    var comp=document.getElementById('composers');
+    if(comp) comp.style.minHeight='';
 }
 function displayCpInfos(){
 
@@ -528,6 +557,55 @@ function editData(evt){
         else myLineChart.editData(mouseX, mouseY);
     }
 
+}
+//survol du line chart : surligne la ligne la plus proche, attenue les autres,
+//et affiche le nom du pays survole a cote du curseur
+function hoverData(evt){
+    if(!myLineChart){ hideLineTooltip(); return; }
+    if(!(sl_years.length===2 || menu[0].state)){ hideLineTooltip(); return; }   //uniquement en mode line chart
+    var cv = canvas.getBoundingClientRect();
+    var mouseX = evt.clientX - cv.left;
+    var mouseY = evt.clientY - cv.top;
+    if(mouseX < myLineChart.w){
+        myLineChart.hover(mouseX, mouseY);
+        if(myLineChart.hoverIdx>=0 && myLineChart.data[myLineChart.hoverIdx]){
+            showLineTooltip(myLineChart.data[myLineChart.hoverIdx].ctry, evt.clientX, evt.clientY);
+        } else {
+            hideLineTooltip();
+        }
+    } else {
+        myLineChart.clearHover();     //curseur sur la legende : pas de survol de ligne
+        hideLineTooltip();
+    }
+}
+function clearHoverData(){
+    if(myLineChart) myLineChart.clearHover();
+    hideLineTooltip();
+}
+//----- infobulle "nom du pays" qui suit la souris -----
+function getLineTooltip(){
+    var t = document.getElementById('lineTooltip');
+    if(!t){
+        t = document.createElement('div');
+        t.id = 'lineTooltip';
+        t.style.cssText = 'position:fixed;pointer-events:none;z-index:1000;display:none;'
+            + 'background:rgba(44,62,80,.95);color:#f1c40f;font-weight:600;'
+            + 'font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:12px;'
+            + 'padding:3px 7px;border-radius:3px;border:1px solid #f1c40f;white-space:nowrap;';
+        document.body.appendChild(t);
+    }
+    return t;
+}
+function showLineTooltip(txt, clientX, clientY){
+    var t = getLineTooltip();
+    t.textContent = txt;
+    t.style.left = (clientX + 14) + 'px';
+    t.style.top  = (clientY + 14) + 'px';
+    t.style.display = 'block';
+}
+function hideLineTooltip(){
+    var t = document.getElementById('lineTooltip');
+    if(t) t.style.display = 'none';
 }
 function selectData(evt){
 
