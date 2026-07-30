@@ -234,10 +234,12 @@ function createEditionsRectangles(id, count, editions){
 } 
 function createNewRectangle(aId, c, count, anchor){
 
-    if( xPos>canvas.width-xRightOffset){
+    if( xPos>maxWidth-xRightOffset){
 
-        // retour a la ligne : la largeur du canvas est fixe (definie a l'onload),
-        // on ne touche plus a maxWidth ici sinon elle derive a chaque recalcul.
+        // retour a la ligne sur la largeur de REFERENCE fixe (maxWidth, definie a
+        // l'onload). On n'utilise pas canvas.width : celui-ci est ensuite retreci a
+        // la largeur reelle de la grille et ne doit pas influencer le decoupage
+        // (sinon la largeur deriverait a chaque recalcul).
 
         xPos = xLeftOffset;
         yPos += yDist;
@@ -392,11 +394,20 @@ function resetCanvasSize(){
     // Le canvas epouse la hauteur reelle du contenu (peut grandir ou retrecir),
     // pour ne pas laisser de zone vide et laisser remonter la legende "How to".
     canvas.height = minHeight + yDist;
-    // largeur constante entre le chargement initial et chaque filtrage :
-    // on la recale toujours sur maxWidth (qui, lui, ne bouge plus).
-    canvas.width = maxWidth;
-    // La legende "How to read" ne doit jamais etre plus large que le canvas :
-    // on cale sa largeur sur celle du canvas.
+
+    // Largeur = bord droit REEL de la grille (derniere colonne remplie), afin de ne
+    // laisser aucun espace apres le dernier carre des lignes pleines. Comme le
+    // decoupage se fait sur maxWidth (fixe), cette valeur est stable d'un recalcul a
+    // l'autre : pas de derive.
+    var contentRight = 0;
+    for(var i=0; i<rectangles.length; i++){
+        var right = rectangles[i].x + rWidth;
+        if(right>contentRight) contentRight = right;
+    }
+    canvas.width = contentRight>0 ? contentRight : maxWidth;
+
+    // La legende "How to read" est calee sur cette meme largeur : les deux blocs
+    // ont donc exactement la meme largeur visible.
     var lg = document.getElementById('legend');
     if(lg){
         lg.style.maxWidth = canvas.width + 'px';
@@ -485,7 +496,7 @@ function processData(){
 }
 function drawRectanglesAndAddInteractivity(){
     context.fillStyle=COLORS[1];
-    context.fillRect(0, 0, canvas.width, canvas.height); 
+    context.fillRect(0, 0, canvas.width, canvas.height);
     context.stroke();
 
     resetPositions();

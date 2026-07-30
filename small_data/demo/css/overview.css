@@ -82,7 +82,10 @@
    violette #titles qui peut s'etendre librement). */
 #board::after{ content: ""; display: table; clear: both; }
 #left_col{ float: left; }
-#right_col{ float: left; margin-left: 15px; }
+/* Distance canvas <-> colonne de droite (boites verte/orange/violette) reduite
+   de moitie : l'ecart total etait de 20px (5px de marge droite du canvas + 15px
+   ici), il passe a 10px. */
+#right_col{ float: left; margin-left: 5px; }
 #left_col #myCanvas{ float: none; display: block; }
 /* border-box : la largeur fixee par le JS (= largeur du canvas) inclut le
    padding, donc la legende a exactement la meme largeur que la dataviz. */
