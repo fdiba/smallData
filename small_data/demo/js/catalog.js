@@ -25,7 +25,7 @@ window.onload = function() {
         //    choisissant un pays (et si >= SMA_MIN_WORKS oeuvres).
         //  - Phono B (id=2) : petit fonds (~470) -> "All works" affiche le SMA sur
         //    TOUT par defaut ; un pays filtre. Le SMA n'est jamais masque.
-        initSMA(1200, 800);
+        initSMA(1210, 800);   // largeur = 2 tableaux (600) + gap (10) -> bord droit aligne
         startSMA();               // boucle lancee UNE seule fois
         buildCountryMenu();       // remplit le menu "Country" (pays de la bonne phono)
         retrieveData(cat, 7, 0);  // etat initial = "All works" (retrieveData gere le canvas)

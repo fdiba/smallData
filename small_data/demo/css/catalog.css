@@ -24,9 +24,9 @@ th{
 	box-sizing: border-box;
 	padding: 6px 10px;
 	margin: 0 0 8px 0;
-	/* meme largeur que le canvas SMA (initSMA(1200,800)) pour que la bande
-	   pays coincide exactement avec la visualisation en dessous */
-	width: 1200px;
+	/* meme largeur que le canvas SMA et les deux tableaux (2x600 + gap 10 = 1210)
+	   pour que la bande pays coincide exactement avec la visualisation en dessous */
+	width: 1210px;
 	max-width: 100%;
 }
 /* le menu Country assure deja le degagement sous la barre fixe : le canvas suit
@@ -67,7 +67,7 @@ th{
 #sma_note{
 	display: none;
 	box-sizing: border-box;
-	width: 1200px;
+	width: 1210px;
 	max-width: 100%;
 	background: #fff;
 	color: #2c3e50;
@@ -152,7 +152,7 @@ th{
 	display: flex;
 	flex-wrap: wrap;
 	align-items: flex-start;
-	gap: 24px;
+	gap: 10px;
 }
 .works_table{
 	width: 600px;
@@ -165,6 +165,13 @@ th{
 	display: none;
 }
 
+/* La legende "How to read" a EXACTEMENT la largeur du canvas et des deux tableaux
+   (2x600 + gap 10 = 1210px) : son bord droit s'aligne sur le tableau le plus a droite. */
+#legend{
+	box-sizing: border-box;
+	width: 1210px;
+	max-width: 1210px;
+}
 /* Intro de la rubrique "How to read" : rappelle de quelle phonotheque il s'agit */
 #legend .lg-intro{
 	margin: 0 0 10px 0;
