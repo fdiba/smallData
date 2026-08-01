@@ -51,8 +51,14 @@ $UA        = 'SmallData-IMEB/1.0 (+https://webodrome.fr/small_data/)';
 
 //-------------------------------------------------------------------- cache
 
+/* Le numero de version fait partie du nom de fichier : l'incrementer suffit a
+   invalider tout le cache d'un coup quand le format ou le nettoyage des
+   donnees change, sans avoir a vider le repertoire a la main sur le serveur.
+   v2 : retrait du marqueur de tri "@" des titres et dedoublonnage (sd_push_title). */
+$CACHE_VERSION = 2;
+
 $cache_dir  = __DIR__ . '/../cache/isni';
-$cache_file = $cache_dir . '/' . $isni . '.json';
+$cache_file = $cache_dir . '/' . $isni . '.v' . $CACHE_VERSION . '.json';
 
 if(!$refresh && is_readable($cache_file) && (time() - filemtime($cache_file) < $CACHE_TTL)){
 	$hit = file_get_contents($cache_file);
@@ -234,6 +240,55 @@ function sd_source_url($code, $id){
 	}
 }
 
+/* Titres d'oeuvres : nettoyage du marqueur de tri.
+   ---------------------------------------------------------------------------
+   Les notices ISNI reprennent les titres des catalogues qui les alimentent, en
+   UNIMARC, ou le caractere @ signale ou commence le tri alphabetique — c'est
+   a dire juste apres l'article initial, qui ne doit pas etre classant :
+
+       L'@ivresse de la vitesse    se classe a "ivresse"
+       @Below the Walls of Jericho se classe a "Below"
+
+   Le @ n'appartient donc pas au titre : il ne doit jamais etre affiche. On le
+   retire, et on en profite pour normaliser les espaces. */
+function sd_clean_title($s){
+	$s = str_replace(array("\xc2\xa0", "\xe2\x80\x8b"), ' ', (string)$s);   // nbsp, espace nulle
+	$s = str_replace('@', '', $s);
+	$s = preg_replace('/\s+/u', ' ', $s);
+	// une apostrophe suivie d'une espace vient souvent du @ retire ("L' ivresse")
+	$s = preg_replace('/(\p{L}[\'’])\s+(?=\p{L})/u', '$1', $s);
+	return trim($s);
+}
+
+/* Cle de dedoublonnage des titres : insensible a la casse, aux accents et a
+   la ponctuation, pour que "L'Ivresse de la vitesse" et "L'ivresse de la
+   vitesse" ne comptent qu'une fois — les catalogues sources livrent la meme
+   oeuvre sous plusieurs graphies. */
+function sd_title_key($s){
+	$s = mb_strtolower($s, 'UTF-8');
+	if(function_exists('iconv')){
+		$t = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
+		if($t !== false && $t !== '') $s = $t;
+	}
+	return preg_replace('/[^a-z0-9]+/', '', strtolower($s));
+}
+
+/* Ajoute un titre a la liste, sans doublon. A cle egale on garde la graphie
+   la plus longue : elle porte en general la ponctuation d'origine
+   ("In the natural doorway... I crouch" plutot que sans les points). */
+function sd_push_title(&$list, &$keys, $raw){
+	$v = sd_clean_title($raw);
+	if($v === '') return;
+	$k = sd_title_key($v);
+	if($k === '') return;
+	if(!isset($keys[$k])){
+		$keys[$k] = count($list);
+		$list[]   = $v;
+	} else if(mb_strlen($v, 'UTF-8') > mb_strlen($list[$keys[$k]], 'UTF-8')){
+		$list[$keys[$k]] = $v;
+	}
+}
+
 //------------------------------------------------------- 1. API SRU d'ISNI
 
 $sru_body = null;
@@ -249,6 +304,7 @@ foreach($sru_urls as $u){
 
 $names    = array();
 $titles   = array();
+$titleKeys= array();   // cle normalisee -> index dans $titles (cf. sd_push_title)
 $sources  = array();
 $notes    = array();
 $external = array();
@@ -290,8 +346,7 @@ if($sru_body){
 
 		// --- titres d'oeuvres
 		foreach($xp->query('//*[local-name()="titleOfWork"]/*[local-name()="title"]') as $t){
-			$v = trim($t->textContent);
-			if($v !== '' && !in_array($v, $titles, true)) $titles[] = $v;
+			sd_push_title($titles, $titleKeys, $t->textContent);
 		}
 
 		// --- sources contributrices (VIAF, BnF, DNB...)
