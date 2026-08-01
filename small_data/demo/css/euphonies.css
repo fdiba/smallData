@@ -128,14 +128,33 @@ th{
    z-index 9 : juste sous #ctrl_bar (10), qui reste toujours lisible.
    ========================================================================= */
 
-/* le lien ISNI du tableau : cliquable, mais il ouvre la fiche */
+/* Le lien ISNI du tableau : cliquable, mais il ouvre la fiche.
+   Son survol etait un aplat VERT translucide (greensea 35 %). Ca tenait tant
+   que la ligne restait grise, mais depuis l'accordeon data.bnf.fr la ligne
+   survolee est JAUNE et la ligne depliee jaune plein (#f1c40f) : du vert sur
+   du jaune ne se lit plus, et le fond n'est de toute facon plus gris.
+   On abandonne donc l'aplat de couleur d'accent et on INVERSE le lien au
+   survol : fond sombre, texte blanc. Ca se detache aussi bien sur le gris que
+   sur le blanc, le jaune ou le vert du tableau — une seule regle valable pour
+   tous les fonds, au lieu d'une teinte a re-choisir a chaque etat de ligne.
+   (La couleur du texte passe par #euphonies_table, un id : sans cela la regle
+   historique "table a:link" (0,1,2) l'emporterait et le texte resterait noir
+   sur le fond sombre — meme piege que pour les liens du panneau BnF.)
+   Le padding horizontal est compense par une marge negative de meme valeur :
+   la colonne ne bouge pas d'un pixel au survol. */
 #euphonies_table a.isni-link{
 	border-bottom: 1px dotted rgba(0, 0, 0, .55);
 	text-decoration: none;
 	cursor: pointer;
+	padding: 0 3px;
+	margin: 0 -3px;
+	border-radius: 2px;
 }
-#euphonies_table a.isni-link:hover{
-	background: rgba(22, 160, 133, .35);
+#euphonies_table a.isni-link:hover,
+#euphonies_table a.isni-link:focus{
+	background: var(--sd-midnight);
+	color: #fff;
+	border-bottom-color: transparent;
 }
 
 .isni-box{
