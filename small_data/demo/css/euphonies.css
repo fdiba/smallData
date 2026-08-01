@@ -149,3 +149,140 @@ th{
 	width: 1200px;
 	max-width: 1200px;
 }
+
+/* =========================================================================
+   Fiche ISNI (js/euphonies.js -> php/retrieve_isni.php)
+   -------------------------------------------------------------------------
+   La boite est attachee a <body> en position:absolute : elle est HORS FLUX,
+   donc elle ne pousse ni le tableau, ni le canvas, ni #bnfData — la mise en
+   page de la page ne bouge pas d'un pixel quand elle s'ouvre.
+   z-index 9 : juste sous #ctrl_bar (10), qui reste toujours lisible.
+   ========================================================================= */
+
+/* le lien ISNI du tableau : cliquable, mais il ouvre la fiche */
+#euphonies_table a.isni-link{
+	border-bottom: 1px dotted rgba(0, 0, 0, .55);
+	text-decoration: none;
+	cursor: pointer;
+}
+#euphonies_table a.isni-link:hover{
+	background: rgba(22, 160, 133, .35);
+}
+
+.isni-box{
+	display: none;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 9;
+	box-sizing: border-box;
+	width: 340px;
+	max-width: calc(100vw - 16px);
+	max-height: 70vh;
+	overflow: hidden;
+	background: var(--sd-asphalt);
+	color: #ecf0f1;
+	font-size: 12px;
+	line-height: 1.45;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+}
+.isni-box.open{
+	display: flex;
+	flex-direction: column;
+}
+
+.isni-hd{
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 6px 10px;
+	background: var(--sd-midnight);
+}
+.isni-hd-t{
+	font-weight: 600;
+	letter-spacing: .04em;
+	color: #fff;
+	font-variant-numeric: tabular-nums;
+}
+.isni-close{
+	cursor: pointer;
+	padding: 0 4px;
+	font-size: 16px;
+	line-height: 1;
+	color: #bdc3c7;
+}
+.isni-close:hover{
+	color: #fff;
+}
+
+.isni-bd{
+	flex: 1 1 auto;
+	overflow-y: auto;
+	padding: 8px 10px 10px 10px;
+	word-wrap: break-word;
+	overflow-wrap: anywhere;
+}
+.isni-bd p{
+	margin: 0 0 6px 0;
+}
+
+.isni-name{
+	font-weight: 600;
+	color: #fff;
+}
+.isni-desc{
+	color: #bdc3c7;
+	font-style: italic;
+}
+
+/* titre de rubrique : meme code que les legendes des autres pages */
+.isni-sec{
+	margin: 10px 0 3px 0 !important;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	font-size: 11px;
+	color: var(--sd-emerald);
+}
+.isni-bd .isni-sec:first-child{
+	margin-top: 0 !important;
+}
+
+.isni-list{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.isni-list li{
+	padding: 1px 0 1px 9px;
+	border-left: 3px solid transparent;
+}
+.isni-list li:hover{
+	border-left-color: var(--sd-greensea);
+	background: rgba(255, 255, 255, .07);
+}
+.isni-box a{
+	color: #ecf0f1;
+	text-decoration: none;
+	border-bottom: 1px solid rgba(236, 240, 241, .35);
+}
+.isni-box a:hover{
+	color: #fff;
+	border-bottom-color: #fff;
+}
+.isni-notes li,
+.isni-titles li{
+	color: #bdc3c7;
+}
+.isni-more,
+.isni-codes{
+	color: #95a5a6;
+	font-size: 11px;
+}
+.isni-wait,
+.isni-warn{
+	color: #bdc3c7;
+	font-style: italic;
+}
