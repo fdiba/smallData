@@ -56,7 +56,7 @@
 					<div>
 						<p><strong>Table &amp; agents</strong></p>
 						<ul>
-							<li>the table lists the Euphonies d'Or, sorted by edition then last name; click a row to retrieve the matching records from data.bnf.fr, shown below the table, and follow the ISNI link for the composer's international identity record</li>
+							<li>the table lists the Euphonies d'Or, sorted by edition then last name; click a row and the composer's records held by data.bnf.fr unfold right underneath it, or click the ISNI itself for a summary of the composer's international identity record and the external resources it points to</li>
 							<li>on the canvas, each moving ellipse is an agent carrying one Euphonie d'Or</li>
 						</ul>
 					</div>
@@ -96,8 +96,6 @@
 						<th>isni</th>
 					</tr>
 				</table>
-			</div>
-			<div id="bnfData">
 			</div>
 		</div>
  	</div>

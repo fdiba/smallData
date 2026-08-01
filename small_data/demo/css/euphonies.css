@@ -12,14 +12,6 @@ td, th {
 th{
 	background: #16A085;
 }
-#bnfData a{
-	color: black;
-	/*margin: calc(var(--sd-bar-h) + 8px) 0 0 0;*/
-	/*float: left;*/
-}
-#bnfData{
-	padding: 0;
-}
 #calculations{
 	padding: 5px;
 	min-width: 250px;
@@ -41,12 +33,11 @@ th{
 	width: 1200px;
 }
 
-#euphonies_table tr:nth-child(even){
-	background: #C7C7C7;
-}
-#euphonies_table tr:nth-child(odd){
-	background: #F6F6F6;
-}
+/* Le zebra est porte par les CLASSES .even / .odd posees par euphonies.js
+   (plus bas), et surtout PAS par :nth-child : l'accordeon data.bnf.fr insere
+   des <tr class="bnf-row"> entre les lignes, ce qui inverserait la parite de
+   toutes les lignes suivantes. */
+
 #infos{
 	/*float:left;*/
 	/*float: left;
@@ -110,31 +101,9 @@ th{
 .odd{
 	background: #F6F6F6;
 }
-/* --- resultats data.bnf.fr (euphonies.js) --- */
-#bnfData{
-	clear: both;
-	padding: 10px 0;
-	max-width: 100%;
-	overflow-x: auto;
-}
-#bnfData h2{
-	font-size: 1em;
-	margin: 0 0 5px 0;
-	color: #fff;   /* "Notices data.bnf.fr" lisible sur le fond sombre */
-}
-/* message "Aucune notice..." : blanc lui aussi (sinon noir sur fond sombre) */
-#bnfData > p{
-	color: #fff;
-}
-#bnfData table{
-	border-collapse: collapse;
-	background: #F6F6F6;
-}
-#bnfData td, #bnfData th{
-	padding: 4px 8px;
-	border: 1px solid #CCC;
-	text-align: left;
-	font-size: .85em;
+#euphonies_table tr.even:hover,
+#euphonies_table tr.odd:hover{
+	background: rgba(241, 196, 15, .45);
 }
 
 /* --- legende : les agents sont des ellipses, pas des carres --- */
@@ -154,8 +123,8 @@ th{
    Fiche ISNI (js/euphonies.js -> php/retrieve_isni.php)
    -------------------------------------------------------------------------
    La boite est attachee a <body> en position:absolute : elle est HORS FLUX,
-   donc elle ne pousse ni le tableau, ni le canvas, ni #bnfData — la mise en
-   page de la page ne bouge pas d'un pixel quand elle s'ouvre.
+   donc elle ne pousse ni le tableau, ni le canvas — la mise en page de la
+   page ne bouge pas d'un pixel quand elle s'ouvre.
    z-index 9 : juste sous #ctrl_bar (10), qui reste toujours lisible.
    ========================================================================= */
 
@@ -283,6 +252,169 @@ th{
 }
 .isni-wait,
 .isni-warn{
+	color: #bdc3c7;
+	font-style: italic;
+}
+
+/* =========================================================================
+   Notices data.bnf.fr — accordeon (js/euphonies.js)
+   -------------------------------------------------------------------------
+   Le clic sur une ligne insere un <tr class="bnf-row"> juste apres elle : la
+   notice s'ouvre a l'endroit du clic et non plus en bas de page. La ligne
+   cliquee passe en jaune (#f1c40f, la couleur de selection de l'application).
+
+   La liste des oeuvres est en colonnes CSS (column-width) et non en grille :
+   les items ont des hauteurs tres inegales (certains portent des editions),
+   et une grille alignerait chaque rangee sur l'item le plus haut, laissant de
+   grands trous. Les colonnes remplissent l'espace au plus serre.
+   ========================================================================= */
+
+#euphonies_table tr.bnf-open,
+#euphonies_table tr.bnf-open:hover{
+	background: #f1c40f;
+}
+#euphonies_table tr.bnf-row,
+#euphonies_table tr.bnf-row:hover{
+	background: var(--sd-midnight);
+}
+#euphonies_table tr.bnf-row > td{
+	padding: 0;
+	border: 0;
+}
+
+.bnf-panel{
+	background: var(--sd-asphalt);
+	color: #ecf0f1;
+	font-size: 12px;
+	line-height: 1.45;
+	border-left: 4px solid #f1c40f;
+}
+
+.bnf-hd{
+	display: flex;
+	align-items: baseline;
+	gap: 14px;
+	padding: 7px 12px;
+	background: var(--sd-midnight);
+}
+.bnf-hd-t{
+	font-weight: 600;
+	color: #fff;
+	text-transform: uppercase;
+	letter-spacing: .05em;
+	font-size: 11px;
+}
+.bnf-hd-n{
+	color: #f1c40f;
+	text-transform: none;
+	letter-spacing: 0;
+	font-size: 12px;
+}
+.bnf-count{
+	color: #95a5a6;
+	font-size: 11px;
+}
+.bnf-hd .bnf-close{
+	margin-left: auto;   /* toujours colle a droite */
+	cursor: pointer;
+	color: #bdc3c7;
+	font-size: 16px;
+	line-height: 1;
+	padding: 0 2px;
+}
+.bnf-hd .bnf-close:hover{
+	color: #fff;
+}
+
+.bnf-bd{
+	padding: 9px 12px 12px 12px;
+}
+
+.bnf-works{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	column-width: 330px;
+	column-gap: 22px;
+}
+.bnf-work{
+	break-inside: avoid;
+	-webkit-column-break-inside: avoid;
+	padding: 2px 0 3px 9px;
+	border-left: 3px solid transparent;
+}
+.bnf-work:hover{
+	border-left-color: var(--sd-greensea);
+	background: rgba(255, 255, 255, .06);
+}
+/* l'Euphonie d'Or de la ligne cliquee, reperee dans la liste BnF */
+.bnf-work.is-match{
+	border-left-color: #f1c40f;
+}
+
+.bnf-y{
+	display: inline-block;
+	min-width: 34px;
+	color: #95a5a6;
+	font-variant-numeric: tabular-nums;
+}
+/* .bnf-t / .is-match .bnf-t : leur couleur est posee plus bas, avec les
+   autres liens du panneau, la ou la specificite suffit a l'emporter. */
+
+/* editions rattachees a une oeuvre */
+.bnf-eds{
+	margin: 0;
+	padding: 0 0 0 34px;
+	list-style: none;
+	color: #bdc3c7;
+}
+.bnf-eds li{
+	padding: 0;
+}
+.bnf-eds .bnf-y2{
+	color: #95a5a6;
+	font-variant-numeric: tabular-nums;
+	margin-right: 5px;
+}
+
+/* Liens de la notice.
+   ATTENTION a la specificite : la regle historique "table a:link" en tete de
+   cette feuille pese (0,1,2) — un pseudo-classe + deux elements — alors qu'un
+   simple ".bnf-panel a" ne pese que (0,1,1). Elle l'emportait donc, et tous
+   les liens du panneau sortaient en NOIR sur le fond sombre. On repasse par
+   #euphonies_table (un id) pour reprendre la main sans toucher au noir des
+   liens des lignes de donnees, qui lui est correct sur fond clair. */
+
+#euphonies_table .bnf-panel a,
+#euphonies_table .bnf-panel a:link,
+#euphonies_table .bnf-panel a:visited,
+#euphonies_table .bnf-panel a:active{
+	color: #ecf0f1;
+	text-decoration: none;
+	border-bottom: 1px solid rgba(236, 240, 241, .35);
+}
+#euphonies_table .bnf-panel a:hover{
+	color: #fff;
+	border-bottom-color: #fff;
+}
+#euphonies_table .bnf-panel a.bnf-t,
+#euphonies_table .bnf-panel a.bnf-t:link,
+#euphonies_table .bnf-panel a.bnf-t:visited,
+#euphonies_table .bnf-panel a.bnf-t:active{
+	color: #fff;
+	border-bottom-color: rgba(255, 255, 255, .3);
+}
+#euphonies_table .bnf-panel .is-match a.bnf-t,
+#euphonies_table .bnf-panel .is-match a.bnf-t:link,
+#euphonies_table .bnf-panel .is-match a.bnf-t:visited,
+#euphonies_table .bnf-panel .is-match a.bnf-t:active{
+	color: #f1c40f;
+}
+
+.bnf-wait,
+.bnf-warn{
+	margin: 0;
+	padding: 9px 12px;
 	color: #bdc3c7;
 	font-style: italic;
 }
