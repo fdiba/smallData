@@ -124,7 +124,7 @@
 							imeb_music.award_cat, imeb_music.award_cat_2, imeb_music.euphonies,
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
-							imeb_music.ark, imeb_artist.isni AS isni
+							imeb_artist.isni AS isni
 							
 							FROM imeb_music
 							INNER JOIN imeb_artist
@@ -139,10 +139,18 @@
 
 			if($euphonies>0){
 
+				// L'ARK de la notice d'oeuvre n'est plus selectionne : il n'a
+				// jamais ete affiche (les trois lignes ci-dessous dorment depuis
+				// 2017) et le garder dans le SELECT aurait casse la page pendant
+				// le renommage de la colonne. La colonne existe toujours, sous
+				// le nom imeb_music.ark_oeuvre — a ne pas confondre avec
+				// imeb_artist.ark_bnf, qui pointe une notice d'AUTORITE.
+				// Pour la reveiller un jour : ajouter imeb_music.ark_oeuvre au
+				// SELECT et decommenter.
 				//$ark="";
-				//if($row['ark'])$ark="ark:/".$row['ark'];
+				//if($row['ark_oeuvre'])$ark="ark:/".$row['ark_oeuvre'];
 
-				// $ark=$row['ark'];
+				// $ark=$row['ark_oeuvre'];
 				$isni=$row['isni'];
 
 				// $isni="0000000114444583";
