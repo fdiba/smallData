@@ -114,11 +114,17 @@
 		//---------------
 
 
+		// L'ISNI identifie une PERSONNE, pas une oeuvre : il est donc lu sur
+		// imeb_artist (colonne alimentee depuis data.bnf.fr, ~567 artistes) et
+		// non plus sur imeb_music.isni, vestige des essais d'interconnexion de
+		// 2017 qui ne portait que 28 valeurs. L'alias explicite "AS isni" garde
+		// la cle $row['isni'] inchangee : rien d'autre ne bouge, ni ici ni dans
+		// le flux envoye a js/euphonies.js (l'ISNI reste en arr[i+11]).
 		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price,
 							imeb_music.award_cat, imeb_music.award_cat_2, imeb_music.euphonies,
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
-							imeb_music.ark, imeb_music.isni
+							imeb_music.ark, imeb_artist.isni AS isni
 							
 							FROM imeb_music
 							INNER JOIN imeb_artist
