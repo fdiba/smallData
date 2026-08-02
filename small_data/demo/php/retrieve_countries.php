@@ -5,6 +5,11 @@
 	// Serialise en une chaine "id%nom%nombre%id%nom%nombre%..." (meme convention
 	// de separateur "%" que retrieve_cat.php).
 	//
+	// Le libelle renvoye est imeb_country.c_name_en (interface en anglais), avec
+	// repli sur c_name si la colonne anglaise est vide. L'ordre du menu reste
+	// celui d'origine (nombre d'oeuvres decroissant, c_name en departage des
+	// ex aequo) : seul le libelle affiche change, pas la sequence.
+	//
 	// Note : le INNER JOIN sur imeb_country ecarte les oeuvres dont le
 	// compositeur n'a pas de pays valide (~32 oeuvres "(inconnu)") ; elles ne
 	// sont pas rattachables a un pays et n'apparaissent donc pas au menu.
@@ -17,18 +22,20 @@
 		? 'imeb_music.misam >= 200000'
 		: 'imeb_music.misam > 0 AND imeb_music.misam < 200000';
 
-	$sth = $dbh->query('SELECT imeb_country.id, imeb_country.c_name, COUNT(*) AS n
+	$sth = $dbh->query('SELECT imeb_country.id,
+							   COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS label,
+							   COUNT(*) AS n
 						FROM imeb_music
 						INNER JOIN imeb_artist  ON imeb_music.id_artist  = imeb_artist.id
 						INNER JOIN imeb_country ON imeb_artist.id_country = imeb_country.id
 						WHERE ' . $range . '
 						  AND imeb_music.statut <> \'hors_repertoire\'
-						GROUP BY imeb_country.id, imeb_country.c_name
+						GROUP BY imeb_country.id, imeb_country.c_name_en, imeb_country.c_name
 						ORDER BY n DESC, imeb_country.c_name ASC');
 
 	$arr = array();
 	while($row = $sth->fetch()) {
-		array_push($arr, $row['id'], $row['c_name'], $row['n']);
+		array_push($arr, $row['id'], $row['label'], $row['n']);
 	}
 
 	echo implode('%', $arr);

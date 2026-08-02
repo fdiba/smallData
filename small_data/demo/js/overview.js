@@ -178,7 +178,7 @@ function calculateMinHeightAndCreateRectangles(step, threshold){
     resetPositions();
     minHeight = 0;
 
-    for (var i=0; i<allData.length-4; i+=5) {
+    for (var i=0; i<allData.length-5; i+=6) {
 
         //---------- get data ----------//
         var id = allData[i];
@@ -308,7 +308,7 @@ function selectRect(x, y){
                 }).done(function(str) {
 
                     var arr=str.split("%");
-                    var ctry=checkCountry(arr[2]);
+                    var ctry=arr[2];
                     // "edition" au singulier si une seule, "editions" au pluriel sinon
                     var nEd=(''+arr[3]).split(',').length;
                     var edLabel=(nEd===1 ? 'edition' : 'editions');
@@ -444,7 +444,7 @@ function getData(){
         //TO DEBUG AND CATCH ERROR
         // console.log(allData[0]);
 
-        for (var i=0; i<allData.length-4; i+=5) {
+        for (var i=0; i<allData.length-5; i+=6) {
             // var id = allData[i];
             var numTitles = allData[i+3];
             if(numTitles>0)numComposersInCapsules++;
@@ -454,7 +454,7 @@ function getData(){
         $("#selection").empty().append('<p>');
         $("#selection p").append(txt);
 
-        var num = allData.length / 5;
+        var num = allData.length / 6;
         var txt2 = numComposersInCapsules+ " / " + num + " composers with archived works";
         $("#info p:eq(0)").text(txt2);
 
@@ -641,7 +641,7 @@ function createComposersListing(num){
         var count = -1;
         var id = composers[i];
 
-        for (var j=0; j<allData.length-4; j+=5) {
+        for (var j=0; j<allData.length-5; j+=6) {
             if(id===allData[j]){
                 count=allData[j+3];
                 break;

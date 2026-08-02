@@ -169,9 +169,10 @@ function computeAll(){
     var ctry=allData[i+1];
     var ctry_id=allData[i+2];
     var counter=allData[i+3];
-    var editions=allData[i+4];*/
+    var editions=allData[i+4];
+    var iso=allData[i+5];*/
 
-    for (var i=0; i<allData.length-4; i+=5)composers.push({id:allData[i], count:allData[i+3]});
+    for (var i=0; i<allData.length-5; i+=6)composers.push({id:allData[i], count:allData[i+3]});
 
     if(composers.length>0){
         animation01=setInterval(sma_animation, 1000/30);
@@ -287,13 +288,13 @@ function removePreviousSelection(){
 function addParticleUsing(i){
 
     var index=0;
-    while(composers[i].id!=allData[index])index+=5;
+    while(composers[i].id!=allData[index])index+=6;
 
-    //use artist_id, country name, counter, radius to add as arguments
+    //use artist_id, country name, country code, counter, radius to add as arguments
     if(usingCookie){
-        particles.push(createNewParticle(composers[i].id, allData[index+1], composers[i].count, 1));
+        particles.push(createNewParticle(composers[i].id, allData[index+1], allData[index+5], composers[i].count, 1));
     } else {
-        particles.push(createNewParticle(composers[i].id, allData[index+1], composers[i].count, .15));
+        particles.push(createNewParticle(composers[i].id, allData[index+1], allData[index+5], composers[i].count, .15));
     }
 
     pointer001++;
@@ -441,7 +442,7 @@ function resetSMACanvas(){
     context.fillStyle=COLORS[0];
     context.fillRect(0, 0, canvas.width, canvas.height);
 }
-function createNewParticle(id, ctry, count, addRadiusVal){
+function createNewParticle(id, ctry, iso, count, addRadiusVal){
 
     //800 600
     
@@ -451,6 +452,7 @@ function createNewParticle(id, ctry, count, addRadiusVal){
         addRadiusVal: addRadiusVal*scale,
         id: id,
         label: ctry,
+        iso: iso,
         x:Math.random()*canvas.width,
         y:Math.random()*canvas.height,
         scale: scale
@@ -484,15 +486,12 @@ function getDataV2(){
         var ctry=allData[i+1];
         var ctry_id=allData[i+2];
         var counter=allData[i+3];
-        var editions=allData[i+4];*/
-
-        for (var i=0; i<allData.length-4; i+=5) {
-            if(ENGLISH)allData[i+1]=checkCountry(allData[i+1]);
-        }
+        var editions=allData[i+4];
+        var iso=allData[i+5];*/
 
         var txt = "";
 
-        var num = allData.length / 5;
+        var num = allData.length / 6;
         var txt2 = "allData: " + num;
 
         $("#selection").empty();

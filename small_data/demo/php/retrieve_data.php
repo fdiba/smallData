@@ -99,7 +99,8 @@
 		$years = array(1973, 1974, 1975, 1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009);
 
 		$sth = $dbh->query('SELECT imeb_artist.id AS artist_id,
-								imeb_country.c_name AS ctry, imeb_country.id AS c_id,
+								COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry, imeb_country.id AS c_id,
+								COALESCE(NULLIF(imeb_country.iso3, \'\'), NULLIF(imeb_country.iso2, \'\'), NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS iso,
 								imeb_edition.ed_1973, imeb_edition.ed_1974,
 								imeb_edition.ed_1975, imeb_edition.ed_1976,
 							   	imeb_edition.ed_1977, imeb_edition.ed_1978,
@@ -154,6 +155,11 @@
 					}
 				}
 			}
+
+			// 6e et dernier champ : le code pays affiche dans les bulles.
+			// iso3, a defaut iso2 (l'Ecosse n'a pas d'iso3 : elle affiche GB),
+			// a defaut le nom du pays (entrees sans code, type "Unknown").
+			$str_all .= "%" . $row['iso'];
 		}
 		$dbh=null;
 		echo $str_all;
@@ -167,7 +173,7 @@
 		$result = "no result";
 
 		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name,
-							imeb_country.c_name AS \'ctry\',
+							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS \'ctry\',
 							imeb_edition.ed_1973, imeb_edition.ed_1974,
 							imeb_edition.ed_1975, imeb_edition.ed_1976,
 						   	imeb_edition.ed_1977, imeb_edition.ed_1978,

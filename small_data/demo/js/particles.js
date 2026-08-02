@@ -77,7 +77,9 @@ function Particle(config){
 
 	this.font = 10*this.scale + "pt Calibri";
 
-	this.iso=getISO3(this.label);
+	// code pays servi par retrieve_data.php (6e champ du case 10) : iso3, a
+	// defaut iso2 pour l'Ecosse (GB), a defaut le nom du pays.
+	this.iso=config.iso ? config.iso : this.label;
 
 	this.radius_to_add=config.addRadiusVal;
 

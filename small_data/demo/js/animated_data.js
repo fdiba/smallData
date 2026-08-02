@@ -297,7 +297,7 @@ function updateSlData(){
 
         var f_data=[];
 
-        for (var i=0; i<allData.length-4; i+=5) {
+        for (var i=0; i<allData.length-5; i+=6) {
 
             var arr = allData[i+4].split(",");
             var count = allData[i+3];
@@ -334,7 +334,7 @@ function updateSlData(){
             maxY=Math.max(sl_years[0], sl_years[1]);
         }
 
-        for (var i=0; i<allData.length-4; i+=5) {
+        for (var i=0; i<allData.length-5; i+=6) {
 
             var count = allData[i+3];
             //not well enough written : when count > 0 all editions are ++
@@ -838,11 +838,11 @@ function getData(){
         var ctry=allData[i+1];
         var ctry_id=allData[i+2];
         var counter=allData[i+3];
-        var editions=allData[i+4];*/
+        var editions=allData[i+4];
+        var iso=allData[i+5];*/
 
-        for (var i=0; i<allData.length-4; i+=5) {
+        for (var i=0; i<allData.length-5; i+=6) {
             var id = allData[i];
-            if(ENGLISH)allData[i+1]=checkCountry(allData[i+1]);
             var numTitles = allData[i+3];
             numTitlesByArtist[id]=numTitles;
 
@@ -862,7 +862,7 @@ function getData(){
         $("#selection").empty().append('<p>');
         $("#selection p").append(txt);
 
-        var num = allData.length / 5;
+        var num = allData.length / 6;
         var txt2 = numComposersInCapsules+ " / " + num;
         $("#info p:eq(0)").text(txt2);
 
