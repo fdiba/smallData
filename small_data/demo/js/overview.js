@@ -615,7 +615,11 @@ function getSearchTerms(){
 
                 createComposersListing(numOfElements);
 
-                showAndHighlightComposer(composers[0]);
+                // Resultat unique : on le surligne d'office, MAIS seulement s'il
+                // existe dans l'index. Sinon showAndHighlightComposer remettrait
+                // "num of records" a 0 et redessinerait toute la grille pour ne
+                // surligner personne (le compositeur n'y est a aucun seuil).
+                if(indexCountFor(composers[0])>=0) showAndHighlightComposer(composers[0]);
 
             } else {
 
@@ -634,25 +638,47 @@ function getSearchTerms(){
 }
 
 //-------------//
+// Nombre d'oeuvres archivees d'un compositeur TEL QUE L'INDEX LE CONNAIT, ou -1
+// s'il n'y figure pas du tout. Les deux populations ne coincident pas : l'index
+// (case 10) est bati sur imeb_edition, la table des participations issue du
+// depouillement des proces-verbaux, alors que la recherche (case 28) interroge
+// imeb_artist par le nom. Un compositeur entre en base par les catalogues, sans
+// ligne de participation, est donc trouvable par la recherche sans avoir aucun
+// carre dans la grille : c'est ce cas que le -1 signale.
+function indexCountFor(id){
+
+    for (var j=0; j<allData.length-5; j+=6) {
+        if(id===allData[j]) return allData[j+3];
+    }
+
+    return -1;
+}
 function createComposersListing(num){
 
     var arr=[];
 
     for (var i = 0; i < composers.length; i+=num) {
 
-        var count = -1;
         var id = composers[i];
+        var count = indexCountFor(id);
 
-        for (var j=0; j<allData.length-5; j+=6) {
-            if(id===allData[j]){
-                count=allData[j+3];
-                break;
-            }
-        }
+        // -1 n'est pas un compte : c'est une absence. On l'ecrit en toutes
+        // lettres plutot que de le laisser passer pour un nombre d'oeuvres, et
+        // la ligne est grisee et non cliquable (rien a surligner). Elle reste
+        // affichee : c'est le seul endroit de cette page ou ces fiches
+        // apparaissent. count vaut toujours -1 pour le tri : elles descendent
+        // donc naturellement en fin de liste.
+        // L'identifiant de fiche (imeb_artist.id) n'est ni affiche ni survolable :
+        // c'est une cle de gestion, sans interet pour qui lit une liste de noms.
+        // Il reste PORTE par la ligne, dans data-id, parce que c'est lui — et non
+        // le nom — qui retrouve les carres du compositeur (les homonymes ne sont
+        // separables que par la).
+        var str = (count<0)
+            ? '<p class="no-index" data-id="' + id + '">' +
+                composers[i+1] + ' ' + composers[i+2] + ' &mdash; not in this index</p>'
+            : '<p data-id="' + id + '">' +
+                composers[i+1] + ' ' + composers[i+2] + ' ' + count + '</p>';
 
-        var str ='<p>' + id + ' ' + composers[i+1] + ' ' + 
-            composers[i+2] + ' ' + count + ' ' + '</p>';
-        
         if(arr.length<1){
             arr.push([count, str]);
             // console.log(str);
@@ -679,9 +705,12 @@ function createComposersListing(num){
         $("#results").append(arr[l][1]);
     }
 
-    $("#results p").click(function(evt) {
-        var id = $(evt.target).text().split(' ')[0];
-        showAndHighlightComposer(id);
+    // Seules les lignes presentes dans l'index sont cliquables. L'identifiant
+    // est relu dans data-id avec attr() et NON avec data() : data() convertirait
+    // "2373" en nombre, alors que showAndHighlightComposer le compare a
+    // rectangles[j].id — une chaine — avec l'egalite stricte.
+    $("#results p").not(".no-index").click(function() {
+        showAndHighlightComposer($(this).attr('data-id'));
     });
 
     // console.log(composers.length/num, arr.length);

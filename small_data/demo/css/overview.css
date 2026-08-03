@@ -141,6 +141,19 @@
 #results p:hover{
 	text-decoration: underline;
 }
+/* Resultat que la grille ne contient pas : la fiche existe dans imeb_artist mais
+   n'a aucune ligne de participation dans imeb_edition, donc aucun carre a
+   surligner. La ligne reste affichee — c'est le seul endroit de la page ou ces
+   compositeurs apparaissent — mais elle est grisee, en italique, et n'invite
+   pas au clic. */
+#results p.no-index{
+	color: var(--sd-asbestos);
+	font-style: italic;
+	cursor: default;
+}
+#results p.no-index:hover{
+	text-decoration: none;
+}
 #selection{
 	margin: 0 0 1px 0;
 }

@@ -73,6 +73,7 @@
 						<li>click a square to select a composer: the orange box sums up their participations and the purple box lists their archived works</li>
 						<li>type a name in <em>composer name</em> to list matching composers; click a result to highlight their squares in yellow</li>
 						<li><em>num of records &gt;=</em> rebuilds the index with only the composers having at least that many archived works</li>
+						<li>a result marked <em>not in this index</em> has no square to highlight: some composers are in the repertoire without appearing in this participation grid, because no participation has been recorded for them in the minutes entered so far &mdash; their works are still listed on the catalogue and award pages</li>
 					</ul>
 				</div>
 				<div>
