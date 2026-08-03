@@ -61,11 +61,12 @@
 		<div id="chart"></div>
  	</div>
 	<!-- jQuery n'etait pas charge sur cette page : il l'est desormais pour la
-	     fiche ISNI de js/categories.js, qui reprend telle quelle celle des
-	     autres pages (requete vers php/retrieve_isni.php, placement de la
-	     boite). d3 ne s'en sert pas ; seul js/categories.js en depend, il
-	     suffit donc qu'il soit charge avant lui. -->
+	     fiche ISNI (js/isni_box.js), qui en depend. d3 ne s'en sert pas.
+	     Fiche ISNI : code partage par les quatre pages qui affichent un ISNI
+	     (voir l'en-tete de js/isni_box.js). Le point d'entree, lui, reste dans
+	     js/categories.js — ici le <text> SVG du noeud compositeur. -->
 	<script src="lib/jquery-3.1.1.min.js"></script>
+	<script src="js/isni_box.js"></script>
 	<script src="lib/d3.v3.min.js" charset="utf-8"></script>
 	<!-- <script src="lib/d3-sankey.min.js"></script> -->
 	<script src="lib/erase_old_sankey.js"></script>

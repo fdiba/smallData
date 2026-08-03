@@ -11,6 +11,12 @@
 	<link rel="stylesheet" type="text/css" href="css/isni.css">
 	<?php include_once($_SERVER["DOCUMENT_ROOT"] . "/analyticstracking.php") ?>
 	<script src="lib/jquery-3.1.1.min.js"></script>
+	<!-- Fiche ISNI : code partage par les quatre pages qui affichent un ISNI
+	     (voir l'en-tete de js/isni_box.js). Depend de jQuery, donc charge
+	     apres lui ; les points d'entree, eux, restent dans les scripts de la
+	     page — ici deux : la colonne ISNI du tableau (js/euphonies.js) et la
+	     boite violette du SMA (js/particles_euphonies.js). -->
+	<script src="js/isni_box.js"></script>
 	<script src="lib/perlin.js"></script>
 	<script src="js/variables.js"></script>
 	<script src="js/functions.js"></script>
