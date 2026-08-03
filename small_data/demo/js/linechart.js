@@ -139,8 +139,17 @@ LineChart.prototype.retrieveData = function(cId, year, value){
         var arr=str.split("%");
         composers=[];
 
-        for (var i=0; i<arr.length-3; i+=4) {
-            composers.push({id:arr[i], fn:arr[i+1], n:arr[i+2], y:arr[i+3]});
+        /* Cinq champs par compositeur depuis que l'ISNI accompagne le flux
+           (php/retrieve_data.php, case 0) :
+
+             0 id   1 prenom   2 nom   3 participation a l'annee   4 ISNI
+
+           Le pas etait de 4 ; il DOIT suivre l'ajout, sinon la lecture se
+           decale d'un champ des le deuxieme compositeur — silencieusement,
+           avec des noms qui deviendraient des identifiants. C'est l'unique
+           endroit du site qui consomme le case 0. */
+        for (var i=0; i<arr.length-4; i+=5) {
+            composers.push({id:arr[i], fn:arr[i+1], n:arr[i+2], y:arr[i+3], isni:arr[i+4]});
         }
 
         getNumComposersInCapsulesAndTitles(cId, year, composers);

@@ -148,70 +148,11 @@ function drawRect(x, y, c){
     context.fillStyle=c;
     context.fillRect(x, y, rWidth, rHeight);
 }
-/* La boite violette REPLIEE : un en-tete « N archived works », et la liste
-   des oeuvres qui n'apparait qu'au clic.
-
-   Pourquoi replier. La boite violette pouvait faire plusieurs dizaines de
-   lignes (Clozier en porte 43) et repoussait alors tout le bas de la colonne.
-   Ce qu'on veut savoir en cliquant un carre, c'est d'abord COMBIEN d'oeuvres
-   la fiche porte ; la liste elle-meme se demande. L'etat par defaut est donc
-   replie, et le compte est l'information toujours visible.
-
-   DECORATEUR, pas reecriture. Les <li> des oeuvres restent construits par
-   displayTitlesInfosGN() (js/functions.js), partagee avec la page Network :
-   on se contente de REMPLACER son en-tete et de masquer les oeuvres par une
-   classe sur le <ul>. Aucun risque de faire diverger le rendu des oeuvres, et
-   rien a modifier dans un fichier partage pour un besoin propre a Overview.
-
-   ON REMPLACE, ON N'AJOUTE PAS. displayTitlesInfosGN ecrit deja un en-tete —
-   un <span> « N archived works: », avec deux-points parce que la liste suivait
-   immediatement. Le premier jet posait un second en-tete devant : le compte
-   s'affichait deux fois. Ce <span> est donc retire et remplace par le bouton,
-   qui reprend le meme compte sans les deux-points : il n'introduit plus une
-   liste visible, il commande son affichage.
-
-   Mettre le <li> en tete est ici sans danger : le zebrage violet est porte
-   par des CLASSES (.t-a/.t-b) et non par :nth-child. Sur les Euphonies, ou
-   il etait en nth-child, l'insertion d'une ligne inversait la parite de
-   toutes les suivantes — c'est ce qui avait impose le passage aux classes.
-
-   Le pli est refait a chaque compositeur : on ne garde pas ouvert l'etat
-   demande pour la fiche precedente, qui portait un autre nombre d'oeuvres. */
-function foldTitles(n){
-
-    var box = $('#titles');
-
-    // L'en-tete que displayTitlesInfosGN vient d'ecrire : il cede la place.
-    box.children('span').remove();
-
-    /* Aucune oeuvre : displayTitlesInfosGN a pose « no archived work for this
-       composer ». Rien a replier — et surtout, il faut RETIRER le pli laisse
-       par le compositeur precedent, sinon cette phrase serait masquee par la
-       regle qui cache les <li> hors en-tete. */
-    if(!n){ box.removeClass('is-folded'); return; }
-
-    // "work" au singulier ou au pluriel, sans parentheses (convention du site)
-    var label = n + ' archived work' + (n > 1 ? 's' : '');
-
-    box.addClass('is-folded').prepend(
-        '<li class="t-hd"><button type="button" class="t-toggle" aria-expanded="false">'
-        + label + '<span class="t-caret" aria-hidden="true"></span></button></li>');
-}
-
-/* Le pli lui-meme. Delegue sur #titles : l'en-tete est reconstruit a chaque
-   selection, un gestionnaire pose dessus serait a reposer a chaque fois.
-
-   Ecrit ici et non dans js/legend_toggle.js (le repli du "How to read") :
-   celui-ci s'adresse a un couple bouton/panneau identifie par id, present sur
-   sept pages, alors qu'il s'agit ici de masquer les freres d'un <li> dans une
-   liste reconstruite en permanence. Si un troisieme pli apparait, c'est
-   legend_toggle.js qu'il faudra generaliser plutot que recopier ces lignes. */
-$(function(){
-    $('#titles').on('click', '.t-toggle', function(){
-        var open = $('#titles').toggleClass('is-folded').hasClass('is-folded') === false;
-        $(this).attr('aria-expanded', open ? 'true' : 'false');
-    });
-});
+/* Le repli de la boite violette (« N archived works », liste depliable) a
+   d'abord ete ecrit ici, puis DEPLACE dans js/functions.js : Network porte la
+   meme boite, construite par la meme fonction partagee, et une seconde copie
+   n'aurait pas survecu a la premiere correction faite d'un seul cote. Voir
+   l'en-tete de displayTitlesInfosGN() — et css/main.css pour les styles. */
 
 /* Le contenu de la boite orange, a partir de la reponse de retrieve_data.php
    (case 5), decoupee sur '%' :
@@ -488,7 +429,6 @@ function selectRect(x, y){
                     }
 
                     displayTitlesInfosGN(titles);
-                    foldTitles(titles.length);
 
                 });
             }

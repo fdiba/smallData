@@ -5,10 +5,16 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/network.css">
+	<link rel="stylesheet" type="text/css" href="css/isni.css">
 	<?php include_once($_SERVER["DOCUMENT_ROOT"] . "/analyticstracking.php") ?>
 	<script src="lib/jquery-3.1.1.min.js"></script>
 	<script src="lib/jquery.cookie.js"></script>
 	<script src="lib/perlin.js"></script>
+	<!-- Fiche ISNI : code partage par les pages qui affichent un ISNI (voir
+	     l'en-tete de js/isni_box.js). Depend de jQuery, donc charge apres lui.
+	     js/functions.js s'en sert pour rendre le nom cliquable dans la boite
+	     orange, et js/network.js appelle enableIsniPanel(). -->
+	<script src="js/isni_box.js"></script>
 	<script src="js/variables.js"></script>
     <script src="js/functions.js"></script>
     <script src="js/childs.js"></script>
@@ -43,6 +49,11 @@
 			<div id="infos">
 				<div id="cookies"></div>
 			    <div id="selection"></div>
+			    <!-- Fiche ISNI du compositeur selectionne. Elle se pose ICI,
+			         entre la boite orange d'ou part le clic et la liste des
+			         oeuvres : en flux, elle ne recouvre rien (js/isni_box.js,
+			         option `into`). Vide tant qu'aucun nom n'a ete clique. -->
+			    <div id="isniColumn"></div>
 			    <ul id="titles"></ul>
 		    </div>
 	    </div>
@@ -66,7 +77,8 @@
 						<li><span class="sq" style="background:#bdc3c7"></span> a composer, still looking for others sharing a common property</li>
 						<li><span class="sq" style="background:#2ecc71"></span> a grouping of composers &mdash; click it to open it</li>
 						<li><span class="sq" style="background:#f1c40f"></span> an opened grouping, showing its members &mdash; double-click it to close it</li>
-						<li><span class="sq" style="background:#3498db"></span> a composer inside an opened grouping &mdash; click it to list their archived works</li>
+						<li><span class="sq" style="background:#3498db"></span> a composer inside an opened grouping &mdash; click it to see how many archived works they have; click that count to unfold the list, click it again to fold it back</li>
+							<li>in the orange box, a name <span class="composer-isni">underlined with dots</span> has an ISNI: click it to open the composer's international identity record just below &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. Close it with the cross or the <em>Esc</em> key; selecting another composer replaces it</li>
 					</ul>
 				</div>
 				<div>

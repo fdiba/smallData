@@ -35,10 +35,32 @@
 	border-radius: 50%;
 }
 
+/* Fiche ISNI, rendue EN FLUX dans la colonne (js/isni_box.js, option `into`) :
+   elle prend place entre la boite orange et la liste des oeuvres au lieu de
+   les recouvrir. La colonne est etroite (max-width 300px ci-dessus) et collee
+   au canvas : il n'y a pas de gouttiere ou poser un panneau lateral comme sur
+   le catalogue. Tant qu'aucun nom n'a ete clique, la div est vide et ne mesure
+   rien — la colonne est exactement celle d'avant. */
+#isniColumn{
+	box-sizing: border-box;
+	width: 100%;
+}
+/* Respiration SOUS la fiche, et seulement quand elle est ouverte : sinon la
+   boite violette viendrait s'y coller et les deux se liraient comme un seul
+   bloc. Portee par .open pour ne pas laisser un blanc permanent dans la
+   colonne quand aucune fiche n'est affichee. */
+#isniColumn .isni-box.open{
+	margin-bottom: 10px;
+}
+
 /* La boite violette (#titles) separe chaque oeuvre par un fond alterne, en deux
    nuances de violet (comme Overview et les line charts). Le JS partage
    (displayTitlesInfosGN) produit deja les <li class="t-a"/"t-b"> ; il ne manquait
-   que le style cote network. */
+   que le style cote network.
+
+   Son en-tete repliable (« N archived works ») n'est PAS ici : il est produit
+   par la meme fonction partagee pour Overview et Network, et ses regles vivent
+   donc dans css/main.css, aupres de #titles. */
 #titles{ height: auto; }
 #titles li{
 	list-style: none;

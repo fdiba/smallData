@@ -192,75 +192,8 @@
 #titles li.t-a{ background: #9b59b6; }
 #titles li.t-b{ background: #8145a0; }
 
-/* ---------- En-tete « N archived works » et repli de la liste ----------
-   Meme PARTITION que la fiche ISNI — un en-tete qui se detache du corps par
-   un fond plus sombre — mais pas la meme COULEUR. Le premier jet reprenait
-   --sd-midnight, celui de .isni-hd : la fiche ISNI etant juste au-dessus dans
-   la colonne, les deux bandes sombres se touchaient et l'en-tete de la boite
-   violette se lisait comme une ligne de la fiche ISNI. Il prend donc un
-   violet fonce : il se detache de ses oeuvres (deux violets plus clairs) tout
-   en restant du meme objet qu'elles.
-
-   L'en-tete reste visible en permanence ; seules les oeuvres se replient
-   (etat par defaut). Le pli porte sur les <li> QUI NE SONT PAS l'en-tete,
-   d'ou le :not() — masquer par un selecteur de position casserait au moindre
-   changement d'ordre. */
-/* Marges NEGATIVES : le <ul> #titles porte lui-meme « padding: 5px 10px » et
-   un fond amethyste (css/main.css, section 2). Un en-tete pose sagement dans
-   ce padding laissait donc voir une bande violette de 5px au-dessus et de
-   10px de chaque cote — un liseré autour du bouton. L'en-tete ressort de ce
-   padding pour aller d'un bord a l'autre, comme .isni-hd dans la fiche ISNI ;
-   les oeuvres, elles, gardent la gouttiere. Les valeurs sont exactement
-   celles de main.css : si ce padding change, ces marges doivent suivre. */
-#titles li.t-hd{
-	margin: -5px -10px 0;
-	padding: 0;
-	background: #5b2c6f;               /* violet fonce : plus sombre que .t-b */
-}
-/* Replie, l'en-tete est le dernier element : le padding bas du <ul> laisserait
-   a son tour une bande violette SOUS le bouton. On le retire, et il revient
-   des que la liste s'ouvre. */
-#titles.is-folded{
-	padding-bottom: 0;
-}
-#titles .t-toggle{
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	width: 100%;
-	box-sizing: border-box;
-	margin: 0;
-	padding: 6px 10px;
-	border: 0;
-	background: none;
-	color: #fff;
-	font: inherit;
-	font-weight: 600;
-	letter-spacing: .04em;
-	text-align: left;
-	cursor: pointer;
-}
-#titles .t-toggle:hover,
-#titles .t-toggle:focus{
-	background: rgba(255, 255, 255, .08);
-	outline: none;
-}
-/* Le chevron : meme code visuel que le repli du "How to read" (.lg-caret),
-   un triangle CSS qui pivote. Il pointe vers le bas quand la liste est
-   ouverte — il indique ce qu'on voit, pas ce qu'on obtiendrait. */
-#titles .t-caret{
-	flex: 0 0 auto;
-	width: 0;
-	height: 0;
-	border-left: 5px solid transparent;
-	border-right: 5px solid transparent;
-	border-top: 5px solid currentColor;
-	transition: transform 120ms ease;
-}
-#titles.is-folded .t-caret{
-	transform: rotate(-90deg);
-}
-#titles.is-folded li:not(.t-hd){
-	display: none;
-}
+/* Le repli de la boite violette (en-tete « N archived works », chevron, liste
+   masquee) est dans css/main.css, aupres de la regle #titles : Network porte
+   la meme boite et les memes classes, produites par la meme fonction
+   partagee (displayTitlesInfosGN, js/functions.js). Une copie ici en aurait
+   fait deux a corriger. */

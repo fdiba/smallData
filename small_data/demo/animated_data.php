@@ -5,8 +5,12 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/animated_data.css">
+	<link rel="stylesheet" type="text/css" href="css/isni.css">
 	<?php include_once($_SERVER["DOCUMENT_ROOT"] . "/analyticstracking.php") ?>
 	<script src="lib/jquery-3.1.1.min.js"></script>
+	<!-- Fiche ISNI : code partage par les pages qui affichent un ISNI (voir
+	     l'en-tete de js/isni_box.js). Depend de jQuery, donc charge apres lui. -->
+	<script src="js/isni_box.js"></script>
 	<script src="js/variables.js"></script>
 	<script src="js/functions.js"></script>
 	<script src="js/barchart.js"></script>
@@ -70,6 +74,7 @@
 						<li><span class="demo demo-selected">Name</span> took part in the selected edition</li>
 						<li><span class="demo">Name</span> listed in the minutes, but no archived work</li>
 						<li>the orange bar sums up the current selection — click it to switch between all composers and those of the selected edition only</li>
+						<li>clicking a name opens a panel on the right: the composer's name, then the number of their archived works &mdash; click that count to unfold the list. A name <span class="composer-isni">underlined with dots</span> has an ISNI: click it to open the international identity record between the two boxes</li>
 					</ul>
 				</div>
 			</div>
@@ -77,7 +82,16 @@
 		</div>
 	    <div id="selection"><p>no selection</p></div>
 	    <ul id="composers"></ul>
-	    <ul id="titles"></ul>
+	    <!-- Panneau de droite, en trois etages solidaires : le NOM du
+	         compositeur choisi, la fiche ISNI qu'il ouvre, puis ses
+	         oeuvres. Le tout est place a hauteur du "How to read" par
+	         positionWorkPanel() (js/animated_data.js) — c'est le panneau
+	         qui est positionne, pas chacune des boites. -->
+	    <div id="workPanel">
+	        <div id="composerBox"></div>
+	        <div id="isniColumn"></div>
+	        <ul id="titles"></ul>
+	    </div>
     </div>
 </body>
 </html>

@@ -311,6 +311,79 @@ ul{
 	margin: 0;
 }
 
+/* --- Boite violette repliee : en-tete « N archived works » (index, network) ---
+   Le pli est produit par displayTitlesInfosGN() (js/functions.js), partagee
+   par ces deux pages : les regles vivent donc ici, aupres de #titles, et non
+   dans chacune des deux feuilles de page. Les autres pages a boite violette
+   (catalogue, oeuvres primees) la remplissent autrement et ne produisent ni
+   .t-hd ni .is-folded : ces regles n'y rencontrent jamais rien.
+
+   L'en-tete se detache de ses oeuvres par un fond plus sombre — meme partition
+   que la fiche ISNI (.isni-hd sur --sd-midnight, corps sur --sd-asphalt). Mais
+   PAS la meme couleur : sur Overview la fiche ISNI est juste au-dessus dans la
+   colonne, et deux bandes --sd-midnight qui se touchent se lisaient comme un
+   seul objet. D'ou un violet fonce, plus sombre que .t-b : il se detache de
+   ses oeuvres tout en restant visiblement de la meme boite qu'elles. */
+#titles li.t-hd{
+	/* Marges NEGATIVES : #titles porte lui-meme le padding 5px 10px ci-dessus,
+	   sur fond amethyste. Un en-tete pose sagement dedans laissait voir une
+	   bande violette de 5px au-dessus et de 10px de chaque cote — un lisere
+	   autour du bouton. Il en ressort pour aller d'un bord a l'autre, comme
+	   .isni-hd ; les oeuvres, elles, gardent la gouttiere. Si le padding de
+	   #titles change, ces marges doivent suivre : c'est pourquoi les deux
+	   regles sont voisines. */
+	margin: -5px -10px 0;
+	padding: 0;
+	background: #5b2c6f;
+}
+/* Replie, l'en-tete est le dernier element : le padding bas de #titles
+   laisserait a son tour une bande violette SOUS le bouton. On le retire, et
+   il revient des que la liste s'ouvre. */
+#titles.is-folded{
+	padding-bottom: 0;
+}
+#titles .t-toggle{
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	width: 100%;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 6px 10px;
+	border: 0;
+	background: none;
+	color: #fff;
+	font: inherit;
+	font-weight: 600;
+	letter-spacing: .04em;
+	text-align: left;
+	cursor: pointer;
+}
+#titles .t-toggle:hover,
+#titles .t-toggle:focus{
+	background: rgba(255, 255, 255, .08);
+	outline: none;
+}
+/* Le chevron : meme code visuel que le repli du "How to read" (.lg-caret),
+   un triangle CSS qui pivote. Il pointe vers le bas quand la liste est
+   ouverte — il indique ce qu'on voit, pas ce qu'on obtiendrait. */
+#titles .t-caret{
+	flex: 0 0 auto;
+	width: 0;
+	height: 0;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 5px solid currentColor;
+	transition: transform 120ms ease;
+}
+#titles.is-folded .t-caret{
+	transform: rotate(-90deg);
+}
+#titles.is-folded li:not(.t-hd){
+	display: none;
+}
+
 /* =========================================================
    3. LEGENDE DE PAGE (#legend) — partagee (line charts, network)
    ========================================================= */

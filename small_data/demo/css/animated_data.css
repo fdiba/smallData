@@ -100,20 +100,56 @@
 
 /* ---------- liste des oeuvres d'un compositeur ---------- */
 
-/* #content sert d'ancre : la boite violette est positionnee en absolu par
-   rapport a lui (voir positionTitlesBox dans animated_data.js). */
+/* #content sert d'ancre : le panneau de droite est positionne en absolu par
+   rapport a lui (voir positionWorkPanel dans animated_data.js). */
 #content{ position: relative; }
-#titles{
-	/* placee en JS a hauteur du "How to read", a sa droite (position absolue ->
-	   hors flux : la colonne de gauche - barre orange + compositeurs - ne bouge
-	   pas, meme quand la liste des oeuvres est longue). Repli sous les
-	   compositeurs si la fenetre est trop etroite (positionTitlesBox). */
+
+/* Le panneau de droite, en trois etages : le NOM du compositeur, la fiche ISNI
+   qu'il ouvre, puis ses oeuvres. C'est LUI qui est place en JS a hauteur du
+   "How to read" et a sa droite (position absolue -> hors flux : la colonne de
+   gauche, barre orange + compositeurs, ne bouge pas, meme quand la liste des
+   oeuvres est longue). Repli dans le flux normal si la fenetre est trop
+   etroite (positionWorkPanel).
+
+   Le placement porte sur le panneau et non sur chaque boite : les trois etages
+   doivent rester solidaires, sinon la fiche ISNI resterait dans le flux pendant
+   que les oeuvres remontent a droite. */
+#workPanel{
 	position: absolute;
+	box-sizing: border-box;
+	min-width: 220px;
+	max-width: 440px;
+}
+/* La boite du nom : meme code que la barre de selection de la page et que la
+   boite orange d'Overview et de Network — l'orange y designe partout « ce qui
+   est selectionne ». C'est le nom qui porte le lien vers la notice ISNI. */
+#composerBox{
+	background: orange;
+	padding: 5px 10px;
+	word-wrap: break-word;
+	cursor: default;                   /* la barre n'est pas cliquable, le nom l'est */
+}
+#composerBox p{
+	padding: 0;
+	margin: 0;
+}
+/* Fiche ISNI, rendue EN FLUX entre le nom et les oeuvres (js/isni_box.js,
+   option `into`) : elle prend sa place au lieu de recouvrir la liste. */
+#isniColumn{
+	box-sizing: border-box;
+	width: 100%;
+}
+/* Respiration de part et d'autre de la fiche, et seulement quand elle est
+   ouverte : sinon les trois boites se colleraient et se liraient comme une
+   seule. Portee par .open pour ne pas laisser de blanc permanent. */
+#isniColumn .isni-box.open{
+	margin: 8px 0;
+}
+#titles{
 	box-sizing: border-box;
 	word-wrap: break-word;
 	min-width: 220px;
 	min-height: 20px;
-	max-width: 440px;
 	margin: 0;
 }
 /* Distinction de chaque oeuvre par un fond alterne (comme dans Overview),
@@ -126,9 +162,13 @@
 #titles li.t-a{ background: #9b59b6; }
 #titles li.t-b{ background: #8145a0; }
 
-/* La liste des compositeurs et la boite des oeuvres ne s'affichent que
-   lorsqu'elles contiennent quelque chose (sinon barres vides inutiles). */
+/* La liste des compositeurs, la boite du nom et celle des oeuvres ne
+   s'affichent que lorsqu'elles contiennent quelque chose (sinon barres vides
+   inutiles). Le panneau qui les porte, lui, n'est jamais :empty au sens CSS —
+   il contient toujours ses trois enfants — mais il ne mesure rien tant qu'ils
+   sont tous vides. */
 #composers:empty,
+#composerBox:empty,
 #titles:empty{
 	display: none;
 }

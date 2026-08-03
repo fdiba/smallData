@@ -238,11 +238,12 @@
 		echo $result;
 
 	}
-	function retrieveAllCompositionsFrom03($aId){
+	function retrieveAllCompositionsFrom03($aId){ //only network case 11
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
-		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name,
+		/* imeb_artist.isni : 8e champ de chaque enregistrement (voir plus bas). */
+		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name, imeb_artist.isni,
 							imeb_music.id, imeb_music.title, imeb_music.duration,
 							imeb_music.misam, imeb_music.editions
 							FROM imeb_artist
@@ -257,9 +258,19 @@
 
 		$str_all = "";
 
+		/* Une reponse a PAS DE FIN : c'est une suite d'enregistrements de
+		   longueur fixe, lus par paquets ("i += 7" dans Particle.getTitlesFrom,
+		   js/particles.js). Le champ ajoute l'est donc en fin de CHAQUE
+		   enregistrement, et le pas de lecture passe de 7 a 8 dans l'unique
+		   consommateur — le seul endroit du site qui appelle le case 11.
+		   Ajouter au milieu aurait decale toutes les colonnes suivantes.
+
+		   Le prenom, le nom et l'ISNI sont repetes a chaque ligne : c'est la
+		   forme d'origine du flux, on ne la change pas. Seul le premier
+		   enregistrement est lu pour la boite orange. */
 		while($row = $sth->fetch()) {
 			if(strlen($str_all)>0) $str_all .=  "%";
-			$str_all .= $row['id'] . "%" . $row['title'] . "%" . $row['duration'] . "%" . $row['misam'] . "%" . $row['editions'] . "%" . $row['firstName'] . "%" . $row['name'];
+			$str_all .= $row['id'] . "%" . $row['title'] . "%" . $row['duration'] . "%" . $row['misam'] . "%" . $row['editions'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . ($row['isni'] === null ? '' : $row['isni']);
 		}
 
 		echo $str_all;
@@ -303,8 +314,9 @@
 
 		$ed_XXXX="ed_".$y;
 
+		/* imeb_artist.isni : 5e champ de chaque enregistrement (voir plus bas). */
 		$sth = $dbh->prepare('SELECT imeb_artist.id AS a_id, imeb_artist.firstName,
-							imeb_artist.name, ' . $ed_XXXX . '
+							imeb_artist.name, imeb_artist.isni, ' . $ed_XXXX . '
 							FROM imeb_artist
 							INNER JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id
@@ -318,9 +330,18 @@
 
 		$str_all = "";
 
+		/* L'ISNI voyage avec la LISTE DES COMPOSITEURS, et non avec leurs
+		   oeuvres (case 1) : sur les line charts on clique un compositeur qui
+		   peut n'avoir aucune oeuvre archivee, et son nom doit rester cliquable
+		   vers sa notice d'identite. Attache aux oeuvres, il aurait disparu
+		   precisement pour ces fiches-la.
+
+		   Ajoute en fin de CHAQUE enregistrement : le flux est une suite de
+		   paquets de longueur fixe, lus par pas de 4 dans js/linechart.js. Le
+		   pas y passe a 5 — c'est l'unique consommateur du case 0. */
 		while($row = $sth->fetch()) {
 			if(strlen($str_all)>0) $str_all .=  "%";
-			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . $row[$ed_XXXX];
+			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . $row[$ed_XXXX] . "%" . ($row['isni'] === null ? '' : $row['isni']);
 		}
 
 		echo $str_all;

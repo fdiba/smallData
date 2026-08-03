@@ -123,6 +123,28 @@ window.onload = function() {
     $("#sma_main_ctrl ul").append('<li>pause</li>');
     $("#sma_main_ctrl ul li:last").css("text-decoration", "underline").on("click", pauseSMA);
 
+    /* Fiche ISNI du compositeur selectionne (js/isni_box.js, partage avec
+       Overview, euphonies, catalog et award-winning_works).
+
+       En FLUX, dans #isniColumn : la colonne d'information est etroite et
+       collee au canvas, il n'y a pas de gouttiere ou poser un panneau lateral.
+       La fiche se pose donc sous la boite orange d'ou part le clic, entre elle
+       et la liste des oeuvres, et pousse la suite au lieu de la masquer.
+
+       watch = 'selection' : la fiche est rendue DANS la colonne, donc observer
+       #infos entier reviendrait a observer la fiche elle-meme et a la refermer
+       des son ouverture. Et comme elle ne recouvre plus rien, le seul
+       changement qui doive la refermer est celui qui la dement — un autre
+       compositeur selectionne. Le compteur de noeuds de la boite verte, lui,
+       ne la concerne pas. */
+    if(typeof enableIsniPanel === 'function'){
+        enableIsniPanel({
+            into:      'isniColumn',
+            clickable: '#selection .composer-isni',
+            watch:     'selection'
+        });
+    }
+
 }
 function pauseSMA(event){
     noiseField =!noiseField;

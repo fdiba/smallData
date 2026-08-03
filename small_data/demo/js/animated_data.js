@@ -20,6 +20,8 @@ var btn01; //red btn
 var myLineChart;
 
 var composers=[], titles=[];
+// nom et ISNI du compositeur affiche dans le panneau de droite
+var lastComposerIsni='';
 var yearSelection=false;
 var lastComposerSelected="";
 
@@ -73,7 +75,7 @@ window.onload = function() {
 	document.getElementById('get_all').addEventListener("click", getData);
 	document.getElementById('selection').addEventListener("click", toggleYearSl);
 	// la boite violette suit le "How to read" quand la fenetre change de largeur
-	window.addEventListener("resize", positionTitlesBox);
+	window.addEventListener("resize", positionWorkPanel);
 
 	// canvas.width = $(document).width()-25; //context left pad = 10;
     setCanvasWidthAndHeight();
@@ -81,6 +83,25 @@ window.onload = function() {
     // les boites d'info (orange #selection + liste #composers) prennent EXACTEMENT
     // la largeur de la legende "How to read".
     syncInfoBoxWidths();
+
+    /* Fiche ISNI du compositeur selectionne (js/isni_box.js, partage avec
+       Overview, Network, euphonies, catalog et award-winning_works).
+
+       En FLUX, dans #isniColumn, au milieu du panneau de droite : elle se
+       deplie ENTRE le nom qui l'ouvre et la liste des oeuvres, et pousse cette
+       derniere au lieu de la recouvrir.
+
+       watch = 'composerBox' : c'est la boite du nom qui dit de qui parle la
+       fiche. Elle change quand on choisit un autre compositeur — le seul
+       evenement qui doive la refermer. Observer le panneau entier reviendrait
+       a observer la fiche elle-meme et a la refermer des son ouverture. */
+    if(typeof enableIsniPanel === 'function'){
+        enableIsniPanel({
+            into:      'isniColumn',
+            clickable: '#composerBox .composer-isni',
+            watch:     'composerBox'
+        });
+    }
 
     getData();
 };
@@ -173,54 +194,84 @@ function retrieveAllTitleFrom(aId){
     });
 
 }
-function displayTitlesInfos(){
-    // en-tete non italique, comme la boite violette d'Overview et Network
-    var str = '<span>'+lastComposerSelected+'</span>';
-    $("#titles").empty().append(str);
-    if(titles.length>0){
-        for (var i=0; i<titles.length; i++) {
-            var obj=titles[i];
-            //fond violet alterne (t-a/t-b) pour bien separer chaque oeuvre, comme dans Overview
-            var div='<li class="'+(i%2===0 ? 't-a' : 't-b')+'">'+obj.t;
-            if(obj.d) div += ' ('+obj.d+')';
-            if(obj.ed){ var nEd=(''+obj.ed).split(',').length; div += ' | '+(nEd===1 ? 'edition' : 'editions')+': '+obj.ed; }
-            div += '</li>';
-            $("#titles").append(div);
-        }
-    } else {
-        var div='<li>no archived work for this composer</li>';
-        $("#titles").append(div);
-    }
+/* Le panneau de droite, en trois etages : le NOM du compositeur, la fiche
+   ISNI qu'il ouvre, puis ses oeuvres.
 
-    positionTitlesBox();
+   Le nom etait jusqu'ici l'en-tete de la boite violette (un <span> en tete de
+   liste). Il en sort pour devenir une boite a lui : c'est lui qui porte le
+   lien vers la notice d'identite internationale, et la fiche doit pouvoir se
+   deplier ENTRE le nom et les oeuvres — donc entre deux boites, pas dans
+   l'une d'elles. La boite violette reprend alors l'en-tete des deux autres
+   pages : « N archived works », depliable.
+
+   Le rendu des oeuvres n'est plus ecrit ici : displayTitlesInfosGN()
+   (js/functions.js) le fait deja pour Overview et Network, a l'identique — la
+   version locale n'en differait que par cet en-tete, qui vient de demenager.
+   Une troisieme copie n'aurait pas survecu a la premiere correction faite
+   ailleurs. */
+function displayTitlesInfos(){
+
+    displayComposerBox();
+    displayTitlesInfosGN(titles);
+
+    positionWorkPanel();
     matchComposersHeight();
 }
-// La boite violette (#titles) remonte a hauteur du "How to read" (#legend) et se
-// place a sa droite, dans l'espace laisse vide par la legende. Position absolue
-// (hors flux) -> la colonne de gauche (barre orange + compositeurs) ne bouge pas,
-// meme quand la liste des oeuvres est longue. Si la place a droite est trop
-// reduite (fenetre etroite), on repasse au flux normal (sous les compositeurs).
-function positionTitlesBox(){
-    var tit=document.getElementById('titles'),
+/* La boite du nom. Cliquable seulement si la fiche porte un ISNI : un nom
+   souligne qui n'ouvre rien serait pire que pas de souligne du tout. */
+function displayComposerBox(){
+
+    var box = $('#composerBox');
+    if(!box.length) return;
+
+    var who  = $.trim(lastComposerSelected || '');
+    var isni = $.trim(lastComposerIsni || '');
+
+    if(!who){ box.empty(); return; }
+
+    box.html((isni && typeof esc === 'function')
+        ? '<p><span class="composer-isni" tabindex="0" role="button"'
+          + ' data-isni="'+esc(isni)+'" data-label="'+esc(who)+'">'
+          + esc(who)+'</span></p>'
+        : '<p>'+(typeof esc === 'function' ? esc(who) : who)+'</p>');
+}
+/* Le panneau de droite (#workPanel : nom, fiche ISNI, oeuvres) remonte a
+   hauteur du "How to read" (#legend) et se place a sa droite, dans l'espace
+   laisse vide par la legende. Position absolue (hors flux) -> la colonne de
+   gauche (barre orange + compositeurs) ne bouge pas, meme quand la liste des
+   oeuvres est longue. Si la place a droite est trop reduite (fenetre etroite),
+   on repasse au flux normal (sous les compositeurs).
+
+   C'est le PANNEAU qui est place, et non plus la seule boite violette : les
+   trois etages doivent rester solidaires, sans quoi la fiche ISNI resterait
+   dans le flux pendant que les oeuvres remontent a droite.
+
+   Le test de visibilite porte, lui, toujours sur #titles : le panneau, qui
+   contient des elements enfants, n'est jamais :empty au sens CSS, alors que la
+   boite violette dit exactement ce qu'on veut savoir — a-t-on quelque chose a
+   montrer ? */
+function positionWorkPanel(){
+    var pan=document.getElementById('workPanel'),
+        tit=document.getElementById('titles'),
         lg=document.getElementById('legend'),
         content=document.getElementById('content');
-    if(!tit || !lg || !content) return;
-    if(getComputedStyle(tit).display==='none') return;   // vide/masquee
+    if(!pan || !tit || !lg || !content) return;
+    if(getComputedStyle(tit).display==='none') return;   // rien a montrer
     var gap=14;
     var left = lg.offsetLeft + lg.offsetWidth + gap;
     var avail = content.clientWidth - left - 5;           // -5 : petite marge droite
     if(avail < 240){
         // pas assez de place a droite : retour au flux normal (repli sous la liste)
-        tit.style.position='';
-        tit.style.top='';
-        tit.style.left='';
-        tit.style.maxWidth='';
+        pan.style.position='';
+        pan.style.top='';
+        pan.style.left='';
+        pan.style.maxWidth='';
         return;
     }
-    tit.style.position='absolute';
-    tit.style.top  = lg.offsetTop + 'px';
-    tit.style.left = left + 'px';
-    tit.style.maxWidth = Math.min(avail, 440) + 'px';
+    pan.style.position='absolute';
+    pan.style.top  = lg.offsetTop + 'px';
+    pan.style.left = left + 'px';
+    pan.style.maxWidth = Math.min(avail, 440) + 'px';
 }
 // Depuis que la boite violette remonte a droite de la legende, elle n'est plus
 // cote a cote avec les compositeurs : on garde ces derniers a leur hauteur
@@ -251,6 +302,9 @@ function displayCpInfos(){
             $("#composers").append(div);
 
             $("#composers li:last-child").attr("data-id", obj.id);
+            // attr et non data : un ISNI tout en chiffres serait converti en
+            // nombre par jQuery, et ses zeros de tete disparaitraient.
+            if(obj.isni) $("#composers li:last-child").attr("data-isni", obj.isni);
 
             var tip = '';
             if(obj.y>0) tip += 'took part in the selected edition';
@@ -259,8 +313,13 @@ function displayCpInfos(){
             $("#composers li:last-child").attr("title", tip);
 
             $("#composers li:last-child").click(function(event) {
-                retrieveAllTitleFrom($(event.target).data("id"));
-                lastComposerSelected=$(event.target).text();
+                var li = $(event.target);
+                retrieveAllTitleFrom(li.data("id"));
+                /* Le libelle de la liste porte le compte entre parentheses
+                   (« Dhomont (12) ») : il est retire ici, la boite violette
+                   l'annonce maintenant elle-meme. */
+                lastComposerSelected = $.trim(li.text().replace(/\s*\(\d+\)\s*$/, ''));
+                lastComposerIsni = li.attr('data-isni') || '';
             });
         } else if(!yearSelection){
 
@@ -272,6 +331,9 @@ function displayCpInfos(){
             $("#composers").append(div);
 
             $("#composers li:last-child").attr("data-id", obj.id);
+            // attr et non data : un ISNI tout en chiffres serait converti en
+            // nombre par jQuery, et ses zeros de tete disparaitraient.
+            if(obj.isni) $("#composers li:last-child").attr("data-isni", obj.isni);
 
             var tip = '';
             if(obj.y>0) tip += 'took part in the selected edition';
@@ -280,8 +342,13 @@ function displayCpInfos(){
             $("#composers li:last-child").attr("title", tip);
 
             $("#composers li:last-child").click(function(event) {
-                retrieveAllTitleFrom($(event.target).data("id"));
-                lastComposerSelected=$(event.target).text();
+                var li = $(event.target);
+                retrieveAllTitleFrom(li.data("id"));
+                /* Le libelle de la liste porte le compte entre parentheses
+                   (« Dhomont (12) ») : il est retire ici, la boite violette
+                   l'annonce maintenant elle-meme. */
+                lastComposerSelected = $.trim(li.text().replace(/\s*\(\d+\)\s*$/, ''));
+                lastComposerIsni = li.attr('data-isni') || '';
             });
 
         }

@@ -140,6 +140,30 @@
 	color: #bdc3c7;
 	font-style: italic;
 }
+/* L'avertissement ferme la fiche : « No detailed data retrieved… », « The
+   server could not query ISNI… ». Il porte sur TOUT ce qui precede, pas sur la
+   derniere rubrique — or il venait se coller au dernier lien de la liste
+   au-dessus (.isni-list a une marge nulle, et .isni-bd p ne pose qu'une marge
+   BASSE). Un filet et une respiration l'en detachent : on voit d'un coup d'oeil
+   que c'est une note sur la notice, et non une entree de plus.
+
+   SELECTEUR EN DEUX CLASSES, et ce n'est pas du zele : « .isni-warn » seul
+   pese (0,1,0) contre (0,1,1) pour « .isni-bd p » plus haut, dont le raccourci
+   « margin: 0 0 6px 0 » remet la marge haute a zero. La specificite l'emporte
+   sur l'ordre des declarations — ecrire la regle apres n'aurait rien change
+   (meme piege qu'au §6.3 du document d'interface). */
+.isni-bd .isni-warn{
+	margin: 12px 0 0 0;
+	padding-top: 8px;
+	border-top: 1px solid rgba(236, 240, 241, .22);
+}
+/* Sauf s'il est seul dans la fiche : il n'a alors rien dont se detacher, et
+   un filet en tete de boite se lirait comme une barre de titre vide. */
+.isni-bd .isni-warn:first-child{
+	margin-top: 0;
+	padding-top: 0;
+	border-top: 0;
+}
 
 /* ---------- Le panneau lateral (catalog.php, award-winning_works.php) ----------
    Ces pages n'ouvrent pas la fiche en boite flottante mais dans un panneau
