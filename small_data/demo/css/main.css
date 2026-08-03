@@ -304,6 +304,51 @@ ul{
 	text-transform: uppercase;
 	color: #fff;
 }
+/* Repli de la legende, commun aux sept pages qui en portent une. Le titre EST
+   le bouton : pas de commande a loger ailleurs, et la bande de titre reste
+   visible une fois la legende fermee, donc rouvrable sans remonter en haut de
+   page. Les proprietes listees ici ne font que neutraliser le rendu par defaut
+   de <button> ; la typographie reste celle de #legend .lg-title ci-dessus.
+   Le comportement est dans js/legend_toggle.js, l'etat d'arrivee dans le HTML
+   de chaque page : ouvert partout sauf sur categories.php. */
+#legend button.lg-title{
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: #fff;
+	text-align: left;
+	cursor: pointer;
+}
+#legend .lg-caret{
+	display: inline-block;
+	width: 0;
+	height: 0;
+	margin-left: 10px;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 6px solid #fff;
+	transition: transform .15s;
+}
+#legend.is-collapsed .lg-title{
+	margin-bottom: 0;
+}
+#legend.is-collapsed #lg_body{
+	display: none;
+}
+#legend.is-collapsed .lg-caret{
+	transform: rotate(-90deg);
+}
+/* categories.php ajoute a cet etat une largeur mesuree (voir css/sankey.css) :
+   sa legende est la seule posee en fixe, donc la seule a devoir se caler sur
+   la fin du menu plutot que sur la largeur de son contenu. */
 /* Intro / note "How to read" (toutes pages) : largeur de lecture confortable,
    texte justifie, et emphase (em) en blanc gras SANS italique. */
 #legend .lg-intro,

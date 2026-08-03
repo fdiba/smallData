@@ -12,6 +12,8 @@
 	<script src="js/barchart.js"></script>
 	<script src="js/linechart.js"></script>
 	<script src="js/animated_data.js"></script>
+	<!-- Repli de la legende "How to read", partage par les sept pages qui en portent une : voir l'en-tete de js/legend_toggle.js -->
+	<script src="js/legend_toggle.js"></script>
 </head>
 <body>
 	<div id="content">
@@ -36,7 +38,10 @@
 		    </canvas>
 		</div>
 		<div id="legend">
-			<p class="lg-title">How to read this page</p>
+			<button type="button" id="lg_toggle" class="lg-title" aria-expanded="true" aria-controls="lg_body">
+				How to read this page<span class="lg-caret" aria-hidden="true"></span>
+			</button>
+			<div id="lg_body">
 			<p class="lg-note">Coverage &mdash; this chart is knowingly incomplete. The competition minutes have been fully entered for the editions from <em>1973 to 1994</em>; those from <em>1996 to 2009</em> are only partially processed, so their participant counts are under-estimated. A selection is therefore flagged <em>complete data</em> up to 1994 and <em>incomplete data</em> from 1996 on (next to the page title). No competition was held in <em>1995</em> (36 editions in all), so the timeline skips that year and the lines join 1994 directly to 1996. The visible dip in <em>1992</em> is real: that edition marked the competition's 20th anniversary and took the form of a retrospective &mdash; the <em>Euphonies d'Or</em>, honouring the finest works of 1973&ndash;1991 &mdash; rather than an open call for new entries, so far fewer participants were recorded that year.</p>
 			<div class="lg-cols">
 				<div>
@@ -67,6 +72,7 @@
 						<li>the orange bar sums up the current selection — click it to switch between all composers and those of the selected edition only</li>
 					</ul>
 				</div>
+			</div>
 			</div>
 		</div>
 	    <div id="selection"><p>no selection</p></div>

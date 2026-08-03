@@ -24,6 +24,8 @@
 	<script src="js/childs_euphonies.js"></script>
 	<script src="js/particles_euphonies.js"></script>
 	<script src="js/euphonies.js"></script>
+	<!-- Repli de la legende "How to read", partage par les sept pages qui en portent une : voir l'en-tete de js/legend_toggle.js -->
+	<script src="js/legend_toggle.js"></script>
 </head>
 <body>
 	<div id="content">
@@ -57,7 +59,10 @@
 			    </div>
 		    </div>
 			<div id="legend">
-				<p class="lg-title">How to read this page</p>
+				<button type="button" id="lg_toggle" class="lg-title" aria-expanded="true" aria-controls="lg_body">
+					How to read this page<span class="lg-caret" aria-hidden="true"></span>
+				</button>
+				<div id="lg_body">
 					<p class="lg-intro">The <em>Euphonies d'Or</em> are honorary distinctions awarded in <strong>three retrospective rounds</strong>, not one &mdash; <strong>35 works</strong> in all, which is why this page lists more than twenty: <em>20</em> at the competition's 20th anniversary in <em>1992</em> (the finest works of 1973&ndash;1991), <em>10</em> more in <em>2004</em> (chosen among the prizes of 1993&ndash;2003), and a final <em>5</em> in <em>2010</em> (for 2005&ndash;2009). The <em>edition</em> column marks which round each work belongs to.</p>
 				<div class="lg-cols">
 					<div>
@@ -84,6 +89,7 @@
 							<li><em>reset</em> restarts the system, <em>pause</em> freezes it (the <em>p</em> key toggles the agents' drift)</li>
 						</ul>
 					</div>
+				</div>
 				</div>
 			</div>
 			<div id="main_table">

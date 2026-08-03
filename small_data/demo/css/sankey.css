@@ -121,43 +121,17 @@ text{
 	overflow-y: auto;
 	box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
 }
-/* Le titre EST le bouton : pas de commande a loger ailleurs, et la bande de
-   titre reste visible une fois la legende fermee, donc rouvrable sans remonter
-   en haut de page. Les proprietes listees ici ne font que neutraliser le rendu
-   par defaut de <button> ; la typographie reste celle de #legend .lg-title. */
-#legend button.lg-title{
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	width: 100%;
-	padding: 0;
-	border: 0;
-	background: none;
-	font: inherit;
-	font-weight: 600;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: #fff;
-	text-align: left;
-	cursor: pointer;
-}
-#legend .lg-caret{
-	display: inline-block;
-	width: 0;
-	height: 0;
-	margin-left: 10px;
-	border-left: 5px solid transparent;
-	border-right: 5px solid transparent;
-	border-top: 6px solid #fff;
-	transition: transform .15s;
-}
-/* Etat replie — et c'est l'etat d'ARRIVEE : la classe est ecrite dans
-   categories.php, le diagramme etant ce qu'on vient voir. Seule la bande de
-   titre subsiste, et elle se retrecit pour s'arreter au bord droit de "The
-   Project", dernier bloc du menu — barrer toute la fenetre pour trois mots
-   n'aurait aucun sens. La largeur est mesuree par js/categories.js et posee
-   dans --lg-collapsed-w ; sa valeur de repli (auto) redonne la pleine
-   largeur, left et right etant tous deux definis. */
+/* Etat replie — et c'est l'etat d'ARRIVEE sur cette page seule : la classe est
+   ecrite dans categories.php, le diagramme etant ce qu'on vient voir. Le repli
+   lui-meme (bouton, caret, masquage du corps) est commun aux sept pages et vit
+   dans css/main.css ; ce qui suit lui est propre, parce que cette legende est
+   la seule posee en fixe. Seule la bande de titre subsiste, et elle se
+   retrecit pour s'arreter au bord droit de "The Project", dernier bloc du
+   menu — barrer toute la fenetre pour trois mots n'aurait aucun sens. La
+   largeur est mesuree par js/legend_toggle.js, qui ne le fait justement que
+   pour une legende en position fixe, et posee dans --lg-collapsed-w ; sa
+   valeur de repli (auto) redonne la pleine largeur, left et right etant tous
+   deux definis. */
 #legend.is-collapsed{
 	overflow: hidden;
 	/* box-sizing: la largeur mesuree est celle de la BOITE, bord droit du
@@ -165,13 +139,4 @@ text{
 	   chaque cote s'y ajouteraient et le panneau depasserait de 28 px. */
 	box-sizing: border-box;
 	width: var(--lg-collapsed-w, auto);
-}
-#legend.is-collapsed .lg-title{
-	margin-bottom: 0;
-}
-#legend.is-collapsed #lg_body{
-	display: none;
-}
-#legend.is-collapsed .lg-caret{
-	transform: rotate(-90deg);
 }

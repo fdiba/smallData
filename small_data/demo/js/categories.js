@@ -504,60 +504,8 @@ function sankeyStuff(){
    ========================================================================= */
 
 /* --- repli de la legende "How to read" -------------------------------------
-   La bande de titre reste visible une fois la legende fermee : elle se rouvre
-   sans avoir a remonter en haut d'un diagramme de plus de 10 000 px. La page
-   arrive repliee — la classe is-collapsed est posee dans categories.php, pas
-   ici : rien ne doit se refermer sous les yeux au chargement. Ecrit sans
-   jQuery — c'est un clic sur un bouton — et sans effet si la page ne porte pas
-   de legende. */
-(function(){
-  if(typeof document === 'undefined' || !document.getElementById) return;
-  var box = document.getElementById('legend');
-  var btn = document.getElementById('lg_toggle');
-  if(!box || !btn) return;
-
-  /* Repliee, la bande de titre s'arrete au bord droit de "The Project"
-     (#help, dernier bloc de la barre) au lieu de barrer toute la fenetre pour
-     trois mots : elle se cale ainsi sur la fin du menu, juste au-dessus.
-     Ouverte, elle reprend toute la largeur — ses deux colonnes en ont besoin.
-     La largeur est MESUREE a chaque repli plutot qu'ecrite en dur : elle
-     depend des libelles du menu et de la police effectivement chargee, et
-     change si la barre se reorganise dans une fenetre etroite. Elle est
-     transmise a la feuille de style par une propriete personnalisee, dont la
-     valeur de repli (auto) redonne la pleine largeur si la mesure echoue. */
-  function fitCollapsedWidth(){
-    var help = document.getElementById('help');
-    if(!help) return;
-    var w = Math.round(help.getBoundingClientRect().right -
-                       box.getBoundingClientRect().left);
-    if(w > 0) box.style.setProperty('--lg-collapsed-w', w + 'px');
-  }
-
-  btn.addEventListener('click', function(){
-    var collapsed = box.classList.toggle('is-collapsed');
-    btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-    if(collapsed) fitCollapsedWidth();
-  });
-
-  // La page arrive repliee : la largeur doit etre calee sans attendre un clic.
-  fitCollapsedWidth();
-
-  if(typeof window !== 'undefined' && window.addEventListener){
-    window.addEventListener('resize', function(){
-      if(box.classList.contains('is-collapsed')) fitCollapsedWidth();
-    });
-    // Les libelles du menu sont composes en Exo 2, chargee depuis le reseau :
-    // la mesure faite avant l'arrivee de la police porterait sur la police de
-    // substitution et serait fausse de quelques pixels. On la refait donc
-    // quand la page est complete, et quand les polices sont pretes la ou le
-    // navigateur sait le dire.
-    window.addEventListener('load', function(){
-      if(box.classList.contains('is-collapsed')) fitCollapsedWidth();
-    });
-    if(document.fonts && document.fonts.ready && document.fonts.ready.then){
-      document.fonts.ready.then(function(){
-        if(box.classList.contains('is-collapsed')) fitCollapsedWidth();
-      });
-    }
-  }
-})();
+   Le comportement a ete EXTRAIT dans js/legend_toggle.js, fichier partage par
+   les sept pages qui portent une legende : il n'y a plus rien a faire ici. La
+   page reste seule a arriver repliee, et cet etat est ecrit dans son HTML
+   (classe is-collapsed sur #legend dans categories.php), non dans le script.
+   Voir l'en-tete de js/legend_toggle.js pour le contrat complet. */

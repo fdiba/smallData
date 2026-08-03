@@ -13,6 +13,8 @@
     <script src="js/functions.js"></script>
     <script src="js/overview_sma.js"></script>
 	<script src="js/overview.js"></script>
+	<!-- Repli de la legende "How to read", partage par les sept pages qui en portent une : voir l'en-tete de js/legend_toggle.js -->
+	<script src="js/legend_toggle.js"></script>
 </head>
 <body>
 	<div id="content">
@@ -51,7 +53,10 @@
 		    </canvas>
 					</div>
 		<div id="legend">
-			<p class="lg-title">How to read this page</p>
+			<button type="button" id="lg_toggle" class="lg-title" aria-expanded="true" aria-controls="lg_body">
+				How to read this page<span class="lg-caret" aria-hidden="true"></span>
+			</button>
+			<div id="lg_body">
 			<p class="lg-note">Coverage &mdash; <span id="lg-incomplete" style="display:none">with <em>num of records</em> set to <em>0</em>, every participant is listed and this index is then knowingly incomplete &mdash; the competition minutes have been fully entered for the editions from <em>1973 to 1994</em>, but those from <em>1996 to 2009</em> are only partially processed, so the later editions are under-represented and some participations are missing. </span>No competition was held in <em>1995</em> (36 editions in all), so no square carries that year.</p>
 			<div class="lg-cols">
 				<div>
@@ -78,6 +83,7 @@
 						<li>the trace is saved and can be replayed on the <em>Network</em> page with <em>compute traces</em></li>
 					</ul>
 				</div>
+			</div>
 			</div>
 		</div>
 				</div>

@@ -71,5 +71,7 @@
 	<!-- <script src="lib/d3-sankey.min.js"></script> -->
 	<script src="lib/erase_old_sankey.js"></script>
 	<script src="js/categories.js"></script>
+	<!-- Repli de la legende "How to read", partage par les sept pages qui en portent une : voir l'en-tete de js/legend_toggle.js -->
+	<script src="js/legend_toggle.js"></script>
 </body>
 </html>

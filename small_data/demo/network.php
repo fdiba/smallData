@@ -14,6 +14,8 @@
     <script src="js/childs.js"></script>
     <script src="js/particles.js"></script>
 	<script src="js/network.js"></script>
+	<!-- Repli de la legende "How to read", partage par les sept pages qui en portent une : voir l'en-tete de js/legend_toggle.js -->
+	<script src="js/legend_toggle.js"></script>
 </head>
 <body>
 	<div id="content">
@@ -45,7 +47,10 @@
 		    </div>
 	    </div>
 		<div id="legend">
-			<p class="lg-title">How to read this page</p>
+			<button type="button" id="lg_toggle" class="lg-title" aria-expanded="true" aria-controls="lg_body">
+				How to read this page<span class="lg-caret" aria-hidden="true"></span>
+			</button>
+			<div id="lg_body">
 			<div class="lg-cols">
 				<div>
 					<p><strong>Controls</strong></p>
@@ -72,6 +77,7 @@
 						<li>the green box reports the number of nodes while the system grows, then details whatever you click on the canvas</li>
 					</ul>
 				</div>
+			</div>
 			</div>
 		</div>
  	</div>

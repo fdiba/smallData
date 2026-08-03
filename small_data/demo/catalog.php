@@ -46,6 +46,8 @@
 	<script src="js/childs_catalog.js"></script>
 	<script src="js/particles_catalog.js"></script>
 	<script src="js/catalog.js"></script>
+	<!-- Repli de la legende "How to read", partage par les sept pages qui en portent une : voir l'en-tete de js/legend_toggle.js -->
+	<script src="js/legend_toggle.js"></script>
 </head>
 <body>
 	<div id="content">
@@ -88,7 +90,10 @@
 		    </div>
 <?php if($id==1 || $id==2){ ?>
 			<div id="legend">
-				<p class="lg-title">How to read this page</p>
+				<button type="button" id="lg_toggle" class="lg-title" aria-expanded="true" aria-controls="lg_body">
+					How to read this page<span class="lg-caret" aria-hidden="true"></span>
+				</button>
+				<div id="lg_body">
 				<p class="lg-intro">The IMEB's holdings form the <em>Fonds MISAME</em>, whose <em>Répertoire général</em> &mdash; compiled by Christian Clozier &mdash; brings together 1&thinsp;946 composers, 6&thinsp;612 works and 63 countries, split into two phonothèques: the <em>International Sound Archives</em> (Phonothèque A, &laquo;&nbsp;Extérieure&nbsp;&raquo;) and the <em>IMEB Sound Archives</em> (Phonothèque B). <?php echo $coll_desc ?></p>
 				<p class="lg-note"><?php echo $cov_note ?></p>
 				<div class="lg-cols">
@@ -125,6 +130,7 @@
 						</ul>
 					</div>
 <?php } ?>
+				</div>
 				</div>
 			</div>
 			<?php } ?>
