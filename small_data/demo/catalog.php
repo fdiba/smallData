@@ -7,12 +7,20 @@
 	else if($id==3)header('Location: '.'euphonies.php');
 
 	// Texte propre a chaque phonotheque pour la rubrique "How to read"
+	// $cov_note : note de completude de la colonne "edition(s)", sur le modele
+	// des notes "Coverage" de animated_data.php et index.php (meme classe
+	// .lg-note, meme liseré amethyste). Elle dit ce qu'une cellule vide
+	// signifie — absence de trace, PAS absence de programmation — parce que la
+	// colonne est vide une fois sur deux en Phono A et trois fois sur quatre en
+	// Phono B : sans cette note, le lecteur infere le contraire.
 	if($id==1){
 		$coll_desc  = "This page shows the <strong>International Sound Archives</strong> &mdash; the IMEB's <em>Phonothèque A</em>, said &laquo;&nbsp;Extérieure&nbsp;&raquo;: electroacoustic works by outside composers, gathered by the IMEB (catalogue index 100&thinsp;000).";
 		$table_desc = "the table lists the works of the International collection (Phonothèque A), grouped by composer";
+		$cov_note   = "Coverage &mdash; the <em>edition(s)</em> column is knowingly incomplete. The <em>Répertoire général</em> records a programming year for about <em>half</em> of the 5&thinsp;828 works in this collection; the cell is left empty for the other half. An empty cell means the repertoire holds no record of a performance, <em>not</em> that the work was never played &mdash; around a thousand works here are by composers the competition minutes never register at any edition. No competition was held in <em>1995</em> (36 editions in all, between 1973 and 2009), so no work carries that year.";
 	} else {
 		$coll_desc  = "This page shows the <strong>IMEB Sound Archives</strong> &mdash; the IMEB's <em>Phonothèque B</em>: works produced in the institute's own studios (catalogue index 200&thinsp;000).";
 		$table_desc = "the table lists the works of the IMEB collection (Phonothèque B), grouped by composer";
+		$cov_note   = "Coverage &mdash; the <em>edition(s)</em> column is knowingly incomplete: a programming year is recorded for roughly <em>one work in four</em> of this collection's 765 works. These works were produced in the institute's own studios, and an entry in the archive does not imply a festival performance &mdash; an empty cell means the repertoire holds no record of one. No competition was held in <em>1995</em> (36 editions in all, between 1973 and 2009), so no work carries that year.";
 	}
 
 ?>
@@ -76,6 +84,7 @@
 			<div id="legend">
 				<p class="lg-title">How to read this page</p>
 				<p class="lg-intro">The IMEB's holdings form the <em>Fonds MISAME</em>, whose <em>Répertoire général</em> &mdash; compiled by Christian Clozier &mdash; brings together 1&thinsp;946 composers, 6&thinsp;612 works and 63 countries, split into two phonothèques: the <em>International Sound Archives</em> (Phonothèque A, &laquo;&nbsp;Extérieure&nbsp;&raquo;) and the <em>IMEB Sound Archives</em> (Phonothèque B). <?php echo $coll_desc ?></p>
+				<p class="lg-note"><?php echo $cov_note ?></p>
 				<div class="lg-cols">
 					<div>
 						<p><strong>Table<?php if($id==1 || $id==2) echo ' &amp; agents'; ?></strong></p>
@@ -83,7 +92,7 @@
 							<li><?php echo $table_desc ?></li>
 							<li>the composer cell is shared across all of their works; the background alternates to separate composers and, within a composer, their pieces</li>
 							<li><em>edition(s)</em> gives the year or years in which the work was programmed at Bourges, between 1973 and 2009; the cell is left empty where the <em>Répertoire général</em> does not record it, and a work played again in a later edition carries several years</li>
-							<li>a <span class="work-award">&#9733;</span> after a title marks a work distinguished at the competition, which was held within the festival &mdash; the full prize list is on the <a href="award-winning_works.php">Award-winning works</a> page</li>
+							<li>a <span class="work-award">&#9733;</span> after a title marks a work distinguished at the competition, held within the festival; the award year is not carried into <em>edition(s)</em>, and a number of awarded works carry no programming year at all &mdash; the full prize list is on the <a href="award-winning_works.php">Award-winning works</a> page</li>
 <?php if($id==1){ ?>							<li>Phonothèque A is large, so it is explored <strong>one country at a time</strong>: pick a <em>country</em> in the Country menu to filter the table and build the visualization for that country's composers; pick another country to switch, or <em>All works</em> to show the full table again</li>
 <?php } ?>
 <?php if($id==2){ ?>							<li>by default <em>All works</em> shows the whole collection on the canvas; you can also pick a <em>country</em> in the Country menu to filter the table and the visualization to that country's composers</li>

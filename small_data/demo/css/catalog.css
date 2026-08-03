@@ -191,6 +191,16 @@ th{
 	margin: 0 0 10px 0;
 	max-width: 80ch;
 }
+/* Note de completude de la colonne "edition(s)" (catalog.php, $cov_note).
+   Reprise a l'identique de css/animated_data.css et css/overview.css : meme
+   liseré amethyste, meme retrait, pour que les trois pages signalent leurs
+   lacunes de la meme maniere. La largeur de lecture (80ch), la justification
+   et le rendu des <em> (blanc gras, sans italique) viennent de css/main.css. */
+#legend .lg-note{
+	margin: 0 0 10px 0;
+	padding: 4px 0 4px 10px;
+	border-left: 3px solid var(--sd-amethyst);
+}
 
 /* --- regroupement par compositeur (catalog.js) --- */
 /* meme code couleur que award-winning_works.php */
