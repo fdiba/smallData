@@ -1,0 +1,1073 @@
+//Intensite du champ de bruit appliquee aux agents GRIS en phase 2
+//(1 = comme les autres cercles, <1 = plus calme/moins nerveux).
+//Reglage rapide de la nervosite des gris. Voir addNoiseField().
+var GREY_NOISE = .35;
+
+//--- ralentissement cumulatif par collision (masse temporaire) ---
+//Chaque contact alourdit la particule (elle ralentit), et la masse se resorbe
+//quand les contacts cessent. Voir updateMass() et la masse effective d'update().
+var COLL_GAIN  = .4;    //masse ajoutee par voisin en contact et par image (cumulatif)
+var COLL_DECAY = .94;   //resorption par image (temporaire ; plus haut = persiste)
+var COLL_MAX   = 6;     //plafond : evite qu'une particule ne se fige totalement
+var COLL_MARGIN= 10;    //marge de detection : la proximite compte, pas que le chevauchement
+
+//Force de repulsion d'un gris qui s'ecarte d'un groupe non compatible.
+//Proportionnelle au chevauchement (douce). Baisser = repulsion plus faible.
+var GREY_REPULSION = .1;
+
+//Force d'evitement ANTICIPE des groupes par un gris (poussee radiale a l'oppose,
+//dosee par l'alignement). Stable, ne peut pas provoquer d'oscillation.
+var AVOID_STRENGTH = 1.4;
+
+//Separation entre groupes (verts/jaunes) NON compatibles : force de repulsion et
+//marge de respiration (px). Monter GROUP_REPULSION = les verts se traversent moins
+//(se collent a cote au lieu de passer au travers) ; GROUP_MARGIN = espace garde.
+var GROUP_REPULSION = .2;
+var GROUP_MARGIN = 28;
+
+//Vitesse minimale (px/image) garantie VERS le partenaire de fusion le plus proche :
+//un compatible ne recule jamais par rapport a sa cible -> deux groupes compatibles
+//eloignes se rejoignent inexorablement, meme a travers une foule, sans aller plus
+//vite. 0 = desactive (ancien comportement, ou les gros pouvaient rester bloques).
+var MERGE_CREEP = .4;
+
+//Priorite de passage par la masse : le plus lourd va tout droit, le plus leger fait
+//le tour. Applique a la separation entre groupes et a l'evitement anticipe.
+//0 = symetrique (comme avant) ; 1 = priorite pleine (defaut).
+var MASS_PRIORITY = 1;
+
+//Raideur du "coussin" de bord pour les groupes (verts/jaunes) : ressort doux
+//perpendiculaire au mur, proportionnel a l'enfoncement. Monter = bord plus ferme.
+var BORDER_PUSH = .03;
+
+//Tampon d'hysteresis du wrap toroidal des gris (px) : evite les teleportations
+//en boucle a la couture. Le gris reapparait en retrait de cette marge du bord.
+var WRAP_MARGIN = 30;
+
+//Rayon de recherche d'un partenaire de fusion "de proximite" (px). Un agent
+//cherche d'abord avec qui merger dans ce voisinage (via la grille) ; s'il n'y a
+//aucun compatible aussi pres, il elargit a tout le canvas. Plus petit = structure
+//plus locale (clusters), fusion au loin plus tardive. Voir mergeNodesAndFindTarget.
+var MERGE_NEIGHBORHOOD = 260;
+
+//Compensation de masse de l'attraction de fusion (getCloserFrom). 0 = aucune
+//(comportement d'origine : gros = lents, mouvement ORGANIQUE ; catalog/award/
+//euphonies se consolident tres bien ainsi) ; 1 = totale (tous a maxSpeed,
+//mouvement uniforme/robotique) ; entre les deux = compromis. Sur catalog l'exp 0
+//donne deja ~64% du temps sous maxSpeed avec une bonne variance -> on le garde.
+//(network, dont les groupes ont maxSpeed=2, utilise 0.25 pour se rejoindre plus
+//vite sans devenir robotique.)
+var MERGE_MASS_EXP = 0;
+
+function Particle(config){
+
+	this.canvasId=config.canvasId;
+	this.canvas=document.getElementById(this.canvasId);
+	this.context=this.canvas.getContext("2d");
+
+	// this.edition = config.edition;
+	// this.year = config.year;
+	// this.price = config.price;
+	this.imeb_id = config.imeb_id;
+	this.fn = config.fn;
+	this.ln = config.ln;
+	this.ctry = config.ctry;
+	this.title = config.title;
+	this.duration = config.duration;
+	// annee(s) de programmation a Bourges (imeb_music.editions), affichees
+	// dans la boite violette sous le titre. A ne pas confondre avec
+	// this.edition (singulier), reste inutilise de la page euphonies.
+	this.editions = config.editions;
+	// this.cat = config.cat;
+	// this.sub_cat = config.sub_cat;
+	this.isni = config.isni;
+
+	this.id = config.id;
+
+	// ATTENTION : ce litteral RECONSTRUIT l'enregistrement a partir des champs
+	// ci-dessus — il ne recopie pas l'objet recu. Toute propriete absente
+	// d'ici est perdue pour tout le SMA (boite violette comprise), meme si
+	// js/catalog.js l'a bien poussee dans records.
+	this.records = [{edition:this.edition, year:this.year, price:this.price,
+					imeb_id:this.imeb_id, fn:this.fn, ln:this.ln, ctry:this.ctry,
+					title:this.title,
+					duration:this.duration, editions:this.editions,
+					cat:this.cat, sub_cat:this.sub_cat,
+					isni:this.isni, id:this.id}];
+
+	//midnight blue, green emerald, yellow sun flower, blue peter river
+	//#2C3E50 dark blue
+	this.colors=["#bdc3c7", "#2ecc71", "#f1c40f", "#3498db", "#2C3E50"];
+
+	this.alpha=.2;
+	this.color1 = 'rgba(255, 165, 0,'+ this.alpha + ')'; //orange
+	this.color2 = 'rgb(52, 152, 219,'+ this.alpha + ')'; //blue
+
+	this.x=config.x;
+	this.y=config.y;
+
+	this.scale = config.scale;
+	this.radVar = Math.random()*2;
+	this.radius_to_add =  config.radius_to_add;
+	this.radius = this.setSmallRadius();
+
+	this.velocity={x:0, y:0};
+	this.collMass=0;   //masse temporaire accumulee par les collisions
+
+	this.fillAlpha = .1;
+	this.maxSpeed = 4.;
+
+	this.open=false;
+	this.childs=[];
+
+	//SMA ----------
+	// this.attrOfInterest = ['edition', 'year', 'price', 'ln', 'duration', 'cat', 'sub_cat', 'isni'];
+	this.attrOfInterest = ['ln', 'duration', 'title'];
+	this.targetedAttr="";
+	this.on = false;
+
+	this.opening=false;
+
+	this.extra_rad=0.;
+	this.max_extra_rad=20.*this.scale;
+
+	this.lastNodeSelected=false;
+
+}
+Particle.prototype.setSmallRadius = function(){
+	//croissance en racine carree (l'aire suit le nombre d'oeuvres) et plafond
+	//lie a la taille du canvas : les gros regroupements laissent de la place aux autres
+	var r = this.radVar+1.*this.scale + this.radius_to_add*2.*Math.sqrt(this.records.length-1);
+	var maxR = Math.min(this.canvas.width, this.canvas.height)/10.;
+	return Math.min(r, maxR);
+}
+Particle.prototype.resetIt = function(){
+	this.open=false;
+	this.childs=[];
+	this.on=false;
+	this.targetedAttr="";
+	this.radius = this.setSmallRadius();
+	this.fillAlpha = .1;
+	this.velocity={x:0, y:0};
+	this.collMass=0;
+}
+Particle.prototype.openOrCloseIt = function(){
+	
+	// console.log("open close: ", this.radius, this.extra_rad, this.max_extra_rad);
+	if(!this.open){
+		//rayon d'ouverture dimensionne pour loger tous les membres (cercles bleus),
+		//dans la limite du canvas
+		var sq = Math.sqrt(this.records.length);
+		var needed = 9.*sq/(1.+sq/28.)*this.scale; //croissance compressee pour les gros groupes
+		var maxOpen = Math.min(this.canvas.width, this.canvas.height)/4. - 20.;
+		var base = this.setSmallRadius();
+		this.max_extra_rad = Math.max(20.*this.scale, Math.min(Math.max(needed, base+20.*this.scale), maxOpen) - base);
+		this.open_step = Math.max(.25, this.max_extra_rad/90.); //ouverture lente
+
+		this.opening=true;
+		// console.log('open it');
+
+	} else {
+
+		this.childs=[];
+
+		console.log('close it');	 
+
+	 	this.extra_rad=0.;
+	 	this.lastHit=-999;
+
+	 	$("#cookies").empty();
+	 	$("#selection").empty();
+	 	$("#titles").empty();
+
+	}
+
+	this.open=!this.open;
+ 	
+}
+Particle.prototype.createNewChild=function(obj){
+
+    var radius=this.radius;
+
+    return new Child({
+        canvasId: this.canvasId,
+
+        edition: obj.edition,
+        year: obj.year,
+        price: obj.price,
+        imeb_id: obj.imeb_id,
+        fn: obj.fn,
+        ln: obj.ln,
+        ctry: obj.ctry,
+        title: obj.title,
+        duration: obj.duration,
+        editions: obj.editions,
+        cat: obj.cat,
+        sub_cat: obj.sub_cat,
+        isni: obj.isni,
+        
+        id: obj.id,        
+
+        x:this.x-radius+Math.random()*(radius*2),
+        y:this.y-radius+Math.random()*(radius*2),
+        scale : this.scale
+    });
+}
+Particle.prototype.processChilds=function(mouseX, mouseY){
+
+	var targeted=false;
+	var childs=this.childs;
+	// console.log("childs: " + childs.length);
+
+	for (var i=0; i<childs.length; i++) {
+
+		var distance=dist(mouseX, childs[i].x, mouseY, childs[i].y)
+        if(distance<=childs[i].radius*2){
+
+        	if(childs[i].id !== this.lastHit){
+        		this.getInfoFrom(childs[i]);
+        		removePreviousSelection();
+        		childs[i].lastNodeSelected=true;
+        		this.lastHit=childs[i].id;
+        	}
+
+        	targeted=true;
+        	break;
+        }
+
+	}
+	return targeted;
+}
+// Rendu de la boite violette, identique a euphonies.php et
+// award-winning_works.php : pas de libelles ("title: ...", "fn: ..."), les
+// informations sont regroupees en BLOCS separes par une respiration verticale
+// (classe .sma-blk, css/catalog.css). Un champ vide est saute sans laisser de
+// trou, et un bloc entierement vide ne produit aucune ligne.
+//
+//   Prenom Nom
+//   Pays
+//
+//   Titre (duree)
+//
+//   ISNI
+//
+// Le MISAM (imeb_id) n'est PLUS affiche ici, par parite avec les deux autres
+// pages : il reste transporte par les agents (colonne "imeb id" des tableaux)
+// et disponible pour un affichage futur.
+Particle.prototype.getInfoFrom=function(target){
+
+	var val = function(v){ return $.trim(v == null ? '' : String(v)); };
+
+	// une fiche ISNI ouverte pointerait un lien de #titles qu'on s'apprete a
+	// detruire : on la referme avant de vider la boite.
+	if(typeof isniAnchor !== 'undefined' && isniAnchor
+		&& isniAnchor.closest('#titles').length) closeIsniBox();
+
+	$("#titles").empty();
+	var blocks = [];
+
+	//--- 1. identite
+	blocks.push([$.trim(val(target.fn) + ' ' + val(target.ln)), val(target.ctry)]);
+
+	//--- 2. oeuvre : la duree suit le titre, entre parentheses ; les annees de
+	// programmation a Bourges viennent en dessous, dans le meme bloc. Elles
+	// portent un libelle, contrairement aux autres lignes de la boite : une
+	// suite d'annees seule serait indechiffrable ici, ou aucun en-tete de
+	// colonne ne vient l'expliquer. La donnee manque pour la moitie de la
+	// Phono A et les trois quarts de la Phono B — la ligne saute alors, sans
+	// laisser de blanc (voir la boucle d'affichage plus bas).
+	var work = val(target.title);
+	var duration = val(target.duration);
+	if(duration) work = work ? work + ' (' + duration + ')' : '(' + duration + ')';
+	var editions = val(target.editions);
+	if(editions) editions = '<span class="sma-lbl">programmed in</span> '
+						  + editions.replace(/\s*,\s*/g, ', ');
+	blocks.push([work, editions]);
+
+	//--- 3. ISNI
+	var isni = val(target.isni).replace(/\s+/g, '');
+	if(/^[0-9]{15}[0-9Xx]$/.test(isni)){
+		isni = '<a class="isni-link" title="voir la fiche ISNI" '
+			 + 'href="https://isni.org/isni/' + isni + '" '
+			 + 'data-isni="' + isni + '">' + isni + '</a>';
+	}
+	blocks.push([isni]);
+
+	for (var b = 0; b < blocks.length; b++) {
+		var lines = [];
+		for (var l = 0; l < blocks[b].length; l++){
+			if(blocks[b][l] !== '') lines.push(blocks[b][l]);
+		}
+		if(lines.length === 0) continue;
+		var spaced = ($("#titles").children().length > 0);
+		for (var k = 0; k < lines.length; k++) {
+			var cls = (k === 0 && spaced) ? ' class="sma-blk"' : '';
+			$("#titles").append('<p'+ cls +'>'+ lines[k] +'</p>');
+		}
+	}
+
+	$("#titles").find('a.isni-link').on('click', function(evt){
+		if(evt.ctrlKey || evt.metaKey || evt.shiftKey || evt.which === 2) return;
+		evt.preventDefault();
+		evt.stopPropagation();
+		openIsniBox($(this));
+	});
+
+}
+Particle.prototype.update = function(i, particles){
+
+	this.mHas=false;   //remis a vrai par mergeNodesAndFindTarget s'il a une cible de fusion
+	this.yieldW=0;     //0..1 : a quel point cet agent CEDE a un non-compatible plus lourd (suspend le creep)
+
+	//derive lente et continue : les regroupements ne deviennent jamais
+	//totalement immobiles, meme quand plus rien ne fusionne
+	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
+	this.driftT+=.008;
+	if(this.records.length>1){
+		//derive des groupes, freinee par la masse de collision (comme le bruit)
+		var driftAmp = (this.open ? .5 : .3)*this.records.length/(1+this.collMass);
+		this.velocity.x += noise.perlin2(this.driftT, this.driftP)*driftAmp;
+		this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*driftAmp;
+	}
+
+	//les gris isoles s'ecartent doucement de leurs voisins isoles
+	//avec lesquels ils ne partagent pas la valeur de propriete ciblee
+	if(this.records.length===1)this.separateFromLoners(i, particles);
+
+	//evitement anticipe : un gris qui se dirige vers un groupe (vert/jaune)
+	//avec lequel il ne cherche PAS a fusionner l'esquive avant le contact
+	this.avoidGroupsAhead(i, particles);
+
+	//masse de collision : ralentissement cumulatif et temporaire en cas de contact.
+	//Applique aux GRIS comme aux groupes (verts/jaunes). Note : update() n'est
+	//appele qu'en phase 2 -> la masse n'est jamais modifiee en phase 1.
+	this.updateMass(i, particles);
+
+	//separation entre groupes non compatibles : TOUJOURS active (meme quand ce
+	//groupe poursuit une cible de fusion). Sans ca, un vert en train de rejoindre
+	//son partenaire traversait les autres verts sur son chemin. Desormais il les
+	//CONTOURNE / se colle a cote au lieu de passer au travers. Les groupes de meme
+	//valeur ne sont pas repousses (getAwayFromGroups les ignore) -> ils fusionnent.
+	if(this.records.length>1)this.getAwayFromGroups(i, particles);
+
+	if(this.opening){
+
+		//les membres commencent a apparaitre des le debut de l'ouverture,
+		//en fondu, chacun seulement quand il a de la place
+		var toAdd = Math.max(1, Math.ceil(this.records.length/120));
+		while(toAdd-- > 0 && this.tryAddChild());
+
+		// console.log("open close: ", this.radius, this.extra_radius, this.max_extra_radius);
+
+		if(this.extra_rad<this.max_extra_rad){
+			
+			this.radius-=this.extra_rad;
+			this.extra_rad+=this.open_step;
+			this.radius+=this.extra_rad;
+			
+			// console.log(this.radius, " ", this.extra_radius);
+		
+		} else {   //extra_rad a atteint/depasse max_extra_rad : fin de l'ouverture
+
+			this.opening=false;
+
+
+			var txt = this.records.length+' elements';
+			$("#selection p").text(txt);
+
+		}
+
+	} else if(this.open){
+
+		//les membres apparaissent au fil des images, chacun seulement
+		//quand il a de la place dans le disque
+		var toAdd = Math.max(1, Math.ceil(this.records.length/120));
+		while(toAdd-- > 0 && this.tryAddChild());
+
+		//cible recalculee en continu : un cercle ouvert qui absorbe de
+		//nouveaux membres grandit pour continuer a tous les loger
+		var sq = Math.sqrt(this.records.length);
+		var needed = 9.*sq/(1.+sq/28.)*this.scale; //croissance compressee pour les gros groupes
+		var maxOpen = Math.min(this.canvas.width, this.canvas.height)/4. - 20.;
+		var base = this.setSmallRadius();
+		this.max_extra_rad = Math.max(20.*this.scale, Math.min(Math.max(needed, base+20.*this.scale), maxOpen) - base);
+
+		var rad_max = base + this.max_extra_rad;
+
+		if(this.radius< rad_max)this.radius+=.25; //croissance lente
+			
+	} else if(!this.open){
+		var target = this.setSmallRadius();
+		if(this.radius>target)this.radius=Math.max(target, this.radius-3.);
+		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25); //croissance lente apres fusion
+	}
+
+	for (var j=0; j<this.childs.length; j++) {
+		this.childs[j].getAwayFrom(this.childs, this.radius, j);
+		this.childs[j].getCloseTo(this.x, this.y, this.radius);
+		this.childs[j].getAwayFromCenter(this.x, this.y, this.radius);
+		this.childs[j].reduceVelocityAndUseIt(.6); //plus d'inertie : glisse fluide
+	}
+
+	if(this.on)this.mergeNodesAndFindTarget(i, particles);
+
+	this.checkEdgesV2();
+
+	//division par la masse du groupe (les gros bougent moins). La masse de
+	//collision, elle, ne freine QUE la propulsion (bruit/derive), pas les forces
+	//de separation -> un agent coince peut toujours se degager (aucun verrou).
+	this.velocity.x /= this.records.length;
+    this.velocity.y /= this.records.length;
+
+	//APPROCHE INEXORABLE vers la cible de fusion : on garantit une composante de
+	//vitesse minimale (MERGE_CREEP) DIRIGEE vers le partenaire compatible. Le
+	//mouvement tangentiel (contourner les autres groupes) reste libre, mais l'agent
+	//ne RECULE jamais par rapport a sa cible -> deux gros verts compatibles finissent
+	//toujours par se rejoindre, meme a travers une foule (ils se frayent un chemin),
+	//SANS avoir besoin d'aller plus vite. N'agit que quand il est freine/bloque
+	//(sinon l'attraction donne deja plus que le creep).
+	if(this.mHas){
+		var mdx=this.mTX-this.x, mdy=this.mTY-this.y, mdl=Math.sqrt(mdx*mdx+mdy*mdy);
+		if(mdl>1){
+			var mux=mdx/mdl, muy=mdy/mdl;
+			var vin=this.velocity.x*mux + this.velocity.y*muy;   //composante vers la cible
+			//creep SUSPENDU quand l'agent cede a un non-compatible plus lourd (yieldW->1) :
+			//il n'insiste pas tout droit, il est libre de CONTOURNER ; une fois degage
+			//(yieldW->0) le creep reprend a plein -> approche inexorable reprise.
+			var yw=this.yieldW; if(yw>1)yw=1; else if(yw<0)yw=0;
+			var creepEff=MERGE_CREEP*(1-yw);
+			if(vin<creepEff){ var add=creepEff-vin; this.velocity.x+=mux*add; this.velocity.y+=muy*add; }
+		}
+	}
+
+    var maxSpeed = this.maxSpeed;
+
+	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
+	this.velocity.y = Math.min(Math.max(this.velocity.y, -maxSpeed), maxSpeed);
+
+	this.x+=this.velocity.x;
+	this.y+=this.velocity.y;
+
+	//garde-fou dur : un GROUPE (vert/jaune) ne sort jamais du cadre. Le coussin de
+	//bord (checkEdgesV2) le freine en douceur, mais une attraction de fusion forte
+	//pres d'un bord pouvait le faire deborder de quelques px -> on rattrape ici le
+	//depassement residuel. Invisible en pratique (n'agit que sur le rare debordement).
+	if(this.records.length>1){
+		var W=this.canvas.width, H=this.canvas.height;
+		if(this.x<0)this.x=0; else if(this.x>W)this.x=W;
+		if(this.y<0)this.y=0; else if(this.y>H)this.y=H;
+	}
+
+	//les enfants (cercles bleus) suivent le deplacement de leur parent ouvert
+	for (var k=0; k<this.childs.length; k++) {
+		this.childs[k].x += this.velocity.x;
+		this.childs[k].y += this.velocity.y;
+	}
+
+	this.velocity.x*=.9;
+	this.velocity.y*=.9;
+
+}
+Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
+
+	var targetedAttrValue = this[this.targetedAttr];
+
+	//VOISINAGE D'ABORD : on cherche un partenaire compatible PRES de soi (via la
+	//grille, dans MERGE_NEIGHBORHOOD) ; s'il n'y a aucun compatible aussi pres, on
+	//ELARGIT a tout le canvas. Les agents se regroupent ainsi localement (clusters)
+	//avant de fusionner au loin -> le systeme se structure tout seul, organiquement.
+	//Le rayon couvre aussi les cas de "manger" (recouvrement, ~this.radius*2).
+	var qr = Math.max(MERGE_NEIGHBORHOOD, this.radius*2 + 2*smaMaxRadius) + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+
+	var t = this.seekMergeTarget(index, particles, cand, targetedAttrValue);   //1) voisinage
+	if(t===-2) return;                                                          //fusion faite
+	if(t<0 && cand){                                                            //2) rien pres -> plus loin
+		t = this.seekMergeTarget(index, particles, null, targetedAttrValue);
+		if(t===-2) return;
+	}
+
+	if(t>=0){
+		this.getCloserFrom(particles[t]);
+		//memorise la cible pour l'approche inexorable (creep) appliquee dans update()
+		this.mTX=particles[t].x; this.mTY=particles[t].y; this.mHas=true;
+	} else if(this.records.length===1){
+		//un gris isole garde sa repulsion reactive
+		this.getAwayFrom(index, particles);
+	}
+	//NB : la separation entre groupes non compatibles est desormais appliquee a
+	//CHAQUE image dans update() (et plus seulement ici quand il n'y a pas de cible)
+	//-> les verts se contournent meme en pleine poursuite d'une fusion.
+}
+//Cherche un partenaire de fusion parmi `cand` (indices issus de la grille) ou,
+//si cand==null, parmi TOUS les agents. Meme propriete ciblee requise.
+//- MANGE (absorbe) un compatible recouvert/plus petit -> renvoie -2 (fusion faite) ;
+//- sinon renvoie l'index du compatible le PLUS PROCHE a suivre (>=0), ou -1 si aucun.
+Particle.prototype.seekMergeTarget = function(index, particles, cand, targetedAttrValue){
+
+	var maxDistance = 9999;
+	var target_id = -1;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
+		if(index===i)continue;
+
+		var p = particles[i];
+
+		if(targetedAttrValue.localeCompare(p[p.targetedAttr])!==0 || p[p.targetedAttr]==="")continue;
+
+		var minDistance = Math.min(this.radius, p.radius);
+		var distance = dist(this.x, p.x, this.y, p.y);
+
+		//fusion au recouvrement total : un cercle ferme de meme propriete
+		//entierement recouvert par ce disque est absorbe
+		var engulfed = !p.open && distance + p.radius*2 <= this.radius*2;
+
+		//meme propriete + collision + ce disque est le plus gros -> il MANGE l'autre
+		if((distance<minDistance && this.records.length >= p.records.length) || engulfed){
+
+			for (var j=p.records.length-1; j>=0; j--) this.records.push(p.records.pop());
+			p.alive=false;
+			return -2;   //fusion faite
+
+		//sinon : candidat a SUIVRE (le plus proche gagne), QUELLE QUE SOIT sa taille.
+		//Auparavant on ne suivait que les compatibles plus gros/egaux : un vert plus
+		//gros ignorait donc un voisin compatible plus petit et filait vers un compatible
+		//lointain. Desormais deux compatibles cote a cote se rejoignent et fusionnent
+		//avant de viser un compatible plus loin (le "manger" ci-dessus gere qui absorbe
+		//qui au contact). Un gris (records=1) suivait deja le plus proche : inchange.
+		} else {
+			if(distance<maxDistance){ maxDistance=distance; target_id=i; }
+		}
+	}
+	return target_id;
+}
+Particle.prototype.SearchCommonsAttrAndGetAwayFrom = function (arr, index){
+
+	var ctx = this.context;
+	var commonAttributes=[];
+
+	for (var i = index+1; i < arr.length; i++) {
+
+		if(index!=i){
+			var minDistance = this.radius*2+arr[i].radius*2+2;
+			var distance = dist(this.x, arr[i].x, this.y, arr[i].y);
+			var atLeastOneAttrInCommonHasBeenFound = false;
+
+			if(distance<50){
+
+				//test all attributes of interest
+				// for (var j = 0; j < 2; j++) {
+				for (var j = 0; j < this.attrOfInterest.length; j++) {
+
+					var attr = this.attrOfInterest[j];
+
+					if(this[attr].localeCompare(arr[i][attr])===0 && this[attr]!= ""){
+					
+						// console.log(attr, " ", this[attr], " ", arr[i][attr]);
+
+						if(commonAttributes.hasOwnProperty(attr)){
+							commonAttributes[attr]+=1;
+						} else {
+							commonAttributes[attr]=1;
+						}
+
+						atLeastOneAttrInCommonHasBeenFound = true;	
+					}
+				}
+
+				if(atLeastOneAttrInCommonHasBeenFound) this.drawLine(this.x, this.y, arr[i].x, arr[i].y, this.color2);
+				else this.drawLine(this.x, this.y, arr[i].x, arr[i].y, this.color1);
+			}
+
+			//get away from each other if
+			if(distance<minDistance){
+
+				var x = arr[i].x - this.x;
+				var y = arr[i].y - this.y;
+
+				x *=-0.1;
+				y *=-0.1;
+
+				this.velocity.x+=x;
+				this.velocity.y+=y;
+
+				this.x+=this.velocity.x;
+				this.y+=this.velocity.y;
+
+				this.velocity.x*=.9;
+				this.velocity.y*=.9
+
+			}
+		}
+	}
+	return commonAttributes;
+}
+Particle.prototype.getCloserFrom = function(target){
+
+	var x = target.x - this.x;
+	var y = target.y - this.y;
+
+	//attraction de fusion compensee PARTIELLEMENT en fonction de la masse.
+	//update() divise la vitesse par records.length : sans compensation (exposant 0)
+	//un gros cluster est quasi immobile -> les clusters de meme valeur ne se
+	//rejoignent plus. Compensation TOTALE (exposant 1) -> tous filent a maxSpeed =
+	//mouvement uniforme, robotique, on perd l'organique. Compromis : exposant 0.5
+	//(racine) -> acceleration ~ 1/sqrt(masse), les gros restent plus LENTS que les
+	//petits (organique preserve) mais assez tires pour finir par se rejoindre.
+	//Regler via MERGE_MASS_EXP (haut du fichier).
+	var m = Math.pow(this.records.length, MERGE_MASS_EXP);
+	x *= 0.3 * m;
+	y *= 0.3 * m;
+
+	this.velocity.x += x;
+	this.velocity.y += y;
+
+}
+Particle.prototype.getAwayFrom = function(index, particles){
+
+	var target_id = -1;
+	var target_numOfChilds = -1;
+
+	//voisins candidats via la grille (rayon = seuil max conservateur + marge).
+	//Le filtrage exact ci-dessous redonne un resultat identique a l'ancien parcours.
+	var qr = this.radius*2 + 2*smaMaxRadius + 10 + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
+
+		if(index!==i
+			&& this[this.targetedAttr].localeCompare(particles[i][particles[i].targetedAttr])!==0){
+
+			var minDistance = this.radius*2 + particles[i].radius*2 + 10;
+			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
+
+			if(distance<minDistance){
+
+				//select target to go away
+				if(target_numOfChilds<particles[i].records.length){
+					target_numOfChilds = particles[i].records.length;
+					target_id = i;
+				}
+			}
+		}
+	}
+
+	if(target_id>=0){
+
+		//repulsion DOUCE, proportionnelle au chevauchement (etait distance*.3,
+		//trop brutale : elle ejectait le gris). Le gris s'ecarte sans etre projete.
+		var dx = particles[target_id].x - this.x;
+		var dy = particles[target_id].y - this.y;
+		var d = Math.sqrt(dx*dx + dy*dy);
+
+		if(d>0){
+			var minD = this.radius*2 + particles[target_id].radius*2 + 10;
+			var overlap = minD - d;                 //>0 : cible choisie dans minDistance
+			var push = overlap*GREY_REPULSION;
+			this.velocity.x -= (dx/d)*push;
+			this.velocity.y -= (dy/d)*push;
+		}
+	}
+}
+Particle.prototype.display = function(){
+
+	var ctx=this.context;
+
+	if(this.fillAlpha<1) {
+		this.fillAlpha+=.03;
+	}
+
+	//TODO do it somewhere else
+	if(this.records.length===1) {
+		
+		if(this.fillAlpha<1) ctx.fillStyle='rgba(189,195,199,'+this.fillAlpha+')'; //grey;
+		else ctx.fillStyle=this.colors[0];
+
+		if(this.lastNodeSelected)ctx.fillStyle=this.colors[4];
+
+		ctx.beginPath();
+	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha, 0, 2*Math.PI);
+	    ctx.fill();
+	    ctx.closePath();
+
+	} else if(this.open){
+	    
+		ctx.fillStyle=this.colors[2];//yellow
+
+		ctx.beginPath();
+	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha, 0, 2*Math.PI);
+	    ctx.fill();
+	    ctx.closePath();
+
+	} else {
+		ctx.fillStyle=this.colors[1];//green
+
+		ctx.beginPath();
+	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha, 0, 2*Math.PI);
+	    ctx.fill();
+	    ctx.closePath();
+	}    
+
+    for (var i = 0; i < this.childs.length; i++) {
+		this.childs[i].display();
+	}
+
+    if(this.records.length>2 || this.open){
+
+    	ctx.font = this.font;
+	    ctx.fillStyle = "black";
+	    ctx.textAlign = "center";
+	    ctx.textBaseline = "middle";
+
+	    var label = this[this.targetedAttr].replace("&#xC9;", "É");
+
+	    ctx.fillText(label, this.x, this.y);
+
+    }
+
+}
+Particle.prototype.updateBeforeMerging = function(){
+
+	var maxSpeed = this.maxSpeed;
+
+	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
+	this.velocity.y = Math.min(Math.max(this.velocity.y, -maxSpeed), maxSpeed);
+
+	this.x+=this.velocity.x;
+	this.y+=this.velocity.y;
+
+	this.velocity.x*=.9;
+	this.velocity.y*=.9;
+
+}
+Particle.prototype.checkEdgesV2 = function(){
+
+	if(this.records.length>1){
+
+		//coussin doux : ressort PERPENDICULAIRE au(x) mur(s) le(s) plus proche(s),
+		//proportionnel a l'enfoncement dans la marge (0 au bord de la marge,
+		//croissant vers le mur). Le groupe longe la bordure et glisse, au lieu
+		//d'etre catapulte vers le centre (ancien comportement saccade).
+		//Premultiplie par records.length car update() divise la vitesse par la masse.
+		var border = this.radius*2+25;
+		var W = this.canvas.width, H = this.canvas.height;
+		var fx = 0, fy = 0;
+
+		if(this.x < border)            fx += (border - this.x);
+		else if(this.x > W - border)   fx -= (this.x - (W - border));
+
+		if(this.y < border)            fy += (border - this.y);
+		else if(this.y > H - border)   fy -= (this.y - (H - border));
+
+		if(fx !== 0 || fy !== 0){
+			var k = BORDER_PUSH * this.records.length;
+			this.velocity.x += fx * k;
+			this.velocity.y += fy * k;
+		}
+
+	} else {
+
+		//pas d'espace torique : quand un gris est sorti d'une certaine distance
+		//(WRAP_MARGIN), au lieu de le "wrapper" au bord oppose (source des
+		//teleportations en boucle a la couture), on le fait REAPPARAITRE a un
+		//endroit LIBRE au hasard sur le canvas, en FONDU (opacite + taille via
+		//fillAlpha remis a 0). Plus de couture, plus de pop brutal.
+		var W = this.canvas.width, H = this.canvas.height, m = WRAP_MARGIN;
+		if(this.x < -m || this.x > W + m || this.y < -m || this.y > H + m){
+
+			var nx, ny, placed = false;
+			for(var a=0; a<25 && !placed; a++){
+				nx = 40 + Math.random()*(W-80);
+				ny = 40 + Math.random()*(H-80);
+				placed = true;
+				for(var b=0; b<particles.length; b++){
+					var o = particles[b];
+					if(o===this)continue;
+					if(dist(nx, o.x, ny, o.y) < this.radius*2 + o.radius*2 + 20){ placed=false; break; }
+				}
+			}
+			this.x = nx; this.y = ny;
+			this.velocity.x = 0; this.velocity.y = 0;
+			this.fillAlpha = 0;   //reapparition progressive : fondu + grossissement
+		}
+
+	}
+	
+}
+Particle.prototype.checkEdgesV1 = function(){
+	
+	if(this.x<0)this.x=this.canvas.width;
+	else if(this.x>this.canvas.width)this.x=0;
+
+	if(this.y<0)this.y=this.canvas.height;
+	else if(this.y>this.canvas.height)this.y=0;
+	
+}
+Particle.prototype.addNoiseField = function(coef){
+
+	//champ de bruit lisse et evolutif : la 3e dimension avance lentement
+	//avec le temps, les courants se reconfigurent au lieu de se figer
+	var t = Date.now()*.00006;
+
+	var x = noise.perlin3(this.x/150, this.y/150, t);
+    var y = noise.perlin3(this.x/150+7.31, this.y/150+3.17, t);
+
+    //la force du champ diminue avec la TAILLE du cercle (masse ~ rayon).
+    //Plancher a 1 (etait .5) : les petits cercles (gris) ne sont PLUS
+    //sur-propulses par le bruit ; les gros regroupements restent attenues.
+    var sizeFactor = this.radius/(2.*this.scale);
+    if(sizeFactor<1)sizeFactor=1;
+    x*=coef/sizeFactor;
+    y*=coef/sizeFactor;
+
+	//agitation reduite pour les gris : derive plus douce, moins nerveuse.
+	//GREY_NOISE global pour regler finement (1 = comme les autres).
+	if(this.records.length===1){ x*=GREY_NOISE; y*=GREY_NOISE; }
+
+	//la masse de collision freine la PROPULSION (a = F/masse) : un agent qui
+	//percute recoit moins de poussee du bruit, donc se calme -- SANS etre
+	//bloque, car les forces de separation ne passent pas par la masse.
+	if(this.collMass){ var cd = 1/(1+this.collMass); x*=cd; y*=cd; }
+
+	this.velocity.x+=x;
+	this.velocity.y+=y;
+}
+Particle.prototype.drawLine = function(x1, y1, x2, y2, color){
+	var ctx = this.context;
+	ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+//evitement reserve aux regroupements : pousse douce, proportionnelle au
+//chevauchement ; premultipliee par records.length car update() divise la
+//vitesse par la taille du groupe
+Particle.prototype.getAwayFromGroups = function(index, particles){
+
+	var qr = this.radius*2 + 2*smaMaxRadius + GROUP_MARGIN + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
+
+		//les regroupements qui partagent la meme valeur de propriete sont des
+		//candidats a la fusion : on ne les repousse pas, on les laisse approcher
+		var sameValue = this.targetedAttr!=="" && this[this.targetedAttr]!=="" &&
+			String(this[this.targetedAttr]).localeCompare(String(particles[i][particles[i].targetedAttr]))===0;
+
+		if(index!==i && particles[i].records.length>1 && !sameValue){
+
+			//marge de respiration entre groupes non compatibles
+			var minDistance = this.radius*2 + particles[i].radius*2 + GROUP_MARGIN;
+			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
+
+			if(distance<minDistance && distance>0){
+
+				var x = (particles[i].x - this.x)/distance;
+				var y = (particles[i].y - this.y)/distance;
+
+				//PRIORITE PAR LA MASSE : le plus LOURD tient son cap (va tout droit),
+				//le plus LEGER fait le tour. yieldF = 1 si masses egales (comportement
+				//inchange), ->2 si ce groupe est plus leger que le voisin (il cede plus),
+				//->0 s'il est plus lourd (il ne bouge quasiment pas). MASS_PRIORITY dose
+				//l'effet (0 = symetrique comme avant).
+				var mThis=this.records.length, mO=particles[i].records.length;
+				var yieldF = (1-MASS_PRIORITY) + MASS_PRIORITY*(2*mO/(mThis+mO));
+
+				//a quel point CE groupe est plus leger que ce voisin (0 si egal/plus lourd,
+				//->1 si beaucoup plus leger) : sert a suspendre son creep pour contourner.
+				var w = MASS_PRIORITY*((2*mO/(mThis+mO)) - 1);
+				if(w>this.yieldW)this.yieldW=w;
+
+				var push = (minDistance - distance)*GROUP_REPULSION*this.records.length*yieldF;
+
+				this.velocity.x -= x*push;
+				this.velocity.y -= y*push;
+			}
+		}
+	}
+}
+
+//separation douce entre agents isoles (gris) : proportionnelle au
+//chevauchement, ignoree entre candidats a la fusion (meme valeur)
+Particle.prototype.separateFromLoners = function(index, particles){
+
+	var qr = this.radius*2 + 2*smaMaxRadius + 12 + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
+
+		if(index!==i && particles[i].records.length===1){
+
+			if(this.targetedAttr!=="" &&
+				String(this[this.targetedAttr]).localeCompare(String(particles[i][particles[i].targetedAttr]))===0) continue;
+
+			//marge de respiration un peu plus large : les gris ne se collent pas
+			var minDistance = this.radius*2 + particles[i].radius*2 + 12;
+			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
+
+			if(distance<minDistance && distance>0){
+
+				var x = (particles[i].x - this.x)/distance;
+				var y = (particles[i].y - this.y)/distance;
+
+				//separation renforcee (etait .04) : ils s'ecartent plus nettement
+				var push = (minDistance - distance)*.08;
+
+				this.velocity.x -= x*push;
+				this.velocity.y -= y*push;
+			}
+		}
+	}
+}
+
+//masse de collision : chaque contact (surfaces qui se touchent) alourdit
+//temporairement la particule (cumulatif), et cette masse se resorbe quand les
+//contacts cessent. Elle est injectee dans la masse effective en fin d'update()
+//-> une particule qui percute beaucoup ralentit, puis repart en se degageant.
+Particle.prototype.updateMass = function(index, particles){
+
+	this.collMass *= COLL_DECAY;              //resorption progressive (temporaire)
+
+	var qr = this.radius*2 + 2*smaMaxRadius + COLL_MARGIN + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	var contacts = 0;
+	for (var c=0; c<N; c++) {
+		var i = cand ? cand[c] : c;
+		if(index===i)continue;
+		var minTouch = this.radius*2 + particles[i].radius*2 + COLL_MARGIN;
+		var d = dist(this.x, particles[i].x, this.y, particles[i].y);
+		if(d>0 && d<minTouch)contacts++;
+	}
+
+	if(contacts>0)this.collMass += contacts*COLL_GAIN;   //cumulatif
+	if(this.collMass>COLL_MAX)this.collMass=COLL_MAX;    //plafond anti-gel
+}
+
+//evitement anticipe des groupes : TOUT agent (gris comme groupe, y compris quand
+//il fonce vers une cible de fusion) regarde DEVANT lui et, s'il se dirige vers un
+//regroupement (vert/jaune) avec lequel il ne partage pas la valeur ciblee (donc
+//pas sa cible de fusion), il le CONTOURNE (poussee radiale + tangentielle) au lieu
+//de plonger dessus. Un groupe deja derriere ou hors trajectoire est ignore.
+Particle.prototype.avoidGroupsAhead = function(index, particles){
+
+	var speed = Math.sqrt(this.velocity.x*this.velocity.x + this.velocity.y*this.velocity.y);
+	if(speed < .01)return;                       //pas de cap clair : rien a esquiver
+
+	var vx = this.velocity.x/speed, vy = this.velocity.y/speed;   //direction (unitaire)
+	var ahead = 85*this.scale;                   //distance d'anticipation
+
+	//rayon de requete = portee maximale (ahead + rayons max) + marge : sur-ensemble
+	//des vrais voisins, le test exact `distance>reach` filtre ensuite a l'identique.
+	var qr = ahead + 2*smaMaxRadius + this.radius*2 + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
+
+		if(index===i)continue;
+
+		var o = particles[i];
+		if(o.records.length<=1)continue;         //on n'esquive que les GROUPES (verts/jaunes)
+
+		//candidat a la fusion (meme valeur de propriete ciblee) : on le laisse approcher
+		var sameValue = this.targetedAttr!=="" && this[this.targetedAttr]!=="" &&
+			String(this[this.targetedAttr]).localeCompare(String(o[o.targetedAttr]))===0;
+		if(sameValue)continue;
+
+		var dx = o.x - this.x, dy = o.y - this.y;
+		var distance = Math.sqrt(dx*dx + dy*dy);
+		var reach = ahead + o.radius*2 + this.radius*2;
+		if(distance<=0 || distance>reach)continue;
+
+		//alignement : a quel point on FONCE vers le groupe (cos de l'angle entre
+		//notre cap et la direction du groupe). <=0 -> on s'en eloigne deja :
+		//AUCUNE poussee, l'agent se degage librement (corrige le blocage).
+		var align = (dx*vx + dy*vy)/distance;
+		if(align<=0)continue;
+
+		//poussee RADIALE, a l'oppose du groupe. Stable : la direction ne depend
+		//PAS du signe de la vitesse (contrairement a une esquive perpendiculaire
+		//qui faisait tourner le vecteur vitesse et s'auto-entretenait). Dosee par
+		//proximite x alignement : franche si on fonce dessus, nulle des qu'on se
+		//detourne. Ne bloque jamais un candidat a la fusion (ecarte plus haut).
+		var proximity = 1 - distance/reach;      //0..1
+		//premultiplie par records.length car update() divise la vitesse par la
+		//masse : sans ca un GROUPE (lourd) n'esquiverait quasiment pas.
+		//PRIORITE PAR LA MASSE : un agent leger esquive FORT l'obstacle plus lourd
+		//(il fait le tour) ; un agent plus lourd que l'obstacle l'esquive a peine (il
+		//va tout droit et c'est l'autre qui s'ecarte). yieldF = 1 si masses egales.
+		var mThis=this.records.length, mO=o.records.length;
+		var yieldF = (1-MASS_PRIORITY) + MASS_PRIORITY*(2*mO/(mThis+mO));
+		//obstacle plus lourd DEVANT soi -> on cede : suspend le creep pour contourner
+		var wa = MASS_PRIORITY*((2*mO/(mThis+mO)) - 1);
+		if(wa>this.yieldW)this.yieldW=wa;
+		var push = proximity*align*AVOID_STRENGTH*this.scale*this.records.length*yieldF;
+
+		//RADIALE (s'ecarter) + TANGENTIELLE (contourner) : quand la cible est
+		//droit derriere l'obstacle, la seule composante radiale freine sans
+		//passer autour. Le cote de contournement est choisi par rapport a la
+		//DIRECTION de l'obstacle (stable), pas au signe de la vitesse -> pas
+		//d'oscillation auto-entretenue.
+		var ux = dx/distance, uy = dy/distance;   //vers l'obstacle
+		var tx = -uy, ty = ux;                    //perpendiculaire (tangente)
+		if(vx*tx + vy*ty < 0){ tx = -tx; ty = -ty; }   //cote deja amorce par le cap
+		this.velocity.x += (-ux*.7 + tx)*push;
+		this.velocity.y += (-uy*.7 + ty)*push;
+	}
+}
+
+//ajoute un membre seulement s'il y a de la place pour lui : capacite du
+//disque respectee, et emplacement libre trouve avant de le faire naitre
+Particle.prototype.tryAddChild = function(){
+
+	if(this.childs.length >= this.records.length)return false;
+
+	var usable = this.radius*2*.7;
+
+	//capacite globale : combien de membres tiennent dans la zone utile
+	var slot = 320.*this.scale*this.scale;
+	var capacity = Math.max(1, Math.floor((Math.PI*usable*usable)/slot));
+	if(this.childs.length >= capacity)return false;
+
+	//emplacement : quelques essais aleatoires, on garde une position libre
+	for (var t=0; t<12; t++) {
+
+		var a = Math.random()*2*Math.PI;
+		var r = Math.sqrt(Math.random())*Math.max(1, usable-8);
+		var px = this.x + Math.cos(a)*r;
+		var py = this.y + Math.sin(a)*r;
+
+		var free = true;
+		for (var j=0; j<this.childs.length; j++) {
+			var d = dist(px, this.childs[j].x, py, this.childs[j].y);
+			if(d < this.childs[j].radius*2 + 9){ free=false; break; }
+		}
+
+		if(free){
+			var c = this.createNewChild(this.records[this.childs.length]);
+			c.x = px; c.y = py;
+			this.childs.push(c);
+			return true;
+		}
+	}
+
+	return false;
+};
