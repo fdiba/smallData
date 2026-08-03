@@ -308,11 +308,13 @@ function selectRect(x, y){
                 }).done(function(str) {
 
                     var arr=str.split("%");
+                    // code pays servi par retrieve_data.php (case 5) : iso3, a
+                    // defaut iso2 pour l'Ecosse (GB), a defaut le nom du pays
                     var ctry=arr[2];
                     // "edition" au singulier si une seule, "editions" au pluriel sinon
                     var nEd=(''+arr[3]).split(',').length;
                     var edLabel=(nEd===1 ? 'edition' : 'editions');
-                    var txt='selected: '+arr[0]+' '+arr[1]+' ('+ctry+') | '+edLabel+': '+arr[3];
+                    var txt=arr[0]+' '+arr[1]+' '+ctry+' | '+edLabel+': '+arr[3];
 
                     $("#selection p").text(txt);
 

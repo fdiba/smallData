@@ -174,7 +174,8 @@ function retrieveAllTitleFrom(aId){
 
 }
 function displayTitlesInfos(){
-    var str = '<em>'+lastComposerSelected+'</em>';
+    // en-tete non italique, comme la boite violette d'Overview et Network
+    var str = '<span>'+lastComposerSelected+'</span>';
     $("#titles").empty().append(str);
     if(titles.length>0){
         for (var i=0; i<titles.length; i++) {
@@ -182,7 +183,6 @@ function displayTitlesInfos(){
             //fond violet alterne (t-a/t-b) pour bien separer chaque oeuvre, comme dans Overview
             var div='<li class="'+(i%2===0 ? 't-a' : 't-b')+'">'+obj.t;
             if(obj.d) div += ' ('+obj.d+')';
-            if(obj.m) div += ' | MISAM '+obj.m;
             if(obj.ed){ var nEd=(''+obj.ed).split(',').length; div += ' | '+(nEd===1 ? 'edition' : 'editions')+': '+obj.ed; }
             div += '</li>';
             $("#titles").append(div);

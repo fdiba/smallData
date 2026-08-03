@@ -173,7 +173,7 @@
 		$result = "no result";
 
 		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name,
-							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS \'ctry\',
+							COALESCE(NULLIF(imeb_country.iso3, \'\'), NULLIF(imeb_country.iso2, \'\'), NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS \'ctry\',
 							imeb_edition.ed_1973, imeb_edition.ed_1974,
 							imeb_edition.ed_1975, imeb_edition.ed_1976,
 						   	imeb_edition.ed_1977, imeb_edition.ed_1978,
@@ -215,6 +215,9 @@
 
 			$str_editions = implode(", ", $editions);
 
+			// 3e champ : le code pays affiche dans la boite orange d'Overview.
+			// iso3, a defaut iso2 (l'Ecosse n'a pas d'iso3 : elle affiche GB),
+			// a defaut le nom du pays (entrees sans code, type "Unknown").
 			$result = $row['firstName'] . '%' . $row['name'] . '%' . $row['ctry']
 					  . '%' . $str_editions;
 

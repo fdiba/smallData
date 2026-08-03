@@ -25,12 +25,13 @@ window.onload = function() {
 };
 
 //------------------------------------------------------------------
-// Parsing (10 champs par oeuvre) + libelles rank / sous-categorie
+// Parsing (11 champs par oeuvre) + libelles rank / sous-categorie
 //------------------------------------------------------------------
 function parseWorks(str){
 
     var arr = str.split("%");
-    var numOfElements = 10;
+    // 11 depuis l'ajout du pays en fin d'enregistrement (retrieve_works.php)
+    var numOfElements = 11;
     var objects = [];
 
     for (var i = 0; i < arr.length-(numOfElements-1); i+=numOfElements) {
@@ -72,7 +73,8 @@ function parseWorks(str){
 
         objects.push({ year:arr[i], rank:rank, rank_code:arr[i+1], misam:arr[i+2],
                        fn:arr[i+3], name:arr[i+4], title:arr[i+5], cat:arr[i+8], cat2:cat2,
-                       cat2_code:arr[i+9], duration:arr[i+6], id:arr[i+7] });
+                       cat2_code:arr[i+9], duration:arr[i+6], id:arr[i+7],
+                       ctry:arr[i+10] });
     }
     return objects;
 }
@@ -196,10 +198,14 @@ function buildTableRows(objects){
                   + '<td class="grp-cell '+grpParity+'" rowspan="'+span+'">'+ objects[j].rank + '</td>';
         }
 
+        // "country" prend la place de l'ancienne colonne "imeb id" (le MISAM,
+        // numero de gestion interne) et vient juste apres "last name".
+        // Le MISAM reste transporte dans l'objet (objects[j].misam) et sert
+        // toujours de propriete imeb_id aux agents du SMA.
         html += '<td class="'+memParity+'">'+ objects[j].fn + '</td>'
               + '<td class="'+memParity+'">'+ objects[j].name + '</td>'
-              + '<td class="'+memParity+'">'+ objects[j].title + '</td>'
-              + '<td class="'+memParity+'">'+ objects[j].misam + '</td></tr>';
+              + '<td class="'+memParity+'">'+ objects[j].ctry + '</td>'
+              + '<td class="'+memParity+'">'+ objects[j].title + '</td></tr>';
     }
 
     var table = document.getElementById('works_table');

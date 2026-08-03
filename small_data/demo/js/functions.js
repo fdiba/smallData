@@ -3,12 +3,13 @@ function displayTitlesInfosGN(arr){
 
     $("#titles").empty();
     if(arr.length>0){
-        $("#titles").append('<em>'+arr.length+' archived work(s)</em>');
+        // en-tete non italique, "work" au singulier si une seule oeuvre, suivi
+        // de ":" puisque la liste des titres vient juste apres
+        $("#titles").append('<span>'+arr.length+' archived work'+(arr.length>1 ? 's' : '')+':</span>');
         for (var i=0; i<arr.length; i++) {
             var obj=arr[i];
             var div='<li class="'+(i%2===0 ? 't-a' : 't-b')+'">'+obj.t;
             if(obj.d) div += ' ('+obj.d+')';
-            if(obj.m) div += ' | MISAM '+obj.m;
             if(obj.ed){
                 var edCount = (''+obj.ed).split(',').length;
                 div += ' | ' + (edCount === 1 ? 'edition' : 'editions') + ': ' + obj.ed;
