@@ -373,9 +373,21 @@ function selectRect(x, y){
                     data: {aId: nAId, case:5} 
                 }).done(function(str) {
 
+                    /* arr et ctry servent DEUX FOIS dans ce rappel : ici pour
+                       la boite orange, et plus bas pour creer l'agent du SMA
+                       (OverviewSMA.addComposer). Ne pas les supprimer en
+                       refondant l'affichage — c'est exactement ce qui est
+                       arrive une fois : plus aucun agent n'etait cree, le
+                       rappel mourant sur un « arr is not defined » avant
+                       d'atteindre cette ligne. Le decoupage reste donc ici,
+                       au plus pres de la reponse, et selectionHtml() recoit
+                       le tableau deja decoupe. */
+                    var arr  = str.split("%");
+                    var ctry = arr[2];
+
                     // .html() et non .text() : le nom porte desormais un
                     // balisage quand la fiche a un ISNI (voir selectionHtml).
-                    $("#selection p").html(selectionHtml(str.split("%")));
+                    $("#selection p").html(selectionHtml(arr));
 
                     //------- cookie stuff
 
