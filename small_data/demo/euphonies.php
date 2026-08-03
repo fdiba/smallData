@@ -23,6 +23,10 @@
 	<script src="js/sma_core.js"></script>
 	<script src="js/childs_euphonies.js"></script>
 	<script src="js/particles_euphonies.js"></script>
+	<!-- Tri du tableau par clic sur ses en-tetes : module partage, sans
+	     dependance (voir l'en-tete de js/table_sort.js). Il est appele depuis
+	     js/euphonies.js, une fois les lignes construites. -->
+	<script src="js/table_sort.js"></script>
 	<script src="js/euphonies.js"></script>
 	<!-- Repli de la legende "How to read", partage par les sept pages qui en portent une : voir l'en-tete de js/legend_toggle.js -->
 	<script src="js/legend_toggle.js"></script>
@@ -68,7 +72,8 @@
 					<div>
 						<p><strong>Table &amp; agents</strong></p>
 						<ul>
-							<li>the table lists the Euphonies d'Or, sorted by edition then last name; click a row and the composer's records held by data.bnf.fr unfold right underneath it, or click the ISNI itself for a summary of the composer's international identity record and the external resources it points to</li>
+							<li>the table lists the Euphonies d'Or, sorted on arrival by edition then last name; <em>click any column header</em> to sort on that column, and again to reverse the order &mdash; sorting <em>edition</em> twice thus restores the order the page opened with. Empty cells always come last, in either direction: a blank is a missing piece of information, not a small value</li>
+							<li>click a row and the composer's records held by data.bnf.fr unfold right underneath it, or click the ISNI itself for a summary of the composer's international identity record and the external resources it points to</li>
 							<li>on the canvas, each moving ellipse is an agent carrying one Euphonie d'Or</li>
 						</ul>
 					</div>

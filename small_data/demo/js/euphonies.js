@@ -93,6 +93,23 @@ function retrieveEuphonies(cat, numOfElements){
             tr.css("cursor", "pointer").on('click', function(){ toggleBnfRow($(this)); });
         }
 
+        // Les en-tetes deviennent triables une fois les lignes en place (voir
+        // js/table_sort.js). Trois precisions propres a cette page :
+        //   - ignore : les lignes-notices data.bnf.fr ne sont pas des donnees,
+        //     elles ne doivent pas etre triees avec le reste ;
+        //   - before : et comme elles sont posees SOUS une ligne precise, on
+        //     referme la notice ouverte avant de rebattre les lignes, faute de
+        //     quoi elle se retrouverait sous une autre ;
+        //   - zebra  : la parite est portee par des classes, elle est donc a
+        //     reposer apres chaque tri.
+        if(window.initTableSort){
+            initTableSort('#euphonies_table', {
+                ignore: 'bnf-row',
+                zebra:  ['even', 'odd'],
+                before: closeBnfRow
+            });
+        }
+
         $("#info").append("<p>" + arr.length/numOfElements + "</p>");
 
     });

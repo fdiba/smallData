@@ -439,3 +439,54 @@ ul{
 #ctrl_bar div#commons > p{
 	white-space: nowrap;
 }
+
+/* =========================================================
+   4. EN-TETES DE TABLEAU TRIABLES (js/table_sort.js)
+   ---------------------------------------------------------
+   Regles communes a tous les tableaux du site : la classe .sortable et le
+   <span class="sort-caret"> sont poses par le script, jamais ecrits dans le
+   HTML. Une page servie sans JavaScript garde donc des en-tetes ordinaires,
+   sans curseur main ni caret qui promettraient un tri impossible.
+   Le caret reprend la construction de #legend .lg-caret — un triangle en
+   bordures, sans image ni police d'icones. Il est present mais tres pale sur
+   toutes les colonnes : c'est lui qui signale qu'elles sont cliquables, avant
+   meme le survol. currentColor le met a la couleur du texte de l'en-tete,
+   quel que soit le fond de la page (vert-de-gris sur euphonies.php).
+   ========================================================= */
+
+th.sortable{
+	cursor: pointer;
+	user-select: none;
+	white-space: nowrap;
+}
+th.sortable .sort-caret{
+	display: inline-block;
+	width: 0;
+	height: 0;
+	margin-left: 6px;
+	vertical-align: middle;
+	border-left: 4px solid transparent;
+	border-right: 4px solid transparent;
+	border-top: 5px solid currentColor;
+	opacity: .25;
+	transition: opacity 120ms ease;
+}
+th.sortable:hover .sort-caret{
+	opacity: .55;
+}
+th.sortable.is-sorted .sort-caret{
+	opacity: 1;
+}
+/* Tri croissant : le triangle se retourne vers le haut. La bordure du bas
+   remplace celle du haut, qui doit donc etre remise a zero. */
+th.sortable.is-asc .sort-caret{
+	border-top: 0;
+	border-bottom: 5px solid currentColor;
+}
+th.sortable:focus-visible{
+	outline: 2px solid #fff;
+	outline-offset: -2px;
+}
+@media (prefers-reduced-motion: reduce){
+	th.sortable .sort-caret{ transition: none; }
+}
