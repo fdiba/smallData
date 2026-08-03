@@ -28,3 +28,20 @@ text{
 .link:hover {
   stroke-opacity: .8;
 }
+
+/* Nom de compositeur cliquable : la classe n'est posee par js/categories.js
+   que sur les noeuds porteurs d'un ISNI (236 sur 508). Le souligne pointille
+   reprend celui du lien ISNI du tableau d'euphonies.php : c'est le meme
+   geste, il se signale de la meme facon. Le trait passe en continu au survol,
+   seul retour possible sur un <text> SVG, qui n'accepte ni fond ni cadre.
+   Les styles de la fiche elle-meme sont dans css/isni.css. */
+.node text.isni-node{
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+.node text.isni-node:hover{
+  text-decoration-style: solid;
+  font-weight: 600;
+}

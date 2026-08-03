@@ -1,0 +1,142 @@
+/* =========================================================================
+   Fiche ISNI — feuille PARTAGEE
+   -------------------------------------------------------------------------
+   Styles de la boite flottante ouverte au clic sur un ISNI. Le meme bloc
+   etait recopie a l'identique dans css/euphonies.css, css/aww.css et
+   css/catalog.css ; la page categories.php en avait besoin a son tour, ce
+   qui en aurait fait une quatrieme copie. Il est donc extrait ici, et les
+   quatre pages qui ouvrent la fiche le chargent :
+
+       euphonies.php, award-winning_works.php, catalog.php, categories.php
+
+   Le <link> y est place APRES la feuille propre a la page, exactement comme
+   le bloc se trouvait en fin de fichier : l'ordre de cascade est inchange.
+
+   Ce qui n'a PAS ete deplace, parce que c'est propre a une page : la regle
+   de survol du lien ISNI de la colonne du tableau
+   (#euphonies_table a.isni-link, css/euphonies.css) et celle du nom
+   cliquable du diagramme de flux (.node text.isni-node, css/sankey.css).
+
+   La boite est attachee a <body> en position:absolute : elle est HORS FLUX,
+   donc elle ne pousse ni le tableau, ni le canvas — la mise en page ne bouge
+   pas d'un pixel quand elle s'ouvre.
+   z-index 9 : juste sous #ctrl_bar (10), qui reste toujours lisible.
+   ========================================================================= */
+
+.isni-box{
+	display: none;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 9;
+	box-sizing: border-box;
+	width: 340px;
+	max-width: calc(100vw - 16px);
+	max-height: 70vh;
+	overflow: hidden;
+	background: var(--sd-asphalt);
+	color: #ecf0f1;
+	font-size: 12px;
+	line-height: 1.45;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+}
+.isni-box.open{
+	display: flex;
+	flex-direction: column;
+}
+
+.isni-hd{
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 6px 10px;
+	background: var(--sd-midnight);
+}
+.isni-hd-t{
+	font-weight: 600;
+	letter-spacing: .04em;
+	color: #fff;
+	font-variant-numeric: tabular-nums;
+}
+.isni-close{
+	cursor: pointer;
+	padding: 0 4px;
+	font-size: 16px;
+	line-height: 1;
+	color: #bdc3c7;
+}
+.isni-close:hover{
+	color: #fff;
+}
+
+.isni-bd{
+	flex: 1 1 auto;
+	overflow-y: auto;
+	padding: 8px 10px 10px 10px;
+	word-wrap: break-word;
+	overflow-wrap: anywhere;
+}
+.isni-bd p{
+	margin: 0 0 6px 0;
+}
+
+.isni-name{
+	font-weight: 600;
+	color: #fff;
+}
+.isni-desc{
+	color: #bdc3c7;
+	font-style: italic;
+}
+
+/* titre de rubrique : meme code que les legendes des autres pages */
+.isni-sec{
+	margin: 10px 0 3px 0 !important;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	font-size: 11px;
+	color: var(--sd-emerald);
+}
+.isni-bd .isni-sec:first-child{
+	margin-top: 0 !important;
+}
+
+.isni-list{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.isni-list li{
+	padding: 1px 0 1px 9px;
+	border-left: 3px solid transparent;
+}
+.isni-list li:hover{
+	border-left-color: var(--sd-greensea);
+	background: rgba(255, 255, 255, .07);
+}
+.isni-box a{
+	color: #ecf0f1;
+	text-decoration: none;
+	border-bottom: 1px solid rgba(236, 240, 241, .35);
+}
+.isni-box a:hover{
+	color: #fff;
+	border-bottom-color: #fff;
+}
+.isni-notes li,
+.isni-titles li{
+	color: #bdc3c7;
+}
+.isni-more,
+.isni-codes{
+	color: #95a5a6;
+	font-size: 11px;
+}
+.isni-wait,
+.isni-warn{
+	color: #bdc3c7;
+	font-style: italic;
+}
