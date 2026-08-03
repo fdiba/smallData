@@ -23,7 +23,8 @@ function Child(config){
 	this.cat = config.cat;
 	this.sub_cat = config.sub_cat;
 	this.isni = config.isni;
-	
+	this.ctry = config.ctry;
+
 	this.id=config.id;
 
 	this.radius=2.*this.scale+Math.random()*2.;

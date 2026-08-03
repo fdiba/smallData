@@ -14,10 +14,16 @@
 		// Le pays est lu sur imeb_country (LEFT JOIN : un artiste sans pays
 		// renseigne doit rester dans le tableau) et servi en anglais, comme le
 		// menu "Country" des pages catalogue : c_name_en, a defaut c_name.
+		//
+		// L'ISNI identifie une PERSONNE, pas une oeuvre : il est donc lu sur
+		// imeb_artist (colonne alimentee depuis data.bnf.fr) et non sur
+		// imeb_music.isni, vestige des essais d'interconnexion de 2017. Meme
+		// source que la page euphonies (php/retrieve_cat.php).
 		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price,
 							imeb_music.award_cat, imeb_music.award_cat_2, imeb_music.euphonies,
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
+							imeb_artist.isni AS isni,
 							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry
 							FROM imeb_music
 							INNER JOIN imeb_artist
@@ -45,15 +51,25 @@
 
 			$id=$row['id'];
 
-			// 11e et dernier champ : le pays du compositeur, ajoute en fin
-			// d'enregistrement pour ne decaler aucun index existant. Chaine
-			// vide si l'artiste n'a pas de pays rattache.
+			// 11e champ : le pays du compositeur. Chaine vide si l'artiste
+			// n'a pas de pays rattache.
 			$ctry=$row['ctry'] ? $row['ctry'] : '';
+
+			// 12e et dernier champ : l'ISNI du compositeur, ajoute en fin
+			// d'enregistrement pour ne decaler aucun index existant. Chaine
+			// vide pour la majorite des artistes (la colonne n'est renseignee
+			// que pour ceux alignes sur data.bnf.fr) : js/aww.js n'affiche le
+			// lien que si la valeur ressemble a un ISNI.
+			// ATTENTION : le separateur d'enregistrements est '%' ici (et non
+			// '|' comme dans retrieve_cat.php) ; toute modification de la
+			// longueur d'enregistrement doit etre repercutee sur
+			// numOfElements dans js/aww.js.
+			$isni=$row['isni'] ? $row['isni'] : '';
 
 			if($award_year!=null){
 
 				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat,
-							$award_cat2, $ctry);
+							$award_cat2, $ctry, $isni);
 
 				/*if($euphonies>0){
 

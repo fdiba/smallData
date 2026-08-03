@@ -16,29 +16,37 @@
 
 	//-------------------------------- functions --------------------------------------//
 
+	// Libelles des sous-categories (imeb_music.award_cat_2, code entier 1-12).
+	// Les libelles sont ecrits en toutes lettres, tels que l'IMEB les a
+	// formules lors de la restructuration de 2005 (Trivium / Quadrivium) :
+	// la base ne stocke que le code, aucune modification de la bdd n'est
+	// necessaire pour changer un libelle.
+	// ATTENTION : la meme table existe cote client dans js/aww.js (page
+	// award-winning_works.php, ou retrieve_works.php sert award_cat_2 brut).
+	// Les deux doivent rester identiques.
 	function set_sub_cat($sub_cat){
 
 		switch ($sub_cat) {
 			case 1:
-				return "Dispositif et instru.";
+				return "Avec dispositifs et/ou instruments";
 				break;
 			case 2:
 				return "Esthétique formelle";
 				break;
 			case 3:
-				return "Esthétique program.";
+				return "Esthétique à programme";
 				break;
 			case 4:
 				return "Danse ou théâtre";
 				break;
 			case 5:
-				return "Installation ou environ.";
+				return "Installation ou environnement sonore et musical";
 				break;
 			case 6:
 				return "Multimédia";
 				break;
 			case 7:
-				return "Art sonore électroa.";
+				return "Art sonore électroacoustique";
 				break;
 			case 8:
 				return "Avec instruments";
