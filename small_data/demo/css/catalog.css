@@ -179,39 +179,6 @@ th{
 	display: none;
 }
 
-/* ---------- Fiche ISNI : panneau ancre a droite des tableaux ----------
-   Cette page n'ouvre pas la fiche en boite flottante mais dans un panneau
-   lateral (js/isni_box.js, setIsniDock). Le conteneur est en position FIXE :
-   il ne pousse rien, les deux tableaux, le canvas et la legende gardent leur
-   bande de 1210 px au pixel pres, et le panneau reste sous les yeux pendant
-   qu'on parcourt la liste. Son abscisse est calculee par positionIsniPanel()
-   dans js/catalog.js — il se cale a droite des tableaux, pas au bord de la
-   fenetre, pour se lire comme une troisieme colonne.
-
-   pointer-events: none sur le conteneur — vide, il couvrirait sinon une bande
-   de 340 px et intercepterait les clics destines au tableau.
-
-   Les regles de .isni-box vivent dans css/isni.css, chargee APRES cette
-   feuille : on ne peut donc pas compter sur l'ordre pour les surcharger. On
-   prefixe par #isniPanel, ce qui donne (1,1,0) contre (0,1,0) — la
-   specificite l'emporte quel que soit l'ordre. */
-#isniPanel{
-	position: fixed;
-	top: calc(var(--sd-bar-h) + 8px);
-	left: 0;                                        /* recalcule en JS */
-	width: 340px;
-	max-width: calc(100vw - 16px);
-	z-index: 9;                                     /* sous #ctrl_bar (10) */
-	pointer-events: none;
-}
-#isniPanel .isni-box{
-	position: static;
-	width: 100%;
-	max-width: none;
-	max-height: calc(100vh - var(--sd-bar-h) - 24px);
-	pointer-events: auto;
-}
-
 /* Nom de compositeur cliquable — uniquement ceux dont l'ISNI est renseigne.
    Meme convention que les noms du diagramme de flux (css/sankey.css) : un
    souligne pointille, qui passe en continu au survol et au focus clavier.

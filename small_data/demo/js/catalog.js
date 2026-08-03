@@ -304,109 +304,28 @@ function retrieveData(cat, numOfElements, country){
    de la bande de 1210 px.
    ========================================================================= */
 
-/* Le conteneur est cree ici plutot que dans catalog.php : sans JavaScript il
-   n'y aurait rien a y mettre, et une <div> vide dans le HTML serait un
-   promesse non tenue. */
-function ensureIsniPanel(){
+/* Le panneau lateral, ses gestionnaires et sa regle de fermeture sont
+   fournis par js/isni_box.js (enableIsniPanel) : ce bloc y etait ecrit en
+   entier, et award-winning_works.php en aurait fait une seconde copie. Ne
+   restent ici que les parametres propres a cette page.
 
-    if(typeof setIsniDock !== 'function') return null;   // isni_box.js absent
-
-    var p = document.getElementById('isniPanel');
-    if(p) return p;
-
-    p = document.createElement('div');
-    p.id = 'isniPanel';
-    document.body.appendChild(p);
-    setIsniDock('#isniPanel');
-    return p;
-}
-
-/* Le panneau se cale juste a DROITE des tableaux, pas au bord de la fenetre :
-   il se lit alors comme une troisieme colonne alignee sur la bande de contenu.
-   S'il n'y a pas la place, il se rabat contre le bord droit et recouvre la fin
-   des tableaux — c'est le compromis accepte pour ne jamais deplacer la mise en
-   page. La mesure est refaite au redimensionnement ET au defilement : le
-   panneau est en position fixe, un defilement horizontal decalerait les
-   tableaux sous lui. */
-function positionIsniPanel(){
-
-    var p = document.getElementById('isniPanel');
-    if(!p) return;
-
-    var right = 0;
-    ['works_table', 'works_table_2', 'legend'].forEach(function(id){
-        var e = document.getElementById(id);
-        if(!e || e.offsetParent === null) return;          // absent ou masque
-        var r = e.getBoundingClientRect();
-        if(r.width > 0 && r.right > right) right = r.right;
-    });
-    if(right <= 0) return;
-
-    var w    = p.offsetWidth || 340;
-    var left = right + 10;
-    if(left + w > window.innerWidth - 8) left = Math.max(8, window.innerWidth - w - 8);
-    p.style.left = Math.round(left) + 'px';
-}
-
+     anchors   les deux tableaux et la legende — le panneau se cale a droite
+               du plus a droite d'entre eux, soit le bord de la bande de
+               1210 px, sans recouvrir un pixel du contenu
+     clickable les noms de compositeurs du tableau (span.composer-isni, pose
+               par renderChunk pour les seuls artistes dont l'ISNI est
+               renseigne)
+     watch     #infos, qui porte les boites verte, orange et violette du SMA :
+               le panneau les recouvre, il se referme donc quand elles
+               changent — sauf quand seul le compteur de chargement du SMA
+               bouge (« 58 nodes 77% »), cf. js/isni_box.js */
 $(function(){
-
-    if(!ensureIsniPanel()) return;
-
-    positionIsniPanel();
-    $(window).on('resize.isnipanel scroll.isnipanel', positionIsniPanel);
-
-    // Les trois boites d'information du SMA — verte (#cookies), orange
-    // (#selection) et violette (#titles) — vivent dans #infos, a droite du
-    // canvas, c'est-a-dire EXACTEMENT sous le panneau : mesure prise sur la
-    // page, #infos occupe 1222-1332 px et le panneau 1230-1570. Il les
-    // recouvre donc entierement. Le panneau se referme des que l'une d'elles
-    // change : on ne laisse pas une fiche masquer la reponse au clic qu'on
-    // vient de faire.
-    //
-    // Un observateur plutot qu'un appel a closeIsniBox() pose dans chaque
-    // ecrivain : ceux-ci sont repartis entre js/particles_catalog.js et
-    // js/childs_catalog.js, et un futur ecrivain oublierait la consigne — le
-    // defaut de l'en-tete « imeb id » (§J du recapitulatif) etait exactement
-    // de cette famille. Mesure faite avant de choisir : SMA en marche, sans
-    // aucune interaction, #infos ne bouge pas pendant 8 s. L'observateur ne
-    // se declenche donc jamais tout seul.
-    //
-    // EXCEPTION — la phase 1. Tant que le SMA partage les proprietes, les
-    // agents sont crees UN PAR IMAGE (sma_core.js, sma_animation ->
-    // addParticleUsing), et chaque creation reecrit le compteur de la boite
-    // verte : « 213 nodes 54% », trente fois par seconde. Fermer la fiche sur
-    // ces mutations la rendrait inutilisable pendant tout le chargement — ce
-    // n'est pas une reponse a un clic, c'est un compteur qui tourne.
-    // Le test de phase est celui du noyau (sma_core.js, sma_animation ligne
-    // 384) : sl_attribute vide = phase 1, renseigne = phase 2 (regroupement).
-    // Le choix d'une propriete de regroupement, lui, ferme bien la fiche :
-    // setCommonAttr() vide les trois boites AVANT d'affecter sl_attribute,
-    // mais un rappel d'observateur est une micro-tache — il s'execute apres la
-    // fin de la fonction, donc apres l'affectation, et voit la phase 2.
-    var infos = document.getElementById('infos');
-    if(infos && window.MutationObserver){
-        new MutationObserver(function(){
-            if(typeof sl_attribute !== 'undefined' && String(sl_attribute) === '') return;
-            closeIsniBox();
-        }).observe(infos, {childList: true, subtree: true, characterData: true});
-    }
-
-    // Delegue : les lignes sont inserees par lots (renderChunk), un
-    // gestionnaire pose sur chaque cellule serait a reposer a chaque lot.
-    $(document).on('click', '#main_table .composer-isni', function(evt){
-        evt.stopPropagation();
-        positionIsniPanel();
-        openIsniBox($(this));
+    if(typeof enableIsniPanel !== 'function') return;   // isni_box.js absent
+    enableIsniPanel({
+        anchors:   ['works_table', 'works_table_2', 'legend'],
+        clickable: '#main_table .composer-isni',
+        watch:     'infos'
     });
-
-    $(document).on('keydown', '#main_table .composer-isni', function(evt){
-        if(evt.key !== 'Enter' && evt.key !== ' ' && evt.key !== 'Spacebar') return;
-        evt.preventDefault();
-        evt.stopPropagation();
-        positionIsniPanel();
-        openIsniBox($(this));
-    });
-
 });
 
 //====================================================================

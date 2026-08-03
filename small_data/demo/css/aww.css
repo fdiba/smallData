@@ -186,3 +186,31 @@ th{
 /* Fiche ISNI : les styles .isni-* ont ete extraits dans css/isni.css, feuille
    partagee avec les trois autres pages qui ouvrent la fiche ; award-winning_works.php
    la charge par un <link> place juste apres celui-ci. */
+
+/* Nom de compositeur cliquable — uniquement ceux dont l'ISNI est renseigne.
+   Meme convention que catalog.php et que les noms du diagramme de flux : un
+   souligne pointille, qui passe en continu au survol et au focus clavier.
+   currentColor : le trait suit la couleur du texte, quelle que soit la teinte
+   alternee de la cellule.
+
+   La classe s'appelle composer-isni et NON isni-name : css/isni.css definit
+   deja .isni-name{ color:#fff } pour les formes du nom DANS la fiche, sur
+   fond sombre — reprendre ce nom rendrait les noms du tableau, sur fond
+   clair, blanc sur blanc. Le prefixe isni- est le namespace de la feuille
+   partagee.
+
+   Ici le nom occupe deux colonnes (prenom et patronyme) : les deux portent le
+   marqueur, et le trait vaut aussi pour l'exemple cite dans le "How to read",
+   ou rien n'est cliquable. */
+#main_table .composer-isni,
+#legend .composer-isni{
+	border-bottom: 1px dotted currentColor;
+}
+#main_table .composer-isni{
+	cursor: pointer;
+}
+#main_table .composer-isni:hover,
+#main_table .composer-isni:focus{
+	border-bottom-style: solid;
+	outline: none;
+}

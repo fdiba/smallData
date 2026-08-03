@@ -140,3 +140,37 @@
 	color: #bdc3c7;
 	font-style: italic;
 }
+
+/* ---------- Le panneau lateral (catalog.php, award-winning_works.php) ----------
+   Ces pages n'ouvrent pas la fiche en boite flottante mais dans un panneau
+   ancre a droite du contenu (js/isni_box.js, enableIsniPanel). Le conteneur
+   est en position FIXE : il ne pousse rien — tableaux, canvas et legende
+   gardent leur bande au pixel pres — et la fiche reste sous les yeux pendant
+   qu'on parcourt la liste. Son abscisse est calculee en JS : il se cale a
+   droite du contenu, pas au bord de la fenetre, pour se lire comme une
+   colonne de plus.
+
+   pointer-events: none sur le conteneur — vide, il couvrirait sinon une bande
+   de 340 px et intercepterait les clics destines au tableau.
+
+   Ces regles vivent ici, et non dans la feuille de chaque page : le
+   comportement est partage, la CSS doit l'etre aussi. Elles sont de surcroit
+   a l'abri du piege d'ordre — #isniPanel .isni-box donne (1,1,0) contre
+   (0,1,0) pour .isni-box, la specificite l'emporte quelle que soit la
+   position des <link>. */
+#isniPanel{
+	position: fixed;
+	top: calc(var(--sd-bar-h) + 8px);
+	left: 0;                                        /* recalcule en JS */
+	width: 340px;
+	max-width: calc(100vw - 16px);
+	z-index: 9;                                     /* sous #ctrl_bar (10) */
+	pointer-events: none;
+}
+#isniPanel .isni-box{
+	position: static;
+	width: 100%;
+	max-width: none;
+	max-height: calc(100vh - var(--sd-bar-h) - 24px);
+	pointer-events: auto;
+}

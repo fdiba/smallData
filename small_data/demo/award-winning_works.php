@@ -70,6 +70,7 @@
 						<p><strong>Table &amp; agents</strong></p>
 						<ul>
 							<li>the table lists the award-winning works of the Bourges competitions, sorted by edition, category, sub category, price and last name</li>
+							<li>a composer whose name is <span class="composer-isni">underlined with dots</span> has an ISNI: click either part of the name to open their international identity record in the panel on the right &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. The panel stays open while you scroll the table; close it with the cross or the <em>Esc</em> key. Clicking an agent also closes it, since it sits over the information boxes &mdash; but the loading counter alone leaves it open. The same record opens from the ISNI shown in the purple box of the visualization</li>
 							<li>on the canvas, each moving ellipse is an agent carrying one award-winning work</li>
 						</ul>
 					</div>

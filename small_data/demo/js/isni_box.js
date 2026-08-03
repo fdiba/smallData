@@ -61,8 +61,156 @@ var isniAnchor = null;     // lien actuellement ouvert
    --------------------------------------------------------------------------- */
 var isniDock = null;
 
+/* Forme du compteur de chargement du SMA, ecrit dans la boite verte par
+   addParticleUsing() (sma_core.js) : « 58 nodes 77% ». C'est la seule
+   ecriture de cette boite qui ne soit pas une reponse a un geste de
+   l'utilisateur — d'ou la regle du panneau, plus bas. Le « 400 nodes » sans
+   pourcentage, ecrit a la fermeture d'un groupe, ne correspond pas : c'est
+   bien un geste, et la fiche doit se refermer. */
+var ISNI_LOADING_RE = /^\s*\d+\s+nodes\s+\d+\s*%\s*$/;
+
 function setIsniDock(el){
     isniDock = el || null;
+}
+
+/* ---------------------------------------------------------------------------
+   enableIsniPanel() — le panneau lateral, cle en main.
+
+   setIsniDock() ci-dessus n'est que la primitive : elle dit OU rendre la
+   fiche. Autour d'elle, une page qui veut un panneau a besoin des memes cinq
+   choses — creer le conteneur, le caler a droite du contenu, le recaler au
+   redimensionnement et au defilement, rendre des noms cliquables, et refermer
+   la fiche quand elle se met a masquer autre chose. Ce bloc a d'abord ete
+   ecrit dans js/catalog.js ; le porter tel quel sur award-winning_works.php
+   en aurait fait une seconde copie de quatre-vingt-dix lignes. C'est
+   exactement le mecanisme qui avait laisse survivre l'en-tete « imeb id » sur
+   une page apres sa correction sur les autres (§J du recapitulatif), et qui a
+   motive l'extraction de ce fichier (§K) puis celle de js/legend_toggle.js
+   (§M). Il est donc ici, appele avec des parametres.
+
+   Options — toutes facultatives :
+     dockId     id du conteneur cree (defaut 'isniPanel')
+     anchors    ids dont le bord droit cale le panneau : il se pose 10 px a
+                droite du plus a droite d'entre eux, et se rabat contre le
+                bord de la fenetre s'il n'y a pas la place
+     clickable  selecteur DELEGUE des elements qui ouvrent la fiche ; ils
+                portent data-isni (et, si l'on veut, data-label)
+     watch      id d'un conteneur dont toute modification referme la fiche,
+                parce que le panneau le recouvre
+
+   Retourne la fonction de placement, pour les pages qui doivent la rappeler.
+   --------------------------------------------------------------------------- */
+function enableIsniPanel(opt){
+
+    opt = opt || {};
+
+    var dockId    = opt.dockId    || 'isniPanel';
+    var anchors   = opt.anchors   || [];
+    var clickable = opt.clickable || '';
+    var watch     = opt.watch     || '';
+
+    /* Le conteneur est cree ici plutot que dans le HTML de la page : sans
+       JavaScript il n'y aurait rien a y mettre, et une div vide dans le
+       source serait une promesse non tenue. */
+    var panel = document.getElementById(dockId);
+    if(!panel){
+        panel = document.createElement('div');
+        panel.id = dockId;
+        document.body.appendChild(panel);
+    }
+    setIsniDock('#' + dockId);
+
+    /* Le panneau se cale juste a DROITE du contenu, pas au bord de la
+       fenetre : il se lit alors comme une colonne de plus, alignee sur la
+       bande de contenu. S'il n'y a pas la place, il se rabat contre le bord
+       droit et recouvre la fin du tableau — c'est le compromis accepte pour
+       ne jamais deplacer la mise en page. La mesure est refaite au
+       redimensionnement ET au defilement : le panneau est en position fixe,
+       un defilement horizontal decalerait le contenu sous lui. */
+    function place(){
+        var right = 0;
+        for(var i = 0; i < anchors.length; i++){
+            var e = document.getElementById(anchors[i]);
+            if(!e || e.offsetParent === null) continue;      // absent ou masque
+            var r = e.getBoundingClientRect();
+            if(r.width > 0 && r.right > right) right = r.right;
+        }
+        if(right <= 0) return;
+
+        var w    = panel.offsetWidth || 340;
+        var left = right + 10;
+        if(left + w > window.innerWidth - 8) left = Math.max(8, window.innerWidth - w - 8);
+        panel.style.left = Math.round(left) + 'px';
+    }
+
+    place();
+    $(window).on('resize.isnipanel scroll.isnipanel', place);
+
+    /* Les boites d'information du SMA vivent a droite du canvas, c'est-a-dire
+       sous le panneau, qui les recouvre entierement. La fiche se referme donc
+       des que l'une d'elles change : on ne laisse pas une notice masquer la
+       reponse au clic qu'on vient de faire.
+
+       SAUF LE COMPTEUR DE CHARGEMENT. Le SMA cree ses agents UN PAR IMAGE
+       (sma_core.js, addParticleUsing) et reecrit a chaque fois la boite verte
+       — « 58 nodes 77% », trente fois par seconde. Ce n'est pas une reponse a
+       un clic, c'est un compteur qui tourne : fermer la fiche la-dessus la
+       rend inutilisable tant que le chargement n'a pas atteint 100 %.
+
+       Le test porte donc sur le CONTENU, pas sur la phase du SMA. Un premier
+       essai s'appuyait sur sl_attribute (vide = phase 1) ; c'etait trop
+       grossier, parce que la creation des agents a lieu AVANT le test de
+       phase dans sma_animation() et se poursuit donc en phase 2 — des qu'une
+       propriete de regroupement etait choisie avant la fin du chargement, la
+       fiche se refermait de nouveau a chaque image.
+
+       On ignore donc la mutation quand DEUX conditions sont reunies : elle ne
+       touche que #cookies, et le texte qui en resulte a la forme du compteur.
+       Toutes les autres ecritures de la boite verte ont une autre forme et
+       referment bien la fiche — « property: ln », « country: France », ou le
+       « 400 nodes » sans pourcentage de la fermeture d'un groupe, qui sont,
+       elles, des reponses a un geste. */
+    if(watch && window.MutationObserver){
+        var box = document.getElementById(watch);
+        if(box){
+            new MutationObserver(function(records){
+
+                var onlyCounter = true;
+                for(var i = 0; i < records.length; i++){
+                    var t  = records[i].target;
+                    var el = (t.nodeType === 1) ? t : t.parentNode;
+                    if(!el || !el.closest || !el.closest('#cookies')){ onlyCounter = false; break; }
+                }
+
+                // le texte est lu APRES coup : addParticleUsing vide la boite
+                // puis y ecrit, et un rappel d'observateur est une micro-tache
+                // — il s'execute une fois les deux operations faites.
+                if(onlyCounter && ISNI_LOADING_RE.test($('#cookies').text())) return;
+
+                closeIsniBox();
+            }).observe(box, {childList: true, subtree: true, characterData: true});
+        }
+    }
+
+    /* Delegue : les lignes des tableaux sont (re)construites a chaque
+       changement de selection, un gestionnaire pose sur chaque cellule serait
+       a reposer a chaque fois. */
+    if(clickable){
+        $(document).on('click', clickable, function(evt){
+            evt.stopPropagation();
+            place();
+            openIsniBox($(this));
+        });
+        $(document).on('keydown', clickable, function(evt){
+            if(evt.key !== 'Enter' && evt.key !== ' ' && evt.key !== 'Spacebar') return;
+            evt.preventDefault();
+            evt.stopPropagation();
+            place();
+            openIsniBox($(this));
+        });
+    }
+
+    return place;
 }
 
 function esc(s){

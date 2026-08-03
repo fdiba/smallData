@@ -91,13 +91,35 @@ function parseWorks(str){
    catalog.php, categories.php, euphonies.php). Il figurait ici a l'identique,
    octet pour octet, comme dans les trois autres.
 
-   Ne reste que le point d'entree, propre a cette page : l'ISNI affiche dans
-   la boite violette du SMA (Particle.prototype.getInfoFrom, dans
-   js/particles_award.js) appelle openIsniBox($(lien)), le lien portant un
-   attribut data-isni. Cette page n'a pas de colonne ISNI : la boite violette
-   est donc l'unique acces, et l'ISNI n'y apparait que pour les compositeurs
-   alignes sur data.bnf.fr.
+   Ne restent ici que les points d'entree, propres a cette page. Il y en a
+   DEUX, et ils aboutissent au meme endroit :
+     - le NOM du compositeur dans le tableau (span.composer-isni, pose par
+       buildTableRows sur les colonnes « first name » et « last name » pour
+       les seuls artistes dont l'ISNI est renseigne) ;
+     - l'ISNI affiche dans la boite violette du SMA
+       (Particle.prototype.getInfoFrom, js/particles_award.js).
+
+   Comme sur catalog.php, la fiche n'est pas une boite flottante mais un
+   PANNEAU ancre a droite du tableau. Tout le dispositif — conteneur,
+   placement, fermeture — vient de js/isni_box.js (enableIsniPanel) ; ne
+   restent ici que les trois parametres propres a la page.
    ========================================================================= */
+
+/* anchors   le tableau et la legende : le panneau se cale a droite du plus a
+             droite d'entre eux, soit le bord de la bande de 1064 px
+   clickable les noms du tableau
+   watch     #infos, qui porte les boites verte, orange et violette du SMA :
+             le panneau les recouvre, il se referme donc quand elles
+             changent — sauf quand seul le compteur de chargement du SMA
+             bouge (« 58 nodes 77% »), cf. js/isni_box.js */
+$(function(){
+    if(typeof enableIsniPanel !== 'function') return;   // isni_box.js absent
+    enableIsniPanel({
+        anchors:   ['works_table', 'legend'],
+        clickable: '#main_table .composer-isni',
+        watch:     'infos'
+    });
+});
 
 //------------------------------------------------------------------
 // Menu des annees (editions) : "All works" + une entree par annee
@@ -227,8 +249,24 @@ function buildTableRows(objects){
         // numero de gestion interne) et vient juste apres "last name".
         // Le MISAM reste transporte dans l'objet (objects[j].misam) et sert
         // toujours de propriete imeb_id aux agents du SMA.
-        html += '<td class="'+memParity+'">'+ objects[j].fn + '</td>'
-              + '<td class="'+memParity+'">'+ objects[j].name + '</td>'
+        //
+        // Le nom devient cliquable pour les seuls compositeurs dont l'ISNI est
+        // renseigne : rien n'invite a cliquer la ou il n'y a rien a ouvrir. Le
+        // repere est un souligne pointille, comme sur catalog.php et dans le
+        // diagramme de flux. Ici le nom occupe DEUX colonnes (prenom et
+        // patronyme) : les deux portent le marqueur et ouvrent la meme fiche,
+        // parce qu'ils designent la meme personne et qu'on clique
+        // indifferemment l'un ou l'autre. data-label sert l'en-tete de la
+        // fiche, qui affiche le nom complet.
+        var fullName = ((objects[j].fn || '') + ' ' + (objects[j].name || '')).trim();
+        var nameCell = function(txt){
+            if(!objects[j].isni) return txt;
+            return '<span class="composer-isni" role="button" tabindex="0" data-isni="'
+                 + esc(objects[j].isni) + '" data-label="' + esc(fullName) + '">' + txt + '</span>';
+        };
+
+        html += '<td class="'+memParity+'">'+ nameCell(objects[j].fn) + '</td>'
+              + '<td class="'+memParity+'">'+ nameCell(objects[j].name) + '</td>'
               + '<td class="'+memParity+'">'+ objects[j].ctry + '</td>'
               + '<td class="'+memParity+'">'+ objects[j].title + '</td></tr>';
     }
