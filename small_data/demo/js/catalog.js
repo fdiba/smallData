@@ -28,10 +28,10 @@ window.onload = function() {
         initSMA(1210, 800);   // largeur = 2 tableaux (600) + gap (10) -> bord droit aligne
         startSMA();               // boucle lancee UNE seule fois
         buildCountryMenu();       // remplit le menu "Country" (pays de la bonne phono)
-        retrieveData(cat, 7, 0);  // etat initial = "All works" (retrieveData gere le canvas)
+        retrieveData(cat, 8, 0);  // etat initial = "All works" (retrieveData gere le canvas)
 
     } else {
-        retrieveData(-999, 7);
+        retrieveData(-999, 8);
     }
 
 };
@@ -64,13 +64,23 @@ function retrieveData(cat, numOfElements, country){
         $("#listing").append('<ul></ul>');
 
         // Les donnees arrivent triees par compositeur (nom, prenom) puis titre.
+        // 8 champs par oeuvre depuis l'ajout du pays en fin d'enregistrement
+        // (php/retrieve_cat.php, fonction retrieve_cat) : numOfElements est
+        // passe par les appelants et doit rester synchronise avec le PHP.
         var works = [];
         for (var k = 0; k + numOfElements - 1 < arr.length; k += numOfElements) {
             works.push({misam: arr[k], fn: arr[k+1], ln: arr[k+2],
                         id_artist: arr[k+3], title: arr[k+4],
-                        duration: arr[k+5], id: arr[k+6]});
+                        duration: arr[k+5], id: arr[k+6], ctry: arr[k+7]});
         }
         var total = works.length;
+
+        // Le pays s'affiche sous le nom du compositeur UNIQUEMENT en vue
+        // "All works" (country == 0). Des qu'un pays est selectionne dans le
+        // menu Country, il est deja rappele dans #cookies et serait identique
+        // sur toutes les lignes : l'afficher n'apprendrait rien et alourdirait
+        // la colonne.
+        var showCtry = !((+country) > 0);
 
         // Visibilite du SMA + du canvas.
         var showSMA = doSMA;
@@ -177,8 +187,17 @@ function retrieveData(cat, numOfElements, country){
                 var row = newGroup ? '<tr class="group-start">' : '<tr>';
 
                 if(newGroup){
+                    // Le pays vient en seconde ligne DANS la cellule compositeur
+                    // (deja fusionnee sur toutes les oeuvres de l'artiste) : pas
+                    // de colonne supplementaire, la largeur du tableau ne bouge
+                    // pas. Un artiste sans pays rattache n'a tout simplement pas
+                    // cette seconde ligne.
+                    var composer = w.fn + ' ' + w.ln;
+                    if(showCtry && w.ctry){
+                        composer += '<span class="composer-ctry">' + w.ctry + '</span>';
+                    }
                     row += '<td class="composer grp-cell ' + grpParity + '" rowspan="' + runLength[i] + '">'
-                          + w.fn + ' ' + w.ln + '</td>';
+                          + composer + '</td>';
                 }
 
                 row += '<td class="' + memParity + '">' + w.title + '</td>'
@@ -294,7 +313,7 @@ function selectCountry(cid, name, liEl){
     $("#countries ul li").css("font-weight", "normal");
     if(liEl) liEl.css("font-weight", "bold");
     $("#cookies").empty().append('<p>country: ' + name + '</p>');
-    retrieveData(_catId, 7, cid); // filtre la table + (selon la phono) alimente le SMA
+    retrieveData(_catId, 8, cid); // filtre la table + (selon la phono) alimente le SMA
 }
 
 // Bouton "All works" : tableau complet. Phono A -> canvas masque (retrieveData) ;
@@ -304,5 +323,5 @@ function showFullTable(){
     clearCatalogTable();
     $("#countries ul li").css("font-weight", "normal");
     $("#countries ul li.all-works").css("font-weight", "bold");
-    retrieveData(_catId, 7, 0);  // country=0 -> Phono A: pas de SMA ; Phono B: SMA sur tout
+    retrieveData(_catId, 8, 0);  // country=0 -> Phono A: pas de SMA ; Phono B: SMA sur tout
 }

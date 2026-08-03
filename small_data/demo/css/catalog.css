@@ -186,6 +186,17 @@ th{
 .works_table td.composer{
 	font-weight: bold;
 }
+/* Pays du compositeur, en seconde ligne de la cellule compositeur et
+   seulement en vue "All works" (voir showCtry dans js/catalog.js).
+   display:block suffit a le passer a la ligne : pas de <br>, donc rien a
+   nettoyer si la regle est retiree. Graisse normale et teinte grise pour
+   qu'il reste subordonne au nom, qui est en gras. */
+.works_table td.composer .composer-ctry{
+	display: block;
+	font-weight: normal;
+	font-size: 12px;
+	color: #5a6b6b;
+}
 /* cellule compositeur (fusionnee) : teinte alternee par groupe */
 .works_table .grp-cell.grp-cell-a{
 	background: #C1C1C1;

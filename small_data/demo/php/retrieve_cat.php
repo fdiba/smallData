@@ -251,20 +251,37 @@
 		// filtre pays : menu "Country" (Phono A id=1 ET Phono B id=2). intval() securise.
 		if(($cat==1 || $cat==2) && $country>0) $where .= ' AND imeb_artist.id_country = ' . intval($country);
 
+		// Le pays est lu sur imeb_country et servi en anglais, exactement comme
+		// le menu "Country" de la page (php/retrieve_countries.php) : c_name_en,
+		// a defaut c_name. LEFT JOIN et non INNER : un artiste sans pays
+		// renseigne doit rester dans le tableau.
 		$sth = $dbh->query('SELECT imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
-							imeb_artist.id AS id_artist
+							imeb_artist.id AS id_artist,
+							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry
 							FROM imeb_music
 							INNER JOIN imeb_artist
-							ON imeb_music.id_artist = imeb_artist.id'
+							ON imeb_music.id_artist = imeb_artist.id
+							LEFT JOIN imeb_country
+							ON imeb_artist.id_country = imeb_country.id'
 							. $where . '
 							ORDER BY imeb_artist.name ASC, imeb_artist.firstName ASC, imeb_artist.id ASC, imeb_music.title ASC');
 
 		$arr= array();
 		while($row = $sth->fetch()) {
 
+			// 8e et dernier champ : le pays du compositeur, ajoute en FIN
+			// d'enregistrement pour ne decaler aucun index existant. Chaine
+			// vide si l'artiste n'a pas de pays rattache : js/catalog.js
+			// n'ajoute alors aucune ligne sous le nom.
+			// ATTENTION : la longueur d'enregistrement est passee en dur a
+			// retrieveData() dans js/catalog.js (parametre numOfElements) ;
+			// les deux doivent bouger ensemble.
+			$ctry = $row['ctry'] ? $row['ctry'] : '';
+
 			array_push($arr, $row['misam'], $row['firstName'], $row['name'],
-						$row['id_artist'], $row['title'], $row['duration'], $row['id']);
+						$row['id_artist'], $row['title'], $row['duration'], $row['id'],
+						$ctry);
 
 		}
 
