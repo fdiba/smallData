@@ -164,31 +164,86 @@ function hideFlowTip(){
   if(flowTip) flowTip.className = '';
 }
 
-/* Libelle du flux. Les liens annee -> categorie gardent le leur.
-   Ceux de droite, categorie -> compositeur, nomment le compositeur a
-   l'endroit (Prenom Nom) et precisent entre parentheses les annees
-   concernees, en distinguant deux choses que la base distingue :
-     - "prime" : imeb_music.award_year, l'annee du prix ;
+/* Accord en nombre. Les libelles enoncent des effectifs, qui valent 1 assez
+   souvent pour que "1 awards" se remarque : 267 des 656 flux de droite ne
+   portent qu'un seul prix. Le pluriel anglais est ici regulier a une exception
+   pres, category -> categories, traitee par la regle -y precedee d'une
+   consonne. */
+function plural(n, word){
+  if(n === 1) return n + " " + word;
+  if(/[^aeiou]y$/.test(word)) return n + " " + word.slice(0, -1) + "ies";
+  return n + " " + word + "s";
+}
+
+/* Libelle du flux, en anglais comme le reste de la page — titre, menu,
+   legende et en-tetes le sont, la bulle etait restee en francais.
+   La forme nomme d'abord la chose survolee, puis l'effectif : le nombre nu
+   en tete ne disait pas de quoi il etait le nombre.
+     - a droite, categorie -> compositeur :
+       "Robert Normandeau — 2 awards in Programme (awarded 1988, 1993 · festival 1988, 1993)"
+     - a gauche, annee -> categorie :
+       "Programme, 1988 — 3 awards"
+   La parenthese distingue deux choses que la base distingue :
+     - "awarded" : imeb_music.award_year, l'annee du prix ;
      - "festival" : imeb_music.editions, les annees de participation.
    Les deux ne coincident pas necessairement, et editions est vide pour 237
    des 728 oeuvres primees : la mention correspondante est alors omise, et la
-   parenthese entiere disparait si les deux listes sont vides. */
+   parenthese entiere disparait si les deux listes sont vides. Rien n'est
+   deduit de l'autre liste — une oeuvre peut etre primee sans avoir ete
+   programmee, et l'absence de donnee n'est pas une absence de fait. */
 function linkTitle(d){
 
   if(d.target.type !== 'composer'){
-    return d.value + " "+ d.target.name + " en " + d.source.name;
+    return d.target.name + ", " + d.source.name + " — " + plural(d.value, "award");
   }
 
-  var txt = d.value + " " + d.target.fullName + " en " + d.source.name;
+  var txt = d.target.fullName + " — " + plural(d.value, "award") +
+            " in " + d.source.name;
 
   var parts = [];
   var yrs = sortedKeys(d.years || {});
   var eds = sortedKeys(d.editions || {});
-  if(yrs.length) parts.push("primé " + yrs.join(", "));
+  if(yrs.length) parts.push("awarded " + yrs.join(", "));
   if(eds.length) parts.push("festival " + eds.join(", "));
   if(parts.length) txt += " (" + parts.join(" · ") + ")";
 
   return txt;
+}
+
+/* Libelle du noeud. Le rectangle portait un <title> SVG qui rendait la chaine
+   litterale "d.name" — une coquille d'origine, des guillemets de trop dans le
+   return. La corriger n'aurait servi a rien : le libellé est deja ecrit en
+   clair a cote du rectangle, l'infobulle n'aurait fait que le repeter. Elle
+   dit donc ce que le diagramme ne montre pas, les effectifs :
+
+     annee        1988 — 30 awards in 6 categories
+     categorie    Programme — 78 awards to 67 composers, across 20 editions
+     compositeur  Robert Normandeau — 5 awards in 3 categories
+
+   Rien n'est calcule ici : d3.sankey pose value (le maximum des flux entrants
+   et sortants, soit le nombre de prix dans les trois cas, une categorie
+   redistribuant vers les compositeurs exactement ce qu'elle recoit des
+   annees) et les tableaux sourceLinks / targetLinks, dont la LONGUEUR donne
+   les effectifs distincts — un flux par voisin, quel que soit son epaisseur.
+   Le texte passe par la meme bulle que les flux, et non par un <title> : la
+   bulle native s'efface d'elle-meme au bout de quelques secondes. */
+function nodeTitle(d){
+
+  var out  = (d.type === 'composer' ? d.fullName : d.name) + " — " +
+             plural(d.value || 0, "award");
+  var from = d.targetLinks ? d.targetLinks.length : 0;   // voisins de gauche
+  var to   = d.sourceLinks ? d.sourceLinks.length : 0;   // voisins de droite
+
+  if(d.type === 'year'){
+    out += " in " + plural(to, "category");
+  } else if(d.type === 'category'){
+    out += " to " + plural(to, "composer") +
+           ", across " + plural(from, "edition");
+  } else {
+    out += " in " + plural(from, "category");
+  }
+
+  return out;
 }
 
 /* Les deux positions sont maintenant connues de l'appelant : il ne reste qu'a
@@ -379,10 +434,12 @@ function sankeyStuff(){
 
       }
     })
-    .append("title")
-    .text(function (d) {
-      return "d.name";
-    });
+    /* Survol du noeud : ses effectifs, dans la meme bulle que les flux — voir
+       nodeTitle() et le bloc "Bulle de survol" plus haut. Le <title> SVG qui
+       occupait cette place rendait la chaine litterale "d.name". */
+    .on('mouseover', function (d) { showFlowTip(nodeTitle(d), d3.event); })
+    .on('mousemove', function ()  { moveFlowTip(d3.event); })
+    .on('mouseout',  function ()  { hideFlowTip(); });
 
   // Le libelle : les annees sont posees a gauche de leur colonne et centrees,
   // categories et compositeurs a droite. Le type du noeud est desormais lu
