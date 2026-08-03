@@ -497,12 +497,25 @@ function resetSMAForPortion(){
 }
 
 // Vide la table d'oeuvres (garde les entetes) avant de la reconstruire.
+//
+// L'entete n'est PAS reecrite ici : on retire les lignes de donnees et on
+// laisse en place la premiere ligne, celle que catalog.php a ecrite. Cette
+// fonction reconstruisait auparavant le tableau entier a partir d'une chaine
+// en dur, restee sur l'ancienne colonne "imeb id" : la colonne "edition(s)"
+// qui l'a remplacee dans catalog.php reprenait donc son ancien nom des qu'on
+// choisissait un pays ou revenait a "All works". Une seule source pour
+// l'entete — le HTML — supprime la possibilite meme de cette derive.
+function clearRowsBelowHeader(t){
+    // deleteRow(1) plutot que innerHTML : l'entete conserve son identite et
+    // ses eventuels attributs, et le tbody implicite du navigateur, dans
+    // lequel renderChunk insere ensuite les lignes, n'est pas detruit.
+    while(t.rows.length > 1) t.deleteRow(1);
+}
 function clearCatalogTable(){
-    var hdr = '<tr><th>composer</th><th>title</th><th>duration</th><th>imeb id</th></tr>';
     var t1 = document.getElementById('works_table');
     var t2 = document.getElementById('works_table_2');
-    if(t1){ t1.innerHTML = hdr; t1.classList.remove('is-empty'); }
-    if(t2){ t2.innerHTML = hdr; t2.classList.remove('is-empty'); }
+    if(t1){ clearRowsBelowHeader(t1); t1.classList.remove('is-empty'); }
+    if(t2){ clearRowsBelowHeader(t2); t2.classList.remove('is-empty'); }
     $("#listing").empty();
     $("#loading").remove();
     $("#info p").not(':first').remove();   // enleve les compteurs, garde le <p> d'origine
