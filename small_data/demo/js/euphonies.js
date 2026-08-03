@@ -31,7 +31,8 @@ function retrieveEuphonies(cat, numOfElements){
             var obj = {edition: arr[i], year:arr[i+1], price:arr[i+2], imeb_id:arr[i+3],
                         fn:arr[i+4], ln:arr[i+5], title:arr[i+6], duration:arr[i+7],
                         id:arr[i+8],
-                        cat:arr[i+9], sub_cat:arr[i+10], isni:arr[i+11]};
+                        cat:arr[i+9], sub_cat:arr[i+10], isni:arr[i+11],
+                        ctry:arr[i+12]};
 
             records.push(obj);
             //---------

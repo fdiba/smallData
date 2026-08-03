@@ -95,6 +95,13 @@ th{
 	margin: 0;
 	padding: 0;
 }
+/* Boite violette : les informations de l'agent selectionne sont groupees en
+   blocs (identite / oeuvre / palmares / ISNI). sma-blk marque le premier
+   paragraphe de chaque bloc et fait office de ligne vide de separation.
+   Voir Particle.prototype.getInfoFrom dans js/particles_euphonies.js. */
+#titles p.sma-blk {
+	margin-top: .9em;
+}
 .even {
 	background: #C7C7C7;
 }

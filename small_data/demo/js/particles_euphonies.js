@@ -65,13 +65,19 @@ function Particle(config){
 	this.cat = config.cat;
 	this.sub_cat = config.sub_cat;
 	this.isni = config.isni;
+	this.ctry = config.ctry;
 
 	this.id = config.id;
 
+	// ATTENTION : ce litteral reconstruit l'enregistrement, il n'est PAS une
+	// reference vers celui recu en config. Tout champ oublie ici disparait du
+	// SMA — l'agent isole l'affiche depuis records[0] (sma_core.js:233) et les
+	// membres d'un groupe ouvert sont fabriques a partir de records
+	// (createNewChild). Ajouter une propriete = la declarer aux trois endroits.
 	this.records = [{edition:this.edition, year:this.year, price:this.price,
 					imeb_id:this.imeb_id, fn:this.fn, ln:this.ln, title:this.title,
 					duration:this.duration, cat:this.cat, sub_cat:this.sub_cat,
-					isni:this.isni, id:this.id}];
+					isni:this.isni, ctry:this.ctry, id:this.id}];
 
 	//midnight blue, green emerald, yellow sun flower, blue peter river
 	//#2C3E50 dark blue
@@ -179,7 +185,8 @@ Particle.prototype.createNewChild=function(obj){
         cat: obj.cat,
         sub_cat: obj.sub_cat,
         isni: obj.isni,
-        
+        ctry: obj.ctry,
+
         id: obj.id,        
 
         x:this.x-radius+Math.random()*(radius*2),
@@ -214,27 +221,87 @@ Particle.prototype.processChilds=function(mouseX, mouseY){
 }
 Particle.prototype.getInfoFrom=function(target){
 
-	// console.log('hit');
+	// Mise en page fixe et sans libelles : quatre blocs separes par une ligne
+	// vide — identite (prenom nom, puis pays), oeuvre (titre et duree entre
+	// parentheses), palmares (prix, categorie, sous-categorie), puis l'ISNI.
+	// Un champ vide est saute sans laisser de trou ; le premier <p> de chaque
+	// bloc porte la classe sma-blk, qui pose l'interligne (css/euphonies.css).
+	// Contrairement a l'ancien rendu, aucune propriete n'est masquee parce
+	// qu'elle sert de critere de regroupement : la structure doit rester
+	// stable d'un regroupement a l'autre (le critere reste rappele dans
+	// #cookies par sma_core.js).
+	var val = function(v){ return $.trim(v == null ? '' : String(v)); };
 
-	//could add id
-	var propNames =  ["edition", "year", "price", "imeb_id", "title",
-					"duration", "cat", "sub_cat", "fn", "ln", "isni"];
-	
+	// une fiche ISNI ouverte pointerait un lien de #titles qu'on s'apprete a
+	// detruire : on la referme avant de vider la boite.
+	if(typeof isniAnchor !== 'undefined' && isniAnchor
+		&& isniAnchor.closest('#titles').length) closeIsniBox();
+
 	$("#titles").empty();
 
-	for (var i = 0; i < propNames.length; i++) {
+	var blocks = [];
 
-		var value = target[propNames[i]];
+	//--- 1. identite
+	blocks.push([$.trim(val(target.fn) + ' ' + val(target.ln)), val(target.ctry)]);
 
-		if(value!=="" && propNames[i].localeCompare(this.targetedAttr)!==0){
+	//--- 2. oeuvre : la duree suit le titre, entre parentheses
+	var work = val(target.title);
+	var duration = val(target.duration);
+	if(duration) work = work ? work + ' (' + duration + ')' : '(' + duration + ')';
+	blocks.push([work]);
 
-			if(propNames[i].localeCompare("isni")===0){
-				value="<a target=\"_blank\" href=\"http://www.isni.org/isni/" + value + "\">"+ value +"</a>";
-			} 
-			
-			$("#titles").append('<p>'+ propNames[i] + ': ' + value +'</p>');
+	//--- 3. palmares
+	blocks.push([val(target.price), val(target.cat), val(target.sub_cat)]);
+
+	//--- 4. dates : les deux sont libellees, seule entorse a la regle du
+	//    "sans libelle" — la page en porte deux et deux nombres nus cote a
+	//    cote seraient indechiffrables. year = annee du concours ou l'oeuvre
+	//    a ete primee ; edition = vague d'Euphonies d'Or (1992, 2004 ou 2010,
+	//    et -999 quand retrieve_cat.php n'a pas su la determiner : le test a
+	//    quatre chiffres ecarte ce cas). L'apostrophe typographique est ecrite
+	//    \u2019 : le fichier reste en ASCII pur et le rendu ne depend pas de
+	//    l'encodage sous lequel le serveur le sert.
+	var yr = val(target.year);
+	var ed = val(target.edition);
+	blocks.push([/^[0-9]{4}$/.test(yr) ? 'Concours ' + yr : '',
+				/^[0-9]{4}$/.test(ed) ? 'Euphonies d\u2019Or ' + ed : '']);
+
+	//--- 5. ISNI : meme lien que dans le tableau, donc meme fiche au clic
+	var isni = val(target.isni).replace(/\s+/g, '');
+	if(/^[0-9]{15}[0-9Xx]$/.test(isni)){
+		isni = '<a class="isni-link" title="voir la fiche ISNI" '
+			 + 'href="https://isni.org/isni/' + isni + '" '
+			 + 'data-isni="' + isni + '">' + isni + '</a>';
+	}
+	blocks.push([isni]);
+
+	for (var b = 0; b < blocks.length; b++) {
+
+		var lines = [];
+		for (var l = 0; l < blocks[b].length; l++){
+			if(blocks[b][l] !== '') lines.push(blocks[b][l]);
+		}
+		if(lines.length === 0) continue;
+
+		// pas d'interligne avant le tout premier bloc effectivement affiche
+		var spaced = ($("#titles").children().length > 0);
+
+		for (var k = 0; k < lines.length; k++) {
+			var cls = (k === 0 && spaced) ? ' class="sma-blk"' : '';
+			$("#titles").append('<p'+ cls +'>'+ lines[k] +'</p>');
 		}
 	}
+
+	// Le clic sur l'ISNI ouvre la fiche recapitulative (openIsniBox, defini
+	// dans js/euphonies.js) au lieu de quitter la page ; ctrl+clic et clic
+	// milieu continuent d'aller sur isni.org. stopPropagation empeche le
+	// handler global de refermer la fiche dans la foulee.
+	$("#titles").find('a.isni-link').on('click', function(evt){
+		if(evt.ctrlKey || evt.metaKey || evt.shiftKey || evt.which === 2) return;
+		evt.preventDefault();
+		evt.stopPropagation();
+		openIsniBox($(this));
+	});
 
 	// $("#titles").append('<p>'+ target.id +'</p>');
 
