@@ -124,11 +124,14 @@
 							imeb_music.award_cat, imeb_music.award_cat_2, imeb_music.euphonies,
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
-							imeb_artist.isni AS isni
-							
+							imeb_artist.isni AS isni,
+							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry
+
 							FROM imeb_music
 							INNER JOIN imeb_artist
-							ON imeb_music.id_artist = imeb_artist.id');
+							ON imeb_music.id_artist = imeb_artist.id
+							LEFT JOIN imeb_country
+							ON imeb_artist.id_country = imeb_country.id');
 
 		$arr= array();
 		$rows= array();
@@ -173,6 +176,12 @@
 
 				$id=$row['id'];
 
+				// 13e et dernier champ : le pays du compositeur, en anglais
+				// (c_name_en, a defaut c_name), ajoute en fin d'enregistrement
+				// pour ne decaler aucun index existant — l'ISNI reste en 11.
+				// Chaine vide si l'artiste n'a pas de pays rattache.
+				$ctry=$row['ctry'] ? $row['ctry'] : '';
+
 
 				$year=-999;
 				if($euphonies==1)$year=1992;
@@ -181,7 +190,7 @@
 
 		
 
-				array_push($rows, array($year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni));
+				array_push($rows, array($year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni, $ctry));
 
 			}
 

@@ -89,10 +89,10 @@
 						<th>price</th>
 						<th>first name</th>
 						<th>last name</th>
+						<th>country</th>
 						<th>title</th>
 						<th>duration</th>
 						<!-- <th>temp id</th> -->
-						<th>imeb id</th>
 						<th>isni</th>
 					</tr>
 				</table>

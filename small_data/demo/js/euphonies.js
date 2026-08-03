@@ -5,7 +5,8 @@ window.onload = function() {
 
     initSMA(800, 600);
 
-    retrieveEuphonies(3, 12);
+    // 13 champs depuis l'ajout du pays en fin d'enregistrement (retrieve_cat.php)
+    retrieveEuphonies(3, 13);
 
 };
 function retrieveEuphonies(cat, numOfElements){
@@ -42,9 +43,11 @@ function retrieveEuphonies(cat, numOfElements){
             //---------
 
             // ordre des colonnes : edition, year, category, sub category, price,
-            // first name, last name, title, duration, imeb id, isni
-            // (le champ 8 = temp id n'est pas affiche)
-            var colOrder = [0, 1, 9, 10, 2, 4, 5, 6, 7, 3, 11];
+            // first name, last name, country, title, duration, isni
+            // (le champ 8 = temp id n'est pas affiche ; le champ 3 = imeb id,
+            // c-a-d le MISAM, n'est plus affiche non plus mais reste transporte
+            // et sert toujours de propriete imeb_id aux agents du SMA)
+            var colOrder = [0, 1, 9, 10, 2, 4, 5, 12, 6, 7, 11];
             for (var j = 0; j < colOrder.length; j++) {
 
                 var idx = colOrder[j];
