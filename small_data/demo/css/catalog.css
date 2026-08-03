@@ -237,6 +237,18 @@ th{
 	white-space: nowrap;
 	font-variant-numeric: tabular-nums;
 }
+/* "duration" et "edition(s)" sont deux colonnes de chiffres courts : centrees,
+   elles se lisent mieux sous leurs en-tetes, elles-memes centrees par la regle
+   th generale. Les deux autres colonnes (compositeur, titre) restent a gauche.
+   Le ciblage passe par une classe et non par nth-child : la cellule compositeur
+   etant fusionnee sur toutes les oeuvres d'un artiste (rowspan), une ligne de
+   tete porte quatre <td> et une ligne membre trois, si bien qu'un selecteur
+   positionnel viserait des colonnes differentes selon la ligne. Les classes
+   sont posees par renderChunk() dans js/catalog.js. */
+.works_table td.work-dur,
+.works_table td.work-ed{
+	text-align: center;
+}
 /* cellule compositeur (fusionnee) : teinte alternee par groupe */
 .works_table .grp-cell.grp-cell-a{
 	background: #C1C1C1;
