@@ -146,6 +146,13 @@ th{
 	margin: 0;
 	padding: 0;
 }
+/* Respiration entre les blocs de la boite violette (identite / oeuvre / ISNI).
+   La classe est posee sur la PREMIERE ligne de chaque bloc sauf le premier,
+   par Particle.prototype.getInfoFrom (js/particles_catalog.js) : aucune ligne
+   vide n'est generee, donc rien a nettoyer si un champ manque. */
+#titles p.sma-blk {
+	margin-top: .9em;
+}
 /* conteneur des deux tableaux : cote a cote, retour a la ligne si trop etroit */
 #main_table{
 	clear: both;
@@ -197,6 +204,22 @@ th{
 	font-size: 12px;
 	color: #5a6b6b;
 }
+/* Marqueur des oeuvres primees, pose apres le titre par js/catalog.js.
+   Vert de la charte (identique au trait qui separe les compositeurs), taille
+   reduite et legerement souleve : present sans concurrencer le titre. */
+.work-award{
+	color: #16A085;
+	font-size: 11px;
+	vertical-align: super;
+	line-height: 0;
+	cursor: help;
+}
+/* Colonne "edition(s)" : annees, donc chiffres alignes et sans retour a la
+   ligne au milieu d'une liste ("1980, 1992"). */
+.works_table td.work-ed{
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
 /* cellule compositeur (fusionnee) : teinte alternee par groupe */
 .works_table .grp-cell.grp-cell-a{
 	background: #C1C1C1;
@@ -219,4 +242,137 @@ th{
 /* --- legende : les agents sont des ellipses, pas des carres --- */
 #legend .sq{
 	border-radius: 50%;
+}
+
+/* =========================================================================
+   Fiche ISNI (js/catalog.js -> php/retrieve_isni.php)
+   -------------------------------------------------------------------------
+   Styles repris a l'identique de css/aww.css (eux-memes issus de
+   css/euphonies.css). Cette page n'a pas de colonne ISNI dans son tableau :
+   l'unique point d'entree est le lien a.isni-link pose dans la boite violette
+   par getInfoFrom (js/particles_catalog.js) — et cette boite n'existe que
+   lorsque le SMA est affiche (Phono B, ou Phono A filtree par un pays d'au
+   moins SMA_MIN_WORKS oeuvres).
+   La boite est attachee a <body> en position:absolute : elle est HORS FLUX,
+   donc elle ne pousse ni les tableaux, ni le canvas — la mise en page ne
+   bouge pas d'un pixel quand elle s'ouvre.
+   z-index 9 : juste sous #ctrl_bar (10), qui reste toujours lisible.
+   ========================================================================= */
+
+.isni-box{
+	display: none;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 9;
+	box-sizing: border-box;
+	width: 340px;
+	max-width: calc(100vw - 16px);
+	max-height: 70vh;
+	overflow: hidden;
+	background: var(--sd-asphalt);
+	color: #ecf0f1;
+	font-size: 12px;
+	line-height: 1.45;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+}
+.isni-box.open{
+	display: flex;
+	flex-direction: column;
+}
+
+.isni-hd{
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 6px 10px;
+	background: var(--sd-midnight);
+}
+.isni-hd-t{
+	font-weight: 600;
+	letter-spacing: .04em;
+	color: #fff;
+	font-variant-numeric: tabular-nums;
+}
+.isni-close{
+	cursor: pointer;
+	padding: 0 4px;
+	font-size: 16px;
+	line-height: 1;
+	color: #bdc3c7;
+}
+.isni-close:hover{
+	color: #fff;
+}
+
+.isni-bd{
+	flex: 1 1 auto;
+	overflow-y: auto;
+	padding: 8px 10px 10px 10px;
+	word-wrap: break-word;
+	overflow-wrap: anywhere;
+}
+.isni-bd p{
+	margin: 0 0 6px 0;
+}
+
+.isni-name{
+	font-weight: 600;
+	color: #fff;
+}
+.isni-desc{
+	color: #bdc3c7;
+	font-style: italic;
+}
+
+/* titre de rubrique : meme code que les legendes des autres pages */
+.isni-sec{
+	margin: 10px 0 3px 0 !important;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	font-size: 11px;
+	color: var(--sd-emerald);
+}
+.isni-bd .isni-sec:first-child{
+	margin-top: 0 !important;
+}
+
+.isni-list{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.isni-list li{
+	padding: 1px 0 1px 9px;
+	border-left: 3px solid transparent;
+}
+.isni-list li:hover{
+	border-left-color: var(--sd-greensea);
+	background: rgba(255, 255, 255, .07);
+}
+.isni-box a{
+	color: #ecf0f1;
+	text-decoration: none;
+	border-bottom: 1px solid rgba(236, 240, 241, .35);
+}
+.isni-box a:hover{
+	color: #fff;
+	border-bottom-color: #fff;
+}
+.isni-notes li,
+.isni-titles li{
+	color: #bdc3c7;
+}
+.isni-more,
+.isni-codes{
+	color: #95a5a6;
+	font-size: 11px;
+}
+.isni-wait,
+.isni-warn{
+	color: #bdc3c7;
+	font-style: italic;
 }

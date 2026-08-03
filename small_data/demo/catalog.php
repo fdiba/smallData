@@ -82,6 +82,8 @@
 						<ul>
 							<li><?php echo $table_desc ?></li>
 							<li>the composer cell is shared across all of their works; the background alternates to separate composers and, within a composer, their pieces</li>
+							<li><em>edition(s)</em> gives the year or years in which the work was programmed at Bourges, between 1973 and 2009; the cell is left empty where the <em>Répertoire général</em> does not record it, and a work played again in a later edition carries several years</li>
+							<li>a <span class="work-award">&#9733;</span> after a title marks a work distinguished at the competition, which was held within the festival &mdash; the full prize list is on the <a href="award-winning_works.php">Award-winning works</a> page</li>
 <?php if($id==1){ ?>							<li>Phonothèque A is large, so it is explored <strong>one country at a time</strong>: pick a <em>country</em> in the Country menu to filter the table and build the visualization for that country's composers; pick another country to switch, or <em>All works</em> to show the full table again</li>
 <?php } ?>
 <?php if($id==2){ ?>							<li>by default <em>All works</em> shows the whole collection on the canvas; you can also pick a <em>country</em> in the Country menu to filter the table and the visualization to that country's composers</li>
@@ -117,7 +119,7 @@
 					<th>composer</th>
 					<th>title</th>
 					<th>duration</th>
-					<th>imeb id</th>
+					<th>edition(s)</th>
 				</tr>
 			</table>
 			<table id="works_table_2" class="works_table">
@@ -125,7 +127,7 @@
 					<th>composer</th>
 					<th>title</th>
 					<th>duration</th>
-					<th>imeb id</th>
+					<th>edition(s)</th>
 				</tr>
 			</table>
 		</div>

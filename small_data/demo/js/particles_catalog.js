@@ -71,16 +71,22 @@ function Particle(config){
 	this.imeb_id = config.imeb_id;
 	this.fn = config.fn;
 	this.ln = config.ln;
+	this.ctry = config.ctry;
 	this.title = config.title;
 	this.duration = config.duration;
 	// this.cat = config.cat;
 	// this.sub_cat = config.sub_cat;
-	// this.isni = config.isni;
+	this.isni = config.isni;
 
 	this.id = config.id;
 
+	// ATTENTION : ce litteral RECONSTRUIT l'enregistrement a partir des champs
+	// ci-dessus — il ne recopie pas l'objet recu. Toute propriete absente
+	// d'ici est perdue pour tout le SMA (boite violette comprise), meme si
+	// js/catalog.js l'a bien poussee dans records.
 	this.records = [{edition:this.edition, year:this.year, price:this.price,
-					imeb_id:this.imeb_id, fn:this.fn, ln:this.ln, title:this.title,
+					imeb_id:this.imeb_id, fn:this.fn, ln:this.ln, ctry:this.ctry,
+					title:this.title,
 					duration:this.duration, cat:this.cat, sub_cat:this.sub_cat,
 					isni:this.isni, id:this.id}];
 
@@ -187,6 +193,7 @@ Particle.prototype.createNewChild=function(obj){
         imeb_id: obj.imeb_id,
         fn: obj.fn,
         ln: obj.ln,
+        ctry: obj.ctry,
         title: obj.title,
         duration: obj.duration,
         cat: obj.cat,
@@ -225,33 +232,71 @@ Particle.prototype.processChilds=function(mouseX, mouseY){
 	}
 	return targeted;
 }
+// Rendu de la boite violette, identique a euphonies.php et
+// award-winning_works.php : pas de libelles ("title: ...", "fn: ..."), les
+// informations sont regroupees en BLOCS separes par une respiration verticale
+// (classe .sma-blk, css/catalog.css). Un champ vide est saute sans laisser de
+// trou, et un bloc entierement vide ne produit aucune ligne.
+//
+//   Prenom Nom
+//   Pays
+//
+//   Titre (duree)
+//
+//   ISNI
+//
+// Le MISAM (imeb_id) n'est PLUS affiche ici, par parite avec les deux autres
+// pages : il reste transporte par les agents (colonne "imeb id" des tableaux)
+// et disponible pour un affichage futur.
 Particle.prototype.getInfoFrom=function(target){
 
-	// console.log('hit');
+	var val = function(v){ return $.trim(v == null ? '' : String(v)); };
 
-	//could add id
-	/*var propNames =  ["edition", "year", "price", "imeb_id", "title",
-					"duration", "cat", "sub_cat", "fn", "ln", "isni"];*/
+	// une fiche ISNI ouverte pointerait un lien de #titles qu'on s'apprete a
+	// detruire : on la referme avant de vider la boite.
+	if(typeof isniAnchor !== 'undefined' && isniAnchor
+		&& isniAnchor.closest('#titles').length) closeIsniBox();
 
-	var propNames =  ["imeb_id", "title", "duration", "fn", "ln"];
-	
 	$("#titles").empty();
+	var blocks = [];
 
-	for (var i = 0; i < propNames.length; i++) {
+	//--- 1. identite
+	blocks.push([$.trim(val(target.fn) + ' ' + val(target.ln)), val(target.ctry)]);
 
-		var value = target[propNames[i]];
+	//--- 2. oeuvre : la duree suit le titre, entre parentheses
+	var work = val(target.title);
+	var duration = val(target.duration);
+	if(duration) work = work ? work + ' (' + duration + ')' : '(' + duration + ')';
+	blocks.push([work]);
 
-		if(value!=="" && propNames[i].localeCompare(this.targetedAttr)!==0){
+	//--- 3. ISNI
+	var isni = val(target.isni).replace(/\s+/g, '');
+	if(/^[0-9]{15}[0-9Xx]$/.test(isni)){
+		isni = '<a class="isni-link" title="voir la fiche ISNI" '
+			 + 'href="https://isni.org/isni/' + isni + '" '
+			 + 'data-isni="' + isni + '">' + isni + '</a>';
+	}
+	blocks.push([isni]);
 
-			if(propNames[i].localeCompare("isni")===0){
-				value="<a target=\"_blank\" href=\"http://www.isni.org/isni/" + value + "\">"+ value +"</a>";
-			} 
-			
-			$("#titles").append('<p>'+ propNames[i] + ': ' + value +'</p>');
+	for (var b = 0; b < blocks.length; b++) {
+		var lines = [];
+		for (var l = 0; l < blocks[b].length; l++){
+			if(blocks[b][l] !== '') lines.push(blocks[b][l]);
+		}
+		if(lines.length === 0) continue;
+		var spaced = ($("#titles").children().length > 0);
+		for (var k = 0; k < lines.length; k++) {
+			var cls = (k === 0 && spaced) ? ' class="sma-blk"' : '';
+			$("#titles").append('<p'+ cls +'>'+ lines[k] +'</p>');
 		}
 	}
 
-	// $("#titles").append('<p>'+ target.id +'</p>');
+	$("#titles").find('a.isni-link').on('click', function(evt){
+		if(evt.ctrlKey || evt.metaKey || evt.shiftKey || evt.which === 2) return;
+		evt.preventDefault();
+		evt.stopPropagation();
+		openIsniBox($(this));
+	});
 
 }
 Particle.prototype.update = function(i, particles){

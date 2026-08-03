@@ -255,9 +255,26 @@
 		// le menu "Country" de la page (php/retrieve_countries.php) : c_name_en,
 		// a defaut c_name. LEFT JOIN et non INNER : un artiste sans pays
 		// renseigne doit rester dans le tableau.
+		//
+		// L'ISNI identifie une PERSONNE, pas une oeuvre : il est donc lu sur
+		// imeb_artist (colonne alimentee depuis data.bnf.fr) et non sur
+		// imeb_music.isni, vestige des essais d'interconnexion de 2017. Meme
+		// source que retrieve_euphonies() ci-dessus et que retrieve_works.php.
+		//
+		// imeb_music.editions : annee(s) ou l'oeuvre a ete PROGRAMMEE dans une
+		// edition de l'IMEB (1973-2009), separees par des virgules. A ne pas
+		// confondre avec award_year : le concours se tenait a l'interieur du
+		// festival, donc l'annee de concours figure parmi ces annees (verifie
+		// sur 484 des 491 oeuvres primees dont editions est renseigne). Une
+		// oeuvre reprogrammee porte plusieurs annees (jusqu'a cinq).
+		// imeb_music.award_year ne sert ici qu'a marquer les oeuvres primees
+		// d'un signe a cote du titre : le detail du palmares reste l'affaire de
+		// award-winning_works.php.
 		$sth = $dbh->query('SELECT imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
 							imeb_artist.id AS id_artist,
+							imeb_artist.isni AS isni,
+							imeb_music.editions, imeb_music.award_year,
 							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry
 							FROM imeb_music
 							INNER JOIN imeb_artist
@@ -270,18 +287,35 @@
 		$arr= array();
 		while($row = $sth->fetch()) {
 
-			// 8e et dernier champ : le pays du compositeur, ajoute en FIN
-			// d'enregistrement pour ne decaler aucun index existant. Chaine
-			// vide si l'artiste n'a pas de pays rattache : js/catalog.js
-			// n'ajoute alors aucune ligne sous le nom.
+			// 8e champ : le pays du compositeur, ajoute en fin d'enregistrement
+			// pour ne decaler aucun index existant. Chaine vide si l'artiste
+			// n'a pas de pays rattache : js/catalog.js n'ajoute alors aucune
+			// ligne sous le nom.
+			$ctry = $row['ctry'] ? $row['ctry'] : '';
+
+			// 9e champ : l'ISNI du compositeur, lui aussi ajoute en
+			// FIN d'enregistrement. Chaine vide pour la majorite des artistes
+			// (la colonne n'est renseignee que pour ceux alignes sur
+			// data.bnf.fr) : la boite violette n'affiche alors rien.
 			// ATTENTION : la longueur d'enregistrement est passee en dur a
 			// retrieveData() dans js/catalog.js (parametre numOfElements) ;
-			// les deux doivent bouger ensemble.
-			$ctry = $row['ctry'] ? $row['ctry'] : '';
+			// les deux doivent bouger ensemble. Le separateur est '%' ici,
+			// alors que retrieve_euphonies() ci-dessus utilise '|'.
+			$isni = $row['isni'] ? $row['isni'] : '';
+
+			// 10e champ : les annees de programmation, telles quelles
+			// ("1980" ou "1980,1992"). Renseigne pour environ la moitie de la
+			// Phono A et le quart de la Phono B : la cellule reste vide
+			// ailleurs, js/catalog.js n'y met rien.
+			$editions = $row['editions'] ? $row['editions'] : '';
+
+			// 11e et dernier champ : l'annee de concours, uniquement pour
+			// signaler d'un marqueur les oeuvres primees. Chaine vide sinon.
+			$award = $row['award_year'] ? $row['award_year'] : '';
 
 			array_push($arr, $row['misam'], $row['firstName'], $row['name'],
 						$row['id_artist'], $row['title'], $row['duration'], $row['id'],
-						$ctry);
+						$ctry, $isni, $editions, $award);
 
 		}
 

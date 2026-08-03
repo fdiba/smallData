@@ -18,11 +18,12 @@ function Child(config){
 	this.imeb_id = config.imeb_id;
 	this.fn = config.fn;
 	this.ln = config.ln;
+	this.ctry = config.ctry;
 	this.title = config.title;
 	this.duration = config.duration;
 	// this.cat = config.cat;
 	// this.sub_cat = config.sub_cat;
-	// this.isni = config.isni;
+	this.isni = config.isni;
 	
 	this.id=config.id;
 
