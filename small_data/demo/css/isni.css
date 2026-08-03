@@ -174,3 +174,66 @@
 	max-height: calc(100vh - var(--sd-bar-h) - 24px);
 	pointer-events: auto;
 }
+
+/* ---------- Le nom cliquable dans le contenu de la page ----------
+   Le marqueur pose sur un nom de compositeur quand la fiche existe : un
+   souligne pointille, en couleur HERITEE (currentColor), donc noir sur le
+   fond clair des tableaux et blanc sur le fond orange d'Overview — une seule
+   regle pour tous les fonds.
+
+   La classe s'appelle composer-isni et NON isni-name : .isni-name est deja
+   pris plus haut par les formes du nom DANS la fiche (color:#fff, fond
+   sombre). Le reprendre avait rendu les noms des tableaux blancs sur blanc.
+   Le prefixe isni- est le namespace de cette feuille : ne rien y ajouter sans
+   verifier.
+
+   La regle etait recopie a l'identique dans css/catalog.css et css/aww.css ;
+   Overview en aurait fait une troisieme copie. Elle est donc ici, comme le
+   reste du comportement partage (meme raison qu'au §K du recapitulatif).
+   Aucune regle des feuilles de page ne pose border-bottom ni cursor sur un
+   span : passer de #main_table .composer-isni (1,1,0) a .composer-isni
+   (0,1,0) ne perd donc aucun combat de specificite. */
+.composer-isni{
+	border-bottom: 1px dotted currentColor;
+	cursor: pointer;
+}
+.composer-isni:hover,
+.composer-isni:focus{
+	border-bottom-style: solid;
+	outline: none;
+}
+/* L'exemple cite dans le "How to read" porte le meme marqueur pour se lire,
+   mais rien n'y est cliquable : ni curseur, ni reaction au survol. */
+#legend .composer-isni{
+	cursor: default;
+}
+#legend .composer-isni:hover,
+#legend .composer-isni:focus{
+	border-bottom-style: dotted;
+}
+
+/* ---------- Dock EN FLUX (option `into` de enableIsniPanel) ----------
+   Overview n'a pas de gouttiere libre : la grille occupe toute la largeur
+   moins la colonne d'information. Une fiche flottante y recouvrirait la boite
+   violette — le defaut meme qui avait ete signale sur le catalogue. Elle est
+   donc rendue DANS la colonne, sous la boite orange d'ou part le clic : elle
+   prend sa place au lieu de recouvrir, et se lit a l'endroit ou on vient de
+   cliquer (meme lecon que l'accordeon BnF des Euphonies, qui s'affichait
+   auparavant en bas de page).
+
+   Hauteur bornee a 60vh : la fiche d'un compositeur tres documente ne doit
+   pas repousser la liste des oeuvres hors de l'ecran. Au-dela, c'est le corps
+   de la fiche (.isni-bd) qui defile, comme en mode flottant.
+
+   L'ombre portee disparait : elle disait "cette boite est posee au-dessus".
+   Ici la fiche est une boite de la colonne, comme la verte et l'orange.
+
+   (0,2,0) contre (0,1,0) pour .isni-box : la specificite l'emporte quel que
+   soit l'ordre des <link>. */
+.isni-inflow .isni-box{
+	position: static;
+	width: 100%;
+	max-width: none;
+	max-height: 60vh;
+	box-shadow: none;
+}

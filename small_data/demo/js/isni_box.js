@@ -90,6 +90,8 @@ function setIsniDock(el){
 
    Options — toutes facultatives :
      dockId     id du conteneur cree (defaut 'isniPanel')
+     into       id d'un conteneur DEJA present dans la page, ou la fiche doit
+                etre rendue EN FLUX (voir ci-dessous). Exclut dockId/anchors.
      anchors    ids dont le bord droit cale le panneau : il se pose 10 px a
                 droite du plus a droite d'entre eux, et se rabat contre le
                 bord de la fenetre s'il n'y a pas la place
@@ -98,27 +100,57 @@ function setIsniDock(el){
      watch      id d'un conteneur dont toute modification referme la fiche,
                 parce que le panneau le recouvre
 
-   Retourne la fonction de placement, pour les pages qui doivent la rappeler.
+   DEUX PLACEMENTS, ET POURQUOI. Par defaut le panneau est en position FIXE
+   a droite du contenu : c'est le cas du catalogue et des oeuvres primees, ou
+   la page occupe la largeur d'un tableau et laisse une gouttiere libre. Sur
+   Overview il n'y a pas de gouttiere — la grille prend toute la largeur moins
+   la colonne d'information (maxWidth = largeur du document - 525). Un panneau
+   flottant y recouvrirait la boite violette, exactement le defaut signale sur
+   le catalogue. D'ou `into` : la fiche est rendue DANS la colonne, en flux,
+   sous la boite orange. Elle ne recouvre rien, elle prend sa place — et le
+   placement est alors entierement affaire de CSS (la page dimensionne son
+   conteneur), donc pas de mesure, pas de rappel au defilement.
+
+   Retourne la fonction de placement, pour les pages qui doivent la rappeler
+   (fonction inerte en mode `into`).
    --------------------------------------------------------------------------- */
 function enableIsniPanel(opt){
 
     opt = opt || {};
 
     var dockId    = opt.dockId    || 'isniPanel';
+    var into      = opt.into      || '';
     var anchors   = opt.anchors   || [];
     var clickable = opt.clickable || '';
     var watch     = opt.watch     || '';
 
-    /* Le conteneur est cree ici plutot que dans le HTML de la page : sans
-       JavaScript il n'y aurait rien a y mettre, et une div vide dans le
-       source serait une promesse non tenue. */
-    var panel = document.getElementById(dockId);
-    if(!panel){
-        panel = document.createElement('div');
-        panel.id = dockId;
-        document.body.appendChild(panel);
+    var panel;
+    var inflow = false;      // vrai seulement si le conteneur demande existe
+
+    if(into){
+        panel = document.getElementById(into);
+        /* Conteneur absent (page pas a jour, HTML en cache) : on NE renonce
+           PAS. Les noms cliquables sont poses par le JS de la page, ils
+           seraient alors soulignes sans rien ouvrir — pire qu'un placement
+           imparfait. La fiche revient donc a la boite flottante, son mode
+           d'origine, qui ne demande aucun conteneur. */
+        if(panel){
+            inflow = true;
+            panel.className += (panel.className ? ' ' : '') + 'isni-inflow';
+            setIsniDock('#' + into);
+        }
+    } else {
+        /* Le conteneur est cree ici plutot que dans le HTML de la page : sans
+           JavaScript il n'y aurait rien a y mettre, et une div vide dans le
+           source serait une promesse non tenue. */
+        panel = document.getElementById(dockId);
+        if(!panel){
+            panel = document.createElement('div');
+            panel.id = dockId;
+            document.body.appendChild(panel);
+        }
+        setIsniDock('#' + dockId);
     }
-    setIsniDock('#' + dockId);
 
     /* Le panneau se cale juste a DROITE du contenu, pas au bord de la
        fenetre : il se lit alors comme une colonne de plus, alignee sur la
@@ -128,6 +160,7 @@ function enableIsniPanel(opt){
        redimensionnement ET au defilement : le panneau est en position fixe,
        un defilement horizontal decalerait le contenu sous lui. */
     function place(){
+        if(inflow || !panel) return;         // en flux : c'est la CSS qui place
         var right = 0;
         for(var i = 0; i < anchors.length; i++){
             var e = document.getElementById(anchors[i]);
@@ -143,8 +176,10 @@ function enableIsniPanel(opt){
         panel.style.left = Math.round(left) + 'px';
     }
 
-    place();
-    $(window).on('resize.isnipanel scroll.isnipanel', place);
+    if(!inflow){
+        place();
+        $(window).on('resize.isnipanel scroll.isnipanel', place);
+    }
 
     /* Les boites d'information du SMA vivent a droite du canvas, c'est-a-dire
        sous le panneau, qui les recouvre entierement. La fiche se referme donc

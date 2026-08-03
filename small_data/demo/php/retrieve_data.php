@@ -172,7 +172,11 @@
 
 		$result = "no result";
 
-		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name,
+		/* imeb_artist.isni : 5e champ de la reponse (voir plus bas). C'est la
+		   colonne renseignee par l'enrichissement data.bnf.fr — la meme que
+		   celle servie aux Euphonies, au catalogue et aux oeuvres primees
+		   (cf. Recapitulatif_nettoyage_bdd_IMEB.md, §G). */
+		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name, imeb_artist.isni,
 							COALESCE(NULLIF(imeb_country.iso3, \'\'), NULLIF(imeb_country.iso2, \'\'), NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS \'ctry\',
 							imeb_edition.ed_1973, imeb_edition.ed_1974,
 							imeb_edition.ed_1975, imeb_edition.ed_1976,
@@ -218,8 +222,16 @@
 			// 3e champ : le code pays affiche dans la boite orange d'Overview.
 			// iso3, a defaut iso2 (l'Ecosse n'a pas d'iso3 : elle affiche GB),
 			// a defaut le nom du pays (entrees sans code, type "Unknown").
+			//
+			// 5e champ : l'ISNI, AJOUTE EN FIN DE CHAINE. C'est lui qui rend le
+			// nom du compositeur cliquable dans la boite orange (js/overview.js).
+			// Ajouter en fin, jamais au milieu : les champs sont lus par POSITION
+			// (arr[0..3]) et tout decalage casserait silencieusement l'affichage
+			// existant. Chaine vide quand la fiche n'a pas d'ISNI — le nom reste
+			// alors du texte simple.
 			$result = $row['firstName'] . '%' . $row['name'] . '%' . $row['ctry']
-					  . '%' . $str_editions;
+					  . '%' . $str_editions
+					  . '%' . ($row['isni'] === null ? '' : $row['isni']);
 
 		}
 

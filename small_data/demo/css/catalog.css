@@ -179,34 +179,10 @@ th{
 	display: none;
 }
 
-/* Nom de compositeur cliquable — uniquement ceux dont l'ISNI est renseigne.
-   Meme convention que les noms du diagramme de flux (css/sankey.css) : un
-   souligne pointille, qui passe en continu au survol et au focus clavier.
-   currentColor : le trait suit la couleur du texte, quelle que soit la teinte
-   alternee de la cellule. Le pointille porte sur le seul nom, pas sur la
-   cellule : la ligne de pays qui la termine n'est pas cliquable.
-
-   ATTENTION AU NOM DE CLASSE. Le premier essai s'appelait .isni-name : or
-   css/isni.css definit deja .isni-name{ color:#fff } pour les formes du nom
-   DANS la fiche, sur fond sombre. Les noms du tableau, sur fond clair,
-   passaient donc en blanc sur blanc — illisibles. Le prefixe isni- est le
-   namespace de la feuille partagee ; tout ce qui est propre a cette page
-   prend le prefixe composer-, comme .composer-ctry juste en dessous.
-
-   Le trait vaut aussi pour l'exemple cite dans le "How to read", qui montre
-   le repere plutot que de le decrire — mais la, rien n'est cliquable. */
-#main_table .composer-isni,
-#legend .composer-isni{
-	border-bottom: 1px dotted currentColor;
-}
-#main_table .composer-isni{
-	cursor: pointer;
-}
-#main_table .composer-isni:hover,
-#main_table .composer-isni:focus{
-	border-bottom-style: solid;
-	outline: none;
-}
+/* Nom de compositeur cliquable : le souligne pointille de .composer-isni vit
+   desormais dans css/isni.css, avec le reste du comportement partage — la
+   meme regle etait ici et dans css/aww.css, et Overview en aurait fait une
+   troisieme copie. Seul ce qui est propre a la page reste ici. */
 
 /* La legende "How to read" a EXACTEMENT la largeur du canvas et des deux tableaux
    (2x600 + gap 10 = 1210px) : son bord droit s'aligne sur le tableau le plus a droite. */
