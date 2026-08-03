@@ -179,7 +179,8 @@ function retrieveData(cat, numOfElements, country){
                     records.push({imeb_id: w.misam, fn: w.fn, ln: w.ln,
                                   id: w.id,
                                   title: w.title, duration: w.duration,
-                                  ctry: w.ctry, isni: w.isni});
+                                  ctry: w.ctry, isni: w.isni,
+                                  editions: w.editions});
                 }
                 //---------
 
@@ -226,7 +227,7 @@ function retrieveData(cat, numOfElements, country){
                 // works et dans le SMA, il n'est simplement plus affiche).
                 // La virgule du stockage ("1980,1992") recoit une espace pour
                 // rester lisible ; la cellule est vide quand la donnee manque.
-                var editionsCell = w.editions ? w.editions.split(',').join(', ') : '';
+                var editionsCell = w.editions ? w.editions.replace(/\s*,\s*/g, ', ') : '';
 
                 row += '<td class="' + memParity + '">' + titleCell + '</td>'
                       + '<td class="' + memParity + '">' + w.duration + '</td>'

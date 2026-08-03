@@ -153,6 +153,13 @@ th{
 #titles p.sma-blk {
 	margin-top: .9em;
 }
+/* Libelle discret devant les annees de programmation ("programmed in 1980,
+   1992"), pose par getInfoFrom (js/particles_catalog.js). Blanc attenue sur
+   le fond amethyste : lisible, mais subordonne a la donnee qu'il annonce.
+   C'est le seul libelle de la boite, les autres lignes se passant d'etiquette. */
+#titles p .sma-lbl {
+	color: rgba(255, 255, 255, .68);
+}
 /* conteneur des deux tableaux : cote a cote, retour a la ligne si trop etroit */
 #main_table{
 	clear: both;

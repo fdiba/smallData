@@ -74,6 +74,10 @@ function Particle(config){
 	this.ctry = config.ctry;
 	this.title = config.title;
 	this.duration = config.duration;
+	// annee(s) de programmation a Bourges (imeb_music.editions), affichees
+	// dans la boite violette sous le titre. A ne pas confondre avec
+	// this.edition (singulier), reste inutilise de la page euphonies.
+	this.editions = config.editions;
 	// this.cat = config.cat;
 	// this.sub_cat = config.sub_cat;
 	this.isni = config.isni;
@@ -87,7 +91,8 @@ function Particle(config){
 	this.records = [{edition:this.edition, year:this.year, price:this.price,
 					imeb_id:this.imeb_id, fn:this.fn, ln:this.ln, ctry:this.ctry,
 					title:this.title,
-					duration:this.duration, cat:this.cat, sub_cat:this.sub_cat,
+					duration:this.duration, editions:this.editions,
+					cat:this.cat, sub_cat:this.sub_cat,
 					isni:this.isni, id:this.id}];
 
 	//midnight blue, green emerald, yellow sun flower, blue peter river
@@ -196,6 +201,7 @@ Particle.prototype.createNewChild=function(obj){
         ctry: obj.ctry,
         title: obj.title,
         duration: obj.duration,
+        editions: obj.editions,
         cat: obj.cat,
         sub_cat: obj.sub_cat,
         isni: obj.isni,
@@ -263,11 +269,20 @@ Particle.prototype.getInfoFrom=function(target){
 	//--- 1. identite
 	blocks.push([$.trim(val(target.fn) + ' ' + val(target.ln)), val(target.ctry)]);
 
-	//--- 2. oeuvre : la duree suit le titre, entre parentheses
+	//--- 2. oeuvre : la duree suit le titre, entre parentheses ; les annees de
+	// programmation a Bourges viennent en dessous, dans le meme bloc. Elles
+	// portent un libelle, contrairement aux autres lignes de la boite : une
+	// suite d'annees seule serait indechiffrable ici, ou aucun en-tete de
+	// colonne ne vient l'expliquer. La donnee manque pour la moitie de la
+	// Phono A et les trois quarts de la Phono B — la ligne saute alors, sans
+	// laisser de blanc (voir la boucle d'affichage plus bas).
 	var work = val(target.title);
 	var duration = val(target.duration);
 	if(duration) work = work ? work + ' (' + duration + ')' : '(' + duration + ')';
-	blocks.push([work]);
+	var editions = val(target.editions);
+	if(editions) editions = '<span class="sma-lbl">programmed in</span> '
+						  + editions.replace(/\s*,\s*/g, ', ');
+	blocks.push([work, editions]);
 
 	//--- 3. ISNI
 	var isni = val(target.isni).replace(/\s+/g, '');

@@ -21,6 +21,7 @@ function Child(config){
 	this.ctry = config.ctry;
 	this.title = config.title;
 	this.duration = config.duration;
+	this.editions = config.editions;
 	// this.cat = config.cat;
 	// this.sub_cat = config.sub_cat;
 	this.isni = config.isni;
