@@ -42,7 +42,9 @@ smallData/
 │       └── php/           Server-side data retrieval (MySQL)
 ├── imeb/                  Earlier companion site: award-winning works
 │   ├── script.js          D3 pie charts (countries, categories)
-│   └── sankey/            Sankey diagram (year → category)
+│   └── sankey/            Retired 2026: this two-column Sankey is now the
+│                           light view of small_data/demo/categories.php,
+│                           and the folder holds only a 301 redirect to it
 ├── rebuild_database/      Processing sketch: builds the MySQL database by
 │                          parsing the 6,292 "capsule" folders (.mtd metadata
 │                          files) archived by the IMEB

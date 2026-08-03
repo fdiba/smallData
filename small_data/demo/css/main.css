@@ -120,15 +120,22 @@ ul{
 }
 
 /* ---------- Boutons d'action (get all data, anim, etc.) ---------- */
-
-#ctrl_bar #launcher{
+/* #view (categories.php) partage ce panneau : c'est le meme geste — deux
+   boutons b_on / b_off dans la barre — et il n'y avait aucune raison de lui
+   inventer une apparence. Seule difference de structure : #launcher EST le
+   <ul>, tandis que #view est un <div> qui porte d'abord un <label>, comme
+   #searchBox sur index.php, puis le <ul> ; d'ou les deux regles
+   supplementaires plus bas. */
+#ctrl_bar #launcher,
+#ctrl_bar #view{
 	padding: var(--sd-gap);
 	background: var(--sd-amethyst);
 	gap: 3px;
 	min-width: 110px;
 	color: white;
 }
-#ctrl_bar #launcher li{
+#ctrl_bar #launcher li,
+#ctrl_bar #view li{
 	margin: 0;
 	padding: 4px 10px;
 	cursor: pointer;
@@ -136,8 +143,28 @@ ul{
 	transition: background 120ms ease;
 	user-select: none;
 }
-#ctrl_bar #launcher li:hover{
+#ctrl_bar #launcher li:hover,
+#ctrl_bar #view li:hover{
 	background: var(--sd-emerald);
+}
+/* Le libelle reprend la casse et l'interlettrage du titre de #info : c'est la
+   meme fonction, nommer le bloc au-dessus de son contenu. */
+#ctrl_bar #view label{
+	margin: 0 0 4px 0;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+#ctrl_bar #view ul{
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+#ctrl_bar #view li{
+	white-space: nowrap;
 }
 #anim{
 	color: white;

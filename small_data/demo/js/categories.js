@@ -8,6 +8,43 @@ var svgWidth;
    Voir addNode() pour la raison d'etre de cet index. */
 var nodeIndex = {};
 
+/* =========================================================================
+   DEUX VUES SUR LA MEME DONNEE.
+
+   La page ne dessinait qu'une chose : annee -> categorie -> compositeur, soit
+   566 noeuds sur plus de dix mille pixels de haut. C'est la vue de detail, et
+   elle reste. Mais le diagramme a deux colonnes — annee -> categorie —
+   existait deja ailleurs sur le site, dans imeb/sankey/ : un prototype de
+   2016 qui refaisait la meme requete avec son propre d3, son propre en-tete
+   et son propre algorithme d'identite des noeuds — celui-la meme, par
+   recherche de sous-chaine, qui a du etre corrige ici (voir la note
+   d'addNode). Plutot que d'entretenir deux pages pour une seule donnee, la
+   vue allegee devient un ETAT de celle-ci, et l'ancien dossier redirige.
+
+   La vue allegee est l'etat d'ARRIVEE : elle tient a peu pres dans une
+   fenetre (environ 1 045 px, cf. chartHeight) et se lit d'un coup d'oeil ; la
+   vue complete se demande. C'est l'ordre habituel — l'ensemble d'abord, le
+   detail a la demande.
+
+   Consequence sur la structure du fichier : nodes, links, nodeIndex et graph
+   ne peuvent plus etre remplis une fois pour toutes dans le callback de
+   d3.text, puisqu'ils changent avec la vue. Le flux de donnees, lui, n'est
+   demande qu'UNE fois : la reponse analysee est conservee dans records, et
+   build() reconstruit le graphe a partir d'elle. Changer de vue ne rappelle
+   donc pas le serveur.
+   ========================================================================= */
+var VIEW_FULL  = 'full';
+var VIEW_LIGHT = 'light';
+var mode    = VIEW_LIGHT;   // etat d'arrivee ; voir #view dans categories.php
+var records = null;         // reponse analysee, gardee pour les reconstructions
+
+/* Nombre de compositeurs distincts par categorie, compte sur les
+   enregistrements et non sur le graphe : la vue allegee n'a pas de colonne
+   compositeur, mais l'effectif reste vrai et l'infobulle du noeud le dit dans
+   les deux vues. En vue complete il coincide exactement avec le nombre de
+   flux sortants de la categorie. */
+var catComposers = {};
+
 // Donnees generees depuis la base (php/retrieve_categories.php) au lieu
 // du fichier data/smallData.csv. Reponse : sept champs repetes,
 // annee%categorie%nom%prenom%isni%id_artist%editions.
@@ -30,14 +67,33 @@ d3.text("php/retrieve_categories.php", function(error, text){
 
   data.reverse();
 
-  for(key in data) {
-    setSankeyNodes(data, key);
+  records = data;
+  countComposersByCategory();
+  bindViewSwitch();
+  build();
+});
+
+/* Construction — ou reconstruction — du diagramme dans la vue courante.
+   Les quatre accumulateurs sont remis a neuf et #chart vide : sankeyStuff()
+   AJOUTE un <svg> a #chart, sans quoi les deux vues s'empileraient. */
+function build(){
+
+  nodes = [];
+  links = [];
+  nodeIndex = {};
+  graph = {};
+
+  var host = document.getElementById('chart');
+  if(host) host.innerHTML = '';
+
+  for(var k = 0; k < records.length; k++){
+    setSankeyNodes(records, k);
   }
 
   createData();
   sankeyStuff();
 
-  d3.select("svg")
+  d3.select("#chart svg")
   //.style('background', '#FDF6E3')
   .attr('width', svgWidth+150+'px');
 
@@ -50,7 +106,76 @@ d3.text("php/retrieve_categories.php", function(error, text){
   d3.selectAll('.link').style('stroke', function(d, i){
     return colors(i);
   });
-});
+}
+
+/* Compte des compositeurs distincts par categorie. Une paire
+   categorie + id_artist n'est comptee qu'une fois : un compositeur prime deux
+   fois dans la meme categorie reste un compositeur. */
+function countComposersByCategory(){
+
+  var seen = {}, k, d, cat, pair;
+
+  catComposers = {};
+
+  for(k = 0; k < records.length; k++){
+    d = records[k];
+    cat = (d.category === '') ? 'None' : d.category;
+    pair = cat + '' + d.artistId;
+    if(seen[pair]) continue;
+    seen[pair] = true;
+    catComposers[cat] = (catComposers[cat] || 0) + 1;
+  }
+}
+
+/* Le commutateur de vue (#view dans categories.php) reprend deux tournures
+   deja presentes dans la barre de controle : le libelle de #searchBox
+   (index.php) et les boutons b_on / b_off de #launcher. Il n'y a donc rien de
+   neuf a apprendre pour s'en servir. Rien ne se produit non plus si le bloc
+   est absent : le diagramme s'affiche alors dans sa vue par defaut. */
+function bindViewSwitch(){
+
+  var box = document.getElementById('view');
+  if(!box) return;
+
+  var items = box.getElementsByTagName('li');
+
+  function paint(){
+    for(var p = 0; p < items.length; p++){
+      var on = items[p].getAttribute('data-view') === mode;
+      items[p].className = on ? 'b_on' : 'b_off';
+      items[p].setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+  }
+
+  function choose(el){
+    var m = el.getAttribute('data-view');
+    if(!m || m === mode) return;
+    mode = m;
+    paint();
+    hideFlowTip();
+    build();
+    /* La page passe d'environ mille pixels a plus de dix mille, ou l'inverse.
+       Sans ce retour en haut, on resterait a une position de defilement qui
+       n'a plus de sens dans la nouvelle vue — et, en revenant a la vue
+       allegee, hors du diagramme, qui deborde bien moins lateralement. */
+    if(typeof window !== 'undefined' && window.scrollTo) window.scrollTo(0, 0);
+  }
+
+  for(var i = 0; i < items.length; i++){
+    (function(el){
+      el.onclick = function(){ choose(el); };
+      el.onkeydown = function(evt){
+        var k = evt.keyCode || evt.which;
+        if(k === 13 || k === 32){        // entree, espace
+          if(evt.preventDefault) evt.preventDefault();
+          choose(el);
+        }
+      };
+    })(items[i]);
+  }
+
+  paint();
+}
 
 /* Identite des noeuds : par CLE, et non plus par comparaison de chaines.
    -------------------------------------------------------------------------
@@ -237,7 +362,12 @@ function nodeTitle(d){
   if(d.type === 'year'){
     out += " in " + plural(to, "category");
   } else if(d.type === 'category'){
-    out += " to " + plural(to, "composer") +
+    /* Le nombre de compositeurs est lu dans catComposers et non dans
+       sourceLinks.length : la vue allegee n'a pas de colonne compositeur, et
+       la categorie n'y a donc aucun flux sortant. Les deux comptes donnent le
+       meme nombre en vue complete — un flux sortant par compositeur. */
+    var comp = catComposers.hasOwnProperty(d.name) ? catComposers[d.name] : to;
+    out += " to " + plural(comp, "composer") +
            ", across " + plural(from, "edition");
   } else {
     out += " in " + plural(from, "category");
@@ -295,6 +425,14 @@ function setSankeyNodes(data, key){
   if(category=='')category='None';
   var catId = addNode('c' + category, {name: category, type: 'category'});
 
+  //------- setup link between year and category -----------//
+  // Les deux premieres colonnes sont identiques dans les deux vues : une
+  // categorie redistribue exactement ce qu'elle recoit des annees, donc
+  // retirer la colonne de droite ne change rien a celle de gauche.
+  createLinkBetween(yearId, catId);
+
+  if(mode !== VIEW_FULL) return;
+
   //---- add names --------//
   // "Nom, Prenom" : le patronyme reste en tete de colonne, comme avant, et le
   // prenom vient le completer. Les 508 compositeurs primes donnent 508
@@ -308,17 +446,85 @@ function setSankeyNodes(data, key){
                        {name: label, fullName: fullName,
                         type: 'composer', isni: d.isni});
 
-  //------- setup link between year and category -----------//
-  createLinkBetween(yearId, catId);
-
   createLinkBetween(catId, compId, d);
-
-
 
 }
 function createData(){
   graph = {'nodes': nodes, 'links': links};
 }
+
+/* Effectif, flux total et deux plus petites valeurs de chaque colonne.
+   Les valeurs sont recalculees ici plutot que lues dans les noeuds : layout()
+   n'a pas encore tourne, node.value n'existe pas et les liens portent encore
+   des index entiers. La regle est celle de d3.sankey — la valeur d'un noeud
+   est le plus grand de ce qui entre et de ce qui sort. */
+function columnStats(){
+
+  var i, vin = [], vout = [], cols = {};
+
+  for(i = 0; i < graph.nodes.length; i++){ vin[i] = 0; vout[i] = 0; }
+
+  for(i = 0; i < graph.links.length; i++){
+    vout[graph.links[i].source] += graph.links[i].value;
+    vin[graph.links[i].target]  += graph.links[i].value;
+  }
+
+  for(i = 0; i < graph.nodes.length; i++){
+    var t = graph.nodes[i].type;
+    var v = Math.max(vin[i], vout[i]);
+    if(!cols[t]) cols[t] = {count: 0, flow: 0, v1: Infinity, v2: Infinity};
+    var c = cols[t];
+    c.count++;
+    c.flow += v;
+    if(v < c.v1){ c.v2 = c.v1; c.v1 = v; }
+    else if(v < c.v2){ c.v2 = v; }
+  }
+
+  return cols;
+}
+
+/* HAUTEUR DU DIAGRAMME — deduite de l'ecart voulu entre deux libelles
+   voisins, et non posee en dur.
+   d3.sankey (lib/erase_old_sankey.js, initializeNodeDepth) calcule
+       ky = min sur les colonnes de (hauteur - (n-1) * nodePadding) / somme des valeurs
+   puis pose node.dy = node.value * ky. Le libelle etant centre sur son noeud
+   (y = d.dy / 2), deux noeuds voisins de valeurs v1 et v2 ont leurs libelles
+   distants de (v1 + v2) / 2 * ky + nodePadding : c'est le pas d'affichage des
+   noms. On inverse deux fois. Le pas voulu impose un ky minimal, que fixe la
+   colonne dont les deux plus petits noeuds sont les plus petits ; ce ky
+   impose a son tour une hauteur, que fixe la colonne la plus chargee.
+   Le calcul etait auparavant ecrit pour la seule colonne des compositeurs,
+   avec sa plus petite valeur — un prix — sous-entendue. Il est generalise ici
+   parce que la vue allegee n'a pas cette colonne, et il rend exactement la
+   meme hauteur qu'avant en vue complete : 10 452 px, la colonne des
+   compositeurs restant partout la contrainte, 508 noeuds pour 728 prix.
+   En vue allegee la contrainte devient la plus petite categorie (Multimedia,
+   2 prix) et la hauteur tombe vers 1 045 px, soit a peu pres une fenetre.
+   Auparavant elle valait 6460 en dur, pour un pas de 10,7 px sous une police
+   de 12 : les noms se touchaient. */
+function chartHeight(pad, pitch){
+
+  var cols = columnStats(), t, c, ky = 0, h = 0;
+
+  for(t in cols){
+    if(!cols.hasOwnProperty(t)) continue;
+    c = cols[t];
+    if(c.count < 2) continue;          // colonne d'un seul noeud : pas de voisin
+    var mean = (c.v1 + (isFinite(c.v2) ? c.v2 : c.v1)) / 2;
+    if(mean > 0) ky = Math.max(ky, (pitch - pad) / mean);
+  }
+
+  if(ky <= 0) return 1500;             // graphe vide ou sans lien
+
+  for(t in cols){
+    if(!cols.hasOwnProperty(t)) continue;
+    c = cols[t];
+    h = Math.max(h, ky * c.flow + (c.count - 1) * pad);
+  }
+
+  return Math.round(h);
+}
+
 function sankeyStuff(){
 
   var max = graph.nodes.length;
@@ -329,37 +535,20 @@ function sankeyStuff(){
 
   // Some setup stuff edit it to make a bigger image !!
   var margin = {top: 20, right: 1, bottom: 20, left: 41};
-  svgWidth = 960 - margin.left - margin.right + 760;
+  /* Les 760 px supplementaires ne servent qu'a loger la colonne des
+     compositeurs et ses patronymes ; la vue allegee s'arrete aux categories,
+     dont les libelles sont courts, et n'en a pas besoin. */
+  svgWidth = 960 - margin.left - margin.right + (mode === VIEW_FULL ? 760 : 0);
   var color = d3.scale.category20();
 
-  /* Hauteur du diagramme : deduite de l'ecart voulu entre deux noms, et non
-     plus posee en dur. d3.sankey (lib/erase_old_sankey.js, initializeNodeDepth)
-     calcule
-         ky = min sur les colonnes de (hauteur - (n-1) * nodePadding) / somme des valeurs
-     puis pose node.dy = node.value * ky. Le libelle etant centre sur son noeud
-     (y = d.dy / 2), deux compositeurs voisins n'ayant qu'un prix chacun sont
-     distants de ky + nodePadding : c'est le pas d'affichage des noms.
-     C'est la colonne des compositeurs qui contraint ky — 508 noeuds pour 728
-     prix, contre 36 noeuds (annees) et 23 (categories) pour le meme total. On
-     inverse donc la formule sur cette colonne pour obtenir la hauteur qui donne
-     le pas voulu. Auparavant la hauteur valait 6460 en dur, soit un pas de
-     10,7 px pour une police de 12 px : les noms se touchaient. */
-  var NODE_PADDING = 12;   // blanc entre deux noeuds d'une meme colonne, en px
-  var LABEL_PITCH  = 18;   // ecart voulu entre deux noms voisins, en px
-
-  var composerCount = 0, awardFlow = 0;
-  for(var ni = 0; ni < graph.nodes.length; ni++){
-    if(graph.nodes[ni].type === 'composer') composerCount++;
-  }
-  // layout() n'a pas encore tourne : les liens portent encore des index entiers
-  for(var li = 0; li < graph.links.length; li++){
-    if(graph.nodes[graph.links[li].target].type === 'composer'){
-      awardFlow += graph.links[li].value;
-    }
-  }
-  var height = composerCount
-    ? awardFlow * (LABEL_PITCH - NODE_PADDING) + (composerCount - 1) * NODE_PADDING
-    : 1500 - margin.top - margin.bottom + 5000;
+  /* Blanc entre deux noeuds d'une meme colonne, et ecart voulu entre deux
+     libelles voisins ; la hauteur s'en deduit — voir chartHeight().
+     L'ecart passe de 12 a 16 px en vue allegee : avec 58 noeuds au lieu de
+     566 la place ne manque pas, et cette respiration supplementaire raccourcit
+     le diagramme d'environ 800 px a pas de libelle egal. */
+  var NODE_PADDING = (mode === VIEW_FULL) ? 12 : 16;
+  var LABEL_PITCH  = 18;
+  var height = chartHeight(NODE_PADDING, LABEL_PITCH);
 
   // SVG (group) to draw in.
   var svg = d3.select("#chart").append("svg")

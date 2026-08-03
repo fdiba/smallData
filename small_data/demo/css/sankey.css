@@ -11,9 +11,25 @@
 #ctrl_bar{
 	background: none;
 }
+/* Hauteur de la bande de titre de la legende repliee : 10 px de padding en
+   haut, 18 px de texte (12 px de police, interligne 1,5), 10 px en bas — la
+   regle #legend de css/main.css. C'est la seule page ou ce calcul soit
+   necessaire, parce que c'est la seule ou la legende soit posee en FIXE : sur
+   les six autres elle est dans le flux et pousse le contenu d'elle-meme. */
+:root{
+	--lg-bar-h: 38px;
+}
+/* Le diagramme ne commence donc pas sous la barre de controle, mais sous la
+   bande de titre de la legende, augmentee du meme ecart de 8 px que celui deja
+   pose sous le menu. Sans cela le premier libelle de la colonne des annees —
+   2009, le diagramme se lisant du plus recent au plus ancien — se trouve
+   recouvert : il tombe a environ 26 px du haut du dessin, la bande en occupe
+   46. Une legende DEPLIEE recouvre bien davantage, et c'est voulu : c'est un
+   panneau qu'on ouvre, qu'on lit et qu'on referme, et le diagramme ne saute
+   pas sous les yeux a chaque fois. */
 #chart {
 	background: none;
-	margin: calc(var(--sd-bar-h) + 8px) 0 0 0;
+	margin: calc(var(--sd-bar-h) + var(--lg-bar-h) + 16px) 0 0 0;
 	font-family: "Exo 2", "Helvetica Neue", Helvetica, sans-serif;
 }
 /* Le libelle passe en clair sur le fond sombre : #ecf0f1, la teinte dont

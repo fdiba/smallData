@@ -15,6 +15,23 @@
 				<h1 id="main">Categories</h1>
 				<p></p>
 			</div>
+			<!-- Commutateur de vue. Il reprend deux tournures deja presentes
+			     dans la barre, et n'en introduit aucune : le libelle de
+			     #searchBox (index.php) et les boutons b_on / b_off de
+			     #launcher. Sa place ici, entre le titre et les menus, est
+			     celle de #launcher sur index.php.
+			     La page arrive sur la vue allegee — voir l'en-tete de
+			     js/categories.js. L'etat ecrit ci-dessous n'est que l'etat
+			     initial : js/categories.js le repose au chargement, puis a
+			     chaque clic. Une page sans JavaScript n'a de toute facon pas
+			     de diagramme a commuter. -->
+			<div id="view">
+				<label>diagram</label>
+				<ul>
+					<li class="b_on" data-view="light" role="button" tabindex="0" aria-pressed="true">year &rarr; category</li>
+					<li class="b_off" data-view="full" role="button" tabindex="0" aria-pressed="false">year &rarr; category &rarr; composer</li>
+				</ul>
+			</div>
 			<?php include_once("./php/menus.php") ?>
 		</div>
 		<!-- Legende "How to read", septieme et derniere page a la recevoir.
@@ -33,14 +50,14 @@
 				How to read this page<span class="lg-caret" aria-hidden="true"></span>
 			</button>
 			<div id="lg_body">
-				<p class="lg-intro">This diagram follows the IMEB competition prize list from left to right: the <em>year</em> of the award, the <em>category</em> in which it was given, and the <em>composer</em> who received it. It gathers <em>728 awards</em> to <em>508 composers</em> across <em>23 categories</em> and <em>36 editions</em>, from 1973 to 2009 &mdash; no competition was held in 1995.</p>
+				<p class="lg-intro">This diagram follows the IMEB competition prize list from left to right: the <em>year</em> of the award, the <em>category</em> in which it was given, and the <em>composer</em> who received it. It gathers <em>728 awards</em> to <em>508 composers</em> across <em>22 categories</em> and <em>36 editions</em>, from 1973 to 2009 &mdash; no competition was held in 1995. Two views of the same data are available from the <em>diagram</em> switch above: <em>year &rarr; category</em>, which fits roughly one screen and is where the page opens, and <em>year &rarr; category &rarr; composer</em>, which adds the 508 composers and is some ten times taller.</p>
 				<p class="lg-note">Two different years are recorded, and the diagram keeps them apart. <em>awarded</em> is the year of the prize; <em>festival</em> lists the years in which the work was programmed at Bourges. The two usually coincide, but need not: 69 awarded works were also played in another edition, and 7 carry an award year that is not among their programming years. For <em>237 of the 728 awards</em> the <em>Répertoire général</em> records no programming year at all; the <em>festival</em> mention is then simply omitted, which is an absence of evidence and not evidence that the work was never played.</p>
 				<div class="lg-cols">
 					<div>
 						<p><strong>The flows</strong></p>
 						<ul>
 							<li>the thickness of a flow is the <em>number of awards</em> it carries: a composer distinguished twice in the same category shows a band twice as thick as a composer distinguished once</li>
-							<li>flows on the left run from a year to a category, flows on the right from a category to a composer; a category therefore gathers, on one side, the editions that awarded it and, on the other, the composers it distinguished</li>
+							<li>flows on the left run from a year to a category and, in the full view, flows on the right from a category to a composer; a category therefore gathers, on one side, the editions that awarded it and, on the other, the composers it distinguished</li>
 							<li>categories are the competition's own labels, and they changed over the years; the 38 awards recorded without one are gathered under <em>None</em></li>
 							<li>colours only tell neighbouring flows apart &mdash; they carry no meaning of their own</li>
 						</ul>
@@ -48,10 +65,10 @@
 					<div>
 						<p><strong>Hovering and clicking</strong></p>
 						<ul>
-							<li>hover a flow on the right for the composer, the category and the years concerned, in the form <em>Robert Normandeau &mdash; 2 awards in Programme (awarded 1988, 1993 &middot; festival 1988, 1993)</em></li>
 							<li>hover a flow on the left for the awards a category received in a given year, in the form <em>Programme, 1988 &mdash; 7 awards</em></li>
-							<li>hover a node &mdash; a year, a category, a composer &mdash; for its totals, in the form <em>Programme &mdash; 78 awards to 67 composers, across 20 editions</em></li>
-							<li>a name carrying a <em>dotted underline</em> has an ISNI identifier &mdash; 236 of the 508 composers: click it to open the public authority record, with the works held by the Bibliothèque nationale de France where the alignment allows it</li>
+							<li>hover a node &mdash; a year, a category, a composer &mdash; for its totals, in the form <em>Programme &mdash; 78 awards to 67 composers, across 20 editions</em>; the totals are the same in both views</li>
+							<li>in the full view, hover a flow on the right for the composer, the category and the years concerned, in the form <em>Robert Normandeau &mdash; 2 awards in Programme (awarded 1988, 1993 &middot; festival 1988, 1993)</em></li>
+							<li>in the full view, a name carrying a <em>dotted underline</em> has an ISNI identifier &mdash; 236 of the 508 composers: click it to open the public authority record, with the works held by the Bibliothèque nationale de France where the alignment allows it</li>
 							<li>the full prize list, work by work, is on the <a href="award-winning_works.php">Award-winning works</a> page</li>
 						</ul>
 					</div>

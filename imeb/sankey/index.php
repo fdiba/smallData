@@ -1,29 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Diagramme de Sankey | Concours Internationaux de Bourges</title>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<link rel="stylesheet" href="sankey.css">
-	<link rel="stylesheet" href="../main.css">
-	<?php include_once("../../analyticstracking.php") ?>
-</head>
-<body>
-	<header>
-		<nav id="top-bar">
-			<h1 id="btn1"><a href="../../">WEBODROME</a></h1>
-			<ul>
-				<li><a target="_blank" href="https://github.com/fdiba"><img src="../../images/net/github.png" alt=""></a></li>
-			</ul>
-		</nav>
-	</header>
-	<div class="container">
-		<h1 id="mainTitle">Concours Internationaux de Bourges</h1>
-		<h2>Catégories des oeuvres primées</h2>
-		<div id="chart"></div>	
-	</div>
-	<?php include_once("../../footer.php") ?>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-	<script src="sankey.js"></script>
-	<script src="script.js"></script>
-</body>
-</html>
+<?php
+/* =========================================================================
+   ANCIEN PROTOTYPE — REDIRECTION PERMANENTE.
+
+   Cette page dessinait, depuis 2016, un diagramme de Sankey a deux colonnes :
+   annee -> categorie. Elle refaisait pour cela sa propre requete, chargeait
+   son propre d3 depuis un CDN et portait son propre algorithme d'identite des
+   noeuds — par recherche de sous-chaine, donc juste seulement tant que
+   l'ordre des enregistrements ne changeait pas.
+
+   Le meme diagramme est desormais un ETAT de small_data/demo/categories.php,
+   accessible par le commutateur « diagram » de la barre de controle, et c'est
+   d'ailleurs sur cette vue allegee que la page s'ouvre. Entretenir deux pages
+   pour une seule donnee n'avait plus d'objet.
+
+   La redirection est permanente (301) et non temporaire : l'adresse ne
+   reviendra pas. Les liens existants — y compris la note 24 de PU019, qui
+   cite deja .../small_data/demo/categories.php et non ce dossier — restent
+   donc valides.
+
+   Les autres fichiers du dossier ont ete deplaces dans _to_delete/ ;
+   ce fichier est le seul qui doive rester en ligne.
+   ========================================================================= */
+
+header('Location: /small_data/demo/categories.php', true, 301);
+exit;
