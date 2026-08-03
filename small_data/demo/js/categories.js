@@ -9,19 +9,23 @@ var svgWidth;
 var nodeIndex = {};
 
 // Donnees generees depuis la base (php/retrieve_categories.php) au lieu
-// du fichier data/smallData.csv. Reponse : six champs repetes,
-// annee%categorie%nom%prenom%isni%id_artist.
+// du fichier data/smallData.csv. Reponse : sept champs repetes,
+// annee%categorie%nom%prenom%isni%id_artist%editions.
 d3.text("php/retrieve_categories.php", function(error, text){
 
   if(error || !text){ console.log('categories: aucune donnee'); return; }
 
   var raw = text.split("%");
   var data = [];
-  // 6 = longueur d'enregistrement, ecrite en dur des deux cotes : si un champ
+  // 7 = longueur d'enregistrement, ecrite en dur des deux cotes : si un champ
   // est ajoute a php/retrieve_categories.php, ce pas doit bouger avec lui.
-  for(var i=0; i+5 < raw.length; i+=6){
+  // editions = annees de participation au festival, separees par des virgules
+  // (a ne pas confondre avec year, l'annee du prix) ; vide pour 237 des 728
+  // oeuvres primees.
+  for(var i=0; i+6 < raw.length; i+=7){
     data.push({ year: raw[i], category: raw[i+1], name: raw[i+2],
-                firstName: raw[i+3], isni: raw[i+4], artistId: raw[i+5] });
+                firstName: raw[i+3], isni: raw[i+4], artistId: raw[i+5],
+                editions: raw[i+6] });
   }
 
   data.reverse();
@@ -82,20 +86,146 @@ function addNode(key, node){
     nodes.push(node);
     return nodeIndex[key];
 }
+/* Ensemble de chaines rendu trie. On reste en ES5 (pas de Set) pour ne pas
+   depayser le reste du fichier ; l'objet sert d'ensemble, ses cles sont les
+   valeurs. Le tri est numerique : ce sont des annees. */
+function addToSet(set, value){
+  value = String(value === undefined || value === null ? '' : value)
+            .replace(/^\s+|\s+$/g, '');
+  if(value) set[value] = true;
+}
+function sortedKeys(set){
+  var out = [];
+  for(var k in set){ if(set.hasOwnProperty(k)) out.push(k); }
+  out.sort(function(a, b){ return a - b; });
+  return out;
+}
+
+/* =========================================================================
+   Bulle de survol des flux.
+
+   Le libelle etait porte par un <title> SVG, c'est-a-dire par l'infobulle
+   native du navigateur. Celle-ci s'efface d'elle-meme au bout de quelques
+   secondes, souris immobile ou non : c'est un comportement du systeme, sur
+   lequel la page n'a aucune prise. Le texte d'un flux de droite pouvant
+   enumerer une dizaine d'annees, on n'avait pas le temps de le lire.
+
+   La bulle est donc dessinee ici : elle apparait a l'entree dans le flux,
+   suit la souris, et ne disparait qu'a la sortie. Un seul element est cree,
+   a la premiere utilisation, et reutilise ensuite.
+
+   Elle est posee en position absolue dans le DOCUMENT (coordonnees fenetre
+   + defilement) et non en position fixe : le diagramme deborde de la fenetre
+   et defile dans les deux sens. pointer-events: none, dans la feuille de
+   style, l'empeche de voler le survol au flux qui l'a fait apparaitre.
+   ========================================================================= */
+var flowTip = null;
+
+function ensureFlowTip(){
+  if(flowTip) return flowTip;
+  flowTip = document.createElement('div');
+  flowTip.id = 'flow_tip';
+  document.body.appendChild(flowTip);
+  return flowTip;
+}
+
+/* Placement : en bas a droite du pointeur, bascule de l'autre cote quand la
+   bulle deborderait de la fenetre. On mesure apres avoir pose le texte, la
+   largeur dependant du contenu. */
+function moveFlowTip(evt){
+
+  if(!flowTip || !evt) return;
+
+  var m  = 14;
+  var w  = flowTip.offsetWidth;
+  var h  = flowTip.offsetHeight;
+  var vw = document.documentElement.clientWidth;
+  var vh = document.documentElement.clientHeight;
+
+  var x = evt.clientX + m;
+  var y = evt.clientY + m;
+  if(x + w > vw - 8) x = evt.clientX - w - m;
+  if(y + h > vh - 8) y = evt.clientY - h - m;
+  if(x < 8) x = 8;
+  if(y < 8) y = 8;
+
+  flowTip.style.left = Math.round(x + window.pageXOffset) + 'px';
+  flowTip.style.top  = Math.round(y + window.pageYOffset) + 'px';
+}
+
+function showFlowTip(text, evt){
+  var t = ensureFlowTip();
+  t.textContent = text;
+  t.className = 'open';
+  moveFlowTip(evt);
+}
+
+function hideFlowTip(){
+  if(flowTip) flowTip.className = '';
+}
+
+/* Libelle du flux. Les liens annee -> categorie gardent le leur.
+   Ceux de droite, categorie -> compositeur, nomment le compositeur a
+   l'endroit (Prenom Nom) et precisent entre parentheses les annees
+   concernees, en distinguant deux choses que la base distingue :
+     - "prime" : imeb_music.award_year, l'annee du prix ;
+     - "festival" : imeb_music.editions, les annees de participation.
+   Les deux ne coincident pas necessairement, et editions est vide pour 237
+   des 728 oeuvres primees : la mention correspondante est alors omise, et la
+   parenthese entiere disparait si les deux listes sont vides. */
+function linkTitle(d){
+
+  if(d.target.type !== 'composer'){
+    return d.value + " "+ d.target.name + " en " + d.source.name;
+  }
+
+  var txt = d.value + " " + d.target.fullName + " en " + d.source.name;
+
+  var parts = [];
+  var yrs = sortedKeys(d.years || {});
+  var eds = sortedKeys(d.editions || {});
+  if(yrs.length) parts.push("primé " + yrs.join(", "));
+  if(eds.length) parts.push("festival " + eds.join(", "));
+  if(parts.length) txt += " (" + parts.join(" · ") + ")";
+
+  return txt;
+}
+
 /* Les deux positions sont maintenant connues de l'appelant : il ne reste qu'a
-   incrementer le flux existant, ou a creer le lien. */
-function createLinkBetween(sourceId, targetId){
+   incrementer le flux existant, ou a creer le lien.
+   Le troisieme argument, facultatif, n'est passe que pour les liens
+   categorie -> compositeur : le lien accumule alors les annees de prix et les
+   annees de festival des oeuvres qu'il agrege, pour son infobulle. Les deux
+   listes sont des ensembles — un compositeur prime deux fois la meme annee ne
+   doit pas la voir apparaitre deux fois, et imeb_music.editions contient
+   lui-meme des doublons (on lit par exemple "1984,1984"). */
+function createLinkBetween(sourceId, targetId, rec){
+
+  var link = null;
 
   for (var m=0; m<links.length; m++){
 
     if(links[m].source == sourceId && links[m].target == targetId){
       links[m].value++;
-      return;
+      link = links[m];
+      break;
     }
 
   }
 
-  links.push({source: sourceId, target: targetId, value: 1});
+  if(!link){
+    link = {source: sourceId, target: targetId, value: 1};
+    links.push(link);
+  }
+
+  if(rec){
+    if(!link.years){ link.years = {}; link.editions = {}; }
+    addToSet(link.years, rec.year);
+    if(rec.editions){
+      var eds = rec.editions.split(',');
+      for(var e=0; e<eds.length; e++){ addToSet(link.editions, eds[e]); }
+    }
+  }
 
 }
 function setSankeyNodes(data, key){
@@ -115,13 +245,18 @@ function setSankeyNodes(data, key){
   // prenom vient le completer. Les 508 compositeurs primes donnent 508
   // libelles distincts, sans homonymie parfaite.
   var label = d.firstName ? (d.name + ', ' + d.firstName) : d.name;
+  // fullName : le meme nom dans l'ordre de lecture, "Prenom Nom". Le libelle
+  // de la colonne reste en "Nom, Prenom" — il sert au reperage alphabetique —
+  // mais l'infobulle du lien est une phrase, et s'y lit mieux a l'endroit.
+  var fullName = d.firstName ? (d.firstName + ' ' + d.name) : d.name;
   var compId = addNode('a' + d.artistId,
-                       {name: label, type: 'composer', isni: d.isni});
+                       {name: label, fullName: fullName,
+                        type: 'composer', isni: d.isni});
 
   //------- setup link between year and category -----------//
   createLinkBetween(yearId, catId);
 
-  createLinkBetween(catId, compId);
+  createLinkBetween(catId, compId, d);
 
 
 
@@ -140,8 +275,36 @@ function sankeyStuff(){
   // Some setup stuff edit it to make a bigger image !!
   var margin = {top: 20, right: 1, bottom: 20, left: 41};
   svgWidth = 960 - margin.left - margin.right + 760;
-  var height = 1500 - margin.top - margin.bottom + 5000;
   var color = d3.scale.category20();
+
+  /* Hauteur du diagramme : deduite de l'ecart voulu entre deux noms, et non
+     plus posee en dur. d3.sankey (lib/erase_old_sankey.js, initializeNodeDepth)
+     calcule
+         ky = min sur les colonnes de (hauteur - (n-1) * nodePadding) / somme des valeurs
+     puis pose node.dy = node.value * ky. Le libelle etant centre sur son noeud
+     (y = d.dy / 2), deux compositeurs voisins n'ayant qu'un prix chacun sont
+     distants de ky + nodePadding : c'est le pas d'affichage des noms.
+     C'est la colonne des compositeurs qui contraint ky — 508 noeuds pour 728
+     prix, contre 36 noeuds (annees) et 23 (categories) pour le meme total. On
+     inverse donc la formule sur cette colonne pour obtenir la hauteur qui donne
+     le pas voulu. Auparavant la hauteur valait 6460 en dur, soit un pas de
+     10,7 px pour une police de 12 px : les noms se touchaient. */
+  var NODE_PADDING = 12;   // blanc entre deux noeuds d'une meme colonne, en px
+  var LABEL_PITCH  = 18;   // ecart voulu entre deux noms voisins, en px
+
+  var composerCount = 0, awardFlow = 0;
+  for(var ni = 0; ni < graph.nodes.length; ni++){
+    if(graph.nodes[ni].type === 'composer') composerCount++;
+  }
+  // layout() n'a pas encore tourne : les liens portent encore des index entiers
+  for(var li = 0; li < graph.links.length; li++){
+    if(graph.nodes[graph.links[li].target].type === 'composer'){
+      awardFlow += graph.links[li].value;
+    }
+  }
+  var height = composerCount
+    ? awardFlow * (LABEL_PITCH - NODE_PADDING) + (composerCount - 1) * NODE_PADDING
+    : 1500 - margin.top - margin.bottom + 5000;
 
   // SVG (group) to draw in.
   var svg = d3.select("#chart").append("svg")
@@ -155,7 +318,7 @@ function sankeyStuff(){
   // Set up Sankey object.
   var sankey = d3.sankey()
     .nodeWidth(20)
-    .nodePadding(6)
+    .nodePadding(NODE_PADDING)
     .size([svgWidth-150, height]) //-50 to display composers name fully on x axis
     .nodes(graph.nodes)
     .links(graph.links)
@@ -177,10 +340,13 @@ function sankeyStuff(){
         return Math.max(1, d.dy);
       })
 
-  links.append("title")
-    .text(function (d, i) {
-      return d.value + " "+ d.target.name + " en " + d.source.name;
-    });
+  /* Survol du flux : le libelle est calcule par linkTitle() et affiche dans
+     la bulle de la page, plus par un <title> SVG — voir la note qui ouvre le
+     bloc "Bulle de survol des flux" plus haut pour la raison. */
+  links
+    .on('mouseover', function (d) { showFlowTip(linkTitle(d), d3.event); })
+    .on('mousemove', function ()  { moveFlowTip(d3.event); })
+    .on('mouseout',  function ()  { hideFlowTip(); });
 
   // Draw the nodes.
   var nodes = svg.append("g").selectAll(".node")
@@ -478,3 +644,62 @@ function renderIsniBox(d){
 
     $('#isniBox .isni-bd').html(h.join(''));
 }
+
+/* --- repli de la legende "How to read" -------------------------------------
+   La bande de titre reste visible une fois la legende fermee : elle se rouvre
+   sans avoir a remonter en haut d'un diagramme de plus de 10 000 px. La page
+   arrive repliee — la classe is-collapsed est posee dans categories.php, pas
+   ici : rien ne doit se refermer sous les yeux au chargement. Ecrit sans
+   jQuery — c'est un clic sur un bouton — et sans effet si la page ne porte pas
+   de legende. */
+(function(){
+  if(typeof document === 'undefined' || !document.getElementById) return;
+  var box = document.getElementById('legend');
+  var btn = document.getElementById('lg_toggle');
+  if(!box || !btn) return;
+
+  /* Repliee, la bande de titre s'arrete au bord droit de "The Project"
+     (#help, dernier bloc de la barre) au lieu de barrer toute la fenetre pour
+     trois mots : elle se cale ainsi sur la fin du menu, juste au-dessus.
+     Ouverte, elle reprend toute la largeur — ses deux colonnes en ont besoin.
+     La largeur est MESUREE a chaque repli plutot qu'ecrite en dur : elle
+     depend des libelles du menu et de la police effectivement chargee, et
+     change si la barre se reorganise dans une fenetre etroite. Elle est
+     transmise a la feuille de style par une propriete personnalisee, dont la
+     valeur de repli (auto) redonne la pleine largeur si la mesure echoue. */
+  function fitCollapsedWidth(){
+    var help = document.getElementById('help');
+    if(!help) return;
+    var w = Math.round(help.getBoundingClientRect().right -
+                       box.getBoundingClientRect().left);
+    if(w > 0) box.style.setProperty('--lg-collapsed-w', w + 'px');
+  }
+
+  btn.addEventListener('click', function(){
+    var collapsed = box.classList.toggle('is-collapsed');
+    btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    if(collapsed) fitCollapsedWidth();
+  });
+
+  // La page arrive repliee : la largeur doit etre calee sans attendre un clic.
+  fitCollapsedWidth();
+
+  if(typeof window !== 'undefined' && window.addEventListener){
+    window.addEventListener('resize', function(){
+      if(box.classList.contains('is-collapsed')) fitCollapsedWidth();
+    });
+    // Les libelles du menu sont composes en Exo 2, chargee depuis le reseau :
+    // la mesure faite avant l'arrivee de la police porterait sur la police de
+    // substitution et serait fausse de quelques pixels. On la refait donc
+    // quand la page est complete, et quand les polices sont pretes la ou le
+    // navigateur sait le dire.
+    window.addEventListener('load', function(){
+      if(box.classList.contains('is-collapsed')) fitCollapsedWidth();
+    });
+    if(document.fonts && document.fonts.ready && document.fonts.ready.then){
+      document.fonts.ready.then(function(){
+        if(box.classList.contains('is-collapsed')) fitCollapsedWidth();
+      });
+    }
+  }
+})();
