@@ -40,6 +40,31 @@
 var isniCache = {};        // memoire de session : une notice n'est chargee qu'une fois
 var isniAnchor = null;     // lien actuellement ouvert
 
+/* ---------------------------------------------------------------------------
+   Mode PANNEAU (dock). Par defaut la fiche est une boite flottante posee sous
+   l'element clique. Une page peut demander qu'elle soit rendue dans un
+   conteneur a elle — catalog.php l'ancre a droite de ses deux tableaux, ou il
+   y a de la place libre, et le panneau y suit le defilement.
+
+   Ce que le mode change, et rien d'autre :
+     - la boite est appendue au conteneur au lieu de <body> ;
+     - placeIsniBox() ne fait plus rien : c'est la CSS de la page qui place le
+       conteneur (position fixe), pas le JS ;
+     - le clic hors de la boite ne la referme plus. Une boite flottante posee
+       sous un lien doit s'effacer des qu'on regarde ailleurs ; un panneau
+       lateral, non — on veut pouvoir parcourir le tableau en le gardant sous
+       les yeux. La croix et Echap restent, et un autre nom le remplace.
+
+   A appeler AVANT la premiere ouverture (la boite n'est construite qu'une
+   fois). Les trois autres pages ne l'appellent pas et gardent la boite
+   flottante, inchangee.
+   --------------------------------------------------------------------------- */
+var isniDock = null;
+
+function setIsniDock(el){
+    isniDock = el || null;
+}
+
 function esc(s){
     return String(s == null ? '' : s)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -54,14 +79,16 @@ function ensureIsniBox(){
     box = $('<div id="isniBox" class="isni-box" role="dialog" aria-label="ISNI record">'
           + '<div class="isni-hd"><span class="isni-hd-t"></span>'
           + '<span class="isni-close" title="close">&times;</span></div>'
-          + '<div class="isni-bd"></div></div>').appendTo('body');
+          + '<div class="isni-bd"></div></div>').appendTo(isniDock || 'body');
+
+    if(isniDock) box.addClass('isni-docked');
 
     box.on('click', '.isni-close', function(){ closeIsniBox(); });
     // un clic dans la boite ne doit pas la refermer
     box.on('click', function(evt){ evt.stopPropagation(); });
 
     $(document).on('keydown.isni', function(evt){ if(evt.key === 'Escape') closeIsniBox(); });
-    $(document).on('click.isni', function(){ closeIsniBox(); });
+    if(!isniDock) $(document).on('click.isni', function(){ closeIsniBox(); });
     $(window).on('resize.isni scroll.isni', function(){ if(isniAnchor) placeIsniBox(isniAnchor); });
 
     return box;
@@ -75,6 +102,8 @@ function closeIsniBox(){
 /* Positionnement : sous le lien, cale dans la fenetre. La boite est deja
    visible (classe open) quand on appelle ceci, sinon sa largeur vaut 0. */
 function placeIsniBox(anchor){
+
+    if(isniDock) return;   // mode panneau : la place est fixee par la CSS de la page
 
     var box = $('#isniBox');
     if(!box.length || !anchor || !anchor.length) return;
@@ -115,7 +144,13 @@ function openIsniBox(anchor){
     var box = ensureIsniBox();
     isniAnchor = anchor;
 
-    box.find('.isni-hd-t').text('ISNI ' + isni.replace(/(.{4})(?=.)/g, '$1 '));
+    // En-tete : l'identifiant, precede du nom quand l'element clique en porte
+    // un (data-label). Utile surtout en mode panneau, ou la fiche n'est plus
+    // posee a cote de ce qu'on vient de cliquer et ou « ISNI 0000 0000 … »
+    // seul ne dit pas de qui il s'agit. Sans data-label, rien ne change.
+    var label = String(anchor.attr('data-label') || '').trim();
+    var head  = 'ISNI ' + isni.replace(/(.{4})(?=.)/g, '$1 ');
+    box.find('.isni-hd-t').text(label ? label + ' — ' + head : head);
     box.addClass('open');
 
     if(isniCache[isni]){

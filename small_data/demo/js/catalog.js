@@ -203,7 +203,20 @@ function retrieveData(cat, numOfElements, country){
                     // de colonne supplementaire, la largeur du tableau ne bouge
                     // pas. Un artiste sans pays rattache n'a tout simplement pas
                     // cette seconde ligne.
-                    var composer = w.fn + ' ' + w.ln;
+                    // Le nom devient cliquable pour les seuls compositeurs dont
+                    // l'ISNI est renseigne : rien n'invite a cliquer la ou il
+                    // n'y a rien a ouvrir. Le repere est un souligne pointille
+                    // qui passe en continu au survol, comme les noms du
+                    // diagramme de flux (categories.php).
+                    // L'attribut porte sur un <span> et non sur la cellule :
+                    // celle-ci contient aussi la ligne de pays, qui n'a pas a
+                    // etre soulignee ni cliquable.
+                    var fullName = w.fn + ' ' + w.ln;
+                    var composer = w.isni
+                        ? '<span class="composer-isni" role="button" tabindex="0" data-isni="'
+                          + esc(w.isni) + '" data-label="' + esc(fullName) + '">'
+                          + fullName + '</span>'
+                        : fullName;
                     if(showCtry && w.ctry){
                         composer += '<span class="composer-ctry">' + w.ctry + '</span>';
                     }
@@ -276,13 +289,125 @@ function retrieveData(cat, numOfElements, country){
    catalog.php, categories.php, euphonies.php). Il figurait ici a l'identique,
    octet pour octet, comme dans les trois autres.
 
-   Ne reste que le point d'entree, propre a cette page : l'ISNI affiche dans
-   la boite violette du SMA (Particle.prototype.getInfoFrom, dans
-   js/particles_catalog.js) appelle openIsniBox($(lien)), le lien portant un
-   attribut data-isni. Cette page n'a pas de colonne ISNI dans son tableau :
-   la boite violette est donc l'unique acces, et l'ISNI n'y apparait que pour
-   les compositeurs alignes sur data.bnf.fr.
+   Ne restent ici que les points d'entree, propres a cette page. Il y en a
+   DEUX, et ils aboutissent au meme endroit :
+     - le NOM du compositeur dans le tableau (span.composer-isni, pose par
+       renderChunk pour les seuls artistes dont l'ISNI est renseigne) ;
+     - l'ISNI affiche dans la boite violette du SMA
+       (Particle.prototype.getInfoFrom, js/particles_catalog.js).
+
+   Sur cette page la fiche n'est pas une boite flottante mais un PANNEAU
+   ancre a droite des tableaux : setIsniDock() le declare une fois pour
+   toutes, donc les deux entrees s'y affichent sans que le second ait a etre
+   modifie. Les tableaux, le canvas et la legende ne bougent pas d'un pixel :
+   le panneau est en position fixe, hors flux, dans la place libre a droite
+   de la bande de 1210 px.
    ========================================================================= */
+
+/* Le conteneur est cree ici plutot que dans catalog.php : sans JavaScript il
+   n'y aurait rien a y mettre, et une <div> vide dans le HTML serait un
+   promesse non tenue. */
+function ensureIsniPanel(){
+
+    if(typeof setIsniDock !== 'function') return null;   // isni_box.js absent
+
+    var p = document.getElementById('isniPanel');
+    if(p) return p;
+
+    p = document.createElement('div');
+    p.id = 'isniPanel';
+    document.body.appendChild(p);
+    setIsniDock('#isniPanel');
+    return p;
+}
+
+/* Le panneau se cale juste a DROITE des tableaux, pas au bord de la fenetre :
+   il se lit alors comme une troisieme colonne alignee sur la bande de contenu.
+   S'il n'y a pas la place, il se rabat contre le bord droit et recouvre la fin
+   des tableaux — c'est le compromis accepte pour ne jamais deplacer la mise en
+   page. La mesure est refaite au redimensionnement ET au defilement : le
+   panneau est en position fixe, un defilement horizontal decalerait les
+   tableaux sous lui. */
+function positionIsniPanel(){
+
+    var p = document.getElementById('isniPanel');
+    if(!p) return;
+
+    var right = 0;
+    ['works_table', 'works_table_2', 'legend'].forEach(function(id){
+        var e = document.getElementById(id);
+        if(!e || e.offsetParent === null) return;          // absent ou masque
+        var r = e.getBoundingClientRect();
+        if(r.width > 0 && r.right > right) right = r.right;
+    });
+    if(right <= 0) return;
+
+    var w    = p.offsetWidth || 340;
+    var left = right + 10;
+    if(left + w > window.innerWidth - 8) left = Math.max(8, window.innerWidth - w - 8);
+    p.style.left = Math.round(left) + 'px';
+}
+
+$(function(){
+
+    if(!ensureIsniPanel()) return;
+
+    positionIsniPanel();
+    $(window).on('resize.isnipanel scroll.isnipanel', positionIsniPanel);
+
+    // Les trois boites d'information du SMA — verte (#cookies), orange
+    // (#selection) et violette (#titles) — vivent dans #infos, a droite du
+    // canvas, c'est-a-dire EXACTEMENT sous le panneau : mesure prise sur la
+    // page, #infos occupe 1222-1332 px et le panneau 1230-1570. Il les
+    // recouvre donc entierement. Le panneau se referme des que l'une d'elles
+    // change : on ne laisse pas une fiche masquer la reponse au clic qu'on
+    // vient de faire.
+    //
+    // Un observateur plutot qu'un appel a closeIsniBox() pose dans chaque
+    // ecrivain : ceux-ci sont repartis entre js/particles_catalog.js et
+    // js/childs_catalog.js, et un futur ecrivain oublierait la consigne — le
+    // defaut de l'en-tete « imeb id » (§J du recapitulatif) etait exactement
+    // de cette famille. Mesure faite avant de choisir : SMA en marche, sans
+    // aucune interaction, #infos ne bouge pas pendant 8 s. L'observateur ne
+    // se declenche donc jamais tout seul.
+    //
+    // EXCEPTION — la phase 1. Tant que le SMA partage les proprietes, les
+    // agents sont crees UN PAR IMAGE (sma_core.js, sma_animation ->
+    // addParticleUsing), et chaque creation reecrit le compteur de la boite
+    // verte : « 213 nodes 54% », trente fois par seconde. Fermer la fiche sur
+    // ces mutations la rendrait inutilisable pendant tout le chargement — ce
+    // n'est pas une reponse a un clic, c'est un compteur qui tourne.
+    // Le test de phase est celui du noyau (sma_core.js, sma_animation ligne
+    // 384) : sl_attribute vide = phase 1, renseigne = phase 2 (regroupement).
+    // Le choix d'une propriete de regroupement, lui, ferme bien la fiche :
+    // setCommonAttr() vide les trois boites AVANT d'affecter sl_attribute,
+    // mais un rappel d'observateur est une micro-tache — il s'execute apres la
+    // fin de la fonction, donc apres l'affectation, et voit la phase 2.
+    var infos = document.getElementById('infos');
+    if(infos && window.MutationObserver){
+        new MutationObserver(function(){
+            if(typeof sl_attribute !== 'undefined' && String(sl_attribute) === '') return;
+            closeIsniBox();
+        }).observe(infos, {childList: true, subtree: true, characterData: true});
+    }
+
+    // Delegue : les lignes sont inserees par lots (renderChunk), un
+    // gestionnaire pose sur chaque cellule serait a reposer a chaque lot.
+    $(document).on('click', '#main_table .composer-isni', function(evt){
+        evt.stopPropagation();
+        positionIsniPanel();
+        openIsniBox($(this));
+    });
+
+    $(document).on('keydown', '#main_table .composer-isni', function(evt){
+        if(evt.key !== 'Enter' && evt.key !== ' ' && evt.key !== 'Spacebar') return;
+        evt.preventDefault();
+        evt.stopPropagation();
+        positionIsniPanel();
+        openIsniBox($(this));
+    });
+
+});
 
 //====================================================================
 // Phono A (id=1) : navigation PAR PAYS

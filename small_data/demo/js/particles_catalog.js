@@ -287,7 +287,7 @@ Particle.prototype.getInfoFrom=function(target){
 	//--- 3. ISNI
 	var isni = val(target.isni).replace(/\s+/g, '');
 	if(/^[0-9]{15}[0-9Xx]$/.test(isni)){
-		isni = '<a class="isni-link" title="voir la fiche ISNI" '
+		isni = '<a class="isni-link" title="open the ISNI record" '
 			 + 'href="https://isni.org/isni/' + isni + '" '
 			 + 'data-isni="' + isni + '">' + isni + '</a>';
 	}
