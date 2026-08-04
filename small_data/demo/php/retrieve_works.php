@@ -25,8 +25,31 @@
 		// js/aww.js et php/retrieve_cat.php, dont une copie ne traduisait que
 		// trois valeurs sur vingt-trois. Il est desormais dans la DONNEE.
 		//
-		// DEUXIEME SOURCE, depuis le 2026-08-04 : les distinctions qui ne
-		// tiennent pas a une oeuvre.
+		// TROIS SOURCES, depuis le 2026-08-04.
+		//
+		//   1. imeb_music    — l'oeuvre primee et archivee. Le cas normal.
+		//   2. imeb_bande    — la distinction dont l'oeuvre n'est PAS au
+		//                      fonds (« Happy end », 1974).
+		//   3. imeb_non_attribution — le prix que le jury a refuse de
+		//                      decerner. Ni oeuvre, ni laureat, ni bande.
+		//
+		// La troisieme est la plus etrange et la plus utile : elle fait
+		// apparaitre un TROU a l'endroit exact ou il se trouve. « 1977,
+		// Mixte, Prix 1, not awarded » se lit entre les categories voisines
+		// et dit quelque chose que l'absence de ligne ne dirait pas — un
+		// jury qui refuse de decerner a pris une decision, il n'a pas oublie.
+		//
+		// LE LIBELLE EST EN ANGLAIS — « not awarded » — comme tout le reste
+		// de cette page : ses en-tetes (« first name », « country »,
+		// « title »), son menu (« All works ») et ses messages. La citation
+		// francaise du jury, elle, reste dans imeb_non_attribution.citation.
+		//
+		// Ces lignes n'ont ni compositeur ni pays : js/aww.js n'affiche que
+		// ce qu'on lui donne, les cellules restent vides. L'identifiant est
+		// tres negatif (-1000000 - id) pour ne heurter ni les identifiants
+		// d'oeuvre ni ceux, deja negatifs, des distinctions de bande.
+		//
+		// DEUXIEME SOURCE : les distinctions qui ne tiennent pas a une oeuvre.
 		//
 		// La page a toujours ete construite sur imeb_music : une recompense y
 		// est une COLONNE de l'oeuvre primee. Cela suppose que l'oeuvre soit au
@@ -49,6 +72,36 @@
 		//
 		// Le rang n'est joint au libelle que pour les libelles GENERIQUES
 		// (« Prix », « Mention ») : « Mention speciale 3 » ne se dit pas.
+		//
+		// LE DEUXIEME CHAMP SUIT LE MEME CODE-BOOK QUE LE CATALOGUE — corrige
+		// le 2026-08-04. Il valait « 100 + rang » pour une mention, la ou
+		// imeb_music.award_price ecrit 100 tout court quel que soit le rang.
+		// C'etait une ruse de tri, du temps ou le rang ne voyageait pas dans
+		// le flux : elle ordonnait les mentions entre elles. Depuis que le
+		// rang s'y lit en clair, elle NUIT — une mention 3 codee 103 se
+		// classait apres toutes les mentions du catalogue, codees 100, au lieu
+		// de s'intercaler a son rang. Deux encodages pour une meme notion,
+		// la panne habituelle : il n'y en a plus qu'un, et js/aww.js trie sur
+		// le rang lui-meme.
+		//
+		// LA CATEGORIE DE LA DEUXIEME SOURCE — corrige le 2026-08-04.
+		//
+		// Cette branche servait NULL en categorie, et la ligne s'affichait sans
+		// categorie ni sous-categorie. Le defaut s'est vu sur Ricardo
+		// Mandolini, mention 3 de musique analogique en 1979 : seul laureat de
+		// l'edition dont l'oeuvre n'est pas au catalogue, donc seul a passer
+		// par ici, et le seul des vingt-deux a apparaitre sans categorie.
+		//
+		// C'etait un oubli de recopie, pas un manque de donnee :
+		// imeb_distinction.id_categorie est renseigne depuis 1977, il n'etait
+		// simplement pas lu. Le LEFT JOIN (et non INNER) parce que les editions
+		// d'avant 1977 n'ont pas de categorie du tout — une distinction sans
+		// categorie doit rester affichee, colonne vide.
+		//
+		// A RETENIR : cette branche est peu frequentee — deux lignes sur
+		// plusieurs milliers aujourd'hui — et c'est justement pourquoi ses
+		// colonnes se verifient mal. Chaque champ qu'on ajoute a la premiere
+		// source doit etre relu ici.
 		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price,
 							imeb_music.award_label, imeb_music.award_rank,
 							imeb_music.award_label_2,
@@ -67,11 +120,11 @@
 
 							SELECT c.annee,
 							CASE WHEN d.type = \'prix\' THEN d.rang
-								ELSE 100 + COALESCE(d.rang, 0) END,
+								ELSE 100 END,
 							d.libelle,
 							CASE WHEN d.libelle IN (\'Prix\', \'Mention\') THEN d.rang ELSE NULL END,
 							NULL,
-							NULL, NULL, 0,
+							catd.libelle, NULL, 0,
 							b.titre_declare, NULL, NULL,
 							a.firstName, a.name, -b.id,
 							a.isni,
@@ -82,10 +135,27 @@
 							INNER JOIN imeb_concours c ON c.id = p.id_concours
 							INNER JOIN imeb_artist a ON a.id = b.id_artist
 							LEFT JOIN imeb_country pays ON a.id_country = pays.id
+							LEFT JOIN imeb_categorie catd ON catd.id = d.id_categorie
 							WHERE NOT EXISTS (
 								SELECT 1 FROM imeb_music m
 								WHERE m.id_artist = b.id_artist
-								AND m.award_year = c.annee)');
+								AND m.award_year = c.annee)
+
+							UNION ALL
+
+							SELECT c.annee, n.rang,
+							n.libelle,
+							n.rang,
+							NULL,
+							cat.libelle, NULL, 0,
+							\'not awarded\', NULL, NULL,
+							NULL, NULL, -1000000 - n.id,
+							NULL,
+							NULL
+							FROM imeb_non_attribution n
+							INNER JOIN imeb_pv p2 ON p2.id = n.id_pv
+							INNER JOIN imeb_concours c ON c.id = p2.id_concours
+							LEFT JOIN imeb_categorie cat ON cat.id = n.id_categorie');
 
 		$arr= array();
 		while($row = $sth->fetch()) {

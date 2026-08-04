@@ -86,7 +86,11 @@ function parseWorks(str){
         else if(cat2==11)cat2="tendance création";
         else if(cat2==12)cat2="tendance performance";
 
-        objects.push({ year:arr[i], rank:rank, rank_code:arr[i+1], misam:arr[i+2],
+        /* rank_num : le RANG SEUL, en plus du libelle compose. Il ne
+           s'affiche nulle part — il sert uniquement au tri, ou rank_code ne
+           suffit plus (voir sortAndRender). */
+        objects.push({ year:arr[i], rank:rank, rank_code:arr[i+1], rank_num:rg,
+                       misam:arr[i+2],
                        fn:arr[i+3], name:arr[i+4], title:arr[i+5], cat:arr[i+8], cat2:cat2,
                        cat2_code:arr[i+9], duration:arr[i+6], id:arr[i+7],
                        ctry:arr[i+10], isni:arr[i+11] });
@@ -178,13 +182,43 @@ function renderSelection(works){
     resetAll();
     records = [];
 
-    // copie triee : edition (recente d'abord) > category > sub category > price > last name
+    /* Copie triee : edition (recente d'abord) > category > sub category >
+       price > RANG > last name.
+
+       LE RANG A ETE AJOUTE LE 2026-08-04.
+
+       `rank_code` est award_price, l'ancien code-book : il vaut 1 ou 2 pour
+       un prix — le rang y est donc contenu — mais **100 pour TOUTE mention**,
+       quel que soit son numero. Un seul code pour cinq rangs. Une mention
+       numerotee 3 recevait donc la meme cle de tri qu'une mention 1,
+       l'egalite retombait sur le critere suivant — le patronyme — et le
+       tableau les affichait dans l'ordre alphabetique des compositeurs.
+
+       Le rang voyage dans le flux depuis que la distinction s'y lit en clair
+       (arr[i+13]) ; il n'etait pas dans la chaine de tri. Le voici, APRES
+       rank_code et non a sa place : rank_code separe encore les prix des
+       mentions (1, 2 puis 100), le rang ne departage qu'a l'interieur de
+       cette separation. Ecrase l'un par l'autre, on melangerait « Prix 1 »
+       et « Mention 1 ».
+
+       CE QUE CE TRI SERT AUJOURD'HUI, exactement : les mentions numerotees
+       de 1981, 1983, 1987 et 1993 — douze oeuvres, dont le numero vient du
+       CATALOGUE et dont on ignore la provenance. Il ne sert PLUS 1974 ni
+       1979 : la relecture des constats a montre que ces documents ENUMERENT
+       leurs mentions (« 1°) », le meme ordinal que leurs depots) au lieu de
+       les classer, et leur numero est reparti dans
+       imeb_distinction.ordre_document, qui ne s'affiche pas. Le jour ou ces
+       douze-la seront tranchees a leur tour, ce critere pourra disparaitre.
+
+       Un rang vide — l'immense majorite des mentions du fonds — compare
+       comme chaine vide et laisse le tri retomber sur le patronyme. */
     var objects = works.slice();
     objects.sort(function(a, b){
         return cmpValues(b.year, a.year)
             || cmpValues(a.cat, b.cat)
             || cmpValues(a.cat2_code, b.cat2_code)
             || cmpValues(a.rank_code, b.rank_code)
+            || cmpValues(a.rank_num, b.rank_num)
             || cmpValues(a.name, b.name);
     });
 

@@ -96,36 +96,55 @@
 		//---------------
 
 		$numResults;
-		$years = array(1973, 1974, 1975, 1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009);
 
+		/* =================================================================
+		   imeb_participation REMPLACE imeb_edition — 2026-08-04
+
+		   imeb_edition est PIVOTEE : une ligne par artiste, une colonne
+		   booleenne par edition. Le fait elementaire — « cette personne a
+		   participe a cette edition » — y est une CASE, et l'on n'attache
+		   rien a une case : ni la source, ni le document qui l'atteste.
+		   C'est la forme meme qui interdisait la question posee plus bas
+		   dans retrieveAllCompositionsFrom02(), ou la provenance doit etre
+		   RECALCULEE a chaque appel faute d'etre enregistree.
+
+		   imeb_participation en fait une LIGNE, avec `source` et `id_pv` :
+		   679 des 5 572 participations sont attestees par un constat
+		   d'huissier ; les autres portent 'inconnu'.
+
+		   LA SORTIE NE CHANGE PAS D'UN OCTET. Verifie sur une base MariaDB
+		   chargee du dump du 2026-08-04, comparaison exhaustive chaine
+		   contre chaine : 2 556 artistes de part et d'autre, zero ligne
+		   differente, zero perdue, zero apparue. Deux raisons : aucune
+		   ligne de imeb_edition n'est entierement a zero, et les trois qui
+		   pointaient un artiste inexistant (0, 903, 1250) etaient DEJA
+		   ecartees par le INNER JOIN sur imeb_artist.
+
+		   LE GROUP BY ENUMERE TOUTES LES COLONNES. MySQL 8 se contenterait
+		   des cles primaires — il en deduit la dependance fonctionnelle —
+		   mais MariaDB NON : teste sous ONLY_FULL_GROUP_BY, erreur 1055
+		   « imeb_country.c_name_en isn't in GROUP BY ». On ignore ce que
+		   sert webodrome.fr : la forme retenue passe sur les deux.
+
+		   37 annees de 5 caracteres font 185 octets, tres en deca de
+		   group_concat_max_len (1024 par defaut) : pas de troncature.
+
+		   imeb_edition n'est pas supprimee — elle reste comme temoin. */
 		$sth = $dbh->query('SELECT imeb_artist.id AS artist_id,
 								COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry, imeb_country.id AS c_id,
 								COALESCE(NULLIF(imeb_country.iso3, \'\'), NULLIF(imeb_country.iso2, \'\'), NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS iso,
-								imeb_edition.ed_1973, imeb_edition.ed_1974,
-								imeb_edition.ed_1975, imeb_edition.ed_1976,
-							   	imeb_edition.ed_1977, imeb_edition.ed_1978,
-								imeb_edition.ed_1979, imeb_edition.ed_1980,
-								imeb_edition.ed_1981, imeb_edition.ed_1982,
-								imeb_edition.ed_1983, imeb_edition.ed_1984,
-								imeb_edition.ed_1985, imeb_edition.ed_1986,
-								imeb_edition.ed_1987, imeb_edition.ed_1988,
-								imeb_edition.ed_1989, imeb_edition.ed_1990,
-								imeb_edition.ed_1991, imeb_edition.ed_1992,
-								imeb_edition.ed_1993, imeb_edition.ed_1994,
-								imeb_edition.ed_1995, imeb_edition.ed_1996,
-								imeb_edition.ed_1997, imeb_edition.ed_1998,
-								imeb_edition.ed_1999, imeb_edition.ed_2000,
-								imeb_edition.ed_2001, imeb_edition.ed_2002,
-								imeb_edition.ed_2003, imeb_edition.ed_2004,
-								imeb_edition.ed_2005, imeb_edition.ed_2006,
-								imeb_edition.ed_2007, imeb_edition.ed_2008,
-								imeb_edition.ed_2009
+								GROUP_CONCAT(imeb_participation.annee
+											 ORDER BY imeb_participation.annee) AS editions
 
 							FROM imeb_artist
 							INNER JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id
-							INNER JOIN imeb_edition
-							ON imeb_artist.id = imeb_edition.artist_id
+							INNER JOIN imeb_participation
+							ON imeb_participation.id_artist = imeb_artist.id
+							GROUP BY imeb_artist.id,
+									 imeb_country.id, imeb_country.c_name_en,
+									 imeb_country.c_name, imeb_country.iso3,
+									 imeb_country.iso2
 							');
 
 		$sth->setFetchMode(PDO::FETCH_ASSOC);
@@ -143,18 +162,11 @@
 
 			$str_all .= $aId."%". $row['ctry']."%".$row['c_id']."%".$count."%";
 
-			$hasBeenInit = false;
-
-			for($i = 0; $i <sizeof($years); $i++){
-				$column_name = 'ed_' . $years[$i];
-				if ($row[$column_name]) {
-					if($hasBeenInit) $str_all .=  "," . $years[$i];
-					else {
-						$str_all .=  $years[$i];
-						$hasBeenInit = true;
-					}
-				}
-			}
+			// 5e champ : les annees de participation separees par des
+			// virgules — « 1973,1979,1992 ». GROUP_CONCAT les rend deja
+			// dans cette forme et dans cet ordre ; la boucle sur les 37
+			// colonnes qui les recomposait n'a plus lieu d'etre.
+			$str_all .= ($row['editions'] === null ? '' : $row['editions']);
 
 			// 6e et dernier champ : le code pays affiche dans les bulles.
 			// iso3, a defaut iso2 (l'Ecosse n'a pas d'iso3 : elle affiche GB),
@@ -168,8 +180,6 @@
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
-		$years = array(1973, 1974, 1975, 1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009);
-
 		$result = "no result";
 
 		/* imeb_artist.isni : 5e champ de la reponse (voir plus bas). C'est la
@@ -179,34 +189,23 @@
 		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name, imeb_artist.isni,
 							COALESCE(NULLIF(imeb_country.iso3, \'\'), NULLIF(imeb_country.iso2, \'\'), NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS \'ctry\',
 							COALESCE(NULLIF(orig.iso3, \'\'), NULLIF(orig.iso2, \'\'), NULLIF(orig.c_name_en, \'\'), orig.c_name) AS \'origin\',
-							imeb_edition.ed_1973, imeb_edition.ed_1974,
-							imeb_edition.ed_1975, imeb_edition.ed_1976,
-						   	imeb_edition.ed_1977, imeb_edition.ed_1978,
-							imeb_edition.ed_1979, imeb_edition.ed_1980,
-							imeb_edition.ed_1981, imeb_edition.ed_1982,
-							imeb_edition.ed_1983, imeb_edition.ed_1984,
-							imeb_edition.ed_1985, imeb_edition.ed_1986,
-							imeb_edition.ed_1987, imeb_edition.ed_1988,
-							imeb_edition.ed_1989, imeb_edition.ed_1990,
-							imeb_edition.ed_1991, imeb_edition.ed_1992,
-							imeb_edition.ed_1993, imeb_edition.ed_1994,
-							imeb_edition.ed_1995, imeb_edition.ed_1996,
-							imeb_edition.ed_1997, imeb_edition.ed_1998,
-							imeb_edition.ed_1999, imeb_edition.ed_2000,
-							imeb_edition.ed_2001, imeb_edition.ed_2002,
-							imeb_edition.ed_2003, imeb_edition.ed_2004,
-							imeb_edition.ed_2005, imeb_edition.ed_2006,
-							imeb_edition.ed_2007, imeb_edition.ed_2008,
-							imeb_edition.ed_2009
+							GROUP_CONCAT(imeb_participation.annee
+										 ORDER BY imeb_participation.annee) AS editions
 
 						FROM imeb_artist
 						INNER JOIN imeb_country
 						ON imeb_artist.id_country = imeb_country.id
 						LEFT JOIN imeb_country AS orig
 						ON imeb_artist.id_country_origin = orig.id
-						INNER JOIN imeb_edition
-						ON imeb_artist.id = imeb_edition.artist_id
-						WHERE imeb_artist.id = ?');
+						INNER JOIN imeb_participation
+						ON imeb_participation.id_artist = imeb_artist.id
+						WHERE imeb_artist.id = ?
+						GROUP BY imeb_artist.id, imeb_artist.firstName,
+								 imeb_artist.name, imeb_artist.isni,
+								 imeb_country.id, imeb_country.c_name_en,
+								 imeb_country.c_name, imeb_country.iso3,
+								 imeb_country.iso2, orig.c_name_en,
+								 orig.c_name, orig.iso3, orig.iso2');
 
 		$sth->execute(array((int)$aId));
 
@@ -214,11 +213,15 @@
 
 		while($row = $sth->fetch()) {
 
-			$editions = array();
-			for($i = 0; $i <sizeof($years); $i++){
-				$column_name = 'ed_' . $years[$i];
-				if ($row[$column_name]) array_push($editions, $years[$i]);
-			}
+			/* $editions RESTE UN TABLEAU : le calcul de $festivalSeul,
+			   plus bas, l'itere annee par annee. GROUP_CONCAT rend une
+			   chaine, on la redecoupe — c'est la seule difference avec la
+			   version qui lisait les 37 colonnes. La chaine affichee,
+			   $str_editions, garde son separateur « , » (virgule ESPACE),
+			   different de celui de queryDB() : deux flux, deux lecteurs,
+			   on ne les uniformise pas au passage. */
+			$editions = ($row['editions'] === null || $row['editions'] === '')
+						? array() : explode(',', $row['editions']);
 
 			$str_editions = implode(", ", $editions);
 
@@ -381,26 +384,47 @@
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
-		//--------- l'annee sert de nom de colonne : validation stricte ---------//
+		/* --------- L'ANNEE REDEVIENT UNE VALEUR (2026-08-04) ---------------
+		   Cette fonction fabriquait un NOM DE COLONNE a partir d'un
+		   parametre : $ed_XXXX = "ed_".$y, concatene dans le SQL. Ce n'etait
+		   pas injectable — (int) puis controle de plage y veillaient — mais
+		   cela ne tenait que parce que imeb_edition etait pivotee :
+		   demander une annee, c'etait nommer une colonne.
+
+		   Avec imeb_participation l'annee passe en parametre lie, comme le
+		   pays. Il ne reste plus une seule chaine concatenee dans cette
+		   requete.
+
+		   Le controle de plage est CONSERVE mais a change de nature : il ne
+		   protege plus la requete, il refuse une annee hors du concours.
+		   C'est devenu une regle du domaine. */
 		$y = (int)$y;
 		if($y<1973 || $y>2009) return;
 
-		$ed_XXXX="ed_".$y;
+		/* imeb_artist.isni : 5e champ de chaque enregistrement (voir plus bas).
 
-		/* imeb_artist.isni : 5e champ de chaque enregistrement (voir plus bas). */
+		   EXISTS rend 1 ou 0 — exactement ce que la colonne booleenne
+		   rendait. Le SECOND EXISTS reproduit l'ancien INNER JOIN sur
+		   imeb_edition : il ne sert QUE de filtre de presence (« cette
+		   personne a au moins une participation »), sans quoi la fonction
+		   se mettrait a servir des compositeurs qu'elle n'a jamais servis.
+		   Une bascule doit rendre la meme chose, y compris ses silences. */
 		$sth = $dbh->prepare('SELECT imeb_artist.id AS a_id, imeb_artist.firstName,
 							imeb_artist.name, imeb_artist.isni,
-							COALESCE(NULLIF(orig.c_name_en, \'\'), orig.c_name) AS \'origin\', ' . $ed_XXXX . '
+							COALESCE(NULLIF(orig.c_name_en, \'\'), orig.c_name) AS \'origin\',
+							EXISTS(SELECT 1 FROM imeb_participation p
+									WHERE p.id_artist = imeb_artist.id
+									  AND p.annee = ?) AS ed
 							FROM imeb_artist
 							INNER JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id
 							LEFT JOIN imeb_country AS orig
 							ON imeb_artist.id_country_origin = orig.id
-							INNER JOIN imeb_edition
-							ON imeb_artist.id = imeb_edition.artist_id
-							WHERE imeb_country.id = ?');
+							WHERE imeb_country.id = ?
+							AND EXISTS(SELECT 1 FROM imeb_participation p2
+										WHERE p2.id_artist = imeb_artist.id)');
 
-		$sth->execute(array((int)$cId));
+		$sth->execute(array($y, (int)$cId));
 
 		$sth->setFetchMode(PDO::FETCH_ASSOC);
 
@@ -422,7 +446,7 @@
 		   this.sl_ctry. Le pas passe donc de 5 a 6. */
 		while($row = $sth->fetch()) {
 			if(strlen($str_all)>0) $str_all .=  "%";
-			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . $row[$ed_XXXX] . "%" . ($row['isni'] === null ? '' : $row['isni']) . "%" . ($row['origin'] === null ? '' : $row['origin']);
+			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . $row['ed'] . "%" . ($row['isni'] === null ? '' : $row['isni']) . "%" . ($row['origin'] === null ? '' : $row['origin']);
 		}
 
 		echo $str_all;
