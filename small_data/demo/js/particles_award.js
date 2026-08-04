@@ -238,10 +238,26 @@ Particle.prototype.getInfoFrom=function(target){
 	// transporte par les agents (records) et disponible cote base.
 	var val = function(v){ return $.trim(v == null ? '' : String(v)); };
 
-	// une fiche ISNI ouverte pointerait un lien de #titles qu'on s'apprete a
-	// detruire : on la referme avant de vider la boite.
+	// UNE FICHE ISNI OUVERTE ET ANCREE DANS #titles — corrige le 2026-08-04.
+	//
+	// Cette boite est videe puis reconstruite : le lien auquel la fiche est
+	// ancree est sur le point d'etre detruit. On la fermait donc ici, et
+	// c'etait trop brutal — quand le SMA re-affiche le MEME agent, l'ancre
+	// n'est pas supprimee, elle est REMPLACEE par son equivalent. La fiche
+	// ouverte depuis la boite violette se refermait aussitot, une fois et une
+	// seule, sans que l'utilisateur ait rien fait.
+	//
+	// On retient donc l'ISNI ouvert, on laisse reconstruire, et on tranche
+	// APRES : meme ISNI -> on re-ancre, la fiche reste ; ISNI different ou
+	// disparu -> on ferme, comme avant. isniBeginRerender() fait taire
+	// l'observateur de #infos pendant l'operation, sans quoi il fermerait la
+	// fiche de son cote (js/isni_box.js).
+	var isniOuvert = '';
 	if(typeof isniAnchor !== 'undefined' && isniAnchor
-		&& isniAnchor.closest('#titles').length) closeIsniBox();
+		&& isniAnchor.closest('#titles').length
+		&& typeof isniOpenFor === 'function') isniOuvert = isniOpenFor();
+
+	if(typeof isniBeginRerender === 'function') isniBeginRerender();
 
 	$("#titles").empty();
 
@@ -307,6 +323,17 @@ Particle.prototype.getInfoFrom=function(target){
 		evt.stopPropagation();
 		openIsniBox($(this));
 	});
+
+	// La fiche etait ouverte sur un lien de cette boite : elle survit si le
+	// re-rendu reprend le meme ISNI, elle se ferme sinon.
+	if(isniOuvert){
+		var repris = $("#titles").find('a.isni-link').filter(function(){
+			return String($(this).data('isni') || '').replace(/\s+/g, '') === isniOuvert;
+		}).first();
+
+		if(repris.length && typeof reanchorIsniBox === 'function') reanchorIsniBox(repris);
+		else closeIsniBox();
+	}
 
 	// $("#titles").append('<p>'+ target.id +'</p>');
 

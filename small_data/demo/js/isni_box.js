@@ -210,6 +210,11 @@ function enableIsniPanel(opt){
         if(box){
             new MutationObserver(function(records){
 
+                // Un re-rendu de la boite violette par le SMA n'est pas un
+                // geste : getInfoFrom decide lui-meme s'il faut fermer ou
+                // re-ancrer (voir isniBeginRerender, plus haut).
+                if(isniRerenderGuard) return;
+
                 var onlyCounter = true;
                 for(var i = 0; i < records.length; i++){
                     var t  = records[i].target;
@@ -280,6 +285,62 @@ function ensureIsniBox(){
 function closeIsniBox(){
     $('#isniBox').removeClass('open');
     isniAnchor = null;
+}
+
+/* =======================================================================
+   LE RE-RENDU DU SMA N'EST PAS UN GESTE — corrige le 2026-08-04
+
+   Sur award-winning_works.php, la fiche ISNI a DEUX points d'entree : le
+   nom du compositeur dans le tableau, et l'ISNI affiche dans la boite
+   violette du SMA (#titles, rempli par Particle.prototype.getInfoFrom).
+
+   Le second se refermait AUSSITOT, une fois et une seule. Deux causes qui
+   se cumulent, et aucune n'est un geste de l'utilisateur :
+
+     1. getInfoFrom vide #titles et le reconstruit. Il fermait la fiche
+        avant, avec raison : le lien auquel elle est ancree est sur le
+        point d'etre detruit. Mais quand la boite est reconstruite avec le
+        MEME ISNI — le SMA re-affiche le meme agent —, l'ancre est
+        remplacee par son equivalent, pas supprimee.
+     2. L'observateur ci-dessous voit muter #titles, qui est dans #infos,
+        et referme a son tour.
+
+   « Une fois et une seule » s'explique : au deuxieme clic le SMA a fini de
+   se stabiliser et ne reconstruit plus la boite.
+
+   Deux outils, donc, pour que getInfoFrom decide seul :
+
+     isniBeginRerender()  — le temps d'un re-rendu, l'observateur se tait.
+                            Le drapeau tombe au tour de boucle suivant :
+                            un rappel d'observateur est une micro-tache, il
+                            passe AVANT le setTimeout, donc il est bien
+                            couvert.
+     isniOpenFor()        — l'ISNI actuellement ouvert, pour savoir si le
+                            re-rendu le reprend.
+     reanchorIsniBox()    — deplacer l'ancre sans fermer.
+
+   L'intention d'origine est preservee : si le SMA affiche un AUTRE agent,
+   l'ISNI change, la fiche se ferme comme avant. On ne laisse pas une
+   notice masquer la reponse au clic qu'on vient de faire.
+   ======================================================================= */
+var isniRerenderGuard = false;
+
+function isniBeginRerender(){
+    isniRerenderGuard = true;
+    setTimeout(function(){ isniRerenderGuard = false; }, 0);
+}
+
+function isniOpenFor(){
+    return isniAnchor
+         ? String(isniAnchor.data('isni') || '').replace(/\s+/g, '')
+         : '';
+}
+
+function reanchorIsniBox(anchor){
+    if(!anchor || !anchor.length) return false;
+    isniAnchor = anchor;
+    placeIsniBox(anchor);
+    return true;
 }
 
 /* Positionnement : sous le lien, cale dans la fenetre. La boite est deja
