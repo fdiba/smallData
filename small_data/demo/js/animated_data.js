@@ -870,6 +870,46 @@ function createMenu(){
     }
      return arr;
 }
+/* --- Etat documentaire de chaque edition (2026-08-04) ---------------------
+   Une courbe qui s'effondre apres 1995 se lit spontanement comme un concours
+   qui decline. C'est faux : les editions de 1996 a 2008 comptent 500 a 633
+   candidats au proces-verbal. Ce qui manque, ce sont les SAISIES.
+
+   Trois etats, releves dans sources/attribution des proces verbaux.xlsx :
+
+     - VERSE      : PV depouille et entre en base — le compte est fiable ;
+     - NON VERSE  : PV depouille mais jamais importe (6 editions) — la courbe
+                    ne montre alors que les auteurs d'oeuvres programmees ;
+     - ABSENT     : aucun PV depouille (8 editions, dont 2002 signale
+                    defectueux dans le fichier).
+
+   L'information est portee par un liseré AU-DESSUS du carre de l'edition, et
+   non par le carre lui-meme : celui-ci encode deja la selection et est repeint
+   par une dizaine de fonctions. Le liseré vit en dehors de son rectangle, donc
+   il survit a tous ces repeints. Au-dessus et non en dessous : sous les carres
+   (y=13, hauteur 15) courent les etiquettes d'annee, dont le texte de 9 px
+   remonte jusqu'a y=30 — un liseré la se serait pose sur les chiffres. La
+   bande y=8..11 est libre. Aucune ligne ni couleur n'est prise sur les pays —
+   c'est la contrainte posee : le chart en porte deja soixante-dix.
+
+   Detail et chiffres : claude/Provenance_des_participations_1973_2009.md. */
+var PV_NON_VERSE = [1996, 1999, 2005, 2006, 2007, 2008];
+var PV_ABSENT    = [1997, 1998, 2000, 2001, 2002, 2003, 2004, 2009];
+
+function pvState(year){
+    if(PV_ABSENT.indexOf(year) >= 0)    return 'absent';
+    if(PV_NON_VERSE.indexOf(year) >= 0) return 'nonverse';
+    return 'verse';
+}
+function drawPvStrip(menu){
+    for (var i = 1; i < menu.length; i++) {          // i=0 : le bouton "all"
+        var st = pvState(menu[i].id);
+        ctx_nav.fillStyle = (st === 'verse')    ? '#2ecc71'    // emeraude
+                          : (st === 'nonverse') ? '#e67e22'    // carotte
+                          :                       '#7f8c8d';   // asbeste
+        ctx_nav.fillRect(menu[i].x, menu[i].y - 5, bw, 3);
+    }
+}
 function drawMenu(menu){
 
     for (var i = 0; i < menu.length; i++) {
@@ -879,6 +919,8 @@ function drawMenu(menu){
         ctx_nav.fillStyle=colors[0];
         ctx_nav.fillRect(menu[i].x, menu[i].y, bw, bh);
     }
+
+    drawPvStrip(menu);
 
     ctx_nav.lineWidth="0.75";
     ctx_nav.strokeStyle=colors[2];

@@ -48,9 +48,10 @@ function displayTitlesInfosGN(arr){
             var obj=arr[i];
             var div='<li class="'+(i%2===0 ? 't-a' : 't-b')+'">'+obj.t;
             if(obj.d) div += ' ('+obj.d+')';
-            if(obj.ed){
-                var edCount = (''+obj.ed).split(',').length;
-                div += ' | ' + (edCount === 1 ? 'edition' : 'editions') + ': ' + obj.ed;
+            var eds = editionYears(obj.ed);
+            if(eds.length){
+                div += ' | ' + (eds.length === 1 ? 'edition' : 'editions')
+                     + ': ' + eds.join(', ');
             }
             div += '</li>';
             box.append(div);
@@ -63,6 +64,31 @@ function displayTitlesInfosGN(arr){
         box.removeClass('is-folded').append('<li>no archived work for this composer</li>');
     }
 
+}
+
+/* Les annees de programmation d'une oeuvre (imeb_music.editions), nettoyees :
+   decoupees, debarrassees des vides, DEDOUBLONNEES et remises dans l'ordre.
+
+   Le dedoublonnage n'est pas cosmetique. Neuf oeuvres de la base portent une
+   annee repetee — « Matrechka » de Robert Normandeau vaut '1986,1986', et
+   « Postcards from the summer » de Robert Mackay '1999,2000,2000,2001,2002'.
+   La boite violette affichait donc l'annee deux fois ET la comptait deux fois,
+   ce qui faisait passer une oeuvre programmee une seule annee au pluriel
+   (« editions: 1986, 1986 »). Le compte etant tire de la meme liste que
+   l'affichage, les deux se trompaient ensemble.
+
+   Corrige ici plutot qu'a la seule main dans la base : la donnee sera nettoyee,
+   mais un import futur peut recreer le cas, et l'affichage doit y survivre. */
+function editionYears(ed){
+    var vus = {}, out = [];
+    var l = ('' + (ed || '')).split(',');
+    for(var i=0; i<l.length; i++){
+        var y = l[i].replace(/^\s+|\s+$/g, '');
+        if(!y || vus[y]) continue;
+        vus[y] = true;
+        out.push(y);
+    }
+    return out.sort();
 }
 
 /* Le pli lui-meme. Delegue sur #titles : l'en-tete est reconstruit a chaque
