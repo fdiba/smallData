@@ -24,6 +24,31 @@
 		// l'interface ne le decode plus — le code-book vivait en double dans
 		// js/aww.js et php/retrieve_cat.php, dont une copie ne traduisait que
 		// trois valeurs sur vingt-trois. Il est desormais dans la DONNEE.
+		//
+		// DEUXIEME SOURCE, depuis le 2026-08-04 : les distinctions qui ne
+		// tiennent pas a une oeuvre.
+		//
+		// La page a toujours ete construite sur imeb_music : une recompense y
+		// est une COLONNE de l'oeuvre primee. Cela suppose que l'oeuvre soit au
+		// fonds — et ce n'est pas toujours vrai. Le proces-verbal de 1974
+		// attribue une mention speciale a « Happy end » d'Alexandre
+		// Rabinovitch-Barakovsky, piece qui n'a jamais ete archivee : la
+		// distinction existe, elle est attestee par un constat d'huissier, et
+		// elle n'avait aucun endroit ou s'afficher.
+		//
+		// D'ou l'union avec imeb_distinction, qui s'accroche a la BANDE.
+		// Le NOT EXISTS evite le double affichage : quand le laureat a bien une
+		// oeuvre primee la meme annee — dix cas sur onze aujourd'hui —, c'est
+		// la ligne du catalogue qui parle, plus riche (duree, MISAM, categorie).
+		// Seule remonte ici la distinction qu'aucune oeuvre ne porte.
+		//
+		// L'identifiant est le NEGATIF de l'identifiant de bande : il ne peut
+		// entrer en collision avec aucun id d'oeuvre, et son signe suffit a
+		// dire d'ou vient la ligne. Meme convention que le -1 de la recherche
+		// par nom dans overview.
+		//
+		// Le rang n'est joint au libelle que pour les libelles GENERIQUES
+		// (« Prix », « Mention ») : « Mention speciale 3 » ne se dit pas.
 		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price,
 							imeb_music.award_label, imeb_music.award_rank,
 							imeb_music.award_label_2,
@@ -36,7 +61,31 @@
 							INNER JOIN imeb_artist
 							ON imeb_music.id_artist = imeb_artist.id
 							LEFT JOIN imeb_country
-							ON imeb_artist.id_country = imeb_country.id');
+							ON imeb_artist.id_country = imeb_country.id
+
+							UNION ALL
+
+							SELECT c.annee,
+							CASE WHEN d.type = \'prix\' THEN d.rang
+								ELSE 100 + COALESCE(d.rang, 0) END,
+							d.libelle,
+							CASE WHEN d.libelle IN (\'Prix\', \'Mention\') THEN d.rang ELSE NULL END,
+							NULL,
+							NULL, NULL, 0,
+							b.titre_declare, NULL, NULL,
+							a.firstName, a.name, -b.id,
+							a.isni,
+							COALESCE(NULLIF(pays.c_name_en, \'\'), pays.c_name)
+							FROM imeb_distinction d
+							INNER JOIN imeb_bande b ON b.id = d.id_bande
+							INNER JOIN imeb_pv p ON p.id = b.id_pv
+							INNER JOIN imeb_concours c ON c.id = p.id_concours
+							INNER JOIN imeb_artist a ON a.id = b.id_artist
+							LEFT JOIN imeb_country pays ON a.id_country = pays.id
+							WHERE NOT EXISTS (
+								SELECT 1 FROM imeb_music m
+								WHERE m.id_artist = b.id_artist
+								AND m.award_year = c.annee)');
 
 		$arr= array();
 		while($row = $sth->fetch()) {
