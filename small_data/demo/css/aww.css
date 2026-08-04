@@ -147,6 +147,16 @@ th{
 #works_table td{
 	vertical-align: top;
 }
+/* Les cellules FUSIONNEES se centrent verticalement, pas les autres.
+   Un bloc d'une ou deux lignes ne fait pas la difference ; un bloc de huit,
+   si. Les huit mentions de 1975 — le jury les nomme sans les classer, elles
+   partagent donc une seule cellule « price » — laissaient le libelle colle
+   en haut, a huit lignes de la derniere oeuvre qu'il couvre : on croyait que
+   seule la premiere portait la mention. Centre, il se lit comme couvrant
+   son bloc. */
+#works_table .grp-cell{
+	vertical-align: middle;
+}
 /* bloc fusionne (edition/category/sub category/price) : teinte alternee
    par groupe -> deux groupes voisins se distinguent */
 #works_table .grp-cell.grp-cell-a{
