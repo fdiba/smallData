@@ -200,7 +200,43 @@ function selectionHtml(arr){
     var origin = esc($.trim(arr[5] || ''));
     var where  = (origin && ctry) ? (origin + ' / ' + ctry) : (origin || ctry);
 
-    return whoHtml + ' ' + where + ' | ' + edLabel + ': ' + esc(eds);
+    return whoHtml + ' ' + where + ' | ' + edLabel + ': ' + editionsHtml(eds, arr[6]);
+}
+/* Les annees de participation, celles qui ne reposent QUE sur une programmation
+   au festival etant marquees d'un degre (°).
+
+   POURQUOI. imeb_edition melange trois faits sous un seul mot : une candidature
+   attestee par un prix, un nom releve dans un proces-verbal, et une oeuvre
+   programmee au festival Synthese dont on a deduit que son auteur etait la.
+   Le troisieme cas n'atteste PAS une candidature — le PV de 1973 montre que 7
+   de ces cas sur 9 avaient bien candidate, et 2 non. La page ne peut donc ni
+   les compter comme des candidatures, ni les retirer : elle les signale.
+
+   Le marqueur porte sur l'ANNEE et non sur la fiche, parce que la meme personne
+   peut avoir candidate une annee et n'avoir ete que programmee une autre.
+
+   Le 7e champ du flux (php/retrieve_data.php, case 5) est un SOUS-ENSEMBLE du
+   4e : on ne peut donc pas marquer une annee absente de la liste affichee. */
+function editionsHtml(eds, festivalSeul){
+
+    var marquees = {};
+    var brut = $.trim(festivalSeul || '');
+    if(brut){
+        var l = brut.split(',');
+        for(var k=0; k<l.length; k++) marquees[$.trim(l[k])] = true;
+    }
+
+    var out = [];
+    var ans = ('' + (eds || '')).split(',');
+    for(var i=0; i<ans.length; i++){
+        var a = $.trim(ans[i]);
+        if(!a) continue;
+        out.push(marquees[a]
+            ? '<span class="ed-fest" title="present at the Synthese festival that year'
+              + ' — no entry to the competition is attested">' + esc(a) + '°</span>'
+            : esc(a));
+    }
+    return out.join(', ');
 }
 function animation1(evt){
 	if(isAnimated){

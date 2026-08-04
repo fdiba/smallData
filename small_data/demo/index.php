@@ -80,6 +80,11 @@
 						<li>type a name in <em>composer name</em> to list matching composers; click a result to highlight their squares in yellow</li>
 						<li><em>num of records &gt;=</em> rebuilds the index with only the composers having at least that many archived works</li>
 						<li>a result marked <em>not in this index</em> has no square to highlight: some composers are in the repertoire without appearing in this participation grid, because no participation has been recorded for them in the minutes entered so far &mdash; their works are still listed on the catalogue and award pages</li>
+						<!-- La reserve de provenance : imeb_edition melange une candidature
+						     attestee, un nom releve au proces-verbal et une oeuvre programmee
+						     au festival dont on a deduit la presence de son auteur. Le degre
+						     signale le troisieme cas. Voir editionsHtml() dans js/overview.js. -->
+						<li>a year followed by a degree sign (<em>1973&deg;</em>) means the composer had a work programmed at the <em>Synthese</em> festival that year, but no entry to the competition is attested: the year was inferred from the work, not read in the minutes</li>
 					</ul>
 				</div>
 				<div>

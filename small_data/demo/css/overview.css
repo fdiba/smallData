@@ -197,3 +197,18 @@
    la meme boite et les memes classes, produites par la meme fonction
    partagee (displayTitlesInfosGN, js/functions.js). Une copie ici en aurait
    fait deux a corriger. */
+
+/* --- Annees de participation adossees au SEUL festival (boite orange) -------
+   Produites par editionsHtml() dans js/overview.js : le degre marque une annee
+   ou la personne etait a Bourges sans qu'une candidature soit attestee (cf. le
+   commentaire de la fonction, et le §H du recapitulatif sur la semantique de
+   imeb_music.editions).
+
+   Discret volontairement : ce n'est pas une alerte mais une reserve. Le
+   pointille sous l'annee reprend la convention deja employee par
+   .composer-isni pour "il y a quelque chose de plus a savoir ici", et l'infobulle
+   porte la phrase complete — la boite orange n'a pas la place de l'ecrire. */
+#selection .ed-fest{
+	border-bottom: 1px dotted currentColor;
+	cursor: help;
+}

@@ -222,6 +222,49 @@
 
 			$str_editions = implode(", ", $editions);
 
+			/* --- Provenance de chaque participation (2026-08-04) -------------
+			   imeb_edition ne dit PAS d'ou vient une coche. Trois origines la
+			   nourrissent, et elles ne valent pas la meme chose :
+
+			     - un PRIX cette annee-la (imeb_music.award_year) : la personne
+			       a forcement concouru — candidature certaine ;
+			     - AUCUNE oeuvre datee de cette annee-la : le nom ne peut venir
+			       que d'un proces-verbal — candidature quasi certaine
+			       (verifie 67/67 sur le PV de 1973) ;
+			     - une PROGRAMMATION au festival Synthese et rien d'autre
+			       (imeb_music.editions, cf. §H du recapitulatif : cette colonne
+			       porte les annees de PROGRAMMATION, pas de concours) : la
+			       personne etait a Bourges, mais rien n'atteste qu'elle ait
+			       candidate. Sur le PV de 1973, 7 des 9 cas de cette classe
+			       avaient bel et bien candidate — et 2 non (Luc Ferrari,
+			       Joran Rudi). La classe est donc AMBIGUE, pas fausse.
+
+			   On ne corrige rien ici : on RENSEIGNE la troisieme classe, pour
+			   que la boite orange cesse de presenter trois faits differents
+			   sous un seul mot. Seuls les proces-verbaux trancheront. */
+			$sthP = $dbh->prepare('SELECT award_year, editions FROM imeb_music
+									WHERE id_artist = ?');
+			$sthP->execute(array((int)$aId));
+			$sthP->setFetchMode(PDO::FETCH_ASSOC);
+
+			$aw = array();   // annees de prix
+			$fe = array();   // annees de programmation au festival
+			while($w = $sthP->fetch()){
+				$y = trim((string)$w['award_year']);
+				if(ctype_digit($y)) $aw[$y] = true;
+				foreach(explode(',', (string)$w['editions']) as $y2){
+					$y2 = trim($y2);
+					if(ctype_digit($y2)) $fe[$y2] = true;
+				}
+			}
+
+			$festivalSeul = array();
+			foreach($editions as $y){
+				$y = (string)$y;
+				if(!isset($aw[$y]) && isset($fe[$y])) $festivalSeul[] = $y;
+			}
+			$str_festival = implode(", ", $festivalSeul);
+
 			// 3e champ : le code pays affiche dans la boite orange d'Overview.
 			// iso3, a defaut iso2 (l'Ecosse n'a pas d'iso3 : elle affiche GB),
 			// a defaut le nom du pays (entrees sans code, type "Unknown").
@@ -240,10 +283,16 @@
 			// DIFFERENT du pays (regle du 2026-08-04) ; un champ non vide est
 			// donc toujours une information nouvelle. Vide -> la boite orange
 			// n'affiche que le pays, comme avant.
+			//
+			// 7e champ : parmi les annees du 4e champ, celles qui ne reposent
+			// QUE sur une programmation au festival. Sous-ensemble du 4e, donc
+			// aucun risque de contradiction : la boite orange les marque d'un
+			// signe au lieu d'en faire une liste separee.
 			$result = $row['firstName'] . '%' . $row['name'] . '%' . $row['ctry']
 					  . '%' . $str_editions
 					  . '%' . ($row['isni'] === null ? '' : $row['isni'])
-					  . '%' . ($row['origin'] === null ? '' : $row['origin']);
+					  . '%' . ($row['origin'] === null ? '' : $row['origin'])
+					  . '%' . $str_festival;
 
 		}
 
