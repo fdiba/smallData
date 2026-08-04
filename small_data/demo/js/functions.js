@@ -123,6 +123,35 @@ function displayFirstnameAndNameGN(obj){
     } else {
         $("#selection p").text(txt);
     }
+
+    $("#selection").append(countryLineHtml(obj.origin, obj.ctry));
+}
+/* Le couple « origine / pays », rendu comme la BnF l'ecrit dans ses notices
+   d'autorite — « Pays : Argentine / France » — c'est-a-dire les deux a EGALITE
+   et l'origine EN PREMIER.
+
+   Pourquoi pas « France (born in Argentina) », qui etait la premiere idee : la
+   colonne id_country_origin ne garantit pas un lieu de NAISSANCE. Elle porte
+   selon les fiches une nationalite (Vaggione, argentin installe en France) ou
+   un lieu de naissance (Jacqueline Nova Sondag, colombienne nee a Gand). La
+   paire ne dit que ce qu'on sait : deux pays attaches a cette personne. Une
+   formule qui affirme davantage que la donnee serait fausse quelque part.
+
+   Rendu vide si aucun pays n'est connu — on n'ecrit jamais un separateur seul.
+   Rendu du seul pays courant quand l'origine est absente, ce qui est le cas de
+   3 264 fiches sur 3 269 : la ligne de pays existe pour tout le monde, la paire
+   n'apparait que la ou il y a un ecart a montrer. */
+function countryLineHtml(origin, ctry){
+
+    var o = origin ? ('' + origin).replace(/^\s+|\s+$/g, '') : '';
+    var c = ctry   ? ('' + ctry).replace(/^\s+|\s+$/g, '')   : '';
+
+    if(!o && !c) return '';
+    if(typeof esc !== 'function') return '';   // page sans js/isni_box.js
+
+    var txt = (o && c) ? (o + ' / ' + c) : (o || c);
+
+    return '<p class="sd-country">' + esc(txt) + '</p>';
 }
 //----------------------------------------------//
 function dist(x1, x2, y1, y2){

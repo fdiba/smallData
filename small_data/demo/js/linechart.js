@@ -139,17 +139,23 @@ LineChart.prototype.retrieveData = function(cId, year, value){
         var arr=str.split("%");
         composers=[];
 
-        /* Cinq champs par compositeur depuis que l'ISNI accompagne le flux
+        /* Six champs par compositeur depuis que l'identite accompagne le flux
            (php/retrieve_data.php, case 0) :
 
              0 id   1 prenom   2 nom   3 participation a l'annee   4 ISNI
+             5 pays d'origine
 
-           Le pas etait de 4 ; il DOIT suivre l'ajout, sinon la lecture se
-           decale d'un champ des le deuxieme compositeur — silencieusement,
-           avec des noms qui deviendraient des identifiants. C'est l'unique
-           endroit du site qui consomme le case 0. */
-        for (var i=0; i<arr.length-4; i+=5) {
-            composers.push({id:arr[i], fn:arr[i+1], n:arr[i+2], y:arr[i+3], isni:arr[i+4]});
+           Le pays COURANT n'est pas dans le flux : l'appel porte sur un pays
+           unique et son libelle est deja ici, dans sl_ctry.
+
+           Le pas est passe de 4 a 5 (ISNI), puis de 5 a 6 (origine, le
+           2026-08-04) ; il DOIT suivre chaque ajout, sinon la lecture se decale
+           des le deuxieme compositeur — silencieusement, avec des noms qui
+           deviendraient des identifiants. C'est l'unique endroit du site qui
+           consomme le case 0. */
+        for (var i=0; i<arr.length-5; i+=6) {
+            composers.push({id:arr[i], fn:arr[i+1], n:arr[i+2], y:arr[i+3],
+                            isni:arr[i+4], origin:arr[i+5], ctry:sl_ctry});
         }
 
         getNumComposersInCapsulesAndTitles(cId, year, composers);

@@ -163,19 +163,22 @@ Particle.prototype.getTitlesFrom=function(artist_id){
         var arr=str.split("%");
         this.titles=[];
 
-        /* Huit champs par oeuvre depuis que l'ISNI de la fiche accompagne le
+        /* Dix champs par oeuvre depuis que l'identite de la fiche accompagne le
            flux (php/retrieve_data.php, case 11) :
 
              0 id   1 titre   2 duree   3 misam   4 editions
-             5 prenom   6 nom   7 ISNI  — les trois derniers sont repetes a
-                                          chaque enregistrement
+             5 prenom   6 nom   7 ISNI   8 pays   9 pays d'origine
+                                  — les cinq derniers sont repetes a chaque
+                                    enregistrement
 
-           Le pas etait de 7 ; il DOIT suivre l'ajout, sinon la lecture se
-           decale d'un champ des la deuxieme oeuvre. C'est l'unique endroit du
-           site qui consomme le case 11. */
-        for (var i=0; i<arr.length-7; i+=8) {
+           Le pas est passe de 7 a 8 (ISNI), puis de 8 a 10 (pays et origine, le
+           2026-08-04) ; il DOIT suivre chaque ajout, sinon la lecture se decale
+           des la deuxieme oeuvre. C'est l'unique endroit du site qui consomme
+           le case 11. */
+        for (var i=0; i<arr.length-9; i+=10) {
 
-        	if(i===0)displayFirstnameAndNameGN({fn:arr[i+5], n:arr[i+6], isni:arr[i+7]});
+        	if(i===0)displayFirstnameAndNameGN({fn:arr[i+5], n:arr[i+6], isni:arr[i+7],
+                                                ctry:arr[i+8], origin:arr[i+9]});
             this.titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
         }
 

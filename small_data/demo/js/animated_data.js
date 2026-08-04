@@ -20,10 +20,12 @@ var btn01; //red btn
 var myLineChart;
 
 var composers=[], titles=[];
-// nom et ISNI du compositeur affiche dans le panneau de droite
+// nom, ISNI et pays du compositeur affiche dans le panneau de droite
 var lastComposerIsni='';
 var yearSelection=false;
 var lastComposerSelected="";
+var lastComposerCtry='';
+var lastComposerOrigin='';
 
 var numTitlesByArtist=[];
 var maxChartWidth;
@@ -234,6 +236,13 @@ function displayComposerBox(){
           + ' data-isni="'+esc(isni)+'" data-label="'+esc(who)+'">'
           + esc(who)+'</span></p>'
         : '<p>'+(typeof esc === 'function' ? esc(who) : who)+'</p>');
+
+    /* La ligne de pays, en couple quand la fiche porte une origine. Construite
+       par js/functions.js — meme fonction que la boite orange de Network, donc
+       meme rendu et un seul endroit a corriger. */
+    if(typeof countryLineHtml === 'function'){
+        box.append(countryLineHtml(lastComposerOrigin, lastComposerCtry));
+    }
 }
 /* Le panneau de droite (#workPanel : nom, fiche ISNI, oeuvres) remonte a
    hauteur du "How to read" (#legend) et se place a sa droite, dans l'espace
@@ -305,6 +314,10 @@ function displayCpInfos(){
             // attr et non data : un ISNI tout en chiffres serait converti en
             // nombre par jQuery, et ses zeros de tete disparaitraient.
             if(obj.isni) $("#composers li:last-child").attr("data-isni", obj.isni);
+            // Pays et pays d'origine voyagent avec la ligne : la boite du nom
+            // les affiche en couple (« Argentina / France »), cf. #composerBox.
+            if(obj.ctry)   $("#composers li:last-child").attr("data-ctry", obj.ctry);
+            if(obj.origin) $("#composers li:last-child").attr("data-origin", obj.origin);
 
             var tip = '';
             if(obj.y>0) tip += 'took part in the selected edition';
@@ -320,6 +333,8 @@ function displayCpInfos(){
                    l'annonce maintenant elle-meme. */
                 lastComposerSelected = $.trim(li.text().replace(/\s*\(\d+\)\s*$/, ''));
                 lastComposerIsni = li.attr('data-isni') || '';
+                lastComposerCtry = li.attr('data-ctry') || '';
+                lastComposerOrigin = li.attr('data-origin') || '';
             });
         } else if(!yearSelection){
 
@@ -334,6 +349,10 @@ function displayCpInfos(){
             // attr et non data : un ISNI tout en chiffres serait converti en
             // nombre par jQuery, et ses zeros de tete disparaitraient.
             if(obj.isni) $("#composers li:last-child").attr("data-isni", obj.isni);
+            // Pays et pays d'origine voyagent avec la ligne : la boite du nom
+            // les affiche en couple (« Argentina / France »), cf. #composerBox.
+            if(obj.ctry)   $("#composers li:last-child").attr("data-ctry", obj.ctry);
+            if(obj.origin) $("#composers li:last-child").attr("data-origin", obj.origin);
 
             var tip = '';
             if(obj.y>0) tip += 'took part in the selected edition';
@@ -349,6 +368,8 @@ function displayCpInfos(){
                    l'annonce maintenant elle-meme. */
                 lastComposerSelected = $.trim(li.text().replace(/\s*\(\d+\)\s*$/, ''));
                 lastComposerIsni = li.attr('data-isni') || '';
+                lastComposerCtry = li.attr('data-ctry') || '';
+                lastComposerOrigin = li.attr('data-origin') || '';
             });
 
         }

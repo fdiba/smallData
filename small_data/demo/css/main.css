@@ -311,6 +311,25 @@ ul{
 	margin: 0;
 }
 
+/* --- La ligne de pays des boites d'identite (network, line charts) ---
+   Produite par countryLineHtml() dans js/functions.js : le pays courant, et
+   devant lui le pays d'origine quand la base en porte un — « Argentina /
+   France », dans l'ordre des notices d'autorite de la BnF.
+
+   Elle vit SOUS le nom, en retrait typographique : c'est une precision sur la
+   personne nommee juste au-dessus, pas une information de meme rang. D'ou le
+   corps reduit et l'opacite — sur fond orange, un gris clair passerait mal, un
+   noir a 70 % reste lisible sans concurrencer le nom.
+
+   Elle herite du `padding: 0; margin: 0` de « #selection p » ci-dessus : seul
+   l'ecart au nom est ajoute. */
+.sd-country{
+	margin: 2px 0 0 0;
+	font-size: .85em;
+	opacity: .7;
+	letter-spacing: .01em;
+}
+
 /* --- Boite violette repliee : en-tete « N archived works » (index, network) ---
    Le pli est produit par displayTitlesInfosGN() (js/functions.js), partagee
    par ces deux pages : les regles vivent donc ici, aupres de #titles, et non

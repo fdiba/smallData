@@ -178,6 +178,7 @@
 		   (cf. Recapitulatif_nettoyage_bdd_IMEB.md, §G). */
 		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name, imeb_artist.isni,
 							COALESCE(NULLIF(imeb_country.iso3, \'\'), NULLIF(imeb_country.iso2, \'\'), NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS \'ctry\',
+							COALESCE(NULLIF(orig.iso3, \'\'), NULLIF(orig.iso2, \'\'), NULLIF(orig.c_name_en, \'\'), orig.c_name) AS \'origin\',
 							imeb_edition.ed_1973, imeb_edition.ed_1974,
 							imeb_edition.ed_1975, imeb_edition.ed_1976,
 						   	imeb_edition.ed_1977, imeb_edition.ed_1978,
@@ -201,6 +202,8 @@
 						FROM imeb_artist
 						INNER JOIN imeb_country
 						ON imeb_artist.id_country = imeb_country.id
+						LEFT JOIN imeb_country AS orig
+						ON imeb_artist.id_country_origin = orig.id
 						INNER JOIN imeb_edition
 						ON imeb_artist.id = imeb_edition.artist_id
 						WHERE imeb_artist.id = ?');
@@ -229,9 +232,18 @@
 			// (arr[0..3]) et tout decalage casserait silencieusement l'affichage
 			// existant. Chaine vide quand la fiche n'a pas d'ISNI — le nom reste
 			// alors du texte simple.
+			//
+			// 6e champ : le PAYS D'ORIGINE, meme vocabulaire que le 3e (code
+			// ISO3) puisqu'ils s'affichent cote a cote — "ARG / FRA". Jointure
+			// LEFT : la colonne id_country_origin est nulle pour la quasi-
+			// totalite des fiches, et elle ne porte QUE les origines qui
+			// DIFFERENT du pays (regle du 2026-08-04) ; un champ non vide est
+			// donc toujours une information nouvelle. Vide -> la boite orange
+			// n'affiche que le pays, comme avant.
 			$result = $row['firstName'] . '%' . $row['name'] . '%' . $row['ctry']
 					  . '%' . $str_editions
-					  . '%' . ($row['isni'] === null ? '' : $row['isni']);
+					  . '%' . ($row['isni'] === null ? '' : $row['isni'])
+					  . '%' . ($row['origin'] === null ? '' : $row['origin']);
 
 		}
 
@@ -242,13 +254,23 @@
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
-		/* imeb_artist.isni : 8e champ de chaque enregistrement (voir plus bas). */
+		/* imeb_artist.isni : 8e champ de chaque enregistrement (voir plus bas).
+		   Pays et pays d'origine : 9e et 10e champs, en NOMS ANGLAIS et non en
+		   codes — la boite orange de Network n'affichait aucun pays jusqu'ici,
+		   elle n'a donc pas de vocabulaire ISO3 a respecter (contrairement au
+		   case 5). */
 		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name, imeb_artist.isni,
+							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS \'ctry\',
+							COALESCE(NULLIF(orig.c_name_en, \'\'), orig.c_name) AS \'origin\',
 							imeb_music.id, imeb_music.title, imeb_music.duration,
 							imeb_music.misam, imeb_music.editions
 							FROM imeb_artist
 							INNER JOIN imeb_music
 							ON imeb_artist.id = imeb_music.id_artist
+							LEFT JOIN imeb_country
+							ON imeb_artist.id_country = imeb_country.id
+							LEFT JOIN imeb_country AS orig
+							ON imeb_artist.id_country_origin = orig.id
 							WHERE imeb_artist.id = ?
 							AND imeb_music.statut <> \'hors_repertoire\'');
 
@@ -267,10 +289,12 @@
 
 		   Le prenom, le nom et l'ISNI sont repetes a chaque ligne : c'est la
 		   forme d'origine du flux, on ne la change pas. Seul le premier
-		   enregistrement est lu pour la boite orange. */
+		   enregistrement est lu pour la boite orange. Le pays et le pays
+		   d'origine, ajoutes le 2026-08-04, suivent la meme convention : le pas
+		   passe de 8 a 10. */
 		while($row = $sth->fetch()) {
 			if(strlen($str_all)>0) $str_all .=  "%";
-			$str_all .= $row['id'] . "%" . $row['title'] . "%" . $row['duration'] . "%" . $row['misam'] . "%" . $row['editions'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . ($row['isni'] === null ? '' : $row['isni']);
+			$str_all .= $row['id'] . "%" . $row['title'] . "%" . $row['duration'] . "%" . $row['misam'] . "%" . $row['editions'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . ($row['isni'] === null ? '' : $row['isni']) . "%" . ($row['ctry'] === null ? '' : $row['ctry']) . "%" . ($row['origin'] === null ? '' : $row['origin']);
 		}
 
 		echo $str_all;
@@ -316,10 +340,13 @@
 
 		/* imeb_artist.isni : 5e champ de chaque enregistrement (voir plus bas). */
 		$sth = $dbh->prepare('SELECT imeb_artist.id AS a_id, imeb_artist.firstName,
-							imeb_artist.name, imeb_artist.isni, ' . $ed_XXXX . '
+							imeb_artist.name, imeb_artist.isni,
+							COALESCE(NULLIF(orig.c_name_en, \'\'), orig.c_name) AS \'origin\', ' . $ed_XXXX . '
 							FROM imeb_artist
 							INNER JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id
+							LEFT JOIN imeb_country AS orig
+							ON imeb_artist.id_country_origin = orig.id
 							INNER JOIN imeb_edition
 							ON imeb_artist.id = imeb_edition.artist_id
 							WHERE imeb_country.id = ?');
@@ -338,10 +365,15 @@
 
 		   Ajoute en fin de CHAQUE enregistrement : le flux est une suite de
 		   paquets de longueur fixe, lus par pas de 4 dans js/linechart.js. Le
-		   pas y passe a 5 — c'est l'unique consommateur du case 0. */
+		   pas y passe a 5 — c'est l'unique consommateur du case 0.
+
+		   6e champ (2026-08-04) : le PAYS D'ORIGINE, en nom anglais. Le pays
+		   COURANT n'est pas envoye : l'appel porte deja sur un pays unique
+		   (parametre cId), et js/linechart.js en tient le libelle dans
+		   this.sl_ctry. Le pas passe donc de 5 a 6. */
 		while($row = $sth->fetch()) {
 			if(strlen($str_all)>0) $str_all .=  "%";
-			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . $row[$ed_XXXX] . "%" . ($row['isni'] === null ? '' : $row['isni']);
+			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . $row[$ed_XXXX] . "%" . ($row['isni'] === null ? '' : $row['isni']) . "%" . ($row['origin'] === null ? '' : $row['origin']);
 		}
 
 		echo $str_all;

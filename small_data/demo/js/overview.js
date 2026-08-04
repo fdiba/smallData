@@ -189,7 +189,18 @@ function selectionHtml(arr){
           + esc(who) + '</span>'
         : esc(who);
 
-    return whoHtml + ' ' + esc(arr[2] || '') + ' | ' + edLabel + ': ' + esc(eds);
+    /* Le pays, et devant lui le pays d'origine quand la base en porte un —
+       « ARG / FRA », dans l'ordre de la BnF (origine d'abord, les deux a
+       egalite). Codes ISO3 des deux cotes : cette boite parle deja en codes,
+       on ne melange pas les vocabulaires. Voir countryLineHtml() dans
+       js/functions.js pour la version en noms complets des deux autres pages,
+       et le meme commentaire sur ce que la colonne garantit (une origine, pas
+       une naissance). */
+    var ctry   = esc(arr[2] || '');
+    var origin = esc($.trim(arr[5] || ''));
+    var where  = (origin && ctry) ? (origin + ' / ' + ctry) : (origin || ctry);
+
+    return whoHtml + ' ' + where + ' | ' + edLabel + ': ' + esc(eds);
 }
 function animation1(evt){
 	if(isAnimated){
