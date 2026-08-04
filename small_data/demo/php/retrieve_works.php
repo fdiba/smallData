@@ -19,7 +19,14 @@
 		// imeb_artist (colonne alimentee depuis data.bnf.fr) et non sur
 		// imeb_music.isni, vestige des essais d'interconnexion de 2017. Meme
 		// source que la page euphonies (php/retrieve_cat.php).
+		// award_label / award_rank / award_label_2 : les distinctions EN CLAIR,
+		// depuis le 2026-08-04. `award_price` reste lu pour memoire mais
+		// l'interface ne le decode plus — le code-book vivait en double dans
+		// js/aww.js et php/retrieve_cat.php, dont une copie ne traduisait que
+		// trois valeurs sur vingt-trois. Il est desormais dans la DONNEE.
 		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price,
+							imeb_music.award_label, imeb_music.award_rank,
+							imeb_music.award_label_2,
 							imeb_music.award_cat, imeb_music.award_cat_2, imeb_music.euphonies,
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
@@ -66,10 +73,17 @@
 			// numOfElements dans js/aww.js.
 			$isni=$row['isni'] ? $row['isni'] : '';
 
+			// 13e, 14e et 15e champs : la distinction en clair. AJOUTES EN FIN
+			// d'enregistrement, comme toujours — numOfElements passe de 12 a 15
+			// dans js/aww.js, seul consommateur de ce flux.
+			$award_label  = $row['award_label']   !== null ? $row['award_label']   : '';
+			$award_rank   = $row['award_rank']    !== null ? $row['award_rank']    : '';
+			$award_label2 = $row['award_label_2'] !== null ? $row['award_label_2'] : '';
+
 			if($award_year!=null){
 
 				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat,
-							$award_cat2, $ctry, $isni);
+							$award_cat2, $ctry, $isni, $award_label, $award_rank, $award_label2);
 
 				/*if($euphonies>0){
 

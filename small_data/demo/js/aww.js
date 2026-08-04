@@ -30,33 +30,42 @@ window.onload = function() {
 function parseWorks(str){
 
     var arr = str.split("%");
-    // 12 depuis l'ajout du pays (arr[i+10]) puis de l'ISNI (arr[i+11]) en fin
+    // 12 depuis l'ajout du pays (arr[i+10]) puis de l'ISNI (arr[i+11]) en fin,
+    // 15 depuis celui de la distinction en clair (arr[i+12..14])
     // d'enregistrement (php/retrieve_works.php)
-    var numOfElements = 12;
+    // 12 -> 15 le 2026-08-04 : award_label, award_rank et award_label_2
+    // ajoutes EN FIN d'enregistrement par php/retrieve_works.php. Le pas doit
+    // suivre, sinon la lecture se decale des la deuxieme oeuvre.
+    var numOfElements = 15;
     var objects = [];
 
     for (var i = 0; i < arr.length-(numOfElements-1); i+=numOfElements) {
 
-        var rank = arr[i+1];
-        if(rank==100)rank="Mention";
-        else if(rank==101)rank="Mention 1";
-        else if(rank==102)rank="Mention 2";
-        else if(rank==103)rank="Mention 3";
-        else if(rank==197)rank="Nominé";
-        else if(rank==198)rank="Finaliste";
-        else if(rank==199)rank="Prix";
-        else if(rank==200)rank="Prix CNM";
-        else if(rank==201)rank="Grand Prix";
-        else if(rank==296)rank="Pierre d'Or";
-        else if(rank==297)rank="Pierre d'Argent";
-        else if(rank==298)rank="Prix Bregman";
-        else if(rank==299)rank="Prix FNME";
-        else if(rank==300)rank="Prix CIME";
-        else if(rank==302)rank="1 et Prix CIME";
-        else if(rank==303)rank="Prix CIME et Mention";
-        else if(rank==304)rank="Prix CIME et Mention 1";
-        else if(rank==500)rank="Magistère";
-        else if(rank==600)rank="Résidence";
+        /* La distinction, LUE EN CLAIR dans la base depuis le 2026-08-04.
+
+           Ce bloc contenait vingt-trois lignes de traduction — 100 ->
+           « Mention », 600 -> « Residence »... Le meme code-book existait une
+           seconde fois dans php/retrieve_cat.php, ou il ne traduisait que
+           TROIS valeurs : les pages Euphonies et Catalogue affichaient donc
+           « 100 » la ou celle-ci affichait « Mention ». Deux copies dont une
+           perimee, la panne classique de ce projet.
+
+           Le code-book vit desormais dans imeb_music.award_label /
+           award_rank / award_label_2. Ici on ne traduit plus rien : on
+           compose ce que la base dit. `award_price` continue de voyager dans
+           le flux (arr[i+1]) et sert de repli si le decodage n'a pas ete
+           joue sur le serveur — sans quoi la page afficherait du vide. */
+        var label = $.trim(arr[i+12] || '');
+        var rg    = $.trim(arr[i+13] || '');
+        var lab2  = $.trim(arr[i+14] || '');
+
+        var rank;
+        if(label){
+            rank = rg ? (label + ' ' + rg) : label;
+            if(lab2) rank += ' et ' + lab2;
+        } else {
+            rank = arr[i+1];          // base non migree : on montre le code brut
+        }
 
         // Libelles des sous-categories (imeb_music.award_cat_2, code entier
         // 1-12), en toutes lettres. Table identique a set_sub_cat() dans

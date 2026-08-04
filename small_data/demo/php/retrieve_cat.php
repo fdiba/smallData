@@ -71,48 +71,36 @@
 		
 	}
 
-	function set_price($price){
+	/* La distinction, composee a partir de ce que la base dit en clair.
 
-		switch ($price) {
-			case 199:
-				return "Prix";
-				break;
-			case 300:
-				return "Prix CIME";
-				break;
-			case 302:
-				return "1 et Prix CIME";
-				break;
-			default:
-				return $price;
-				break;
-		}
+	   AVANT : cette fonction traduisait un entier code — mais SEULEMENT trois
+	   valeurs sur vingt-trois (199, 300, 302), les vingt autres etant
+	   commentees. La page Euphonies affichait donc « 100 » ou « 600 » la ou
+	   award-winning_works.php affichait « Mention » ou « Residence », parce
+	   que js/aww.js portait, lui, la table complete. Deux copies du meme
+	   code-book, dont une perimee.
 
-		
+	   DEPUIS le 2026-08-04, le code-book est dans la DONNEE
+	   (imeb_music.award_label / award_rank / award_label_2) et plus personne
+	   ne le recopie. Cette fonction ne decode plus : elle assemble.
 
-		/*if(rank==100)rank="Mention";
-        else if(rank==101)rank="Mention 1";
-        else if(rank==102)rank="Mention 2";
-        else if(rank==103)rank="Mention 3";
-        else if(rank==197)rank="Nominé";
-        else if(rank==198)rank="Finaliste";
-        else if(rank==199)rank="Prix";
-        else if(rank==200)rank="Prix CNM";
-        else if(rank==201)rank="Grand Prix";
-        
-        else if(rank==296)rank="Pierre d'Or";
-        else if(rank==297)rank="Pierre d'Argent";
+	   Le repli sur `award_price` n'est pas decoratif : tant que le decodage
+	   n'a pas ete joue sur le serveur, la colonne award_label est vide et la
+	   page afficherait des cases blanches. On montre alors le code brut,
+	   comme avant. */
+	function set_price($price, $label = null, $rank = null, $label2 = null){
 
+		$label  = $label  !== null ? trim($label)  : '';
+		$rank   = $rank   !== null ? trim((string)$rank) : '';
+		$label2 = $label2 !== null ? trim($label2) : '';
 
-        else if(rank==298)rank="Prix Bregman";
-        else if(rank==299)rank="Prix FNME";
-        else if(rank==300)rank="Prix CIME";
-        else if(rank==301)rank="1, Prix CIME et Euphonies";
-        else if(rank==302)rank="1 et Prix CIME";
-        else if(rank==303)rank="Prix CIME et Mention";
-        else if(rank==304)rank="Prix CIME et Mention 1";
-        else if(rank==500)rank="Magistère";
-        else if(rank==600)rank="Résidence";*/
+		if($label === '') return $price;          // base non migree
+
+		$out = $rank !== '' ? $label . ' ' . $rank : $label;
+		if($label2 !== '') $out .= ' et ' . $label2;
+
+		return $out;
+
 	}
 
 	function retrieve_euphonies(){
@@ -129,6 +117,8 @@
 		// la cle $row['isni'] inchangee : rien d'autre ne bouge, ni ici ni dans
 		// le flux envoye a js/euphonies.js (l'ISNI reste en arr[i+11]).
 		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price,
+							imeb_music.award_label, imeb_music.award_rank,
+							imeb_music.award_label_2,
 							imeb_music.award_cat, imeb_music.award_cat_2, imeb_music.euphonies,
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
@@ -168,7 +158,11 @@
 
 
 				$award_year=$row['award_year'];
-				$award_price=set_price($row['award_price']);
+				// Le 3e champ du flux a TOUJOURS porte un libelle, jamais un
+				// code : la longueur d'enregistrement ne change donc pas, et
+				// js/euphonies.js n'a rien a modifier.
+				$award_price=set_price($row['award_price'], $row['award_label'],
+									   $row['award_rank'], $row['award_label_2']);
 
 				$award_cat=$row['award_cat'];
 				$award_sub_cat=set_sub_cat($row['award_cat_2']);
