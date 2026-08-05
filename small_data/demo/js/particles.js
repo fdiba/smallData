@@ -338,12 +338,40 @@ Particle.prototype.update = function(index, particles){
 		} else { //cible atteinte ou depassee : fin d'ouverture
 			this.opening=false;
 
-			// var txt = this.ids.toString();
-			var txt = this.ids.length+' composers';
+			/* Le compte du groupe — MAIS PAS SI UN MEMBRE EST DEJA CHOISI
+			   (2026-08-05, meme correction que sur les trois pages a SMA +
+			   tableau).
+
+			   Les membres apparaissent des le DEBUT de l'ouverture et sont
+			   cliquables aussitot, alors que l'animation dure une centaine
+			   d'images (extra_radius progresse de .25 par image vers
+			   max_extra_radius) — plusieurs secondes, pendant lesquelles les
+			   fusions continuent et le disque grandit encore. Un compositeur
+			   choisi dans cet intervalle voyait, a la fin de l'ouverture, son
+			   nom et sa fiche ISNI remplaces par « 12 composers » : le SMA
+			   ecrasait une reponse precise par une reponse vague, longtemps
+			   apres le geste qui l'avait produite. Vu de l'ecran, la fiche se
+			   refermait toute seule tant que les fusions n'etaient pas finies.
+
+			   ⚠️ ICI LE DELAI EST DOUBLE. getTitlesFrom() est ASYNCHRONE : la
+			   boite d'identite et la fiche ne sont ecrites qu'au retour de
+			   retrieve_data.php. Selon que l'ouverture se termine avant ou
+			   apres cette reponse, le compte passait devant ou derriere —
+			   d'ou un defaut qui ne se reproduisait pas a tous les coups.
+			   lastNodeSelected, lui, est pose des le clic, donc avant la
+			   requete : le test ne depend d'aucun ordre d'arrivee.
+
+			   L'etat existait deja — processChilds() le pose sur le membre
+			   choisi, removePreviousSelection() le retire. */
+			var memberSelected = false;
+			for (var c=0; c<this.childs.length; c++) {
+				if(this.childs[c].lastNodeSelected){ memberSelected = true; break; }
+			}
+
 			// setSelectionTextGN (js/functions.js) et non $("#selection p") :
 			// la boite porte deux <p> depuis la ligne de pays, et le selecteur
 			// les ecrivait TOUS LES DEUX — le nombre s'affichait deux fois.
-			setSelectionTextGN(txt);
+			if(!memberSelected) setSelectionTextGN(this.ids.length+' composers');
 
 		}
 	} else if(this.open){
