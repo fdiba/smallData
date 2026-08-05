@@ -217,7 +217,7 @@ function renderSelection(works){
         return cmpValues(b.year, a.year)
             || cmpValues(a.cat, b.cat)
             || cmpValues(a.cat2_code, b.cat2_code)
-            || cmpValues(a.rank_code, b.rank_code)
+            || cmpValues(ordreDistinction(a.rank_code), ordreDistinction(b.rank_code))
             || cmpValues(a.rank_num, b.rank_num)
             || cmpValues(a.name, b.name);
     });
@@ -247,6 +247,40 @@ function renderSelection(works){
         $("#infos").hide();      // pas de SMA -> on masque aussi ses boites d'info
         $("#sma_note").text('Too few works (' + objects.length + ') for the visualization — table only (needs at least ' + SMA_MIN_WORKS + ').').show();
     }
+}
+
+/* LA FAMILLE DU GRAND PRIX PASSE DEVANT — 2026-08-05
+
+   `award_price` melange deux natures d'information. Pour la plupart des
+   oeuvres c'est un RANG — 1, 2, 3 — ou un code de forme : 100 « Mention »,
+   600 « Residence ». Mais quatre valeurs designent une COMBINAISON, autour
+   du Grand prix du Conseil International de la Musique :
+
+       300  Prix CIME seul                  7 oeuvres
+       302  Prix CIME + Prix 1              2
+       303  Prix CIME + Mention             2
+       304  Prix CIME + Mention 1           1
+
+   Comparees comme des nombres, elles depassent 100 : le premier prix
+   analogique 1980 d'Yves Daoust, double d'un Grand prix, s'affichait donc
+   APRES le deuxieme prix et apres les mentions de sa categorie.
+
+   Ces quatre-la passent en tete de leur categorie. C'est la seule place
+   qui se defende : un Grand prix international n'est pas au-dessous d'un
+   deuxieme prix.
+
+   CE N'EST PAS LE CODE-BOOK QUI REVIENT. On ne traduit rien ici — les
+   libelles continuent de venir de imeb_music.award_label. On dit seulement
+   OU CES LIGNES SE PLACENT. Traduire un code, c'est dire ce qu'il veut
+   dire, et ca appartient a la donnee ; l'ordonner, c'est de l'affichage.
+
+   ATTENTION AU 3. « Prix 3 » porte le code 3, quatre oeuvres au fonds :
+   c'est un vrai rang, il ne fait pas partie de cette famille. Le test
+   porte sur une LISTE de valeurs exactes, jamais sur « commence par 3 ». */
+var GRAND_PRIX = {300:1, 302:1, 303:1, 304:1};
+
+function ordreDistinction(code){
+    return GRAND_PRIX[parseInt(code, 10)] ? -1 : code;
 }
 
 function cmpValues(a, b){
