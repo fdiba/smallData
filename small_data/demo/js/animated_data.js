@@ -275,10 +275,11 @@ function displayComposerBox(){
 }
 /* Le panneau de droite (#workPanel : nom, fiche ISNI, oeuvres) se place a
    droite de la legende, dans l'espace qu'elle laisse vide, et A HAUTEUR DE LA
-   BARRE ORANGE (#selection) — jamais plus haut. Position absolue (hors flux)
-   -> la colonne de gauche (barre orange + compositeurs) ne bouge pas, meme
-   quand la liste des oeuvres est longue. Si la place a droite est trop reduite
-   (fenetre etroite), on repasse au flux normal (sous les compositeurs).
+   BARRE ORANGE (#selection) — jamais plus haut, et jamais dessous. Position
+   absolue (hors flux) -> la colonne de gauche (barre orange + compositeurs) ne
+   bouge pas, meme quand la liste des oeuvres est longue. Une fenetre etroite
+   ne le fait plus revenir dans le flux : elle fait defiler la page (voir le
+   dernier paragraphe de la fonction).
 
    Le repere vertical est #selection et non plus #legend (« How to read »)
    depuis le 2026-08-05 : la petite boite orange (le NOM du compositeur) et la
@@ -306,24 +307,46 @@ function positionWorkPanel(){
     if(!pan || !tit || !lg || !content) return;
     if(getComputedStyle(tit).display==='none') return;   // rien a montrer
     var gap=14;
-    var left = lg.offsetLeft + lg.offsetWidth + gap;
+
+    /* Le bord droit de la colonne de gauche. La legende, la barre orange et la
+       liste des compositeurs ont EXACTEMENT la meme largeur (syncInfoBoxWidths)
+       et se terminent donc au meme pixel ; on prend le plus a droite des deux
+       reperes disponibles, ce qui reste juste si l'un d'eux vient a manquer ou
+       si la synchronisation n'a pas encore eu lieu au premier rendu. */
+    var edge = lg.offsetLeft + lg.offsetWidth;
+    if(sel) edge = Math.max(edge, sel.offsetLeft + sel.offsetWidth);
+    var left  = edge + gap;
     var avail = content.clientWidth - left - 5;           // -5 : petite marge droite
-    if(avail < 240){
-        // pas assez de place a droite : retour au flux normal (repli sous la liste)
-        pan.style.position='';
-        pan.style.top='';
-        pan.style.left='';
-        pan.style.maxWidth='';
-        return;
-    }
+
     /* Le haut de la barre orange, et a defaut le bas de la legende : sans
        #selection dans la page, il reste au moins une ligne sous laquelle se
        ranger plutot que de recouvrir le "How to read". */
     var top = sel ? sel.offsetTop : (lg.offsetTop + lg.offsetHeight + gap);
+
     pan.style.position='absolute';
     pan.style.top  = top + 'px';
     pan.style.left = left + 'px';
-    pan.style.maxWidth = Math.min(avail, 440) + 'px';
+
+    /* LE PANNEAU NE REPASSE PLUS SOUS LA COLONNE — 2026-08-05.
+
+       Sous une certaine largeur de fenetre, il revenait dans le flux normal,
+       c'est-a-dire SOUS la liste des compositeurs : la petite boite orange se
+       retrouvait au-dessous de la grande, et la fiche ISNI avec elle. Un repli
+       qui se declenche a une largeur qu'on n'a pas choisie, et qui defait
+       precisement la lecture qu'on venait d'installer — les deux boites
+       oranges sur la meme ligne, l'une nommant ce que l'autre compte.
+
+       Le panneau reste donc TOUJOURS a droite de la grande boite orange. Quand
+       la place manque, c'est la page qui defile horizontalement : meme choix
+       que sur Network (voir css/network.css), et pour la meme raison — mieux
+       vaut chercher la colonne a droite en faisant defiler que la trouver en
+       bas apres avoir cru qu'elle avait disparu.
+
+       La largeur suit ce qui reste, entre les 220 px de #workPanel (sa
+       min-width, en dessous de laquelle une notice ISNI n'est plus lisible) et
+       440 px. Le plancher est ce qui produit le defilement : sans lui, une
+       fenetre etroite ecraserait le panneau au lieu de pousser la page. */
+    pan.style.maxWidth = Math.max(220, Math.min(avail, 440)) + 'px';
 }
 // Depuis que la boite violette remonte a droite de la legende, elle n'est plus
 // cote a cote avec les compositeurs : on garde ces derniers a leur hauteur

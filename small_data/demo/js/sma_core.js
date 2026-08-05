@@ -218,11 +218,27 @@ function getParticleInfos(evt){
 
             var txt_2 = particles[i].records.length+' elements';
 
-            /* setSelectionTextGN (js/functions.js) : un GROUPE n'est pas un
-               compositeur. Ecrit en direct, cette ligne laissait la fiche ISNI
-               du dernier agent clique sous un « 340 elements » qui ne parle de
-               personne — meme defaut, meme correction que dans js/particles.js. */
-            setSelectionTextGN(txt_2);
+            /* « N elements » N'EST PLUS ECRIT D'AVANCE — 2026-08-05.
+
+               Cette ligne partait AVANT qu'on sache ce que le clic designait,
+               et setSelectionTextGN retire la fiche ISNI avec le nom (un
+               groupe n'est pas un compositeur). Deux consequences, toutes deux
+               subies :
+
+                 - clic sur un MEMBRE d'un groupe ouvert : la boite passait par
+                   « 20 elements », fiche fermee, avant que getInfoFrom ne
+                   reecrive le nom deux lignes plus bas. Un battement, et une
+                   fiche ISNI rechargee pour rien ;
+                 - clic DANS le disque d'un groupe ouvert mais a cote de tout
+                   membre : le compte restait, et la selection en cours etait
+                   perdue. C'est le cas le plus visible, parce qu'un groupe qui
+                   fusionne grossit et deplace ses membres — on vise un cercle
+                   bleu, on tombe a cote, et la notice d'identite disparait
+                   sans qu'on ait rien demande.
+
+               Le compte n'est donc plus ecrit que la ou il repond vraiment au
+               geste : l'OUVERTURE d'un agent ferme. Un clic qui ne designe
+               rien ne defait plus ce qui etait affiche. */
 
             if(particles[i].records.length>1){
 
@@ -234,11 +250,20 @@ function getParticleInfos(evt){
                 //le simple clic ouvre ; la fermeture se fait au double-clic
                 if(!child_targeted && !particles[i].opening && !particles[i].open){
                     particles[i].openOrCloseIt();
+                    setSelectionTextGN(txt_2);
                     $("#titles").empty();
                     removePreviousSelection();
                 }
 
+                /* Groupe DEJA ouvert et clic hors d'un membre : on ne touche a
+                   rien. Le geste ne designe ni un groupe (il est deja ouvert)
+                   ni une oeuvre (aucun membre vise) — il ne doit donc rien
+                   defaire. */
+
             } else if(particles[i].records.length===1){
+                // agent isole : c'est LUI la selection, getInfoFrom ecrit les
+                // trois boites. Le « 1 elements » qui le precedait n'apprenait
+                // rien et fermait la fiche au passage.
                 particles[i].getInfoFrom(particles[i].records[0]);
                 removePreviousSelection();
                 particles[i].lastNodeSelected=true;

@@ -404,13 +404,35 @@ Particle.prototype.update = function(i, particles){
 			this.opening=false;
 
 
-			var txt = this.records.length+' elements';
-			// vider avant d'ecrire : « #selection p » designe TOUS les <p> de
-			// la boite, et l'ecrit sur chacun. Un seul y vit aujourd'hui sur
-			// cette page, mais c'est exactement ce qui a fait afficher deux
-			// fois le nombre de compositeurs sur Network le jour ou une ligne
-			// de pays est venue s'ajouter sous le nom. Voir setSelectionTextGN.
-			setSelectionTextGN(txt);
+			/* Le compte du groupe — MAIS PAS SI UN MEMBRE EST DEJA CHOISI
+			   (2026-08-05).
+
+			   Les membres apparaissent des le DEBUT de l'ouverture et sont
+			   cliquables aussitot, alors que l'animation dure plusieurs
+			   secondes — et qu'elle se prolonge a chaque fusion, puisqu'un
+			   cercle ouvert qui absorbe de nouveaux membres grandit pour
+			   continuer a tous les loger. Une oeuvre choisie pendant ce
+			   temps-la voyait donc, une fois l'ouverture finie, son nom et sa
+			   fiche ISNI remplaces par « 20 elements » : le SMA ecrasait une
+			   reponse precise par une reponse vague, longtemps apres le geste
+			   qui l'avait produite. Vu de l'ecran, la fiche se refermait
+			   toute seule quand l'agent jaune fusionnait.
+
+			   Le compte annonce donc le groupe seulement quand il n'y a rien
+			   de plus precis a dire. lastNodeSelected est pose par
+			   processChilds sur le membre choisi et retire par
+			   removePreviousSelection : l'etat existe deja, il suffisait de
+			   le lire. */
+			var memberSelected = false;
+			for (var c=0; c<this.childs.length; c++) {
+				if(this.childs[c].lastNodeSelected){ memberSelected = true; break; }
+			}
+
+			// setSelectionTextGN vide avant d'ecrire : « #selection p » designe
+			// TOUS les <p> de la boite, et .text() les ecrit tous — c'est ce qui
+			// a fait afficher deux fois le nombre de compositeurs sur Network le
+			// jour ou une ligne de pays est venue s'ajouter sous le nom.
+			if(!memberSelected) setSelectionTextGN(this.records.length+' elements');
 
 		}
 

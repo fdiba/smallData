@@ -108,12 +108,21 @@
    qu'il ouvre, puis ses oeuvres. C'est LUI qui est place en JS a droite de la
    legende et a hauteur de la BARRE ORANGE #selection (position absolue ->
    hors flux : la colonne de gauche, barre orange + compositeurs, ne bouge pas,
-   meme quand la liste des oeuvres est longue). Repli dans le flux normal si la
-   fenetre est trop etroite (positionWorkPanel).
+   meme quand la liste des oeuvres est longue).
 
    La boite du nom, orange elle aussi, part donc de la meme ligne que la barre
    et jamais plus haut : les deux disent la meme selection. La fiche ISNI et la
    boite violette, qui sont dans le flux du panneau, suivent sous elle.
+
+   ET JAMAIS DESSOUS NON PLUS — 2026-08-05. Sous une certaine largeur de
+   fenetre, le panneau revenait dans le flux normal et se rangeait sous la
+   liste des compositeurs : la petite boite orange se retrouvait au-dessous de
+   la grande, defaisant la lecture qu'on venait d'installer. Il reste
+   desormais a droite quoi qu'il arrive, et c'est la page qui defile
+   horizontalement quand la place manque (positionWorkPanel).
+
+   Le min-width ci-dessous n'est donc plus decoratif : c'est le plancher qui
+   produit ce defilement plutot qu'un panneau ecrase.
 
    Le placement porte sur le panneau et non sur chaque boite : les trois etages
    doivent rester solidaires, sinon la fiche ISNI resterait dans le flux pendant
