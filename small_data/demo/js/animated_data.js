@@ -76,8 +76,23 @@ window.onload = function() {
     document.getElementById('myCanvas').addEventListener("mouseleave", clearHoverData);
 	document.getElementById('get_all').addEventListener("click", getData);
 	document.getElementById('selection').addEventListener("click", toggleYearSl);
-	// la boite violette suit le "How to read" quand la fenetre change de largeur
+	// le panneau de droite suit la legende quand la fenetre change de largeur
 	window.addEventListener("resize", positionWorkPanel);
+	/* ... et quand la legende se replie. Depuis que le panneau se cale sur la
+	   BARRE ORANGE et non plus sur le haut de la legende, sa hauteur de depart
+	   depend de celle de la legende : replier le "How to read" fait remonter la
+	   barre de plusieurs centaines de pixels, et le panneau doit remonter avec
+	   elle. On observe la taille du bloc plutot que le clic sur son titre : la
+	   mesure ne depend alors ni de l'ordre d'enregistrement des ecouteurs (le
+	   repli est pose par js/legend_toggle.js, charge separement) ni de la seule
+	   cause connue — l'arrivee de la police change aussi la hauteur. */
+	if(typeof ResizeObserver === 'function'){
+		var lgBox = document.getElementById('legend');
+		if(lgBox) new ResizeObserver(positionWorkPanel).observe(lgBox);
+	}else{
+		var lgBtn = document.getElementById('lg_toggle');
+		if(lgBtn) lgBtn.addEventListener('click', positionWorkPanel);
+	}
 
 	// canvas.width = $(document).width()-25; //context left pad = 10;
     setCanvasWidthAndHeight();
@@ -258,12 +273,21 @@ function displayComposerBox(){
        seule copie. */
     syncIsniBoxGN(isni);
 }
-/* Le panneau de droite (#workPanel : nom, fiche ISNI, oeuvres) remonte a
-   hauteur du "How to read" (#legend) et se place a sa droite, dans l'espace
-   laisse vide par la legende. Position absolue (hors flux) -> la colonne de
-   gauche (barre orange + compositeurs) ne bouge pas, meme quand la liste des
-   oeuvres est longue. Si la place a droite est trop reduite (fenetre etroite),
-   on repasse au flux normal (sous les compositeurs).
+/* Le panneau de droite (#workPanel : nom, fiche ISNI, oeuvres) se place a
+   droite de la legende, dans l'espace qu'elle laisse vide, et A HAUTEUR DE LA
+   BARRE ORANGE (#selection) — jamais plus haut. Position absolue (hors flux)
+   -> la colonne de gauche (barre orange + compositeurs) ne bouge pas, meme
+   quand la liste des oeuvres est longue. Si la place a droite est trop reduite
+   (fenetre etroite), on repasse au flux normal (sous les compositeurs).
+
+   Le repere vertical est #selection et non plus #legend (« How to read »)
+   depuis le 2026-08-05 : la petite boite orange (le NOM du compositeur) et la
+   grande (la barre de selection) disent la meme chose — l'une nomme ce que
+   l'autre compte — et se lisaient mal quand la premiere flottait une legende
+   plus haut que la seconde. Elles partent donc de la meme ligne, et la fiche
+   ISNI puis la boite violette, qui sont dans le flux du panneau, descendent
+   sous elles. Se caler sur la legende avait un autre defaut : sa hauteur
+   change quand on la replie, donc le panneau sautait avec elle.
 
    C'est le PANNEAU qui est place, et non plus la seule boite violette : les
    trois etages doivent rester solidaires, sans quoi la fiche ISNI resterait
@@ -277,6 +301,7 @@ function positionWorkPanel(){
     var pan=document.getElementById('workPanel'),
         tit=document.getElementById('titles'),
         lg=document.getElementById('legend'),
+        sel=document.getElementById('selection'),
         content=document.getElementById('content');
     if(!pan || !tit || !lg || !content) return;
     if(getComputedStyle(tit).display==='none') return;   // rien a montrer
@@ -291,8 +316,12 @@ function positionWorkPanel(){
         pan.style.maxWidth='';
         return;
     }
+    /* Le haut de la barre orange, et a defaut le bas de la legende : sans
+       #selection dans la page, il reste au moins une ligne sous laquelle se
+       ranger plutot que de recouvrir le "How to read". */
+    var top = sel ? sel.offsetTop : (lg.offsetTop + lg.offsetHeight + gap);
     pan.style.position='absolute';
-    pan.style.top  = lg.offsetTop + 'px';
+    pan.style.top  = top + 'px';
     pan.style.left = left + 'px';
     pan.style.maxWidth = Math.min(avail, 440) + 'px';
 }

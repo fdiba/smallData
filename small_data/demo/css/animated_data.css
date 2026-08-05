@@ -105,11 +105,15 @@
 #content{ position: relative; }
 
 /* Le panneau de droite, en trois etages : le NOM du compositeur, la fiche ISNI
-   qu'il ouvre, puis ses oeuvres. C'est LUI qui est place en JS a hauteur du
-   "How to read" et a sa droite (position absolue -> hors flux : la colonne de
-   gauche, barre orange + compositeurs, ne bouge pas, meme quand la liste des
-   oeuvres est longue). Repli dans le flux normal si la fenetre est trop
-   etroite (positionWorkPanel).
+   qu'il ouvre, puis ses oeuvres. C'est LUI qui est place en JS a droite de la
+   legende et a hauteur de la BARRE ORANGE #selection (position absolue ->
+   hors flux : la colonne de gauche, barre orange + compositeurs, ne bouge pas,
+   meme quand la liste des oeuvres est longue). Repli dans le flux normal si la
+   fenetre est trop etroite (positionWorkPanel).
+
+   La boite du nom, orange elle aussi, part donc de la meme ligne que la barre
+   et jamais plus haut : les deux disent la meme selection. La fiche ISNI et la
+   boite violette, qui sont dans le flux du panneau, suivent sous elle.
 
    Le placement porte sur le panneau et non sur chaque boite : les trois etages
    doivent rester solidaires, sinon la fiche ISNI resterait dans le flux pendant

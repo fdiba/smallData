@@ -88,9 +88,10 @@
 	    <ul id="composers"></ul>
 	    <!-- Panneau de droite, en trois etages solidaires : le NOM du
 	         compositeur choisi, la fiche ISNI qu'il ouvre, puis ses
-	         oeuvres. Le tout est place a hauteur du "How to read" par
-	         positionWorkPanel() (js/animated_data.js) — c'est le panneau
-	         qui est positionne, pas chacune des boites. -->
+	         oeuvres. Le tout est place a droite de la legende et a hauteur de
+	         la barre orange #selection par positionWorkPanel()
+	         (js/animated_data.js) — c'est le panneau qui est positionne, pas
+	         chacune des boites, et il ne remonte jamais au-dessus de la barre. -->
 	    <div id="workPanel">
 	        <div id="composerBox"></div>
 	        <div id="isniColumn"></div>
