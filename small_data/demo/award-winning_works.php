@@ -56,6 +56,13 @@
 				<div id="infos">
 					<div id="cookies"></div>
 				    <div id="selection"></div>
+				    <!-- Fiche ISNI de l'agent selectionne dans le SMA. Elle se pose
+				         ICI, entre la boite orange et la boite violette : en flux,
+				         elle ne recouvre rien (js/isni_box.js,
+				         enableIsniInflowFiche). C'est une AUTRE fiche que celle du
+				         tableau, qui reste ce qu'elle etait. Vide tant qu'aucun
+				         agent portant un ISNI n'a ete clique. -->
+				    <div id="isniColumn"></div>
 				    <ul id="titles"></ul>
 			    </div>
 		    </div>
@@ -70,7 +77,8 @@
 						<p><strong>Table &amp; agents</strong></p>
 						<ul>
 							<li>the table lists the award-winning works of the Bourges competitions, sorted by edition, category, sub category, price and last name</li>
-							<li>a composer whose name is <span class="composer-isni">underlined with dots</span> has an ISNI: click either part of the name to open their international identity record in the panel on the right &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. The panel stays open while you scroll the table; close it with the cross or the <em>Esc</em> key. Clicking an agent also closes it, since it sits over the information boxes &mdash; but the loading counter alone leaves it open. The same record opens from the ISNI shown in the purple box of the visualization</li>
+							<li>a composer whose name is <span class="composer-isni">underlined with dots</span> has an ISNI: click either part of the name to open their international identity record in the panel on the right &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. The panel stays open while you scroll the table; close it with the cross or the <em>Esc</em> key. Clicking an agent closes it, since it sits over the information boxes &mdash; but the loading counter alone leaves it open</li>
+							<li>the <em>visualization</em> has an ISNI record of its own, and it does not behave like the one above: click an agent whose composer has an ISNI and a box appears in the information column, between the orange box and the purple one, headed by that identifier &mdash; click the header to unfold the record. It sits in the column instead of over it, so nothing is hidden, and nothing is requested until you unfold it</li>
 							<li>on the canvas, each moving ellipse is an agent carrying one award-winning work</li>
 						</ul>
 					</div>
@@ -80,7 +88,7 @@
 							<li><span class="sq" style="background:#bdc3c7"></span> an agent, still looking for others sharing a common property</li>
 							<li><span class="sq" style="background:#2ecc71"></span> a grouping &mdash; click it to open it</li>
 							<li><span class="sq" style="background:#f1c40f"></span> an opened grouping, showing its members &mdash; double-click it to close it</li>
-							<li><span class="sq" style="background:#3498db"></span> a single work inside an opened grouping &mdash; click it to display its details</li>
+							<li><span class="sq" style="background:#3498db"></span> a single work inside an opened grouping &mdash; click it to display its details in the information column: the <em>orange</em> box names the composer and their country, the <em>purple</em> one describes the work, and a <em>blue</em> box appears between them when that composer has an ISNI</li>
 						</ul>
 					</div>
 					<div>

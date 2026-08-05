@@ -107,16 +107,19 @@ th{
 #content{
 
 }
-#infos{
-	/*float:left;*/
-	/*float: left;
-	width:200px;
-	height:500px;*/
-	margin-left: 2px;
-	word-wrap: break-word;
-	float: left;
-	max-width: 300px;
-}
+/* LA COLONNE D'INFORMATION N'EST PLUS REGLEE ICI — 2026-08-05.
+
+   Elle flottait a la suite du canvas : elle se placait donc a sa droite tant
+   qu'il y avait la place, et repassait DESSOUS sinon — une colonne
+   d'information tout en bas de la page, sous la visualisation qu'elle
+   commente. Et sa largeur suivait son contenu, ce qui etait sans consequence
+   tant que la fiche ISNI ne s'ouvrait qu'au clic, mais ne l'est plus depuis
+   qu'elle s'affiche d'elle-meme dans la colonne.
+
+   Les deux reglages — ligne flex sans repli, colonne de 300px — sont communs
+   aux quatre pages qui portent un SMA dans un #main_container et vivent donc
+   dans css/main.css (§ « Le SMA et sa colonne d'information »), en une seule
+   copie. */
 #listing ul{
 	padding:0;
 	margin:0 5px 5px 0;

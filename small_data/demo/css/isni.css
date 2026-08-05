@@ -300,12 +300,16 @@
    defaut d'hier n'etait pas un manque de contraste, c'etait une IDENTITE —
    l'en-tete etait --sd-midnight, exactement la couleur de `body`.
 
-   PORTEE : `.isni-inflow`, donc les TROIS pages qui rendent la fiche en flux
-   — Overview, Network, Line Charts. Le defaut y est identique, puisqu'il
-   vient du fond de page, qui est commun. Les deux pages a panneau flottant
-   (catalogue, oeuvres primees) et les deux a boite flottante (Euphonies,
-   Categories) gardent le sombre : chez elles il est bon, la fiche s'y pose
-   au-dessus d'un tableau clair. */
+   PORTEE : `.isni-inflow`, donc toutes les fiches rendues EN FLUX — celles
+   d'Overview, Network et Line Charts, et depuis le 2026-08-05 celle du SMA
+   des trois pages a tableau (oeuvres primees, catalogue, Euphonies). Le
+   defaut y est identique, puisqu'il vient du fond de page, qui est commun.
+
+   Les fiches ouvertes depuis un TABLEAU gardent le sombre, y compris sur ces
+   trois pages-la, ou les deux cohabitent : panneau lateral (catalogue,
+   oeuvres primees) ou boite flottante (Euphonies, Categories), elles se
+   posent au-dessus d'un tableau clair, et le sombre y est bon. La classe
+   suffit a les distinguer : elle n'est posee que sur le conteneur en flux. */
 .isni-inflow .isni-box{
 	background: #2980b9;
 }

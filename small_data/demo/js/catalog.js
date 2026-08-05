@@ -326,6 +326,25 @@ $(function(){
         clickable: '#main_table .composer-isni',
         watch:     'infos'
     });
+
+    /* LA FICHE DU SMA — une SECONDE fiche, et non un second point d'entree
+       vers le panneau ci-dessus (2026-08-05). Meme changement que sur
+       award-winning_works.php, pour la meme raison : le panneau recouvre les
+       boites d'information et devait donc se refermer des qu'elles bougent,
+       c'est-a-dire au clic meme qui l'ouvrait depuis le SMA.
+
+       La fiche du SMA est desormais rendue EN FLUX dans la colonne, entre la
+       boite orange et la boite violette — dispositif d'Overview, Network et
+       Line Charts : elle s'affiche seule des qu'un agent porte un ISNI,
+       repliee sur l'identifiant, et rien n'est demande au proxy avant le
+       depliage. Le panneau du tableau, lui, ne change pas : deux objets, deux
+       etats, un seul cache de session en commun.
+
+       La div est posee sans condition dans le HTML, y compris pour les fonds
+       sans SMA : vide, elle ne mesure rien. */
+    if(typeof enableIsniInflowFiche === 'function'){
+        enableIsniInflowFiche({ into: 'isniColumn' });
+    }
 });
 
 //====================================================================

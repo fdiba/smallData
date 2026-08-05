@@ -192,6 +192,91 @@ function syncIsniBoxGN(isni){
     return false;
 }
 
+/* Le meme accord, pour la fiche EN FLUX DU SMA des trois pages qui portent
+   aussi un tableau — award-winning_works, catalog, euphonies (js/isni_box.js,
+   enableIsniInflowFiche). Fonction jumelle de syncIsniBoxGN ci-dessus, et non
+   un parametre de plus : les deux fiches d'une meme page sont deux objets, et
+   les melanger dans un seul appel aurait rendu impossible d'en bouger une sans
+   toucher l'autre — ce qui est precisement ce qu'on demande ici, le tableau ne
+   devant rien voir du changement.
+
+   `label` — un nom affiche devant l'identifiant — reste possible mais N'EST
+   PLUS UTILISE par les trois pages depuis le 2026-08-05 : le nom a rejoint la
+   boite orange, juste au-dessus, et le repeter une ligne plus bas ne disait
+   rien de plus. La bleue ne porte donc que l'ISNI. Le parametre survit pour
+   une page ou la fiche serait seule, sans boite d'identite au-dessus d'elle.
+
+   Rend true si une fiche est affichee. */
+function syncIsniFicheGN(isni, label){
+
+    if(typeof showIsniFiche !== 'function') return false;   // page sans la fiche en flux
+
+    var id = isni ? $.trim('' + isni).replace(/\s+/g, '') : '';
+
+    /* La valeur n'est retenue que si elle a bien la forme d'un ISNI (15
+       chiffres + 1 chiffre ou X) : meme regle que dans la boite violette
+       d'ou elle vient, ou une donnee mal formee s'affichait telle quelle
+       plutot que de devenir un lien mort. */
+    if(id && /^[0-9]{15}[0-9Xx]$/.test(id)) return showIsniFiche(id, label);
+
+    if(typeof hideIsniFiche === 'function') hideIsniFiche();
+    return false;
+}
+
+/* LA BOITE D'IDENTITE DU SMA — trois pages, un seul endroit (2026-08-05).
+
+   QUI DIT QUOI, DANS LA COLONNE. Les trois boites disaient la meme selection
+   sans se partager le travail : la violette ouvrait sur « Prenom Nom / Pays »
+   avant d'enumerer l'oeuvre et son palmares, l'orange comptait des elements
+   sans nommer personne, et la bleue repetait le nom devant l'identifiant. Le
+   nom figurait donc DEUX fois et la boite d'identite ne portait aucune
+   identite.
+
+   Chacune ne dit plus qu'une chose, et c'est la meme repartition que sur
+   Overview, Network et Line Charts :
+     - ORANGE : QUI — le nom, puis le pays en dessous ;
+     - BLEUE  : son identifiant international, et rien d'autre ;
+     - VIOLETTE : QUOI — l'oeuvre, son palmares, ses dates.
+
+   La ligne de pays est produite par countryLineHtml, la meme fonction que sur
+   Network : meme rendu, un seul endroit a corriger. Les enregistrements du
+   SMA ne portent pas de pays d'origine (colonne id_country_origin), d'ou le
+   premier argument vide — la fonction rend alors le seul pays courant.
+
+   ⚠️ ORDRE D'APPEL. sma_core.js ecrit « N elements » dans la boite orange
+   AVANT d'appeler getInfoFrom : cette fonction passe donc apres et gagne. Le
+   compte reste affiche pour un GROUPE dont aucun membre n'est vise, ce qui
+   est juste — un groupe n'est pas un compositeur. */
+function displaySmaIdentityGN(target){
+
+    if(!target) return;
+
+    var t   = function(v){ return $.trim(v == null ? '' : String(v)); };
+    var who = $.trim(t(target.fn) + ' ' + t(target.ln));
+
+    $("#selection").empty().append('<p>');
+    $("#selection p").text(who);
+
+    if(typeof countryLineHtml === 'function'){
+        $("#selection").append(countryLineHtml('', target.ctry));
+    }
+
+    /* La fiche ISNI est ecrite ICI, avec la boite d'identite et non ailleurs :
+       les deux disent la MEME selection. Tenues par deux mecanismes separes,
+       elles pouvaient se contredire — une notice sous un nom qui n'est plus le
+       sien. Sans label : le nom est juste au-dessus. */
+    syncIsniFicheGN(target.isni);
+}
+
+/* Retirer TOUTE fiche ISNI attachee a la selection courante — celle du mode
+   replie et, sur les pages qui en ont une, celle du SMA en flux. Les sites
+   qui vident la boite orange n'ont ainsi qu'un appel a faire, et n'ont pas a
+   savoir combien de fiches vivent dans la page. */
+function hideIsniAllGN(){
+    if(typeof hideIsniBox   === 'function') hideIsniBox();
+    if(typeof hideIsniFiche === 'function') hideIsniFiche();
+}
+
 /* Ecrire une ligne unique dans la boite d'identite — « 12 composers »,
    « 340 elements ».
 
@@ -211,7 +296,7 @@ function syncIsniBoxGN(isni){
 function setSelectionTextGN(txt){
     $("#selection").empty().append('<p>');
     $("#selection p").text(txt);
-    if(typeof hideIsniBox === 'function') hideIsniBox();
+    hideIsniAllGN();
 }
 
 /* Remettre la colonne d'information a zero : plus de compositeur, donc plus de
@@ -221,7 +306,7 @@ function setSelectionTextGN(txt){
    et quand une fiche n'a aucune oeuvre. */
 function clearIdentityBoxGN(){
     $("#selection").empty();
-    if(typeof hideIsniBox === 'function') hideIsniBox();
+    hideIsniAllGN();
 }
 /* Le couple « origine / pays », rendu comme la BnF l'ecrit dans ses notices
    d'autorite — « Pays : Argentine / France » — c'est-a-dire les deux a EGALITE

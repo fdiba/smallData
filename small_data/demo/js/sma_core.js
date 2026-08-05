@@ -183,7 +183,12 @@ function resetAll(){
     $("#commons ul").empty();
     noiseField=true;
     $("#sma_main_ctrl ul li:last").text("pause");
-    $("#selection").empty();
+    /* clearIdentityBoxGN (js/functions.js) et non $("#selection").empty() :
+       la fiche ISNI part AVEC la boite d'identite. Une remise a zero du SMA
+       qui laisserait la notice du dernier compositeur au-dessus d'une colonne
+       vide est la desynchronisation corrigee partout ailleurs le 2026-08-05 —
+       elle survivait ici parce que ce fichier ecrit la boite en direct. */
+    clearIdentityBoxGN();
     $("#titles").empty();
 }
 function pauseSMA(event){
@@ -213,8 +218,11 @@ function getParticleInfos(evt){
 
             var txt_2 = particles[i].records.length+' elements';
 
-            $("#selection").empty().append('<p>');
-            $("#selection p").text(txt_2);
+            /* setSelectionTextGN (js/functions.js) : un GROUPE n'est pas un
+               compositeur. Ecrit en direct, cette ligne laissait la fiche ISNI
+               du dernier agent clique sous un « 340 elements » qui ne parle de
+               personne — meme defaut, meme correction que dans js/particles.js. */
+            setSelectionTextGN(txt_2);
 
             if(particles[i].records.length>1){
 
@@ -338,7 +346,9 @@ function setCommonAttr(event){
     var attr = event.target.innerText;
 
     $("#cookies").empty().append('<p>property: '+ attr + '</p>');
-    $("#selection").empty();
+    // la colonne repart a vide, fiche ISNI comprise : changer de critere de
+    // regroupement defait la selection (voir clearIdentityBoxGN).
+    clearIdentityBoxGN();
     $("#titles").empty();
 
     if(sl_attribute.localeCompare("")==0){ //first choice

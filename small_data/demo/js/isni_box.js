@@ -3,6 +3,15 @@
    un identifiant ISNI : award-winning_works.php, catalog.php, categories.php
    et euphonies.php.
 
+   DEPUIS LE 2026-08-05, CE FICHIER SERT DEUX FICHES ET NON PLUS UNE. Tout ce
+   qui suit jusqu'a renderIsniBox() decrit la PREMIERE — la boite unique
+   #isniBox, ouverte au clic, flottante ou en panneau lateral, celle des
+   tableaux. La SECONDE est en fin de fichier : une fiche EN FLUX, posee dans
+   une colonne, qui s'affiche d'elle-meme et se deplie sur son identifiant.
+   Les pages qui portent A LA FOIS un tableau et un SMA en affichent les deux
+   en meme temps, sans qu'elles se disputent quoi que ce soit — voir le grand
+   commentaire qui l'introduit.
+
    Ce fichier est la SEULE copie du code. Il etait auparavant recopie a
    l'identique dans js/aww.js, js/catalog.js, js/categories.js et
    js/euphonies.js — quatre exemplaires strictement egaux octet pour octet,
@@ -216,16 +225,29 @@ function enableIsniPanel(opt){
                 if(isniRerenderGuard) return;
 
                 var onlyCounter = true;
+                var onlyFiche   = true;
                 for(var i = 0; i < records.length; i++){
                     var t  = records[i].target;
                     var el = (t.nodeType === 1) ? t : t.parentNode;
-                    if(!el || !el.closest || !el.closest('#cookies')){ onlyCounter = false; break; }
+                    if(!el || !el.closest){ onlyCounter = false; onlyFiche = false; break; }
+                    if(!el.closest('#cookies'))     onlyCounter = false;
+                    if(!el.closest('.isni-inflow')) onlyFiche   = false;
+                    if(!onlyCounter && !onlyFiche) break;
                 }
 
                 // le texte est lu APRES coup : addParticleUsing vide la boite
                 // puis y ecrit, et un rappel d'observateur est une micro-tache
                 // — il s'execute une fois les deux operations faites.
                 if(onlyCounter && ISNI_LOADING_RE.test($('#cookies').text())) return;
+
+                /* NI LA FICHE EN FLUX DU SMA — 2026-08-05. Elle vit dans la
+                   colonne observee, et son depliage n'ecrit que dans son
+                   propre corps. Sans cette exception, deplier la fiche du SMA
+                   refermait le panneau du tableau : deux fiches independantes,
+                   mais l'une fermant l'autre au premier geste. Le clic sur un
+                   AGENT, lui, reecrit aussi la boite orange et la violette :
+                   il sort de ce test et referme le panneau, comme avant. */
+                if(onlyFiche) return;
 
                 closeIsniBox();
             }).observe(box, {childList: true, subtree: true, characterData: true});
@@ -577,7 +599,15 @@ function openIsniBox(anchor){
         });
 }
 
-function renderIsniBox(d){
+/* Le CORPS de la fiche, en HTML, sans rien ecrire dans le document.
+
+   Separe du rendu le 2026-08-05 : la fiche existe desormais en DEUX
+   exemplaires simultanes sur les pages a tableau + SMA (voir la fiche EN FLUX,
+   plus bas), et les deux affichent exactement la meme notice. Le corps est
+   donc calcule ici, une fois, et chacune l'ecrit chez elle. C'est la meme
+   raison qui a sorti ce fichier de ses quatre copies : ce qui est identique
+   n'existe qu'une fois. */
+function isniBodyHtml(d){
 
     var h = [];
     var lnk = function(url, label){
@@ -651,5 +681,168 @@ function renderIsniBox(d){
         h.push('<p class="isni-warn">Invalid ISNI.</p>');
     }
 
-    $('#isniBox .isni-bd').html(h.join(''));
+    return h.join('');
+}
+
+function renderIsniBox(d){
+    $('#isniBox .isni-bd').html(isniBodyHtml(d));
+}
+
+/* =========================================================================
+   LA FICHE EN FLUX DU SMA — une SECONDE fiche, independante de la premiere
+   (2026-08-05)
+
+   POURQUOI UNE SECONDE. Trois pages portent a la fois un TABLEAU et un SMA :
+   award-winning_works.php, catalog.php et euphonies.php. Leur tableau ouvre
+   la fiche au clic sur un nom, en panneau lateral (les deux premieres) ou en
+   boite flottante (la troisieme) : c'est le mode historique, et il ne change
+   pas. Leur SMA, lui, doit se comporter comme Overview, Network et Line
+   Charts — la fiche s'affiche d'elle-meme sous la boite orange, repliee sur
+   son identifiant, et ne recouvre rien.
+
+   Or tout ce qui precede est un SINGLETON : une boite (#isniBox), un dock
+   (isniDock), un etat (isniShown / isniShownLoaded). Les deux entrees d'une
+   meme page se seraient disputees le meme noeud — le clic dans le tableau
+   aurait deplace la fiche du SMA, et le pli de l'une aurait replie l'autre.
+   Il fallait donc DEUX fiches vivantes en meme temps.
+
+   CE QUI EST PARTAGE, ET CE QUI NE L'EST PAS. Partages : le cache de session
+   (isniCache — une notice deja chargee par le tableau se deplie
+   instantanement dans le SMA, et reciproquement), le corps de la fiche
+   (isniBodyHtml), les libelles, la feuille de style — dont toutes les regles
+   portent sur des CLASSES (.isni-box, .isni-inflow) et non sur #isniBox, si
+   bien qu'une seconde boite est stylee sans une ligne de plus. Propres a
+   cette fiche-ci : son noeud, son identifiant courant et son etat de
+   chargement. Rien d'autre n'avait a etre dedouble.
+
+   POURQUOI PAS UN DRAPEAU DANS showIsniBox(). Meme raison qu'au bloc « mode
+   replie » ci-dessus : un drapeau aurait fait passer les deux fiches par le
+   meme chemin, et la premiere correction faite pour l'une aurait porte sur
+   l'autre. Ce sont deux objets, ils ont deux etats.
+   ========================================================================= */
+
+var isniFiche = null;      // la fiche en flux du SMA, ou null si la page n'en a pas
+
+/* Installe la fiche dans un conteneur DEJA present dans la page (typiquement
+   #isniColumn, entre la boite orange et la boite violette).
+
+   Sans conteneur, on ne fait rien et on le dit par la valeur de retour : la
+   page garde alors son comportement d'avant, ce qui vaut mieux qu'une fiche
+   posee au hasard dans le document. */
+function enableIsniInflowFiche(opt){
+
+    opt = opt || {};
+    var host = document.getElementById(opt.into || 'isniColumn');
+    if(!host) return false;
+
+    if(isniFiche && isniFiche.host === host) return true;   // deja installee
+
+    if((' ' + host.className + ' ').indexOf(' isni-inflow ') === -1){
+        host.className += (host.className ? ' ' : '') + 'isni-inflow';
+    }
+
+    var box = $('<div class="isni-box isni-foldable" role="region" aria-label="ISNI record">'
+              + '<div class="isni-hd"><span class="isni-hd-t"></span></div>'
+              + '<div class="isni-bd"></div></div>').appendTo(host);
+
+    /* Le pli. Gestionnaire pose une fois, sur une boite qui ne se reconstruit
+       jamais — seul son en-tete est reecrit d'un compositeur a l'autre. */
+    box.on('click', '.isni-toggle', function(evt){
+        evt.preventDefault();
+        evt.stopPropagation();
+        toggleIsniFiche();
+    });
+    /* Un clic DANS la fiche ne doit pas remonter : sur les pages a boite
+       flottante (euphonies), le gestionnaire global de fermeture est pose sur
+       le document et refermerait la fiche du tableau a chaque fois qu'on
+       deplie celle du SMA. */
+    box.on('click', function(evt){ evt.stopPropagation(); });
+
+    isniFiche = {host: host, box: box, shown: '', loaded: false};
+    return true;
+}
+
+/* Affiche la fiche repliee pour un identifiant. Rend true si quelque chose
+   est affiche, false si l'ISNI est vide — auquel cas la fiche est retiree,
+   ce qui est le bon comportement pour un agent sans ISNI. Meme contrat que
+   showIsniBox(), volontairement : les deux se lisent cote a cote. */
+function showIsniFiche(isni, label){
+
+    if(!isniFiche) return false;
+
+    var id = String(isni || '').replace(/\s+/g, '');
+    if(!id){ hideIsniFiche(); return false; }
+
+    if(id !== isniFiche.shown){
+        isniFiche.shown  = id;
+        isniFiche.loaded = false;
+        isniFiche.box.find('.isni-bd').empty();
+    }
+
+    var head = 'ISNI ' + id.replace(/(.{4})(?=.)/g, '$1 ');
+    var lbl  = String(label || '').trim();
+
+    isniFiche.box.find('.isni-hd-t').html(
+        '<button type="button" class="isni-toggle" aria-expanded="false">'
+        + esc(lbl ? lbl + ' — ' + head : head)
+        + '<span class="isni-caret" aria-hidden="true"></span></button>');
+
+    isniFiche.box.addClass('open').addClass('is-folded');
+    return true;
+}
+
+/* Retire la fiche. A appeler des que la boite orange cesse de nommer un
+   compositeur — autre agent sans ISNI, ouverture d'un groupe, remise a zero
+   du SMA. Sans cela, la notice du precedent resterait sous une boite qui
+   parle de quelqu'un d'autre : c'est le defaut corrige partout ailleurs le
+   2026-08-05, et il se serait reintroduit ici. */
+function hideIsniFiche(){
+    if(!isniFiche) return;
+    isniFiche.box.removeClass('open is-folded');
+    isniFiche.shown  = '';
+    isniFiche.loaded = false;
+}
+
+/* Le pli. Au PREMIER depliage seulement, la notice est demandee au proxy —
+   selectionner vingt agents de suite ne declenche aucun appel. */
+function toggleIsniFiche(){
+
+    if(!isniFiche) return;
+
+    var box    = isniFiche.box;
+    var folded = box.hasClass('is-folded');
+
+    box.toggleClass('is-folded', !folded);
+    box.find('.isni-toggle').attr('aria-expanded', folded ? 'true' : 'false');
+
+    if(!folded || isniFiche.loaded || !isniFiche.shown) return;
+
+    isniFiche.loaded = true;
+
+    var id = isniFiche.shown;
+
+    // le cache est celui de la page entiere : une notice deja ouverte depuis
+    // le tableau se deplie ici sans un octet de reseau.
+    if(isniCache[id]){ box.find('.isni-bd').html(isniBodyHtml(isniCache[id])); return; }
+
+    box.find('.isni-bd').html('<p class="isni-wait">Querying ISNI&hellip;</p>');
+
+    $.ajax({url: 'php/retrieve_isni.php', type: 'POST', dataType: 'json', data: {isni: id}})
+
+        .done(function(data){
+            isniCache[id] = data;
+            if(isniFiche.shown === id) box.find('.isni-bd').html(isniBodyHtml(data));
+        })
+
+        .fail(function(){
+            // NON mis en cache : une panne reseau ne doit pas condamner
+            // l'identifiant pour la duree de la session.
+            isniFiche.loaded = false;
+            if(isniFiche.shown !== id) return;
+            box.find('.isni-bd').html(isniBodyHtml({status: 'error', isni: id, links: {
+                isni_org:  'https://isni.org/isni/' + id,
+                isni_oclc: 'https://isni.oclc.org/cbs/DB=1.2//CMD?ACT=SRCH&IKT=8006&TRM=ISN%3A'
+                           + id + '&TERMS_OF_USE_AGREED=Y&terms_of_use_agree=send'
+            }}));
+        });
 }

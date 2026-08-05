@@ -59,6 +59,13 @@
 				<div id="infos">
 					<div id="cookies"></div>
 				    <div id="selection"></div>
+				    <!-- Fiche ISNI de l'agent selectionne dans le SMA. Elle se pose
+				         ICI, entre la boite orange et la boite violette : en flux,
+				         elle ne recouvre rien (js/isni_box.js,
+				         enableIsniInflowFiche). C'est une AUTRE fiche que celle du
+				         tableau, qui reste ce qu'elle etait. Vide tant qu'aucun
+				         agent portant un ISNI n'a ete clique. -->
+				    <div id="isniColumn"></div>
 				    <ul id="titles"></ul>
 			    </div>
 		    </div>
@@ -83,7 +90,8 @@
 							<li><span class="sq" style="background:#bdc3c7"></span> an agent, still looking for others sharing a common property</li>
 							<li><span class="sq" style="background:#2ecc71"></span> a grouping &mdash; click it to open it</li>
 							<li><span class="sq" style="background:#f1c40f"></span> an opened grouping, showing its members &mdash; double-click it to close it</li>
-							<li><span class="sq" style="background:#3498db"></span> a single work inside an opened grouping &mdash; click it to display its details</li>
+							<li><span class="sq" style="background:#3498db"></span> a single work inside an opened grouping &mdash; click it to display its details in the information column: the <em>orange</em> box names the composer and their country, the <em>purple</em> one describes the work, and a <em>blue</em> box appears between them when that composer has an ISNI</li>
+							<li>when the composer of the selected work has an ISNI, a box appears in the information column, between the orange box and the purple one, headed by that identifier &mdash; click the header to unfold the international identity record. It sits in the column instead of over it, so nothing is hidden, and nothing is requested until you unfold it</li>
 						</ul>
 					</div>
 					<div>

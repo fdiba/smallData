@@ -18,44 +18,27 @@
    en bas de la page. Meme defaut que sur Overview, meme correctif : une ligne
    flex sans repli.
 
-   ⚠️ MAIS PAS LA MEME SUITE. Sur Overview, la grille se re-repartit a la
-   nouvelle largeur et il n'y a jamais de debordement horizontal. Ici c'est
-   impossible : le canvas de Network fait 1200x800 EN DUR (js/network.js), et
-   les agents du SMA vivent dans ces coordonnees — leurs positions, leurs
-   vitesses et la grille spatiale qui accelere les collisions. Le retrecir en
-   cours de simulation deplacerait tout le monde d'un coup.
+   LA REGLE N'EST PLUS ICI. Elle a d'abord ete ecrite pour cette page, puis les
+   trois pages a tableau + SMA (award-winning_works, catalog, euphonies) en ont
+   eu besoin a leur tour, le jour ou leur fiche ISNI est passee en flux dans la
+   colonne. Elle vit donc dans css/main.css (§ « Le SMA et sa colonne
+   d'information »), en une seule copie, portee par #main_container — ce qui
+   laisse Overview, dont la colonne vit dans #right_col, exactement ou elle
+   etait. Ne restent ici que les valeurs propres a Network.
+
+   ⚠️ CE QUE LE PARTAGE NE DIT PAS, ET QUI VAUT POUR CETTE PAGE. Sur Overview,
+   la grille se re-repartit a la nouvelle largeur et il n'y a jamais de
+   debordement horizontal. Ici c'est impossible : le canvas de Network fait
+   1200x800 EN DUR (js/network.js), et les agents du SMA vivent dans ces
+   coordonnees — leurs positions, leurs vitesses et la grille spatiale qui
+   accelere les collisions. Le retrecir en cours de simulation deplacerait tout
+   le monde d'un coup.
 
    Sous 1520px — mesure : 1200 de canvas + 5 + 2 d'ecarts + 300 de colonne +
    15 de padding de page —, la page defile donc horizontalement. C'est le prix
    demande, et il est explicite : mieux vaut chercher la colonne a droite en
    faisant defiler que la trouver en bas apres avoir cru qu'elle avait
    disparu. */
-#main_container{
-	margin-top: calc(var(--sd-bar-h) + 8px);
-	display: flex;
-	flex-wrap: nowrap;
-	align-items: flex-start;
-}
-#main_container #myCanvas{
-	float: none;
-	display: block;
-	flex: 0 0 auto;
-}
-#infos{
-	/* LARGEUR FIXE, et non plus au contenu. En flottant, la colonne prenait la
-	   largeur de son contenu — 193px mesures — sous un plafond de 300px qui
-	   n'etait donc jamais atteint. C'etait sans consequence tant que la fiche
-	   ISNI ne s'ouvrait qu'au clic ; depuis qu'elle s'affiche d'elle-meme pour
-	   tout compositeur qui en porte un, une notice d'identite a 193px de large
-	   devient illisible. La colonne prend donc les 300px que son ancien
-	   `max-width` annoncait. */
-	flex: 0 0 300px;
-	width: 300px;
-	max-width: none;
-	float: none;
-	margin-left: 2px;
-	word-wrap: break-word;
-}
 #myCanvas{
 	margin: 0 5px 0 0;
 }
@@ -70,21 +53,11 @@
 
 /* Fiche ISNI, rendue EN FLUX dans la colonne (js/isni_box.js, option `into`) :
    elle prend place entre la boite orange et la liste des oeuvres au lieu de
-   les recouvrir. La colonne est etroite (max-width 300px ci-dessus) et collee
-   au canvas : il n'y a pas de gouttiere ou poser un panneau lateral comme sur
-   le catalogue. Tant qu'aucun nom n'a ete clique, la div est vide et ne mesure
-   rien — la colonne est exactement celle d'avant. */
-#isniColumn{
-	box-sizing: border-box;
-	width: 100%;
-}
-/* Respiration SOUS la fiche, et seulement quand elle est ouverte : sinon la
-   boite violette viendrait s'y coller et les deux se liraient comme un seul
-   bloc. Portee par .open pour ne pas laisser un blanc permanent dans la
-   colonne quand aucune fiche n'est affichee. */
-#isniColumn .isni-box.open{
-	margin-bottom: 10px;
-}
+   les recouvrir. La colonne est etroite (300px) et collee au canvas : il n'y a
+   pas de gouttiere ou poser un panneau lateral comme sur le catalogue. Ses
+   deux regles — largeur et respiration sous la fiche — sont partagees avec les
+   trois pages a tableau + SMA et vivent dans css/main.css avec le reste du
+   bloc #main_container.
 
 /* La boite violette (#titles) separe chaque oeuvre par un fond alterne, en deux
    nuances de violet (comme Overview et les line charts). Le JS partage

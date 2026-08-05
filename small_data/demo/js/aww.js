@@ -132,6 +132,31 @@ $(function(){
         clickable: '#main_table .composer-isni',
         watch:     'infos'
     });
+
+    /* LA FICHE DU SMA — une SECONDE fiche, et non un second point d'entree
+       vers le panneau ci-dessus (2026-08-05).
+
+       L'ISNI de la boite violette ouvrait jusqu'ici ce panneau-la. Deux
+       defauts, et le second explique le premier : le panneau RECOUVRE les
+       boites d'information, si bien qu'il fallait le refermer des qu'elles
+       bougent — donc a chaque clic sur un agent, c'est-a-dire au geste meme
+       qui venait de l'ouvrir. Il ne tenait ouvert que par une suite
+       d'exceptions (le compteur de chargement, le re-rendu de la boite
+       violette, la re-ancre).
+
+       Le SMA recoit donc le dispositif d'Overview, Network et Line Charts :
+       une fiche EN FLUX dans la colonne, entre la boite orange et la boite
+       violette, qui ne recouvre rien et prend sa place. Elle s'affiche seule
+       des qu'un agent porte un ISNI, repliee sur l'identifiant, et c'est
+       l'identifiant qui deplie — rien n'est demande au proxy avant.
+
+       Le tableau ne change pas : les deux fiches sont deux objets distincts
+       (js/isni_box.js), chacune avec son etat. Elles ne partagent que le
+       cache de session — une notice ouverte d'un cote se deplie
+       instantanement de l'autre. */
+    if(typeof enableIsniInflowFiche === 'function'){
+        enableIsniInflowFiche({ into: 'isniColumn' });
+    }
 });
 
 //------------------------------------------------------------------

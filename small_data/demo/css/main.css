@@ -288,6 +288,68 @@ ul{
 	:root{ --sd-bar-h: 384px; }
 }
 
+/* ---------- Le SMA et sa colonne d'information ----------
+
+   QUATRE pages posent un canvas SMA suivi de sa colonne d'information dans un
+   #main_container : network.php, award-winning_works.php, catalog.php et
+   euphonies.php. La règle vivait dans css/network.css, où elle avait été
+   écrite pour cette page-là ; elle est ici depuis le 2026-08-05, parce que les
+   trois autres en avaient besoin le jour où leur fiche ISNI est passée EN FLUX
+   dans la colonne. La recopier trois fois, c'est le mécanisme qui a laissé
+   survivre l'en-tête « imeb id » sur une page après sa correction sur les
+   autres. (Overview n'est pas concernée : sa colonne vit dans #right_col, pas
+   dans un #main_container.)
+
+   FLEX PLUTÔT QUE DEUX FLOTTANTS. Le canvas flotte à gauche (règle `canvas`
+   plus haut) et la colonne flottait à sa suite : elle se plaçait donc à droite
+   TANT QU'IL Y AVAIT LA PLACE, et repassait sous le canvas sinon — une colonne
+   d'information à 500 px sous la visualisation qu'elle commente. En flex sans
+   retour à la ligne, elle est toujours à droite du canvas ; une fenêtre trop
+   étroite donne un défilement horizontal, ce qui se voit et se corrige, au
+   lieu d'un empilement qui passe pour la mise en page prévue.
+
+   LARGEUR FIXE, et non plus au contenu. En flottant, la colonne prenait la
+   largeur de son contenu — 193 px mesurés — sous un plafond de 300 px qui
+   n'était donc jamais atteint. C'était sans conséquence tant que la fiche ISNI
+   ne s'ouvrait qu'au clic ; depuis qu'elle s'affiche d'elle-même pour tout
+   compositeur qui en porte un, une notice d'identité à 193 px de large devient
+   illisible. La colonne prend donc les 300 px que son ancien `max-width`
+   annonçait. */
+
+#main_container{
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: flex-start;
+}
+#main_container > #myCanvas{
+	float: none;
+	display: block;
+	flex: 0 0 auto;
+}
+#main_container > #infos{
+	flex: 0 0 300px;
+	width: 300px;
+	max-width: none;
+	float: none;
+	margin-left: 2px;
+	word-wrap: break-word;
+}
+/* Fiche ISNI rendue EN FLUX dans la colonne (js/isni_box.js) : elle prend
+   place entre la boîte orange et la boîte violette au lieu de les recouvrir.
+   Tant qu'aucun compositeur portant un ISNI n'a été sélectionné, la div est
+   vide et ne mesure rien — la colonne est exactement celle d'avant. */
+#main_container > #infos > #isniColumn{
+	box-sizing: border-box;
+	width: 100%;
+}
+/* Respiration SOUS la fiche, et seulement quand elle est ouverte : sinon la
+   boîte violette viendrait s'y coller et les deux se liraient comme un seul
+   bloc. Portée par .open pour ne pas laisser un blanc permanent dans la
+   colonne quand aucune fiche n'est affichée. */
+#main_container > #infos > #isniColumn .isni-box.open{
+	margin-bottom: 10px;
+}
+
 /* =========================================================
    2. BLOCS D'INFORMATION (hors barre) — règles d'origine
    ========================================================= */

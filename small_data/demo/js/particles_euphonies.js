@@ -159,7 +159,12 @@ Particle.prototype.openOrCloseIt = function(){
 	 	this.lastHit=-999;
 
 	 	$("#cookies").empty();
-	 	$("#selection").empty();
+	 	// clearIdentityBoxGN (js/functions.js) et non $("#selection").empty() :
+	 	// la fiche ISNI du SMA part AVEC la boite orange. Un groupe qu'on
+	 	// referme n'est plus un compositeur, et laisser sa notice d'identite
+	 	// sous une boite vide est la desynchronisation corrigee partout
+	 	// ailleurs le 2026-08-05.
+	 	clearIdentityBoxGN();
 	 	$("#titles").empty();
 
 	}
@@ -221,28 +226,38 @@ Particle.prototype.processChilds=function(mouseX, mouseY){
 }
 Particle.prototype.getInfoFrom=function(target){
 
-	// Mise en page fixe et sans libelles : quatre blocs separes par une ligne
-	// vide — identite (prenom nom, puis pays), oeuvre (titre et duree entre
-	// parentheses), palmares (prix, categorie, sous-categorie), puis l'ISNI.
-	// Un champ vide est saute sans laisser de trou ; le premier <p> de chaque
-	// bloc porte la classe sma-blk, qui pose l'interligne (css/euphonies.css).
+	// Mise en page fixe et sans libelles : des blocs separes par une ligne
+	// vide — oeuvre (titre et duree entre parentheses), palmares (prix,
+	// categorie, sous-categorie), puis les dates. Un champ vide est saute sans
+	// laisser de trou ; le premier <p> de chaque bloc porte la classe sma-blk,
+	// qui pose l'interligne (css/euphonies.css).
+	// LA BOITE NE DIT PLUS QUE L'OEUVRE depuis le 2026-08-05 : l'identite est
+	// passee dans la boite orange et l'ISNI dans la bleue (voir la fin de la
+	// fonction). Elle ouvrait jusque-la sur « Prenom Nom / Pays », en doublon
+	// du nom que la fiche ISNI repetait deux boites plus bas.
 	// Contrairement a l'ancien rendu, aucune propriete n'est masquee parce
 	// qu'elle sert de critere de regroupement : la structure doit rester
 	// stable d'un regroupement a l'autre (le critere reste rappele dans
 	// #cookies par sma_core.js).
 	var val = function(v){ return $.trim(v == null ? '' : String(v)); };
 
-	// une fiche ISNI ouverte pointerait un lien de #titles qu'on s'apprete a
-	// detruire : on la referme avant de vider la boite.
-	if(typeof isniAnchor !== 'undefined' && isniAnchor
-		&& isniAnchor.closest('#titles').length) closeIsniBox();
-
+	// PLUS DE FICHE ISNI ANCREE DANS CETTE BOITE — 2026-08-05. L'ISNI y etait
+	// ecrit en dernier bloc, et son clic ouvrait la boite flottante du
+	// tableau, ancree a un lien que ce re-rendu detruit : il fallait donc la
+	// refermer ici. La fiche du SMA est desormais une boite a elle, posee sous
+	// la boite orange et jamais detruite (js/isni_box.js,
+	// enableIsniInflowFiche) : plus d'ancre, plus de fermeture a faire. La
+	// boite flottante du tableau, elle, ne change pas.
 	$("#titles").empty();
 
 	var blocks = [];
 
-	//--- 1. identite
-	blocks.push([$.trim(val(target.fn) + ' ' + val(target.ln)), val(target.ctry)]);
+	// L'IDENTITE N'EST PLUS DANS CETTE BOITE — 2026-08-05. Le nom et le pays
+	// sont passes dans la boite ORANGE, qui est la boite d'identite de la page
+	// depuis toujours et ne portait pourtant qu'un compte d'elements. La
+	// violette dit desormais l'OEUVRE, et elle seule : chaque boite de la
+	// colonne ne dit plus qu'une chose. Voir displaySmaIdentityGN, appele a la
+	// fin de cette fonction.
 
 	//--- 2. oeuvre : la duree suit le titre, entre parentheses
 	var work = val(target.title);
@@ -266,14 +281,11 @@ Particle.prototype.getInfoFrom=function(target){
 	blocks.push([/^[0-9]{4}$/.test(yr) ? 'Concours ' + yr : '',
 				/^[0-9]{4}$/.test(ed) ? 'Euphonies d\u2019Or ' + ed : '']);
 
-	//--- 5. ISNI : meme lien que dans le tableau, donc meme fiche au clic
-	var isni = val(target.isni).replace(/\s+/g, '');
-	if(/^[0-9]{15}[0-9Xx]$/.test(isni)){
-		isni = '<a class="isni-link" title="voir la fiche ISNI" '
-			 + 'href="https://isni.org/isni/' + isni + '" '
-			 + 'data-isni="' + isni + '">' + isni + '</a>';
-	}
-	blocks.push([isni]);
+	// L'ISNI N'EST PLUS UN BLOC DE CETTE BOITE — 2026-08-05. Il est desormais
+	// l'EN-TETE de la fiche posee sous la boite orange (voir la fin de cette
+	// fonction) : l'ecrire aussi ici l'aurait affiche deux fois dans la meme
+	// colonne, a deux lignes d'intervalle. La colonne ISNI du tableau, elle,
+	// ne change pas.
 
 	for (var b = 0; b < blocks.length; b++) {
 
@@ -292,16 +304,33 @@ Particle.prototype.getInfoFrom=function(target){
 		}
 	}
 
-	// Le clic sur l'ISNI ouvre la fiche recapitulative (openIsniBox, defini
-	// dans js/isni_box.js) au lieu de quitter la page ; ctrl+clic et clic
-	// milieu continuent d'aller sur isni.org. stopPropagation empeche le
-	// handler global de refermer la fiche dans la foulee.
-	$("#titles").find('a.isni-link').on('click', function(evt){
-		if(evt.ctrlKey || evt.metaKey || evt.shiftKey || evt.which === 2) return;
-		evt.preventDefault();
-		evt.stopPropagation();
-		openIsniBox($(this));
-	});
+	/* LA BOITE ORANGE ET LA FICHE ISNI — 2026-08-05.
+
+	   Ecrites ICI, a la fin du rendu de la boite violette, parce que les trois
+	   boites disent la MEME selection : les separer, c'est se donner le moyen
+	   d'afficher une notice d'identite sous un nom qui n'est plus le sien.
+
+	   L'ORANGE porte le nom du compositeur et son pays. Elle est la boite
+	   d'identite de la page et n'affichait pourtant qu'un compte d'elements,
+	   pendant que le nom ouvrait la boite violette — qui, elle, est faite pour
+	   l'oeuvre. Chaque boite ne dit plus qu'une chose.
+
+	   LA BLEUE ne porte que l'identifiant, sans le nom : il est juste au-dessus.
+	   Elle s'affiche d'elle-meme des que l'agent porte un ISNI, REPLIEE, et
+	   c'est l'identifiant qui deplie. Rien n'est demande au proxy avant le
+	   depliage : selectionner vingt agents de suite ne declenche aucun appel.
+	   Un agent sans ISNI la RETIRE.
+
+	   displaySmaIdentityGN() est dans js/functions.js — trois pages, une seule
+	   copie. La fiche du tableau n'est pas concernee : c'est un autre objet,
+	   avec son etat a lui (js/isni_box.js).
+
+	   ⚠️ APRES la boucle d'affichage, et non avant : sma_core.js ecrit
+	   « N elements » dans la boite orange juste avant d'appeler cette fonction,
+	   et c'est le dernier ecrivain qui reste. */
+	if(typeof displaySmaIdentityGN === 'function'){
+		displaySmaIdentityGN(target);
+	}
 
 	// $("#titles").append('<p>'+ target.id +'</p>');
 
@@ -366,8 +395,7 @@ Particle.prototype.update = function(i, particles){
 			// cette page, mais c'est exactement ce qui a fait afficher deux
 			// fois le nombre de compositeurs sur Network le jour ou une ligne
 			// de pays est venue s'ajouter sous le nom. Voir setSelectionTextGN.
-			$("#selection").empty().append('<p>');
-			$("#selection p").text(txt);
+			setSelectionTextGN(txt);
 
 		}
 

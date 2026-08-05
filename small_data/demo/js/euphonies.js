@@ -126,11 +126,33 @@ function retrieveEuphonies(cat, numOfElements){
    catalog.php, categories.php, euphonies.php). Il figurait ici a l'identique,
    octet pour octet, comme dans les trois autres.
 
-   Ne restent que les points d'entree, propres a cette page, et ils sont deux :
-   la colonne ISNI du tableau (ci-dessus, dans la construction des lignes) et
-   l'ISNI de la boite violette du SMA (js/particles_euphonies.js). Tous deux
-   appellent openIsniBox($(lien)), le lien portant un attribut data-isni.
+   Ne restent que les points d'entree, propres a cette page, et ils sont deux.
+   Ils n'aboutissent plus au meme endroit depuis le 2026-08-05 :
+
+     - la colonne ISNI du TABLEAU (ci-dessus, dans la construction des lignes)
+       appelle toujours openIsniBox($(lien)), le lien portant un attribut
+       data-isni : boite flottante posee sous le lien, inchangee ;
+
+     - le SMA, lui, n'ouvre plus cette boite-la. Elle est HORS FLUX et se pose
+       par-dessus les boites d'information, celles-la memes qu'on vient de
+       faire changer en cliquant un agent — d'ou une fiche qui se refermait
+       sur le geste qui l'ouvrait. Le SMA recoit donc le dispositif
+       d'Overview, Network et Line Charts : une fiche EN FLUX dans la colonne,
+       entre la boite orange et la boite violette (js/isni_box.js,
+       enableIsniInflowFiche). Elle s'affiche seule des qu'un agent porte un
+       ISNI, repliee sur l'identifiant, et c'est l'identifiant qui deplie ;
+       rien n'est demande au proxy avant le depliage.
+
+   Ce sont DEUX fiches vivantes en meme temps, chacune avec son etat. Elles ne
+   partagent que le cache de session : une notice ouverte depuis le tableau se
+   deplie instantanement dans le SMA, et reciproquement.
    ========================================================================= */
+
+$(function(){
+    if(typeof enableIsniInflowFiche === 'function'){
+        enableIsniInflowFiche({ into: 'isniColumn' });
+    }
+});
 
 /* =========================================================================
    Notices data.bnf.fr : accordeon dans le tableau

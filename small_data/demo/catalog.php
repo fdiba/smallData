@@ -85,6 +85,13 @@
 				<div id="infos">
 					<div id="cookies"></div>
 				    <div id="selection"></div>
+				    <!-- Fiche ISNI de l'agent selectionne dans le SMA. Elle se pose
+				         ICI, entre la boite orange et la boite violette : en flux,
+				         elle ne recouvre rien (js/isni_box.js,
+				         enableIsniInflowFiche). C'est une AUTRE fiche que celle du
+				         tableau, qui reste ce qu'elle etait. Vide tant qu'aucun
+				         agent portant un ISNI n'a ete clique. -->
+				    <div id="isniColumn"></div>
 				    <ul id="titles"></ul>
 			    </div>
 		    </div>
@@ -102,7 +109,8 @@
 						<ul>
 							<li><?php echo $table_desc ?></li>
 							<li>the composer cell is shared across all of their works; the background alternates to separate composers and, within a composer, their pieces</li>
-							<li>a composer whose name is <span class="composer-isni">underlined with dots</span> has an ISNI: click the name to open their international identity record in the panel on the right &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. The panel stays open while you scroll the table; close it with the cross or the <em>Esc</em> key. Clicking an agent also closes it, since it sits over the information boxes &mdash; but the loading counter alone leaves it open. The same record opens from the ISNI shown in the purple box of the visualization</li>
+							<li>a composer whose name is <span class="composer-isni">underlined with dots</span> has an ISNI: click the name to open their international identity record in the panel on the right &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. The panel stays open while you scroll the table; close it with the cross or the <em>Esc</em> key. Clicking an agent closes it, since it sits over the information boxes &mdash; but the loading counter alone leaves it open</li>
+							<li>the <em>visualization</em> has an ISNI record of its own, and it does not behave like the one above: click an agent whose composer has an ISNI and a box appears in the information column, between the orange box and the purple one, headed by that identifier &mdash; click the header to unfold the record. It sits in the column instead of over it, so nothing is hidden, and nothing is requested until you unfold it</li>
 							<li><em>edition(s)</em> gives the year or years in which the work was programmed at Bourges, between 1973 and 2009; the cell is left empty where the <em>Répertoire général</em> does not record it, and a work played again in a later edition carries several years</li>
 							<li>a <span class="work-award">&#9733;</span> after a title marks a work distinguished at the competition, held within the festival; the award year is not carried into <em>edition(s)</em>, and a number of awarded works carry no programming year at all &mdash; the full prize list is on the <a href="award-winning_works.php">Award-winning works</a> page</li>
 <?php if($id==1){ ?>							<li>Phonothèque A is large, so it is explored <strong>one country at a time</strong>: pick a <em>country</em> in the Country menu to filter the table and build the visualization for that country's composers; pick another country to switch, or <em>All works</em> to show the full table again</li>
@@ -119,7 +127,7 @@
 							<li><span class="sq" style="background:#bdc3c7"></span> an agent, still looking for others sharing a common property</li>
 							<li><span class="sq" style="background:#2ecc71"></span> a grouping &mdash; click it to open it</li>
 							<li><span class="sq" style="background:#f1c40f"></span> an opened grouping, showing its members &mdash; double-click it to close it</li>
-							<li><span class="sq" style="background:#3498db"></span> a single work inside an opened grouping &mdash; click it to display its details</li>
+							<li><span class="sq" style="background:#3498db"></span> a single work inside an opened grouping &mdash; click it to display its details in the information column: the <em>orange</em> box names the composer and their country, the <em>purple</em> one describes the work, and a <em>blue</em> box appears between them when that composer has an ISNI</li>
 						</ul>
 					</div>
 					<div>
