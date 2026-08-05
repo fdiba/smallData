@@ -245,9 +245,20 @@
    cliquer (meme lecon que l'accordeon BnF des Euphonies, qui s'affichait
    auparavant en bas de page).
 
-   Hauteur bornee a 60vh : la fiche d'un compositeur tres documente ne doit
+   Hauteur bornee a 36vh : la fiche d'un compositeur tres documente ne doit
    pas repousser la liste des oeuvres hors de l'ecran. Au-dela, c'est le corps
    de la fiche (.isni-bd) qui defile, comme en mode flottant.
+
+   36 et non 60 depuis le 2026-08-05 : la borne d'origine laissait encore la
+   fiche depliee occuper les trois cinquiemes de la hauteur utile, donc
+   repousser la boite violette sous le pli de l'ecran — le defaut meme que la
+   borne devait empecher. Une reduction de 40 % la ramene a un peu plus du
+   tiers : les quatre boites de la colonne tiennent ensemble a l'ecran, et
+   c'est le corps de la fiche qui defile, ce pour quoi il est fait.
+
+   La fiche FLOTTANTE, elle, garde ses 70vh (plus haut dans cette feuille) :
+   posee au-dessus d'un tableau, elle ne repousse rien, et la borner plus bas
+   ne ferait que la faire defiler sans raison.
 
    L'ombre portee disparait : elle disait "cette boite est posee au-dessus".
    Ici la fiche est une boite de la colonne, comme la verte et l'orange.
@@ -258,7 +269,7 @@
 	position: static;
 	width: 100%;
 	max-width: none;
-	max-height: 60vh;
+	max-height: 36vh;
 	box-shadow: none;
 }
 
