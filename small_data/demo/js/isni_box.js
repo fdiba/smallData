@@ -275,6 +275,15 @@ function ensureIsniBox(){
     // un clic dans la boite ne doit pas la refermer
     box.on('click', function(evt){ evt.stopPropagation(); });
 
+    /* Le repli — voir showIsniBox() plus bas. Le gestionnaire est pose ici,
+       une fois, sur la boite qui ne se reconstruit jamais ; il ne rencontre
+       .isni-toggle que sur les pages qui appellent showIsniBox(). */
+    box.on('click', '.isni-toggle', function(evt){
+        evt.preventDefault();
+        evt.stopPropagation();
+        toggleIsniBox();
+    });
+
     $(document).on('keydown.isni', function(evt){ if(evt.key === 'Escape') closeIsniBox(); });
     if(!isniDock) $(document).on('click.isni', function(){ closeIsniBox(); });
     $(window).on('resize.isni scroll.isni', function(){ if(isniAnchor) placeIsniBox(isniAnchor); });
@@ -285,6 +294,141 @@ function ensureIsniBox(){
 function closeIsniBox(){
     $('#isniBox').removeClass('open');
     isniAnchor = null;
+}
+
+/* =======================================================================
+   MODE REPLIE — la fiche s'affiche SANS QU'ON LA DEMANDE
+
+   Ajoute le 2026-08-05 pour Overview, et pour elle seule. Les quatre autres
+   pages continuent d'appeler openIsniBox() et ne voient aucune difference :
+   ni le repli, ni le chargement differe, ni l'en-tete cliquable. C'est la
+   raison de ce point d'entree separe plutot que d'un drapeau dans
+   openIsniBox() — un drapeau aurait fait passer les cinq pages par le meme
+   chemin, et la premiere correction faite pour l'une aurait porte sur toutes.
+
+   CE QUE CE MODE CHANGE, ET RIEN D'AUTRE :
+
+     1. la boite s'ouvre SANS CLIC, des qu'un compositeur porte un ISNI. Le
+        nom n'est plus le declencheur : c'est l'existence de l'identifiant.
+        L'utilisateur n'a plus a deviner que le pointille sous un nom cache
+        quelque chose ;
+     2. elle s'ouvre REPLIEE : seul son en-tete est visible, et cet en-tete
+        est l'identifiant lui-meme. On voit donc qu'il y a un ISNI, et ce
+        qu'il vaut, sans rien charger ;
+     3. RIEN N'EST DEMANDE AU RESEAU tant qu'on ne deplie pas. Le nom, le
+        pays et l'identifiant viennent de la base, deja recus avec la
+        selection ; la notice internationale, elle, coute une requete au
+        proxy PHP (qui interroge ISNI SRU, isni.org et Wikidata). Selectionner
+        vingt compositeurs de suite ne declenche aucun appel. La memoire de
+        session (isniCache) fait le reste : un compositeur deja deplie se
+        rouvre instantanement.
+
+   L'ETAT DE PLI N'EST PAS MEMORISE d'un compositeur a l'autre : chaque
+   selection repart repliee. C'est deliberé — la fiche depliee mesure
+   plusieurs centaines de pixels dans la colonne, et la garder ouverte
+   repousserait la liste des oeuvres hors de l'ecran a chaque clic sur la
+   grille. Le geste de deplier reste bon marche.
+   ======================================================================= */
+
+/* L'ISNI actuellement affiche en mode replie, et l'etat de son chargement.
+   Deux variables et non une : `isniShown` sert a ne pas reconstruire
+   l'en-tete quand la selection ne change pas, `isniShownLoaded` a ne pas
+   relancer la requete quand on replie puis deplie. */
+var isniShown = '';
+var isniShownLoaded = false;
+
+/* Affiche la fiche repliee pour un identifiant donne. Rend true si quelque
+   chose est affiche, false si l'ISNI est vide — auquel cas la boite est
+   retiree, ce qui est le bon comportement pour un compositeur sans ISNI.
+
+     isni    l'identifiant, espaces indifferents
+     label   le nom affiche devant lui (facultatif)  */
+function showIsniBox(isni, label){
+
+    var id = String(isni || '').replace(/\s+/g, '');
+    if(!id){ hideIsniBox(); return false; }
+
+    var box = ensureIsniBox();
+
+    /* L'en-tete EST le bouton. La croix disparait dans ce mode : une fiche
+       qu'on n'a pas ouverte n'a pas a etre fermee, et le pli suffit. Elle
+       reste en place pour les pages en mode clic — d'ou le retrait par CSS
+       plutot que par suppression du noeud. */
+    box.addClass('isni-foldable');
+
+    if(id !== isniShown){
+        isniShown = id;
+        isniShownLoaded = false;
+        box.find('.isni-bd').empty();
+    }
+
+    var head = 'ISNI ' + id.replace(/(.{4})(?=.)/g, '$1 ');
+    var lbl  = String(label || '').trim();
+
+    /* L'en-tete est reconstruit a chaque fois : c'est le seul endroit ou le
+       nom du compositeur change sans que l'identifiant change (deux fiches
+       fusionnees, une graphie corrigee). Le cout est nul, le noeud est unique. */
+    box.find('.isni-hd-t').html(
+        '<button type="button" class="isni-toggle" aria-expanded="false">'
+        + esc(lbl ? lbl + ' — ' + head : head)
+        + '<span class="isni-caret" aria-hidden="true"></span></button>');
+
+    box.addClass('open').addClass('is-folded');
+    isniAnchor = null;          // pas d'ancre : la fiche n'est pas posee sous un lien
+    return true;
+}
+
+/* Retire la fiche. A appeler quand la selection change pour un compositeur
+   sans ISNI, ou quand il n'y a plus de selection du tout : sans cela, la
+   fiche du precedent resterait affichee sous une boite orange qui parle de
+   quelqu'un d'autre — le pire des deux mondes. */
+function hideIsniBox(){
+    $('#isniBox').removeClass('open is-folded');
+    isniShown = '';
+    isniShownLoaded = false;
+}
+
+/* Le pli. Au PREMIER depliage seulement, la notice est demandee au proxy. */
+function toggleIsniBox(){
+
+    var box = $('#isniBox');
+    if(!box.length) return;
+
+    var folded = box.hasClass('is-folded');
+    box.toggleClass('is-folded', !folded);
+    box.find('.isni-toggle').attr('aria-expanded', folded ? 'true' : 'false');
+
+    if(!folded || isniShownLoaded || !isniShown) return;
+
+    // On deplie et rien n'est charge : c'est ici, et seulement ici, que le
+    // reseau est sollicite.
+    isniShownLoaded = true;
+
+    if(isniCache[isniShown]){ renderIsniBox(isniCache[isniShown]); return; }
+
+    var id = isniShown;
+    box.find('.isni-bd').html('<p class="isni-wait">Querying ISNI&hellip;</p>');
+
+    $.ajax({url: 'php/retrieve_isni.php', type: 'POST', dataType: 'json', data: {isni: id}})
+
+        .done(function(data){
+            isniCache[id] = data;
+            if(isniShown === id) renderIsniBox(data);
+        })
+
+        .fail(function(){
+            // meme en cas d'echec la fiche reste utile : les deux liens
+            // canoniques se construisent sans le serveur. NON mis en cache —
+            // une panne reseau ne doit pas condamner l'identifiant pour la
+            // duree de la session.
+            isniShownLoaded = false;
+            if(isniShown !== id) return;
+            renderIsniBox({status: 'error', isni: id, links: {
+                isni_org:  'https://isni.org/isni/' + id,
+                isni_oclc: 'https://isni.oclc.org/cbs/DB=1.2//CMD?ACT=SRCH&IKT=8006&TRM=ISN%3A'
+                           + id + '&TERMS_OF_USE_AGREED=Y&terms_of_use_agree=send'
+            }});
+        });
 }
 
 /* =======================================================================
@@ -387,6 +531,13 @@ function openIsniBox(anchor){
 
     var box = ensureIsniBox();
     isniAnchor = anchor;
+
+    /* Mode clic : on quitte le mode replie s'il avait ete pose. Aucune des
+       quatre pages historiques ne melange les deux, mais la boite est unique
+       et un reste de pli la laisserait vide apres un clic. */
+    box.removeClass('isni-foldable is-folded');
+    isniShown = '';
+    isniShownLoaded = false;
 
     // En-tete : l'identifiant, precede du nom quand l'element clique en porte
     // un (data-label). Utile surtout en mode panneau, ou la fiche n'est plus

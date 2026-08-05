@@ -33,22 +33,34 @@
 				<li class="b_off" id="anim">anim</li>
 			</ul>
 			<?php include_once("./php/menus.php") ?>
-			<div id="searchBox">
-				<label for="searchTerms">composer name</label>
-				<form id="myForm">
-				    <input id="searchTerms" type="text" value="">
-				</form>
+			<!-- Les deux outils de la page sont EMPILES et forment un seul bloc,
+			     cale a droite de la barre. Groupes dans #tools plutot que poses
+			     cote a cote dans #ctrl_bar : elements independants, ils se
+			     reordonnaient au gre des retours a la ligne du flex et le filtre
+			     passait sous les menus. Un seul element ne se coupe pas en deux.
+			     Voir css/overview.css. -->
+			<div id="tools">
+				<div class="tool-row">
+					<div id="searchBox">
+						<label for="searchTerms">composer name</label>
+						<form id="myForm">
+						    <input id="searchTerms" type="text" value="">
+						</form>
+					</div>
+					<div id="searchBoxBtn"></div>
+				</div>
+				<div class="tool-row">
+					<div id="filters">
+						<label for="numOfRecords">num of records &gt;=</label>
+						<form id="formFilters">
+						    <!-- <input id="year_01" type="text"> -->
+						    <!-- <input id="year_02" type="text"> -->
+						    <input id="numOfRecords" type="text" value="1">
+						</form>
+					</div>
+					<div id="filtersBtn"></div>
+				</div>
 			</div>
-			<div id="searchBoxBtn"></div>
-			<div id="filters">
-				<label for="numOfRecords">num of records &gt;=</label>
-				<form id="formFilters">
-				    <!-- <input id="year_01" type="text"> -->
-				    <!-- <input id="year_02" type="text"> -->
-				    <input id="numOfRecords" type="text" value="1">
-				</form>
-			</div>
-			<div id="filtersBtn"></div>
 		</div>
 			<div id="board">
 				<div id="left_col">
@@ -75,8 +87,8 @@
 				<div>
 					<p><strong>Selection &amp; search</strong></p>
 					<ul>
-						<li>click a square to select a composer: the orange box sums up their participations, and the purple box below gives the number of archived works &mdash; click that count to unfold the list of works, click it again to fold it back</li>
-						<li>in that orange box, a name <span class="composer-isni">underlined with dots</span> has an ISNI: click it to open the composer's international identity record just below &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. Close it with the cross or the <em>Esc</em> key; selecting another composer replaces it</li>
+						<li>click a square to select a composer: the boxes on the right fill up, and each of them is <strong>folded</strong> &mdash; the orange one names the composer, their country code and how many editions they entered; the purple one counts their archived works. Click a box's header to unfold it, click again to fold it back</li>
+						<li>a third box appears between the two <strong>only for composers who have an ISNI</strong>, and its header is that identifier. Unfold it to load the international identity record &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. Nothing is requested until you unfold it, and a record already opened once is kept for the session. Selecting another composer replaces it; selecting one without an ISNI removes it</li>
 						<li>type a name in <em>composer name</em> to list matching composers; click a result to highlight their squares in yellow</li>
 						<li><em>num of records &gt;=</em> rebuilds the index with only the composers having at least that many archived works</li>
 						<li>a result marked <em>not in this index</em> has no square to highlight: some composers are in the repertoire without appearing in this participation grid, because no participation has been recorded for them in the minutes entered so far &mdash; their works are still listed on the catalogue and award pages</li>

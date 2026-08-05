@@ -5,24 +5,113 @@
    page propre à cette vue.
    ========================================================= */
 
-/* ---------- Recherche et filtres (présents sur cette page seule) ---------- */
+/* ---------- Les deux outils de la page : recherche et filtre ----------
 
+   EMPILES, ET CALES A DROITE (2026-08-05). Ils etaient cote a cote, quatre
+   elements independants dans le flex de #ctrl_bar : « composer name », sa
+   fleche, « num of records », sa fleche. Des que la barre se repliait, ils se
+   redistribuaient un a un — le filtre passait sous les menus, la fleche de la
+   recherche restait en haut. Ils sont maintenant DANS UN SEUL element,
+   #tools, qui ne peut pas se couper en deux.
+
+   `margin-left: auto` les pousse contre le bord droit de la barre : ils y
+   restent quelle que soit la largeur, et la place variable est prise par
+   l'espace qui les precede, non par eux.
+
+   ⚠️ LA HAUTEUR EST CONTRAINTE. La barre est fixe et sa hauteur est declaree
+   une fois, `--sd-bar-h` (128px) dans main.css ; toutes les pages calent leur
+   contenu dessous avec `margin-top: calc(var(--sd-bar-h) + 8px)`. Deux rangees
+   empilees doivent donc tenir dans 128px moins le padding de la barre, soit
+   118px. Trois valeurs ont ete rabotees pour cela — padding des boites 8 -> 5,
+   marge sous le libelle 4 -> 2, padding vertical des champs 5 -> 4 —, ce qui
+   ramene la barre de 137 a 127px. MESURE dans le navigateur, pas calculee :
+   la hauteur d'une ligne de texte depend de la police. Si l'un de ces nombres
+   change, remesurer — sinon la grille passe sous la barre sans que rien ne le
+   signale, et le defaut est invisible tant qu'on ne fait pas defiler. */
+#ctrl_bar #tools{
+	display: flex;
+	flex-direction: column;
+	gap: var(--sd-gap);
+	margin-left: auto;
+	flex: 0 0 auto;
+}
+#ctrl_bar #tools .tool-row{
+	display: flex;
+	gap: var(--sd-gap);
+	align-items: stretch;
+}
+
+/* --- LE PALIER DE 1100px N'A PLUS LIEU D'ETRE SUR CETTE PAGE -------------
+   main.css double la hauteur de la barre sous 1100px (--sd-bar-h: 256px),
+   parce que la barre passait alors a deux rangees. Ce palier avait ete regle
+   sur Overview, qui portait QUATRE elements d'outils cote a cote et etait donc
+   la plus large des sept barres. Empiles, ils n'en font plus qu'un, moitie
+   moins large : la barre tient sur une rangee jusqu'a 910px.
+
+   Sans cette regle, la page reservait 128px de barre VIDE entre 1100 et 910px
+   — soit exactement les largeurs d'un portable courant. Mesure a l'appui :
+   a 1000px, une seule rangee pour une barre de 256px.
+
+   Surcharge locale et non correction de main.css : les six autres pages n'ont
+   pas les memes outils, et rien ne dit que leur barre tienne, elle, sous
+   1100px. Le palier commun reste leur garde-fou. */
+@media (max-width: 1100px) and (min-width: 911px){
+	:root{ --sd-bar-h: 128px; }
+}
+
+/* --- LA BARRE S'ARRETE OU S'ARRETE LE CONTENU -----------------------------
+   Consequence directe du plafond pose sur la grille (GRID_MAX_WIDTH = 1500px
+   dans js/overview.js). Sur un ecran de 2560px, le bloc grille + colonne se
+   termine a 1865px ; sans cette regle, les deux outils, cales a droite d'une
+   barre qui va d'un bord a l'autre, se retrouvaient a 700px du contenu qu'ils
+   commandent. Ils flottaient dans le vide.
+
+   1870 = 10 (padding gauche de #content) + 1500 (grille) + 10 (ecart) + 355
+   (colonne) + 5 (padding droit de la barre). Si le plafond du JS change,
+   celui-ci doit suivre — c'est le seul endroit ou les deux nombres se
+   rencontrent, d'ou ce commentaire des deux cotes.
+
+   La barre garde `left: 0` : elle ne se centre pas, elle s'arrete. Et son
+   fond ne laisse rien voir en s'arretant, `body` etant de la meme couleur
+   qu'elle (--sd-midnight) — c'est pourquoi la coupure est invisible alors
+   qu'une barre plus claire aurait demande de prolonger le fond. */
+#ctrl_bar{
+	max-width: 1870px;
+}
+
+/* --- LA COULEUR : turquoise, et la meme pour les deux ---------------------
+
+   C'etait rose et jaune. Deux teintes vives, hors de la palette Flat UI que
+   le reste du site suit, et sans rapport l'une avec l'autre alors qu'il
+   s'agit de deux objets de MEME NATURE : un champ, un libelle, une fleche qui
+   applique. Les menus, eux, sont tous du meme bleu et personne ne les
+   confond — le libelle suffit a les distinguer.
+
+   Turquoise #1abc9c : c'est le ton Flat UI dont --sd-greensea (#16a085) est
+   la version sombre, et le seul de la palette qui ne soit attribue a rien sur
+   cette page — le bleu est aux menus, le vert au compteur du SMA, l'orange a
+   la selection, l'ametyste aux oeuvres, et le bleu moyen a la fiche ISNI.
+
+   Mesure, contre le fond de barre --sd-midnight : 4,56. Le texte midnight
+   par-dessus : 4,56 aussi. Le rose donnait 7,14 et le jaune 10,23 — plus
+   contrastes, certes, mais c'est precisement ce qui les faisait crier plus
+   fort que la donnee. Le turquoise se voit sans hurler. */
 #ctrl_bar #searchBox,
 #ctrl_bar #filters{
-	padding: 8px;
+	padding: 5px;
 	width: auto;
 	height: auto;
 	min-width: 150px;
 	margin: 0;
+	flex: 1 1 auto;
+	background: #1abc9c;
 }
-#ctrl_bar #searchBox{ background: pink; }
-#ctrl_bar #filters{ background: yellow; }
 
 /* Libelles au-dessus des champs */
 #ctrl_bar #searchBox label,
 #ctrl_bar #filters label{
 	display: block;
-	margin: 0 0 4px;
+	margin: 0 0 2px;
 	font-size: 11px;
 	font-weight: 600;
 	letter-spacing: .04em;
@@ -39,7 +128,7 @@
 #ctrl_bar #numOfRecords{
 	box-sizing: border-box;
 	width: 100%;
-	padding: 5px 7px;
+	padding: 4px 7px;
 	border: 0;
 	background: #fff;
 	color: var(--sd-midnight);
@@ -58,34 +147,66 @@
 	padding: 0;
 	width: 30px;
 	height: auto;
+	flex: 0 0 30px;
+	display: flex;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
 	color: var(--sd-midnight);
 	font-size: 15px;
 	font-weight: 700;
+	background: #1abc9c;
 	transition: background 120ms ease;
 }
 #ctrl_bar #searchBoxBtn::after,
 #ctrl_bar #filtersBtn::after{
 	content: "\2192";                  /* flèche : « appliquer » */
 }
-#ctrl_bar #searchBoxBtn{ background: pink; }
-#ctrl_bar #filtersBtn{ background: yellow; }
+/* Au survol, le ton clair de la meme teinte plutot que le blanc : la fleche
+   reste lisible, et le bouton ne change pas de nature le temps d'un survol. */
 #ctrl_bar #searchBoxBtn:hover,
-#ctrl_bar #filtersBtn:hover{ background: #fff; }
+#ctrl_bar #filtersBtn:hover{ background: #48c9b0; }
 
 /* ---------- Deux colonnes ---------- */
 /* Colonne gauche = canvas + legende "How to read" (solidaires : la legende
    reste toujours collee sous le canvas, quelle que soit la hauteur de la
    boite violette). Colonne droite = petit canvas SMA + infos (dont la boite
    violette #titles qui peut s'etendre librement). */
-#board::after{ content: ""; display: table; clear: both; }
-#left_col{ float: left; }
+/* FLEXBOX ET NON FLOTTANTS depuis le 2026-08-05.
+
+   Les deux colonnes flottaient. Un flottant qui ne tient plus PASSE A LA
+   LIGNE : des que la fenetre retrecissait sous la largeur de la grille plus
+   celle de la colonne, la colonne de droite — SMA, boite verte, boite orange,
+   fiche ISNI, liste des oeuvres — descendait tout en bas de la page, sous la
+   legende. Elle n'etait pas perdue, mais il fallait la chercher.
+
+   Une ligne flex sans repli les tient cote a cote quoi qu'il arrive. Et pour
+   que « cote a cote » ne veuille pas dire « avec une barre de defilement
+   horizontale », la grille se re-repartit a la nouvelle largeur : voir
+   reflowGrid() dans js/overview.js. Les deux moities vont ensemble — la CSS
+   seule donnerait un debordement, le JS seul ne suffirait pas puisque le
+   canvas garde sa largeur le temps du recalcul temporise. */
+#board{
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: flex-start;
+}
+/* Le clearfix des flottants deviendrait un TROISIEME ELEMENT FLEX — une boite
+   vide qui prendrait sa part de la ligne. Il n'a plus d'objet : on le retire
+   plutot que de le laisser agir autrement qu'il ne dit. */
+#board::after{ display: none; }
+/* La grille ne s'etire ni ne se comprime : c'est le JS qui lui donne sa
+   largeur, en fonction de la place restante. `min-width: 0` empeche le
+   comportement par defaut d'un element flex, qui refuse de passer sous la
+   largeur de son contenu — sans lui, un canvas large repousserait la colonne
+   de droite hors de l'ecran au lieu de deborder proprement. */
+#left_col{ flex: 0 0 auto; min-width: 0; }
 /* Distance canvas <-> colonne de droite (boites verte/orange/violette) reduite
    de moitie : l'ecart total etait de 20px (5px de marge droite du canvas + 15px
-   ici), il passe a 10px. */
-#right_col{ float: left; margin-left: 5px; }
+   ici), il passe a 10px.
+   `flex: 0 0 auto` : la colonne garde sa largeur propre, elle ne se comprime
+   pas — ses boites sont a 330/350px fixes et se chevaucheraient. */
+#right_col{ flex: 0 0 auto; margin-left: 5px; }
 #left_col #myCanvas{ float: none; display: block; }
 /* border-box : la largeur fixee par le JS (= largeur du canvas) inclut le
    padding, donc la legende a exactement la meme largeur que la dataviz. */
@@ -211,4 +332,83 @@
 #selection .ed-fest{
 	border-bottom: 1px dotted currentColor;
 	cursor: help;
+}
+
+/* =========================================================================
+   LA BOITE ORANGE SE REPLIE — 2026-08-05
+
+   En-tete : « Prenom Nom ISO3 | n editions ». Sous le pli : la liste des
+   annees. Produit par selectionHtml() dans js/overview.js.
+
+   POURQUOI ICI ET NON DANS main.css, alors que le pli de la boite violette y
+   est. Ce n'est pas une hesitation : la boite violette est portee par DEUX
+   pages (Overview et Network) et construite par une fonction partagee —
+   displayTitlesInfosGN() —, donc ses regles doivent vivre a un seul endroit
+   accessible aux deux. La boite orange repliable n'existe que sur Overview.
+   La mettre dans la feuille commune la ferait charger par sept pages qui ne
+   la rencontrent jamais, et surtout laisserait croire qu'elle est partagee.
+   Le jour ou Network en veut une, ce bloc migre — il ne se recopie pas.
+
+   Le vocabulaire visuel, lui, est bien celui des deux autres plis : en-tete
+   pleine largeur, chevron qui pivote, corps masque. Trois plis dans le site,
+   une seule grammaire.
+   ========================================================================= */
+
+/* Marges NEGATIVES, meme raison qu'au #titles li.t-hd de main.css : #selection
+   porte son propre padding (5px 10px, dans main.css) sur fond orange. Un
+   bouton pose sagement dedans laisserait un lisere orange tout autour. Il en
+   ressort pour aller d'un bord a l'autre ; la liste des annees, elle, garde la
+   gouttiere. Si le padding de #selection change, ces marges doivent suivre. */
+#selection .s-hd{
+	margin: -5px -10px 0;
+}
+/* Replie, l'en-tete est le dernier element : le padding bas de #selection
+   laisserait a son tour une bande orange sous le bouton. */
+#selection.is-folded{
+	padding-bottom: 0;
+}
+#selection .s-toggle{
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	width: 100%;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 5px 10px;
+	border: 0;
+	background: none;
+	/* le texte etait noir sur orange ; il le reste — un bouton n'est pas une
+	   raison de changer la couleur de ce qu'on lisait hier. */
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+#selection .s-toggle:hover,
+#selection .s-toggle:focus{
+	background: rgba(255, 255, 255, .28);
+	outline: none;
+}
+#selection .s-caret{
+	flex: 0 0 auto;
+	width: 0;
+	height: 0;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 5px solid currentColor;
+	transition: transform 120ms ease;
+}
+#selection.is-folded .s-caret{
+	transform: rotate(-90deg);
+}
+/* Le corps : la liste des annees. PAS DE FILET au-dessus — il y en avait un,
+   et il ne separait rien : l'en-tete a deja son propre fond au survol, et le
+   pli lui-meme dit ou finit le titre. Une ligne de plus dans une boite de
+   deux lignes est du bruit. */
+#selection .s-bd{
+	margin-top: 4px;
+}
+#selection.is-folded .s-bd{
+	display: none;
 }

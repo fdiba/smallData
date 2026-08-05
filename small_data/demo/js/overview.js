@@ -100,7 +100,7 @@ window.onload = function() {
 
     resetPositions();
 
-    maxWidth=$(document).width()-(500+25); //context left pad = 10;
+    maxWidth = gridWidthAvailable();
     canvas.width = maxWidth;
     minHeight = 300;
     canvas.height = minHeight;
@@ -122,28 +122,156 @@ window.onload = function() {
        En FLUX, dans #isniColumn : Overview n'a pas de gouttiere libre — la
        grille occupe toute la largeur moins la colonne d'information — et une
        fiche flottante recouvrirait la boite violette. Elle se pose donc sous
-       la boite orange d'ou part le clic, et pousse la suite au lieu de la
-       masquer.
+       la boite orange, et pousse la suite au lieu de la masquer.
 
-       watch = 'selection' et non 'infos' comme sur les deux pages a tableau.
-       Deux raisons : la fiche est rendue DANS la colonne d'information, donc
-       observer #infos entier reviendrait a observer la fiche elle-meme et a
-       la refermer des son ouverture ; et elle ne recouvre plus rien, donc le
-       seul changement qui doive la refermer est celui qui la dement — un
-       autre compositeur selectionne. */
+       NI `clickable` NI `watch` DEPUIS LE 2026-08-05, et c'est le meme
+       changement vu de deux cotes.
+
+       `clickable` designait le nom du compositeur, souligne de pointilles :
+       il fallait deviner que le pointille cachait quelque chose, et le
+       decouvrir en cliquant. La fiche s'affiche maintenant d'elle-meme des
+       qu'un ISNI existe, repliee sur son identifiant — c'est l'ISNI, en titre
+       de sa propre boite, qui est desormais le bouton. Rien a deviner.
+
+       `watch` posait un observateur de mutations sur #selection pour refermer
+       la fiche quand la selection changeait. Il n'a plus d'objet : la fiche
+       n'est plus ouverte par un geste independant, elle est ecrite par
+       renderSelection() en meme temps que la boite orange, donc elle ne peut
+       plus se desynchroniser d'elle. Un observateur en plus n'aurait fait que
+       refermer, une micro-tache plus tard, la fiche qu'on venait d'ouvrir.
+
+       L'appel reste, pour le seul `into` : c'est lui qui declare le
+       conteneur et bascule la fiche en mode flux. */
     if(typeof enableIsniPanel === 'function'){
-        enableIsniPanel({
-            into:      'isniColumn',
-            clickable: '#selection .composer-isni',
-            watch:     'selection'
-        });
+        enableIsniPanel({ into: 'isniColumn' });
     }
 
+    bindGridReflow();
+
     setTimeout(getData(), 5000);
-    
+
     //getData();
 
 }
+
+/* =======================================================================
+   LA LARGEUR DISPONIBLE POUR LA GRILLE, ET POURQUOI ELLE SE MESURE
+
+   `$(document).width()` etait lu ici jusqu'au 2026-08-05. C'est la largeur
+   du DOCUMENT, pas celle de la fenetre : des que le contenu deborde, elle
+   vaut le debordement. Tant que la mesure n'etait faite qu'une fois, au
+   chargement, la difference ne se voyait pas. Elle devient une BOUCLE des
+   qu'on remesure : une grille trop large elargit le document, le document
+   elargi donne une largeur disponible plus grande, la grille s'elargit
+   encore. `clientWidth` de l'element racine est la bonne mesure — la zone
+   d'affichage, barre de defilement deduite.
+
+   Le 525 retire n'est plus un nombre en dur : c'est la largeur REELLE de la
+   colonne de droite, mesuree, plus la gouttiere de 5px que lui donne la CSS.
+   Elle valait 500+25 par estimation ; elle vaut aujourd'hui 350 + marges, et
+   elle changera encore si la colonne change. Un nombre en dur aurait laisse
+   la grille mordre sur la colonne ou lui abandonner de la place sans que
+   rien ne le signale.
+
+   Plancher a 120px : en dessous, la grille n'est plus une grille mais une
+   colonne de onze carres, et la page devient illisible avant d'etre
+   inutilisable. Le debordement horizontal reprend alors le relais — c'est le
+   seul cas ou on l'accepte.
+
+   PLAFOND A 1500px, et il ne s'agit pas de la meme chose. Le plancher evite
+   une degenerescence ; le plafond evite une largeur qui reste techniquement
+   correcte mais cesse d'etre LISIBLE. Passe 135 carres par rangee, l'oeil
+   perd la ligne en revenant a gauche — c'est la raison pour laquelle un
+   journal met des colonnes plutot qu'une seule mesure sur toute la page, et
+   elle vaut ici : chaque rangee est une liste qu'on parcourt.
+
+   ⚠️ CE NOMBRE A UN JUMEAU DANS LA CSS : `#ctrl_bar{ max-width: 1870px }`
+   (css/overview.css), qui arrete la barre de controle a la meme abscisse pour
+   que les deux outils ne flottent pas a 700px du contenu qu'ils commandent.
+   Si l'un change, l'autre doit suivre.
+
+   1500 n'est pas rond par hasard : 1500 + 10 d'ecart + 355 de colonne = 1865,
+   soit la bande entiere sur un ecran de 1920. Au-dela, l'espace gagne va a la
+   marge droite plutot qu'a la grille. Les deux colonnes restent calees a
+   GAUCHE : centrer la bande deplacerait la grille sur les ecrans larges, et
+   une dataviz qui bouge quand on agrandit la fenetre est plus deroutante
+   qu'une marge inegale.
+   ======================================================================= */
+var GRID_MAX_WIDTH = 1500;
+
+function gridWidthAvailable(){
+
+    /* On mesure #board et NON la fenetre. #board est un bloc : sa largeur est
+       celle de son conteneur, elle ne depend pas de ce qu'il contient — donc
+       pas de boucle si la grille deborde. Et elle a deja deduit le padding de
+       #content (10px a gauche, 5px a droite), qu'une mesure de la fenetre
+       aurait oublies : la grille mordait alors de quinze pixels sur la marge
+       droite. */
+    var board = document.getElementById('board');
+    var dispo = board ? board.clientWidth : 0;
+    if(!dispo) dispo = document.documentElement.clientWidth || $(window).width();
+
+    var col = document.getElementById('right_col');
+    var w   = col ? col.offsetWidth : 0;
+    if(!w) w = 350;                       // colonne pas encore mesurable
+
+    // 5px de gouttiere (#right_col margin-left) + 5px de marge droite du
+    // canvas (#myCanvas margin) : les deux ecarts que la CSS pose entre les
+    // deux colonnes et qu'il faut donc retrancher.
+    dispo -= w + 10;
+
+    return Math.max(120, Math.min(GRID_MAX_WIDTH, Math.round(dispo)));
+}
+
+/* Le recalcul au redimensionnement. La grille se re-repartit sur la nouvelle
+   largeur : elle change de forme, mais la colonne de droite reste a droite,
+   ce qui etait le defaut a corriger — avec des flottants et une largeur figee
+   au chargement, elle passait sous la grille des que la fenetre retrecissait.
+
+   TEMPORISE (150 ms). Un redimensionnement a la souris emet des dizaines
+   d'evenements par seconde et chaque recalcul reconstruit les ~5 700
+   rectangles de l'index : sans temporisation la fenetre devient poisseuse
+   pendant qu'on la tire.
+
+   LA SELECTION EST RETABLIE APRES COUP. Les rectangles sont recrees, donc
+   redessines a leur couleur de base : le compositeur selectionne perdrait
+   son marquage blanc. On le repose. Le surlignage JAUNE d'une recherche par
+   nom, lui, n'est PAS retabli — il tient a une liste de resultats et non a
+   l'etat de la page, et le reconstruire demanderait de rejouer la requete.
+   C'est une limite assumee, ecrite ici pour ne pas etre redecouverte comme
+   un bug. */
+var gridReflowTimer = null;
+var gridReflowBound = false;
+
+function bindGridReflow(){
+    if(gridReflowBound) return;
+    gridReflowBound = true;
+    $(window).on('resize.overviewgrid', function(){
+        if(gridReflowTimer) clearTimeout(gridReflowTimer);
+        gridReflowTimer = setTimeout(reflowGrid, 150);
+    });
+}
+
+function reflowGrid(){
+
+    gridReflowTimer = null;
+
+    // rien a re-repartir tant que les donnees ne sont pas arrivees
+    if(!allData || !rectangles.length) return;
+
+    var w = gridWidthAvailable();
+    if(w === maxWidth) return;            // largeur inchangee : ne rien refaire
+
+    maxWidth = w;
+
+    var n = parseInt($('#numOfRecords').val());
+    if(Number.isInteger(n) && n >= 1) processData002(n);
+    else                              processData();
+
+    // le compositeur selectionne garde son marquage
+    if(pAId >= 0) processAllRectWhithId(pAId);
+}
+
 function drawRect(x, y, c){
     context.fillStyle=c;
     context.fillRect(x, y, rWidth, rHeight);
@@ -162,9 +290,18 @@ function drawRect(x, y, c){
             (les quatre premiers sont lus par position : ajouter au milieu
             aurait casse l'affichage en silence)
 
-   Quand l'ISNI est la, le NOM SEUL devient cliquable et ouvre la notice
-   d'identite internationale juste sous cette boite. Le pays et les annees ne
-   le sont pas : le geste doit porter sur ce qu'il designe, la personne.
+   REPLIEE PAR DEFAUT depuis le 2026-08-05. L'en-tete porte ce qui identifie
+   la personne et rien de plus — « Prenom Nom ISO3 | n editions » —, la liste
+   des annees passe sous le pli. Motif : neuf annees (Mazurek, Rampazzi)
+   faisaient une boite de trois lignes qui repoussait la fiche ISNI et la
+   liste des oeuvres vers le bas a chaque clic sur la grille, et le compte
+   — la seule information qu'on lit vraiment d'un coup d'oeil — se perdait
+   dans l'enumeration.
+
+   LE NOM N'EST PLUS CLIQUABLE. Il l'etait, souligne de pointilles, et il
+   ouvrait la notice ISNI : il fallait deviner. La fiche s'affiche desormais
+   d'elle-meme des qu'un ISNI existe (voir renderSelection), et c'est
+   l'identifiant, en titre de sa propre boite, qui se deplie.
 
    Fonction a part, et non inline dans le rappel AJAX, pour etre testable
    hors navigateur (test_selection.js) — c'est le seul endroit de la page qui
@@ -176,18 +313,8 @@ function drawRect(x, y, c){
    n'a pas d'iso3 et affiche GB), a defaut le nom du pays. */
 function selectionHtml(arr){
 
-    var isni = $.trim(arr[4] || '');
-    var who  = $.trim((arr[0] || '') + ' ' + (arr[1] || ''));
-    var eds  = arr[3] || '';
-
-    // "edition" au singulier si une seule, "editions" au pluriel sinon
-    var edLabel = (('' + eds).split(',').length === 1 ? 'edition' : 'editions');
-
-    var whoHtml = (isni && who)
-        ? '<span class="composer-isni" tabindex="0" role="button"'
-          + ' data-isni="' + esc(isni) + '" data-label="' + esc(who) + '">'
-          + esc(who) + '</span>'
-        : esc(who);
+    var who = $.trim((arr[0] || '') + ' ' + (arr[1] || ''));
+    var eds = arr[3] || '';
 
     /* Le pays, et devant lui le pays d'origine quand la base en porte un —
        « ARG / FRA », dans l'ordre de la BnF (origine d'abord, les deux a
@@ -200,7 +327,94 @@ function selectionHtml(arr){
     var origin = esc($.trim(arr[5] || ''));
     var where  = (origin && ctry) ? (origin + ' / ' + ctry) : (origin || ctry);
 
-    return whoHtml + ' ' + where + ' | ' + edLabel + ': ' + editionsHtml(eds, arr[6]);
+    /* Le COMPTE d'editions, et non la liste : c'est lui qui tient sur la
+       ligne d'en-tete, quel que soit le compositeur. Il se lit sur la liste
+       affichee et non sur un champ separe — les deux se tromperaient
+       separement, c'est la lecon de editionYears() dans js/functions.js, ou
+       une annee repetee faisait compter deux fois une oeuvre programmee une
+       seule fois. */
+    var ans = [];
+    var brut = ('' + eds).split(',');
+    for(var i = 0; i < brut.length; i++){
+        var a = $.trim(brut[i]);
+        if(a) ans.push(a);
+    }
+    var n       = ans.length;
+    var edLabel = n + ' edition' + (n === 1 ? '' : 's');
+
+    /* Point median et non barre verticale : la barre est un separateur de
+       CHAMPS, elle decoupe la ligne en cases de formulaire. Le point median
+       separe des mentions d'une meme identite — c'est la ponctuation des
+       notices d'autorite, et cette ligne en est une. */
+    var head = $.trim(esc(who) + ' ' + where) + ' \u00b7 ' + edLabel;
+
+    /* Repliee, la boite ne montre que cette ligne. La liste des annees, qui
+       pouvait atteindre neuf entrees (Mazurek, Rampazzi) et passer a la ligne,
+       descend sous le pli. Meme patron que la boite violette « N archived
+       works » : en-tete-bouton, chevron, corps masque par .is-folded. */
+    return '<p class="s-hd"><button type="button" class="s-toggle" aria-expanded="false">'
+         + head + '<span class="s-caret" aria-hidden="true"></span></button></p>'
+         + '<p class="s-bd">' + editionsHtml(eds, arr[6]) + '</p>';
+}
+
+/* Le pli de la boite orange. Delegue sur #selection : l'en-tete est
+   reconstruit a chaque selection, un gestionnaire pose dessus serait a
+   reposer a chaque fois. Meme raisonnement, et meme drapeau, que
+   bindTitlesFold() dans js/functions.js.
+
+   ICI et non dans functions.js : la boite violette est portee par deux pages
+   (Overview et Network) et sa fonction de rendu est partagee ; la boite
+   orange repliable n'existe que sur Overview. Le jour ou Network en veut une,
+   c'est ce bloc qui migrera — pas une copie. */
+var selectionFoldBound = false;
+
+function bindSelectionFold(){
+    if(selectionFoldBound) return;
+    selectionFoldBound = true;
+    $(document).on('click', '#selection .s-toggle', function(){
+        var box    = $('#selection');
+        var folded = box.hasClass('is-folded');
+        box.toggleClass('is-folded', !folded);
+        $(this).attr('aria-expanded', folded ? 'true' : 'false');
+    });
+}
+
+/* Ecrit la boite orange pour un compositeur, et accorde la fiche ISNI a ce
+   qu'elle dit.
+
+   LES DEUX VONT ENSEMBLE, et c'est pourquoi ils sont dans la meme fonction.
+   Auparavant la fiche s'ouvrait sur un clic dans la boite orange et se
+   fermait sur un observateur de mutations pose sur #selection : deux
+   mecanismes independants pour un seul fait — « la selection a change ».
+   L'observateur a ete retire (voir l'appel a enableIsniPanel plus haut) ;
+   c'est desormais cette fonction, et elle seule, qui tient les deux boites
+   d'accord. Un compositeur sans ISNI retire la fiche du precedent au lieu de
+   la laisser sous une boite orange qui parle de quelqu'un d'autre. */
+function renderSelection(arr){
+
+    bindSelectionFold();
+
+    var who  = $.trim((arr[0] || '') + ' ' + (arr[1] || ''));
+    var isni = $.trim(arr[4] || '');
+
+    $('#selection').addClass('is-folded').html(selectionHtml(arr));
+
+    /* La fiche ne REPETE PAS le nom : il est deja en toutes lettres dans la
+       boite orange, juste au-dessus, et les deux boites se lisent comme un
+       seul bloc. Son en-tete ne porte donc que l'identifiant — ce qu'elle
+       apporte, et rien de ce qu'on sait deja. `showIsniBox` accepte un
+       libelle en second argument, utile a une page ou la fiche serait loin de
+       ce qu'elle nomme ; ici elle en est voisine. */
+    if(typeof showIsniBox === 'function'){
+        if(isni) showIsniBox(isni);
+        else if(typeof hideIsniBox === 'function') hideIsniBox();
+    }
+}
+
+/* Retour a l'etat neutre : plus de selection, donc plus de fiche. */
+function clearSelection(txt){
+    $('#selection').removeClass('is-folded').empty().append('<p>' + esc(txt) + '</p>');
+    if(typeof hideIsniBox === 'function') hideIsniBox();
 }
 /* Les annees de participation, celles qui ne reposent QUE sur une programmation
    au festival etant marquees d'un degre (°).
@@ -432,9 +646,10 @@ function selectRect(x, y){
                     var arr  = str.split("%");
                     var ctry = arr[2];
 
-                    // .html() et non .text() : le nom porte desormais un
-                    // balisage quand la fiche a un ISNI (voir selectionHtml).
-                    $("#selection p").html(selectionHtml(arr));
+                    // renderSelection() ecrit la boite orange ET accorde la
+                    // fiche ISNI : les deux disent la meme selection, elles
+                    // sont donc ecrites au meme endroit.
+                    renderSelection(arr);
 
                     //------- cookie stuff
 
@@ -570,9 +785,7 @@ function getData(){
             if(numTitles>0)numComposersInCapsules++;
         }
 
-        var txt = "no selection — click a square to display a composer";
-        $("#selection").empty().append('<p>');
-        $("#selection p").append(txt);
+        clearSelection("no selection — click a square to display a composer");
 
         var num = allData.length / 6;
         var txt2 = numComposersInCapsules+ " / " + num + " composers with archived works";
@@ -696,8 +909,9 @@ function getSearchTerms(){
     var terms = $('#searchTerms').val();
 
     // une recherche par nom repart d'un etat neutre : on reinitialise la fiche
-    // du compositeur precedemment selectionne (boite orange + boite violette)
-    $("#selection").empty().append('<p>no selection</p>');
+    // du compositeur precedemment selectionne (boite orange, boite violette,
+    // et la fiche ISNI que clearSelection() retire avec la boite orange)
+    clearSelection('no selection');
     $("#titles").empty();
 
     if(terms==""){
