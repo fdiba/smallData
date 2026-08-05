@@ -139,18 +139,89 @@ function displayFirstnameAndNameGN(obj){
     var txt = obj.fn+' '+obj.n;
     var isni = obj.isni ? $.trim(obj.isni) : '';
 
+    /* LE NOM N'EST PLUS CLIQUABLE — 2026-08-05, apres Overview.
+       Il portait un souligne pointille et ouvrait la notice ISNI : il fallait
+       avoir remarque le pointille, puis deviner ce qu'il cachait. La fiche
+       s'affiche desormais d'elle-meme, repliee sur l'identifiant, et c'est cet
+       identifiant — titre de sa propre boite — qui se deplie. Rien a deviner,
+       et la boite d'identite redevient du texte. */
     $("#selection").empty().append('<p>');
-
-    if(isni && typeof esc === 'function'){
-        $("#selection p").html(
-            '<span class="composer-isni" tabindex="0" role="button"'
-            + ' data-isni="'+esc(isni)+'" data-label="'+esc(txt)+'">'
-            + esc(txt)+'</span>');
-    } else {
-        $("#selection p").text(txt);
-    }
-
+    $("#selection p").text(txt);
     $("#selection").append(countryLineHtml(obj.origin, obj.ctry));
+
+    /* La fiche ISNI suit la boite d'identite, et elle est ecrite ICI pour la
+       meme raison qu'elle l'est dans renderSelection() sur Overview : les deux
+       disent la MEME selection. Tant qu'elles etaient tenues par deux
+       mecanismes independants — un clic pour ouvrir, un observateur de
+       mutations pour fermer —, elles pouvaient se contredire. Un compositeur
+       sans ISNI retire donc la fiche du precedent, au lieu de la laisser sous
+       une boite qui parle de quelqu'un d'autre.
+
+       Rien n'est demande au reseau tant que la fiche n'est pas depliee : le
+       nom et l'identifiant viennent du meme flux que la selection. */
+    syncIsniBoxGN(isni);
+}
+
+/* Accorder la fiche ISNI a la selection courante — TROIS PAGES, UN SEUL
+   ENDROIT.
+
+   Overview, Network et Line Charts affichent chacune une boite d'identite
+   (respectivement #selection, #selection et #composerBox) et chacune, depuis
+   le 2026-08-05, doit poser la fiche ISNI EN MEME TEMPS : l'ancienne paire
+   « un clic pour ouvrir, un observateur de mutations pour fermer » pouvait
+   laisser la fiche d'un compositeur sous le nom d'un autre.
+
+   Les quatre lignes qui suivent etaient donc sur le point d'exister en trois
+   exemplaires. C'est exactement ce qui avait laisse survivre l'en-tete
+   « imeb id » sur une page apres sa correction sur les autres, et ce qui a
+   motive l'extraction de js/isni_box.js, de js/legend_toggle.js, puis du repli
+   de la boite violette dans ce fichier meme. Une seule copie.
+
+   Rend true si une fiche est affichee. */
+function syncIsniBoxGN(isni){
+
+    if(typeof showIsniBox !== 'function') return false;   // page sans isni_box.js
+
+    var id = isni ? $.trim('' + isni) : '';
+    if(id) return showIsniBox(id);
+
+    /* Pas d'ISNI : on RETIRE celle du precedent. C'est la moitie qu'on oublie,
+       et c'est la plus visible — une notice d'identite sous une boite qui
+       nomme quelqu'un d'autre est pire que pas de notice du tout. */
+    if(typeof hideIsniBox === 'function') hideIsniBox();
+    return false;
+}
+
+/* Ecrire une ligne unique dans la boite d'identite — « 12 composers »,
+   « 340 elements ».
+
+   ⚠️ POURQUOI CE DETOUR PLUTOT QU'UN `$("#selection p").text(txt)`.
+   Depuis que la boite porte une LIGNE DE PAYS sous le nom, elle contient DEUX
+   <p>. Un selecteur « #selection p » les designe tous les deux, et .text() les
+   ecrit tous les deux : le nombre de compositeurs s'affichait donc DEUX FOIS
+   quand on ouvrait un groupe du SMA. Le defaut date de l'ajout de la ligne de
+   pays et ne se voyait que sur ce geste-la.
+
+   On vide donc avant d'ecrire — ce que js/sma_core.js faisait deja deux lignes
+   plus loin pour la meme boite, et c'est de la que vient le motif.
+
+   La fiche ISNI part avec : un groupe n'est pas un compositeur, et laisser la
+   notice du precedent sous « 12 composers » serait la meme desynchronisation
+   que celle corrigee partout ailleurs le 2026-08-05. */
+function setSelectionTextGN(txt){
+    $("#selection").empty().append('<p>');
+    $("#selection p").text(txt);
+    if(typeof hideIsniBox === 'function') hideIsniBox();
+}
+
+/* Remettre la colonne d'information a zero : plus de compositeur, donc plus de
+   boite d'identite ET plus de fiche ISNI. Les deux vont ensemble — c'est tout
+   l'objet du changement ci-dessus, et un `$("#selection").empty()` isole les
+   separerait de nouveau. Appele par js/particles.js a la fermeture d'un groupe
+   et quand une fiche n'a aucune oeuvre. */
+function clearIdentityBoxGN(){
+    $("#selection").empty();
+    if(typeof hideIsniBox === 'function') hideIsniBox();
 }
 /* Le couple « origine / pays », rendu comme la BnF l'ecrit dans ses notices
    d'autorite — « Pays : Argentine / France » — c'est-a-dire les deux a EGALITE

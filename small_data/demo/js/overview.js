@@ -185,11 +185,6 @@ window.onload = function() {
    journal met des colonnes plutot qu'une seule mesure sur toute la page, et
    elle vaut ici : chaque rangee est une liste qu'on parcourt.
 
-   ⚠️ CE NOMBRE A UN JUMEAU DANS LA CSS : `#ctrl_bar{ max-width: 1870px }`
-   (css/overview.css), qui arrete la barre de controle a la meme abscisse pour
-   que les deux outils ne flottent pas a 700px du contenu qu'ils commandent.
-   Si l'un change, l'autre doit suivre.
-
    1500 n'est pas rond par hasard : 1500 + 10 d'ecart + 355 de colonne = 1865,
    soit la bande entiere sur un ecran de 1920. Au-dela, l'espace gagne va a la
    marge droite plutot qu'a la grille. Les deux colonnes restent calees a
@@ -404,17 +399,18 @@ function renderSelection(arr){
        seul bloc. Son en-tete ne porte donc que l'identifiant — ce qu'elle
        apporte, et rien de ce qu'on sait deja. `showIsniBox` accepte un
        libelle en second argument, utile a une page ou la fiche serait loin de
-       ce qu'elle nomme ; ici elle en est voisine. */
-    if(typeof showIsniBox === 'function'){
-        if(isni) showIsniBox(isni);
-        else if(typeof hideIsniBox === 'function') hideIsniBox();
-    }
+       ce qu'elle nomme ; ici elle en est voisine.
+
+       syncIsniBoxGN() est dans js/functions.js : Network et Line Charts font
+       le meme geste, et trois copies de quatre lignes en auraient fait trois
+       a corriger. */
+    syncIsniBoxGN(isni);
 }
 
 /* Retour a l'etat neutre : plus de selection, donc plus de fiche. */
 function clearSelection(txt){
     $('#selection').removeClass('is-folded').empty().append('<p>' + esc(txt) + '</p>');
-    if(typeof hideIsniBox === 'function') hideIsniBox();
+    syncIsniBoxGN('');
 }
 /* Les annees de participation, celles qui ne reposent QUE sur une programmation
    au festival etant marquees d'un degre (°).

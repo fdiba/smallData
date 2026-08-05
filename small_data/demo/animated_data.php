@@ -78,7 +78,7 @@
 						<li><span class="demo demo-selected">Name</span> took part in the selected edition</li>
 						<li><span class="demo">Name</span> listed in the minutes, but no archived work</li>
 						<li>the orange bar sums up the current selection — click it to switch between all composers and those of the selected edition only</li>
-						<li>clicking a name opens a panel on the right: the composer's name, then the number of their archived works &mdash; click that count to unfold the list. A name <span class="composer-isni">underlined with dots</span> has an ISNI: click it to open the international identity record between the two boxes</li>
+						<li>clicking a name opens a panel on the right: the composer's name, then the number of their archived works &mdash; click that count to unfold the list. For a composer who <strong>has an ISNI</strong>, a third box appears between the two, headed by that identifier: click the header to unfold the international identity record. Nothing is requested until you unfold it</li>
 					</ul>
 				</div>
 			</div>

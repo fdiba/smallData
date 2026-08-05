@@ -36,12 +36,22 @@
 				<li class="b_off" id="get_sl">compute traces</li>
 				<li class="b_off" id="cp_all">compute all</li>		
 			</ul>
-			<div id="sma_main_ctrl">
-				<ul>
-				</ul>
-			</div>
-			<div id="commons">
-				<p></p>
+			<!-- Les deux panneaux blancs dans UN SEUL conteneur : elements
+			     independants dans le flex de la barre, ils se separaient des
+			     que celle-ci se repliait — le controle du SMA restait en haut,
+			     la boite d'information passait a la ligne suivante, tout a
+			     gauche. #sma_menu existe deja pour cela sur les oeuvres
+			     primees, le catalogue et les Euphonies, et sa regle est dans
+			     css/main.css : Network le reutilise tel quel, sans une ligne
+			     de CSS de plus. -->
+			<div id="sma_menu">
+				<div id="sma_main_ctrl">
+					<ul>
+					</ul>
+				</div>
+				<div id="commons">
+					<p></p>
+				</div>
 			</div>
 		</div>
 		<div id="main_container">
@@ -78,7 +88,7 @@
 						<li><span class="sq" style="background:#2ecc71"></span> a grouping of composers &mdash; click it to open it</li>
 						<li><span class="sq" style="background:#f1c40f"></span> an opened grouping, showing its members &mdash; double-click it to close it</li>
 						<li><span class="sq" style="background:#3498db"></span> a composer inside an opened grouping &mdash; click it to see how many archived works they have; click that count to unfold the list, click it again to fold it back</li>
-							<li>in the orange box, a name <span class="composer-isni">underlined with dots</span> has an ISNI: click it to open the composer's international identity record just below &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. Close it with the cross or the <em>Esc</em> key; selecting another composer replaces it</li>
+							<li>a box appears under the orange one <strong>only for composers who have an ISNI</strong>, and its header is that identifier. Click the header to unfold the international identity record &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. Nothing is requested until you unfold it, and a record already opened once is kept for the session. Selecting another composer replaces it; selecting one without an ISNI removes it</li>
 					</ul>
 				</div>
 				<div>

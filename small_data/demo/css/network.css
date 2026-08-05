@@ -10,18 +10,51 @@
 	padding: 0;
 	margin: 0;
 }
-#infos{
-	/*float:left;*/
-	/*float: left;
-	width:200px;
-	height:500px;*/
-	margin-left: 2px;
-	word-wrap: break-word;
-	float: left;
-	max-width: 300px;
-}
+/* --- LA COLONNE RESTE A DROITE DU CANVAS — 2026-08-05 --------------------
+
+   Le canvas et la colonne d'information FLOTTAIENT, et un flottant qui ne
+   tient plus passe a la ligne : sous ~1420px, la colonne — boite verte, boite
+   d'identite, fiche ISNI, liste des oeuvres — descendait sous le canvas, tout
+   en bas de la page. Meme defaut que sur Overview, meme correctif : une ligne
+   flex sans repli.
+
+   ⚠️ MAIS PAS LA MEME SUITE. Sur Overview, la grille se re-repartit a la
+   nouvelle largeur et il n'y a jamais de debordement horizontal. Ici c'est
+   impossible : le canvas de Network fait 1200x800 EN DUR (js/network.js), et
+   les agents du SMA vivent dans ces coordonnees — leurs positions, leurs
+   vitesses et la grille spatiale qui accelere les collisions. Le retrecir en
+   cours de simulation deplacerait tout le monde d'un coup.
+
+   Sous 1520px — mesure : 1200 de canvas + 5 + 2 d'ecarts + 300 de colonne +
+   15 de padding de page —, la page defile donc horizontalement. C'est le prix
+   demande, et il est explicite : mieux vaut chercher la colonne a droite en
+   faisant defiler que la trouver en bas apres avoir cru qu'elle avait
+   disparu. */
 #main_container{
 	margin-top: calc(var(--sd-bar-h) + 8px);
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: flex-start;
+}
+#main_container #myCanvas{
+	float: none;
+	display: block;
+	flex: 0 0 auto;
+}
+#infos{
+	/* LARGEUR FIXE, et non plus au contenu. En flottant, la colonne prenait la
+	   largeur de son contenu — 193px mesures — sous un plafond de 300px qui
+	   n'etait donc jamais atteint. C'etait sans consequence tant que la fiche
+	   ISNI ne s'ouvrait qu'au clic ; depuis qu'elle s'affiche d'elle-meme pour
+	   tout compositeur qui en porte un, une notice d'identite a 193px de large
+	   devient illisible. La colonne prend donc les 300px que son ancien
+	   `max-width` annoncait. */
+	flex: 0 0 300px;
+	width: 300px;
+	max-width: none;
+	float: none;
+	margin-left: 2px;
+	word-wrap: break-word;
 }
 #myCanvas{
 	margin: 0 5px 0 0;

@@ -128,21 +128,20 @@ window.onload = function() {
 
        En FLUX, dans #isniColumn : la colonne d'information est etroite et
        collee au canvas, il n'y a pas de gouttiere ou poser un panneau lateral.
-       La fiche se pose donc sous la boite orange d'ou part le clic, entre elle
-       et la liste des oeuvres, et pousse la suite au lieu de la masquer.
+       La fiche se pose donc sous la boite d'identite, entre elle et la liste
+       des oeuvres, et pousse la suite au lieu de la masquer.
 
-       watch = 'selection' : la fiche est rendue DANS la colonne, donc observer
-       #infos entier reviendrait a observer la fiche elle-meme et a la refermer
-       des son ouverture. Et comme elle ne recouvre plus rien, le seul
-       changement qui doive la refermer est celui qui la dement — un autre
-       compositeur selectionne. Le compteur de noeuds de la boite verte, lui,
-       ne la concerne pas. */
+       NI `clickable` NI `watch` DEPUIS LE 2026-08-05, comme sur Overview.
+       `clickable` designait le nom souligne de pointilles — il fallait deviner
+       ce que le pointille cachait ; la fiche s'affiche maintenant d'elle-meme,
+       repliee sur son identifiant, et c'est lui qui se deplie. `watch` posait
+       un observateur de mutations pour refermer la fiche quand la selection
+       changeait : il n'a plus d'objet, puisque displayFirstnameAndNameGN() (js/functions.js)
+       ecrit la fiche EN MEME TEMPS que la boite d'identite et qu'elles ne
+       peuvent donc plus se desynchroniser. L'appel reste pour le seul `into`,
+       qui declare le conteneur et bascule la fiche en mode flux. */
     if(typeof enableIsniPanel === 'function'){
-        enableIsniPanel({
-            into:      'isniColumn',
-            clickable: '#selection .composer-isni',
-            watch:     'selection'
-        });
+        enableIsniPanel({ into: 'isniColumn' });
     }
 
 }

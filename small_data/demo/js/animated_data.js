@@ -89,20 +89,21 @@ window.onload = function() {
     /* Fiche ISNI du compositeur selectionne (js/isni_box.js, partage avec
        Overview, Network, euphonies, catalog et award-winning_works).
 
-       En FLUX, dans #isniColumn, au milieu du panneau de droite : elle se
-       deplie ENTRE le nom qui l'ouvre et la liste des oeuvres, et pousse cette
+       En FLUX, dans #isniColumn : au milieu du panneau de droite, elle se
+       deplie ENTRE la boite du nom et la liste des oeuvres, et pousse cette
        derniere au lieu de la recouvrir.
 
-       watch = 'composerBox' : c'est la boite du nom qui dit de qui parle la
-       fiche. Elle change quand on choisit un autre compositeur — le seul
-       evenement qui doive la refermer. Observer le panneau entier reviendrait
-       a observer la fiche elle-meme et a la refermer des son ouverture. */
+       NI `clickable` NI `watch` DEPUIS LE 2026-08-05, comme sur Overview.
+       `clickable` designait le nom souligne de pointilles — il fallait deviner
+       ce que le pointille cachait ; la fiche s'affiche maintenant d'elle-meme,
+       repliee sur son identifiant, et c'est lui qui se deplie. `watch` posait
+       un observateur de mutations pour refermer la fiche quand la selection
+       changeait : il n'a plus d'objet, puisque displayComposerBox()
+       ecrit la fiche EN MEME TEMPS que la boite d'identite et qu'elles ne
+       peuvent donc plus se desynchroniser. L'appel reste pour le seul `into`,
+       qui declare le conteneur et bascule la fiche en mode flux. */
     if(typeof enableIsniPanel === 'function'){
-        enableIsniPanel({
-            into:      'isniColumn',
-            clickable: '#composerBox .composer-isni',
-            watch:     'composerBox'
-        });
+        enableIsniPanel({ into: 'isniColumn' });
     }
 
     getData();
@@ -219,8 +220,11 @@ function displayTitlesInfos(){
     positionWorkPanel();
     matchComposersHeight();
 }
-/* La boite du nom. Cliquable seulement si la fiche porte un ISNI : un nom
-   souligne qui n'ouvre rien serait pire que pas de souligne du tout. */
+/* La boite du nom. LE NOM N'EST PLUS CLIQUABLE depuis le 2026-08-05 : il
+   portait un souligne pointille qui ouvrait la notice ISNI, et il fallait
+   avoir remarque le pointille pour le savoir. La fiche s'affiche desormais
+   d'elle-meme des qu'un ISNI existe, repliee sur son identifiant, et c'est
+   l'identifiant qui se deplie. */
 function displayComposerBox(){
 
     var box = $('#composerBox');
@@ -229,13 +233,16 @@ function displayComposerBox(){
     var who  = $.trim(lastComposerSelected || '');
     var isni = $.trim(lastComposerIsni || '');
 
-    if(!who){ box.empty(); return; }
+    /* Plus de compositeur choisi : la boite du nom ET la fiche s'en vont
+       ensemble. Les separer laisserait une notice d'identite sous un panneau
+       qui ne nomme plus personne. */
+    if(!who){
+        box.empty();
+        if(typeof hideIsniBox === 'function') hideIsniBox();
+        return;
+    }
 
-    box.html((isni && typeof esc === 'function')
-        ? '<p><span class="composer-isni" tabindex="0" role="button"'
-          + ' data-isni="'+esc(isni)+'" data-label="'+esc(who)+'">'
-          + esc(who)+'</span></p>'
-        : '<p>'+(typeof esc === 'function' ? esc(who) : who)+'</p>');
+    box.html('<p>'+(typeof esc === 'function' ? esc(who) : who)+'</p>');
 
     /* La ligne de pays, en couple quand la fiche porte une origine. Construite
        par js/functions.js — meme fonction que la boite orange de Network, donc
@@ -243,6 +250,13 @@ function displayComposerBox(){
     if(typeof countryLineHtml === 'function'){
         box.append(countryLineHtml(lastComposerOrigin, lastComposerCtry));
     }
+
+    /* Et la fiche, ecrite ici pour la meme raison que sur les deux autres
+       pages : les deux boites disent la MEME selection, elles sont donc
+       ecrites au meme endroit. Rien n'est demande au reseau avant le
+       depliage. syncIsniBoxGN() est dans js/functions.js — trois pages, une
+       seule copie. */
+    syncIsniBoxGN(isni);
 }
 /* Le panneau de droite (#workPanel : nom, fiche ISNI, oeuvres) remonte a
    hauteur du "How to read" (#legend) et se place a sa droite, dans l'espace

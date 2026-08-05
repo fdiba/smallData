@@ -118,7 +118,7 @@ Particle.prototype.openOrCloseIt = function(){
 	 	this.extra_radius=0.;
 	 	this.lastHit=-999;
 
-	 	$("#selection").empty();
+	 	clearIdentityBoxGN();          // boite d'identite ET fiche ISNI
 	 	$("#titles").empty();
 
 	}
@@ -182,7 +182,7 @@ Particle.prototype.getTitlesFrom=function(artist_id){
             this.titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
         }
 
-        if(this.titles.length<1)$("#selection").empty();
+        if(this.titles.length<1)clearIdentityBoxGN();
         displayTitlesInfosGN(this.titles);
 
     });
@@ -340,7 +340,10 @@ Particle.prototype.update = function(index, particles){
 
 			// var txt = this.ids.toString();
 			var txt = this.ids.length+' composers';
-			$("#selection p").text(txt);
+			// setSelectionTextGN (js/functions.js) et non $("#selection p") :
+			// la boite porte deux <p> depuis la ligne de pays, et le selecteur
+			// les ecrivait TOUS LES DEUX — le nombre s'affichait deux fois.
+			setSelectionTextGN(txt);
 
 		}
 	} else if(this.open){

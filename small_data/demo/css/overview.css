@@ -14,9 +14,13 @@
    recherche restait en haut. Ils sont maintenant DANS UN SEUL element,
    #tools, qui ne peut pas se couper en deux.
 
-   `margin-left: auto` les pousse contre le bord droit de la barre : ils y
-   restent quelle que soit la largeur, et la place variable est prise par
-   l'espace qui les precede, non par eux.
+   CALES A GAUCHE, a la suite des menus : ils sont un outil de la page, pas un
+   accessoire relegue au bout de la barre, et l'oeil les trouve sur le meme
+   parcours que la navigation. Ils ont d'abord ete pousses a droite
+   (`margin-left: auto`) — c'est ce qui obligeait a arreter la barre a la
+   largeur du contenu sur les tres grands ecrans, faute de quoi ils flottaient
+   a 700px de la grille qu'ils commandent. Cales a gauche, le probleme ne se
+   pose plus : ils suivent les menus, ou que s'arrete la fenetre.
 
    ⚠️ LA HAUTEUR EST CONTRAINTE. La barre est fixe et sa hauteur est declaree
    une fois, `--sd-bar-h` (128px) dans main.css ; toutes les pages calent leur
@@ -32,7 +36,6 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--sd-gap);
-	margin-left: auto;
 	flex: 0 0 auto;
 }
 #ctrl_bar #tools .tool-row{
@@ -59,25 +62,12 @@
 	:root{ --sd-bar-h: 128px; }
 }
 
-/* --- LA BARRE S'ARRETE OU S'ARRETE LE CONTENU -----------------------------
-   Consequence directe du plafond pose sur la grille (GRID_MAX_WIDTH = 1500px
-   dans js/overview.js). Sur un ecran de 2560px, le bloc grille + colonne se
-   termine a 1865px ; sans cette regle, les deux outils, cales a droite d'une
-   barre qui va d'un bord a l'autre, se retrouvaient a 700px du contenu qu'ils
-   commandent. Ils flottaient dans le vide.
-
-   1870 = 10 (padding gauche de #content) + 1500 (grille) + 10 (ecart) + 355
-   (colonne) + 5 (padding droit de la barre). Si le plafond du JS change,
-   celui-ci doit suivre — c'est le seul endroit ou les deux nombres se
-   rencontrent, d'ou ce commentaire des deux cotes.
-
-   La barre garde `left: 0` : elle ne se centre pas, elle s'arrete. Et son
-   fond ne laisse rien voir en s'arretant, `body` etant de la meme couleur
-   qu'elle (--sd-midnight) — c'est pourquoi la coupure est invisible alors
-   qu'une barre plus claire aurait demande de prolonger le fond. */
-#ctrl_bar{
-	max-width: 1870px;
-}
+/* --- LA BARRE N'EST PLUS BORNEE ------------------------------------------
+   Elle l'a ete un moment (`max-width: 1870px`), le temps ou les outils
+   etaient cales a droite : sur un ecran de 2560px ils se retrouvaient sinon
+   a 700px du contenu qu'ils commandent. Les outils calant desormais a gauche,
+   la raison a disparu et la regle avec elle — une contrainte dont le motif
+   n'existe plus est une contrainte qu'on ne saura plus expliquer. */
 
 /* --- LA COULEUR : turquoise, et la meme pour les deux ---------------------
 

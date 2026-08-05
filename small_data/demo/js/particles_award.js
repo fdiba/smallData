@@ -393,6 +393,12 @@ Particle.prototype.update = function(i, particles){
 
 
 			var txt = this.records.length+' elements';
+			// vider avant d'ecrire : « #selection p » designe TOUS les <p> de
+			// la boite, et l'ecrit sur chacun. Un seul y vit aujourd'hui sur
+			// cette page, mais c'est exactement ce qui a fait afficher deux
+			// fois le nombre de compositeurs sur Network le jour ou une ligne
+			// de pays est venue s'ajouter sous le nom. Voir setSelectionTextGN.
+			$("#selection").empty().append('<p>');
 			$("#selection p").text(txt);
 
 		}
