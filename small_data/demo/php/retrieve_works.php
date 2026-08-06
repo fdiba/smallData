@@ -73,6 +73,32 @@
 		// Le rang n'est joint au libelle que pour les libelles GENERIQUES
 		// (« Prix », « Mention ») : « Mention speciale 3 » ne se dit pas.
 		//
+		// ⚠️ LES SELECTIONS NE SONT PAS DES RECOMPENSES — filtre du 2026-08-06.
+		//
+		// Un concours SELECTIONNE des oeuvres avant d'en primer quelques-unes.
+		// Le constat de 1985 en nomme vingt-quatre — « Ont ete selctionnees au
+		// 13eme Concours les oeuvres de : … » —, celui de 1973 en nomme deux.
+		// Elles sont dans la base et doivent y rester : c'est une decision du
+		// jury, attestee par un huissier, et rien d'autre ne la porte.
+		//
+		// MAIS CETTE PAGE LISTE DES OEUVRES PRIMEES, et une selection n'en est
+		// pas une. Les seize de 1985 y sont apparues le jour de son versement,
+		// parce que leurs deposants n'ont pas d'oeuvre primee cette annee-la et
+		// qu'ils passaient donc par cette branche.
+		//
+		// LE FILTRE PORTE SUR LE TYPE, PAS SUR LE LIBELLE. `imeb_distinction`
+		// a l'enum ('prix','selection','mention') depuis sa creation, et
+		// `selection` y attendait sans emploi — le §7.4 du chantier l'avait
+		// meme reserve a ce cas, avant que le §16.3 ne verse les deux bandes
+		// de 1973 en `mention`. Les deux paragraphes se contredisaient ; la
+		// question posee par cette page tranche, et DB/type_selection.sql
+		// remet les dix-huit lignes a `selection`.
+		//
+		// Filtrer sur le libelle aurait remis un code-book dans le PHP —
+		// « Oeuvre selectionnee par le jury », « Bande selectionnee par le
+		// jury », et le prochain mot du prochain constat. Le type classifie,
+		// le libelle cite la source : c'est le type qu'on interroge.
+		//
 		// LE DEUXIEME CHAMP SUIT LE MEME CODE-BOOK QUE LE CATALOGUE — corrige
 		// le 2026-08-04. Il valait « 100 + rang » pour une mention, la ou
 		// imeb_music.award_price ecrit 100 tout court quel que soit le rang.
@@ -136,7 +162,8 @@
 							INNER JOIN imeb_artist a ON a.id = b.id_artist
 							LEFT JOIN imeb_country pays ON a.id_country = pays.id
 							LEFT JOIN imeb_categorie catd ON catd.id = d.id_categorie
-							WHERE NOT EXISTS (
+							WHERE d.type <> \'selection\'
+							AND NOT EXISTS (
 								SELECT 1 FROM imeb_music m
 								WHERE m.id_artist = b.id_artist
 								AND m.award_year = c.annee)

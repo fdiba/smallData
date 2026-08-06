@@ -278,20 +278,36 @@ function renderSelection(works){
 
    `award_price` melange deux natures d'information. Pour la plupart des
    oeuvres c'est un RANG — 1, 2, 3 — ou un code de forme : 100 « Mention »,
-   600 « Residence ». Mais quatre valeurs designent une COMBINAISON, autour
-   du Grand prix du Conseil International de la Musique :
+   600 « Residence ». Mais CINQ valeurs designent une COMBINAISON, autour
+   des prix decernes HORS CATEGORIE par un organisme exterieur :
 
-       300  Prix CIME seul                  7 oeuvres
-       302  Prix CIME + Prix 1              2
-       303  Prix CIME + Mention             2
-       304  Prix CIME + Mention 1           1
+       200  Prix CNM seul                   4 oeuvres   1984-1987
+       300  Prix CIM France / CIME seul     7           1981-1987
+       302  ... + Prix 1                    2           1980, 1983
+       303  ... + Mention                   2           1984, 1985
+       304  ... + Mention 1                 1           1986
+
+   ⚠️ LE CODE NE DIT PAS QUEL ORGANISME, LE LIBELLE OUI. La famille des 300
+   couvre le Prix C.I.M. France (1981-1983) ET le Prix C.I.M.E. (1984-1987)
+   — deux prix distincts que le §16 du chantier a du separer, et que ce code
+   confond encore. Le 200 apparait en 1984 avec le Prix C.N.M., quand deux
+   prix hors categorie ont eu a coexister la meme annee.
 
    Comparees comme des nombres, elles depassent 100 : le premier prix
    analogique 1980 d'Yves Daoust, double d'un Grand prix, s'affichait donc
    APRES le deuxieme prix et apres les mentions de sa categorie.
 
-   Ces quatre-la passent en tete de leur categorie. C'est la seule place
-   qui se defende : un Grand prix international n'est pas au-dessous d'un
+   ⚠️ LE 200 MANQUAIT A CETTE LISTE JUSQU'AU 2026-08-06, et les quatre Prix
+      C.N.M. s'affichaient donc apres les mentions de leur categorie —
+      exactement le defaut que ce bloc corrige pour les autres. Il n'a ete vu
+      qu'en relisant `imeb_music` apres le versement de 1984, premiere
+      edition a en porter un. UNE LISTE DE VALEURS EN DUR NE SE MET PAS A
+      JOUR TOUTE SEULE : quand une edition entre, il faut redemander au
+      catalogue quelles valeurs existent, au lieu de supposer que celles
+      d'hier suffisent.
+
+   Ces cinq-la passent en tete de leur categorie. C'est la seule place
+   qui se defende : un prix international n'est pas au-dessous d'un
    deuxieme prix.
 
    CE N'EST PAS LE CODE-BOOK QUI REVIENT. On ne traduit rien ici — les
@@ -302,7 +318,7 @@ function renderSelection(works){
    ATTENTION AU 3. « Prix 3 » porte le code 3, quatre oeuvres au fonds :
    c'est un vrai rang, il ne fait pas partie de cette famille. Le test
    porte sur une LISTE de valeurs exactes, jamais sur « commence par 3 ». */
-var GRAND_PRIX = {300:1, 302:1, 303:1, 304:1};
+var GRAND_PRIX = {200:1, 300:1, 302:1, 303:1, 304:1};
 
 function ordreDistinction(code){
     return GRAND_PRIX[parseInt(code, 10)] ? -1 : code;
