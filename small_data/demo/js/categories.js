@@ -45,6 +45,11 @@ var records = null;         // reponse analysee, gardee pour les reconstructions
    flux sortants de la categorie. */
 var catComposers = {};
 
+/* Le meme compte, par SOUS-categorie, et pour la meme raison : la vue
+   allegee n'a pas de colonne compositeur, donc pas de flux sortant, mais
+   l'effectif reste vrai et l'infobulle le dit dans les deux vues. */
+var subComposers = {};
+
 /* Periode couverte par chaque categorie : { libelle: "1977-1998" }, ou
    "1985" quand les deux bornes sont egales. Elle vient de imeb_categorie —
    annee_debut et annee_fin, servies en fin d'enregistrement par
@@ -63,34 +68,58 @@ var catComposers = {};
       les deux. */
 var catPeriode = {};
 
+/* Periode de chaque SOUS-categorie, et elle n'est pas de la meme nature que
+   celle des categories.
+
+   ⚠️ CELLE-CI EST OBSERVEE, PAS DECLAREE. `imeb_categorie` donne des bornes
+      aux categories ; il n'existe AUCUNE table des sous-categories — leur
+      vocabulaire lui-meme ne vit que dans php/sous_categories.php. La seule
+      periode disponible est donc celle des oeuvres qui la portent, min et
+      max de leurs annees de prix.
+
+      Elle est stable en pratique — les sous-categories ne concernent que
+      2000-2009, editions versees et closes depuis longtemps, quand le
+      chantier des proces-verbaux en est a 1985 — mais elle bougerait si ces
+      annees-la etaient un jour reprises. La legende de la page le dit.
+
+      *Ce qu'on ne peut pas declarer, on le mesure — et on dit qu'on l'a
+      mesure.* */
+var subPeriode = {};
+
 // Donnees generees depuis la base (php/retrieve_categories.php) au lieu
-// du fichier data/smallData.csv. Reponse : neuf champs repetes,
-// annee%categorie%nom%prenom%isni%id_artist%editions%cat_debut%cat_fin.
+// du fichier data/smallData.csv. Reponse : dix champs repetes, annee%
+// categorie%nom%prenom%isni%id_artist%editions%cat_debut%cat_fin%sous_cat.
 d3.text("php/retrieve_categories.php", function(error, text){
 
   if(error || !text){ console.log('categories: aucune donnee'); return; }
 
   var raw = text.split("%");
   var data = [];
-  // 9 = longueur d'enregistrement, ecrite en dur des deux cotes : si un champ
-  // est ajoute a php/retrieve_categories.php, ce pas doit bouger avec lui.
-  // Il est passe de 7 a 9 le 2026-08-06, avec cat_debut et cat_fin.
+  // 10 = longueur d'enregistrement, ecrite en dur des deux cotes : si un
+  // champ est ajoute a php/retrieve_categories.php, ce pas doit bouger avec
+  // lui. 7 -> 9 le 2026-08-06 (cat_debut, cat_fin), puis 9 -> 10 le soir
+  // meme (sous_categorie).
   // editions = annees de participation au festival, separees par des virgules
-  // (a ne pas confondre avec year, l'annee du prix) ; vide pour 237 des 728
+  // (a ne pas confondre avec year, l'annee du prix) ; vide pour 236 des 727
   // oeuvres primees.
   // catDebut / catFin = les bornes de la categorie, vides pour les oeuvres
   // qui n'en ont pas.
-  for(var i=0; i+8 < raw.length; i+=9){
+  // subCat = le LIBELLE de la sous-categorie, deja traduit par le serveur
+  // (php/sous_categories.php) ; vide pour 575 des 727 oeuvres primees.
+  for(var i=0; i+9 < raw.length; i+=10){
     data.push({ year: raw[i], category: raw[i+1], name: raw[i+2],
                 firstName: raw[i+3], isni: raw[i+4], artistId: raw[i+5],
-                editions: raw[i+6], catDebut: raw[i+7], catFin: raw[i+8] });
+                editions: raw[i+6], catDebut: raw[i+7], catFin: raw[i+8],
+                subCat: raw[i+9] });
   }
 
   data.reverse();
 
   records = data;
   countComposersByCategory();
+  countComposersBySubCategory();
   collectCategoryPeriods();
+  collectSubCategoryPeriods();
   bindViewSwitch();
   build();
 });
@@ -149,6 +178,25 @@ function countComposersByCategory(){
   }
 }
 
+/* Compte des compositeurs distincts par sous-categorie, sur le meme
+   principe que countComposersByCategory : une paire sous-categorie +
+   id_artist n'est comptee qu'une fois. */
+function countComposersBySubCategory(){
+
+  var seen = {}, k, d, pair;
+
+  subComposers = {};
+
+  for(k = 0; k < records.length; k++){
+    d = records[k];
+    if(!d.subCat) continue;
+    pair = d.subCat + '' + d.artistId;
+    if(seen[pair]) continue;
+    seen[pair] = true;
+    subComposers[d.subCat] = (subComposers[d.subCat] || 0) + 1;
+  }
+}
+
 /* Periode de chaque categorie, relevee sur les enregistrements. Elle y est
    repetee a l'identique pour toutes les oeuvres d'une meme categorie : on
    prend la premiere rencontree et on n'y revient pas.
@@ -169,6 +217,34 @@ function collectCategoryPeriods(){
     if(!d.catDebut || !d.catFin) continue;
     catPeriode[cat] = (d.catDebut === d.catFin) ? d.catDebut
                                                 : d.catDebut + '-' + d.catFin;
+  }
+}
+
+/* Periode observee de chaque sous-categorie : la plus petite et la plus
+   grande annee de prix parmi les oeuvres qui la portent. Meme forme que
+   catPeriode — « 2000-2009 », ou une seule annee quand les deux bornes se
+   confondent. */
+function collectSubCategoryPeriods(){
+
+  var bornes = {}, k, d, an;
+
+  subPeriode = {};
+
+  for(k = 0; k < records.length; k++){
+    d = records[k];
+    if(!d.subCat) continue;
+    an = parseInt(d.year, 10);
+    if(isNaN(an)) continue;
+    if(!bornes[d.subCat]){ bornes[d.subCat] = [an, an]; continue; }
+    if(an < bornes[d.subCat][0]) bornes[d.subCat][0] = an;
+    if(an > bornes[d.subCat][1]) bornes[d.subCat][1] = an;
+  }
+
+  for(var lib in bornes){
+    if(!bornes.hasOwnProperty(lib)) continue;
+    subPeriode[lib] = (bornes[lib][0] === bornes[lib][1])
+                    ? String(bornes[lib][0])
+                    : bornes[lib][0] + '-' + bornes[lib][1];
   }
 }
 
@@ -349,10 +425,16 @@ function plural(n, word){
    legende et en-tetes le sont, la bulle etait restee en francais.
    La forme nomme d'abord la chose survolee, puis l'effectif : le nombre nu
    en tete ne disait pas de quoi il etait le nombre.
-     - a droite, categorie -> compositeur :
+     - vers un compositeur, depuis une categorie OU une sous-categorie :
        "Robert Normandeau — 2 awards in Programme (awarded 1988, 1993 · festival 1988, 1993)"
-     - a gauche, annee -> categorie :
+     - annee -> categorie :
        "Programme, 1988 — 3 awards"
+     - categorie -> sous-categorie, depuis le 2026-08-06 :
+       "Multimédia, Quadrivium — 5 awards"
+   Les deux dernieres passent par la meme branche : elle nomme les deux
+   extremites du flux, et c'est exactement ce qu'il faut dans les deux cas.
+   Le nom de la source apparait donc DANS la phrase, ce qui n'est pas une
+   repetition — un flux relie deux choses, et sa bulle doit dire lesquelles.
    La parenthese distingue deux choses que la base distingue :
      - "awarded" : imeb_music.award_year, l'annee du prix ;
      - "festival" : imeb_music.editions, les annees de participation.
@@ -387,9 +469,10 @@ function linkTitle(d){
 
    La bulle dit donc ce que le diagramme NE MONTRE PAS :
 
-     annee        30 awards in 6 categories
-     categorie    1977-1998 — 78 awards to 67 composers, across 20 editions
-     compositeur  5 awards in 3 categories
+     annee            30 awards in 6 categories
+     categorie        1977-1998 — 79 awards to 66 composers, across 20 editions
+     sous-categorie   2000-2009 — 27 awards to 26 composers, in 2 categories
+     compositeur      5 awards in 3 categories
 
    ⚠️ LA PERIODE N'EST PAS L'EFFECTIF D'EDITIONS, et les deux se lisent
       ensemble. « 1977-1998 » est la periode que la categorie COUVRE, telle
@@ -430,6 +513,16 @@ function nodeTitle(d){
     out += " to " + plural(comp, "composer") +
            ", across " + plural(from, "edition");
     if(catPeriode[d.name]){ out = catPeriode[d.name] + " — " + out; }
+  } else if(d.type === 'subcat'){
+    /* Une sous-categorie ne recoit pas des ANNEES mais des CATEGORIES : ses
+       flux entrants ne comptent donc pas des editions.
+       Sa periode est OBSERVEE et non declaree — voir subPeriode. Elle se
+       presente comme celle des categories parce que le lecteur y cherche la
+       meme chose, et la legende de la page dit d'ou viennent les deux. */
+    var scomp = subComposers.hasOwnProperty(d.name) ? subComposers[d.name] : to;
+    out += " to " + plural(scomp, "composer") +
+           ", in " + plural(from, "category");
+    if(subPeriode[d.name]){ out = subPeriode[d.name] + " — " + out; }
   } else {
     out += " in " + plural(from, "category");
   }
@@ -491,6 +584,40 @@ function setSankeyNodes(data, key){
   // categorie redistribue exactement ce qu'elle recoit des annees, donc
   // retirer la colonne de droite ne change rien a celle de gauche.
   createLinkBetween(yearId, catId);
+
+  /* ---- la sous-categorie, TROISIEME COLONNE depuis le 2026-08-06 ----
+     Le concours n'a sous-divise ses categories qu'a partir de 2000, et sur
+     cinq d'entre elles : Trivium, Trivium A, Trivium B, Quadrivium et Arts
+     Electroniques. 152 oeuvres primees sur 727 en portent une.
+
+     ⚠️ LES 575 AUTRES SAUTENT LA COLONNE. Leur flux va directement de la
+        categorie au compositeur, et traverse donc la colonne des
+        sous-categories sans s'y arreter. C'est ce que le document dit :
+        ces editions n'avaient pas de sous-categorie, et un noeud « None »
+        qui en porterait 575 ecraserait les douze vraies.
+
+     ⚠️ EN VUE ALLEGEE, une categorie sans sous-categorie n'a donc aucun
+        flux sortant : d3.sankey la pousse a la derniere colonne, a cote
+        des sous-categories. C'est VOULU — voir la note sinksRight de
+        sankeyStuff(), et ce qu'elle a coute avant d'etre voulue. */
+  /* ---- la sous-categorie : VUE ALLEGEE SEULEMENT ----
+     Le concours n'a sous-divise ses categories qu'a partir de 2000, et sur
+     cinq d'entre elles : Trivium, Trivium A, Trivium B, Quadrivium et Arts
+     Electroniques. 152 oeuvres primees sur 727 en portent une.
+
+     ⚠️ ELLE A ETE ESSAYEE DANS LES DEUX VUES LE 2026-08-06, ET RETIREE DE
+        LA VUE COMPLETE LE JOUR MEME. Avec 507 compositeurs a droite, la
+        colonne supplementaire allongeait encore un diagramme qui fait deja
+        plus de dix mille pixels de haut, et les flux qui la traversaient
+        sans s'y arreter — 575 sur 727 — la rendaient illisible. La vue
+        complete revient donc a annee -> categorie -> compositeur.
+
+     Elle reste dans la VUE ALLEGEE, ou elle a exactement la place qu'il
+     faut : 71 noeuds, trois colonnes, une fenetre. */
+  if(mode !== VIEW_FULL && d.subCat){
+    var subId = addNode('s' + d.subCat, {name: d.subCat, type: 'subcat'});
+    createLinkBetween(catId, subId);
+  }
 
   if(mode !== VIEW_FULL) return;
 
@@ -597,9 +724,16 @@ function sankeyStuff(){
   // Some setup stuff edit it to make a bigger image !!
   var margin = {top: 20, right: 1, bottom: 20, left: 41};
   /* Les 760 px supplementaires ne servent qu'a loger la colonne des
-     compositeurs et ses patronymes ; la vue allegee s'arrete aux categories,
-     dont les libelles sont courts, et n'en a pas besoin. */
-  svgWidth = 960 - margin.left - margin.right + (mode === VIEW_FULL ? 760 : 0);
+     compositeurs et ses patronymes. La vue allegee s'arrete aux
+     sous-categories, dont les libelles sont plus longs que ceux des
+     categories — « Installation ou environnement sonore et musical » fait
+     47 caracteres —, d'ou 280 px de plus qu'avant pour elle.
+     ⚠️ 240 px ne suffisaient pas : ce libelle-la depassait le bord droit du
+        SVG de 9 px, mesure dans le navigateur. Le nombre est cale sur LE
+        PLUS LONG des douze, et il est a reverifier si un treizieme entre —
+        php/sous_categories.php porte la liste. */
+  svgWidth = 960 - margin.left - margin.right
+           + (mode === VIEW_FULL ? 760 : 280);
   var color = d3.scale.category20();
 
   /* Blanc entre deux noeuds d'une meme colonne, et ecart voulu entre deux
@@ -621,10 +755,46 @@ function sankeyStuff(){
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   // Set up Sankey object.
+  /* ⚠️ sinksRight : LA DERNIERE COLONNE EST CELLE OU LE CLASSEMENT S'ARRETE.
+
+     d3.sankey pousse a la derniere colonne tout noeud sans flux sortant.
+     En VUE COMPLETE c'est evident : les compositeurs sont les seuls puits
+     et s'alignent tous a droite, y compris ceux atteints directement depuis
+     une categorie.
+
+     EN VUE ALLEGEE — la seule qui porte les sous-categories —, la question
+     s'est posee. La troisieme colonne y est celle des sous-categories, et
+     les dix-huit categories qui n'en ont pas sont des puits. Premier essai
+     le 2026-08-06 : sinksRight(false), pour qu'elles restent en colonne 2 —
+     chaque noeud a la profondeur que le parcours lui donne, et
+     « Programme » ne va pas s'asseoir a cote de « Multimédia ».
+
+     ⚠️ ET CE N'ETAIT PAS LISIBLE. Dix-huit rectangles s'arretaient au
+        milieu de la toile, leurs libelles flottant dans le vide, avec un
+        bord droit en dents de scie : le diagramme paraissait inacheve
+        plutot que differencie. Corrige le jour meme, sur retour d'usage.
+
+     La derniere colonne se lit donc : LE CLASSEMENT LE PLUS FIN DONT
+     L'OEUVRE DISPOSE — sa sous-categorie quand elle en a une, sa categorie
+     sinon. C'est une lecture, et elle se tient : ce que la colonne aligne,
+     ce n'est pas une nature commune, c'est un point d'arrivee commun. La
+     bulle de survol continue de les distinguer sans ambiguite — une
+     categorie donne sa periode et compte des editions, une sous-categorie
+     compte des categories. */
   var sankey = d3.sankey()
     .nodeWidth(20)
+    .sinksRight(true)
     .nodePadding(NODE_PADDING)
-    .size([svgWidth-150, height]) //-50 to display composers name fully on x axis
+    /* La reserve a droite loge le LIBELLE de la derniere colonne, qui est
+       pose a droite du rectangle. 150 px suffisaient pour des patronymes ;
+       ils ne suffisent pas pour « Installation ou environnement sonore et
+       musical », le plus long des douze libelles de sous-categorie, qui
+       depassait le bord du SVG de 9 px — mesure dans le navigateur.
+       ⚠️ ELARGIR LE SVG NE SUFFIT PAS : d3.sankey etale ses colonnes sur
+          toute la largeur qu'on lui donne, donc la derniere suit le bord et
+          le libelle deborde toujours d'autant. C'est LA RESERVE qu'il faut
+          augmenter, pas la toile. */
+    .size([svgWidth - (mode === VIEW_FULL ? 150 : 330), height])
     .nodes(graph.nodes)
     .links(graph.links)
     .layout(32);

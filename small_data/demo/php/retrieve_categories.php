@@ -2,9 +2,9 @@
 
 	/* Donnees du diagramme de flux (page Categories) generees depuis la base
 	   au lieu du fichier data/smallData.csv.
-	   Renvoie, pour chaque oeuvre primee, l'enregistrement de NEUF champs
+	   Renvoie, pour chaque oeuvre primee, l'enregistrement de DIX champs
 	       annee % categorie % nom % prenom % isni % id_artist % editions
-	             % cat_debut % cat_fin
+	             % cat_debut % cat_fin % sous_categorie
 	   separe par des %, dans l'ordre chronologique (plus ancien d'abord).
 
 	   Les quatre derniers champs ont ete ajoutes EN FIN d'enregistrement pour
@@ -47,9 +47,23 @@
 	      plus, ses deux champs sortiront vides et la periode ne s'affichera
 	      pas : la page perd une information, elle n'en invente pas.
 
-	   ATTENTION : la longueur d'enregistrement (9) est ecrite en dur dans la
+	   Le dixieme a ete ajoute le 2026-08-06 au soir, EN FIN d'enregistrement
+	   comme tous les precedents :
+	     - sous_categorie : le LIBELLE, pas le code. `imeb_music.award_cat_2`
+	                        est un entier de 1 a 12 dont le vocabulaire
+	                        n'existe que dans le code (voir
+	                        php/sous_categories.php) ; le traduire ICI evite
+	                        d'en poser une TROISIEME copie dans
+	                        js/categories.js. Chaine vide pour les 575 oeuvres
+	                        primees qui n'ont pas de sous-categorie — le
+	                        concours n'en a eu qu'a partir de 2000, et sur
+	                        cinq categories seulement.
+
+	   ATTENTION : la longueur d'enregistrement (10) est ecrite en dur dans la
 	   boucle de lecture de js/categories.js ; les deux doivent bouger
 	   ensemble. Aucun champ ne contient de %, le separateur reste sur. */
+
+	require_once(__DIR__ . '/sous_categories.php');
 
 	retrieve_categories();
 
@@ -65,6 +79,7 @@
 							imeb_artist.isni,
 							imeb_artist.id AS id_artist,
 							imeb_music.editions,
+							imeb_music.award_cat_2,
 							imeb_categorie.annee_debut AS cat_debut,
 							imeb_categorie.annee_fin AS cat_fin
 							FROM imeb_music
@@ -104,7 +119,12 @@
 			$catDebut  = $row['cat_debut'] !== null ? $row['cat_debut'] : '';
 			$catFin    = $row['cat_fin']   !== null ? $row['cat_fin']   : '';
 
-			array_push($arr, $year, $category, $name, $firstName, $isni, $row['id_artist'], $editions, $catDebut, $catFin);
+			//sous-categorie : le libelle, ou la chaine vide. La table est dans
+			//php/sous_categories.php, seul endroit du projet ou ce vocabulaire
+			//doive vivre.
+			$sousCat   = libelle_sous_categorie($row['award_cat_2']);
+
+			array_push($arr, $year, $category, $name, $firstName, $isni, $row['id_artist'], $editions, $catDebut, $catFin, $sousCat);
 		}
 
 		echo implode('%', $arr);
