@@ -2,8 +2,9 @@
 
 	/* Donnees du diagramme de flux (page Categories) generees depuis la base
 	   au lieu du fichier data/smallData.csv.
-	   Renvoie, pour chaque oeuvre primee, l'enregistrement de SEPT champs
+	   Renvoie, pour chaque oeuvre primee, l'enregistrement de NEUF champs
 	       annee % categorie % nom % prenom % isni % id_artist % editions
+	             % cat_debut % cat_fin
 	   separe par des %, dans l'ordre chronologique (plus ancien d'abord).
 
 	   Les quatre derniers champs ont ete ajoutes EN FIN d'enregistrement pour
@@ -20,7 +21,33 @@
 	                    avec award_year, qui est l'annee du prix. Vide pour
 	                    237 des 728 oeuvres primees. Alimente l'infobulle du
 	                    lien categorie -> compositeur.
-	   ATTENTION : la longueur d'enregistrement (7) est ecrite en dur dans la
+	   Les deux derniers ont ete ajoutes le 2026-08-06, EN FIN d'enregistrement
+	   comme les precedents :
+	     - cat_debut  \
+	     - cat_fin    /  les bornes d'annees de imeb_categorie, la PERIODE QUE
+	                     LA CATEGORIE COUVRE. C'est une definition, pas un
+	                     constat : elle ne bouge pas selon ce qui est verse.
+	                     Vides pour les 38 oeuvres sans categorie, que la page
+	                     regroupe sous « None » — celles d'avant 1977, quand le
+	                     concours n'avait qu'un seul classement.
+
+	   ⚠️ LA MEME VALEUR EST REPETEE A CHAQUE ENREGISTREMENT. C'est le prix du
+	      format : le flux est un tableau plat, il repete deja la categorie, le
+	      nom et l'ISNI. Vingt-trois valeurs distinctes recopiees 728 fois font
+	      environ 7 Ko sur une reponse qui en pese cent — l'autre solution, un
+	      second appel ou un en-tete a part, coutait un protocole de plus pour
+	      economiser cela.
+
+	   ⚠️ LA JOINTURE SE FAIT SUR LE LIBELLE, faute d'une cle etrangere :
+	      imeb_music.award_cat est une CHAINE, pas un id. Verifie le
+	      2026-08-06 sur les 728 oeuvres primees — les vingt-trois libelles du
+	      catalogue tombent tous sur une ligne de imeb_categorie, et les
+	      annees observees coincident exactement avec les bornes declarees,
+	      categorie par categorie. Le jour ou un libelle nouveau n'y tombera
+	      plus, ses deux champs sortiront vides et la periode ne s'affichera
+	      pas : la page perd une information, elle n'en invente pas.
+
+	   ATTENTION : la longueur d'enregistrement (9) est ecrite en dur dans la
 	   boucle de lecture de js/categories.js ; les deux doivent bouger
 	   ensemble. Aucun champ ne contient de %, le separateur reste sur. */
 
@@ -37,10 +64,14 @@
 							imeb_artist.firstName,
 							imeb_artist.isni,
 							imeb_artist.id AS id_artist,
-							imeb_music.editions
+							imeb_music.editions,
+							imeb_categorie.annee_debut AS cat_debut,
+							imeb_categorie.annee_fin AS cat_fin
 							FROM imeb_music
 							INNER JOIN imeb_artist
 							ON imeb_music.id_artist = imeb_artist.id
+							LEFT JOIN imeb_categorie
+							ON imeb_categorie.libelle = imeb_music.award_cat
 							WHERE imeb_music.award_year IS NOT NULL
 							ORDER BY imeb_music.award_year ASC,
 							imeb_music.award_price ASC,
@@ -67,7 +98,13 @@
 			//fait cote client, ou l'infobulle est composee.
 			$editions  = $row['editions'] ? $row['editions'] : '';
 
-			array_push($arr, $year, $category, $name, $firstName, $isni, $row['id_artist'], $editions);
+			//bornes de la categorie. LEFT JOIN : elles sont NULL pour les
+			//oeuvres sans categorie, et la chaine vide garde leur place dans
+			//l'enregistrement — js/categories.js n'affiche alors pas de periode.
+			$catDebut  = $row['cat_debut'] !== null ? $row['cat_debut'] : '';
+			$catFin    = $row['cat_fin']   !== null ? $row['cat_fin']   : '';
+
+			array_push($arr, $year, $category, $name, $firstName, $isni, $row['id_artist'], $editions, $catDebut, $catFin);
 		}
 
 		echo implode('%', $arr);

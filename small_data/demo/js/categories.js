@@ -45,30 +45,52 @@ var records = null;         // reponse analysee, gardee pour les reconstructions
    flux sortants de la categorie. */
 var catComposers = {};
 
+/* Periode couverte par chaque categorie : { libelle: "1977-1998" }, ou
+   "1985" quand les deux bornes sont egales. Elle vient de imeb_categorie —
+   annee_debut et annee_fin, servies en fin d'enregistrement par
+   php/retrieve_categories.php — et NON du minimum et du maximum des oeuvres
+   presentes.
+
+   ⚠️ LA DIFFERENCE EST UNE QUESTION DE NATURE, pas de precision. Les bornes
+      declarent CE QUE LA CATEGORIE EST : « Art Visuel, 1982-1984 » reste vrai
+      meme si aucune oeuvre de 1983 n'etait au fonds. Un minimum-maximum
+      calcule sur les oeuvres decrirait le contenu de la page, qui change a
+      chaque versement d'edition, et l'etiquette bougerait sous les yeux du
+      lecteur sans que rien n'ait ete decide.
+
+      Les deux coincident aujourd'hui sur les vingt-trois categories, verifie
+      le 2026-08-06 — ce qui est un resultat et non une raison de confondre
+      les deux. */
+var catPeriode = {};
+
 // Donnees generees depuis la base (php/retrieve_categories.php) au lieu
-// du fichier data/smallData.csv. Reponse : sept champs repetes,
-// annee%categorie%nom%prenom%isni%id_artist%editions.
+// du fichier data/smallData.csv. Reponse : neuf champs repetes,
+// annee%categorie%nom%prenom%isni%id_artist%editions%cat_debut%cat_fin.
 d3.text("php/retrieve_categories.php", function(error, text){
 
   if(error || !text){ console.log('categories: aucune donnee'); return; }
 
   var raw = text.split("%");
   var data = [];
-  // 7 = longueur d'enregistrement, ecrite en dur des deux cotes : si un champ
+  // 9 = longueur d'enregistrement, ecrite en dur des deux cotes : si un champ
   // est ajoute a php/retrieve_categories.php, ce pas doit bouger avec lui.
+  // Il est passe de 7 a 9 le 2026-08-06, avec cat_debut et cat_fin.
   // editions = annees de participation au festival, separees par des virgules
   // (a ne pas confondre avec year, l'annee du prix) ; vide pour 237 des 728
   // oeuvres primees.
-  for(var i=0; i+6 < raw.length; i+=7){
+  // catDebut / catFin = les bornes de la categorie, vides pour les oeuvres
+  // qui n'en ont pas.
+  for(var i=0; i+8 < raw.length; i+=9){
     data.push({ year: raw[i], category: raw[i+1], name: raw[i+2],
                 firstName: raw[i+3], isni: raw[i+4], artistId: raw[i+5],
-                editions: raw[i+6] });
+                editions: raw[i+6], catDebut: raw[i+7], catFin: raw[i+8] });
   }
 
   data.reverse();
 
   records = data;
   countComposersByCategory();
+  collectCategoryPeriods();
   bindViewSwitch();
   build();
 });
@@ -124,6 +146,29 @@ function countComposersByCategory(){
     if(seen[pair]) continue;
     seen[pair] = true;
     catComposers[cat] = (catComposers[cat] || 0) + 1;
+  }
+}
+
+/* Periode de chaque categorie, relevee sur les enregistrements. Elle y est
+   repetee a l'identique pour toutes les oeuvres d'une meme categorie : on
+   prend la premiere rencontree et on n'y revient pas.
+
+   La forme est « 1977-1998 », ou « 1985 » quand la categorie n'a dure qu'une
+   annee — c'est le cas d'Appliquee, creee et refermee en 1985. Une borne
+   manquante laisse la periode vide, et l'infobulle n'en dit alors rien. */
+function collectCategoryPeriods(){
+
+  var k, d, cat;
+
+  catPeriode = {};
+
+  for(k = 0; k < records.length; k++){
+    d = records[k];
+    cat = (d.category === '') ? 'None' : d.category;
+    if(catPeriode.hasOwnProperty(cat)) continue;
+    if(!d.catDebut || !d.catFin) continue;
+    catPeriode[cat] = (d.catDebut === d.catFin) ? d.catDebut
+                                                : d.catDebut + '-' + d.catFin;
   }
 }
 
@@ -335,27 +380,39 @@ function linkTitle(d){
   return txt;
 }
 
-/* Libelle du noeud. Le rectangle portait un <title> SVG qui rendait la chaine
-   litterale "d.name" — une coquille d'origine, des guillemets de trop dans le
-   return. La corriger n'aurait servi a rien : le libellé est deja ecrit en
-   clair a cote du rectangle, l'infobulle n'aurait fait que le repeter. Elle
-   dit donc ce que le diagramme ne montre pas, les effectifs :
+/* Libelle du noeud. LA BULLE NE REPETE PAS LE NOM — le libelle est deja ecrit
+   en clair a cote du rectangle, et le lire deux fois ne dit rien de plus. Le
+   principe etait deja pose ici le jour ou le <title> SVG a ete remplace ;
+   le code, lui, remettait le nom en tete de la phrase. Corrige le 2026-08-06.
 
-     annee        1988 — 30 awards in 6 categories
-     categorie    Programme — 78 awards to 67 composers, across 20 editions
-     compositeur  Robert Normandeau — 5 awards in 3 categories
+   La bulle dit donc ce que le diagramme NE MONTRE PAS :
 
-   Rien n'est calcule ici : d3.sankey pose value (le maximum des flux entrants
-   et sortants, soit le nombre de prix dans les trois cas, une categorie
-   redistribuant vers les compositeurs exactement ce qu'elle recoit des
-   annees) et les tableaux sourceLinks / targetLinks, dont la LONGUEUR donne
-   les effectifs distincts — un flux par voisin, quel que soit son epaisseur.
-   Le texte passe par la meme bulle que les flux, et non par un <title> : la
-   bulle native s'efface d'elle-meme au bout de quelques secondes. */
+     annee        30 awards in 6 categories
+     categorie    1977-1998 — 78 awards to 67 composers, across 20 editions
+     compositeur  5 awards in 3 categories
+
+   ⚠️ LA PERIODE N'EST PAS L'EFFECTIF D'EDITIONS, et les deux se lisent
+      ensemble. « 1977-1998 » est la periode que la categorie COUVRE, telle
+      que imeb_categorie la declare — vingt-deux annees ; « across 20
+      editions » compte les annees ou elle a EFFECTIVEMENT distingue quelque
+      chose. L'ecart entre les deux est une information, et c'est pourquoi
+      aucun des deux nombres ne remplace l'autre.
+
+      Elle ne parait que sur la categorie. Une annee est sa propre periode, et
+      celle d'un compositeur — ses annees de prix — est deja dans l'infobulle
+      des flux qui partent de lui.
+
+   Rien d'autre n'est calcule ici : d3.sankey pose value (le maximum des flux
+   entrants et sortants, soit le nombre de prix dans les trois cas, une
+   categorie redistribuant vers les compositeurs exactement ce qu'elle recoit
+   des annees) et les tableaux sourceLinks / targetLinks, dont la LONGUEUR
+   donne les effectifs distincts — un flux par voisin, quelle que soit son
+   epaisseur. Le texte passe par la meme bulle que les flux, et non par un
+   <title> : la bulle native s'efface d'elle-meme au bout de quelques
+   secondes. */
 function nodeTitle(d){
 
-  var out  = (d.type === 'composer' ? d.fullName : d.name) + " — " +
-             plural(d.value || 0, "award");
+  var out  = plural(d.value || 0, "award");
   var from = d.targetLinks ? d.targetLinks.length : 0;   // voisins de gauche
   var to   = d.sourceLinks ? d.sourceLinks.length : 0;   // voisins de droite
 
@@ -365,10 +422,14 @@ function nodeTitle(d){
     /* Le nombre de compositeurs est lu dans catComposers et non dans
        sourceLinks.length : la vue allegee n'a pas de colonne compositeur, et
        la categorie n'y a donc aucun flux sortant. Les deux comptes donnent le
-       meme nombre en vue complete — un flux sortant par compositeur. */
+       meme nombre en vue complete — un flux sortant par compositeur.
+       LES DEUX VUES PASSENT PAR ICI : corriger cette fonction les corrige
+       toutes les deux, et la periode vient de la donnee et non du graphe,
+       donc elle survit au retrait de la colonne de droite. */
     var comp = catComposers.hasOwnProperty(d.name) ? catComposers[d.name] : to;
     out += " to " + plural(comp, "composer") +
            ", across " + plural(from, "edition");
+    if(catPeriode[d.name]){ out = catPeriode[d.name] + " — " + out; }
   } else {
     out += " in " + plural(from, "category");
   }

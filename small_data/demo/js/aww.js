@@ -274,14 +274,33 @@ function renderSelection(works){
     }
 }
 
-/* LA FAMILLE DU GRAND PRIX PASSE DEVANT — 2026-08-05
+/* OU SE PLACE UNE DISTINCTION — 2026-08-05, REECRIT LE 2026-08-06
 
-   `award_price` melange deux natures d'information. Pour la plupart des
-   oeuvres c'est un RANG — 1, 2, 3 — ou un code de forme : 100 « Mention »,
-   600 « Residence ». Mais CINQ valeurs designent une COMBINAISON, autour
-   des prix decernes HORS CATEGORIE par un organisme exterieur :
+   `award_price` melange deux natures d'information. Pour une partie des
+   oeuvres c'est un RANG — 1, 2, 3, 4 —, pour les autres un CODE DE FORME :
+   100 « Mention », 600 « Residence », 199 « Prix, rang non renseigne ».
+
+   ⚠️ CE MELANGE MARCHE TANT QUE LES CODES SONT BIEN RANGES, ET PAS PLUS.
+      Trier sur le nombre brut donnait le bon ordre par accident : 1 et 2
+      avant 100. Le jour ou une valeur superieure a 100 a designe autre
+      chose qu'une mention, l'accident a cesse — et il a cesse DEUX FOIS.
+
+   D'ou cette fonction, qui ne compare plus le code : elle le traduit
+   d'abord en une PLACE, et les trois familles sont ecrites ici noir sur
+   blanc.
+
+   -------------------------------------------------------------------
+   1. LES PRIX HORS CATEGORIE PASSENT DEVANT  ->  -1
+   -------------------------------------------------------------------
+   Decernes par un organisme exterieur, ou couronnant toute une edition.
+   Un prix international n'est pas au-dessous d'un deuxieme prix.
 
        200  Prix CNM seul                   4 oeuvres   1984-1987
+       201  Grand Prix                      4           1996-1997
+       296  Pierre d'Or                     2           1999-2001
+       297  Pierre d'Argent                 2           1999-2001
+       298  Prix Bregman                    1           1987
+       299  Prix FNME                       2           1986
        300  Prix CIM France / CIME seul     7           1981-1987
        302  ... + Prix 1                    2           1980, 1983
        303  ... + Mention                   2           1984, 1985
@@ -290,38 +309,63 @@ function renderSelection(works){
    ⚠️ LE CODE NE DIT PAS QUEL ORGANISME, LE LIBELLE OUI. La famille des 300
    couvre le Prix C.I.M. France (1981-1983) ET le Prix C.I.M.E. (1984-1987)
    — deux prix distincts que le §16 du chantier a du separer, et que ce code
-   confond encore. Le 200 apparait en 1984 avec le Prix C.N.M., quand deux
-   prix hors categorie ont eu a coexister la meme annee.
+   confond encore.
 
-   Comparees comme des nombres, elles depassent 100 : le premier prix
-   analogique 1980 d'Yves Daoust, double d'un Grand prix, s'affichait donc
-   APRES le deuxieme prix et apres les mentions de sa categorie.
+   -------------------------------------------------------------------
+   2. « PRIX, RANG NON RENSEIGNE »  ->  99, juste avant les mentions
+   -------------------------------------------------------------------
+       199  Prix                           93 oeuvres   1985, puis 1996-2009
 
-   ⚠️ LE 200 MANQUAIT A CETTE LISTE JUSQU'AU 2026-08-06, et les quatre Prix
-      C.N.M. s'affichaient donc apres les mentions de leur categorie —
-      exactement le defaut que ce bloc corrige pour les autres. Il n'a ete vu
-      qu'en relisant `imeb_music` apres le versement de 1984, premiere
-      edition a en porter un. UNE LISTE DE VALEURS EN DUR NE SE MET PAS A
-      JOUR TOUTE SEULE : quand une edition entre, il faut redemander au
-      catalogue quelles valeurs existent, au lieu de supposer que celles
-      d'hier suffisent.
+   C'est un PRIX : sa place est avant les mentions, apres les prix classes.
+   Compare comme un nombre il valait 199 > 100, et TOUT prix de ces quinze
+   editions s'affichait donc APRES les mentions de sa categorie. Le defaut
+   touchait ONZE editions et VINGT-TROIS categories, et il a ete vu sur
+   1985 : ses deux prix mixtes, codes 199 tous les deux, se departageaient
+   sur le seul critere restant — le patronyme —, si bien qu'EMMERSON, qui a
+   le deuxieme prix, s'affichait au-dessus de RAI, qui a le premier.
 
-   Ces cinq-la passent en tete de leur categorie. C'est la seule place
-   qui se defende : un prix international n'est pas au-dessous d'un
-   deuxieme prix.
+   Le rang de 1985 est desormais en base (DB/rang_prix_1985.sql l'a repris
+   au constat) : `rank_num` departage les deux. Les quatorze autres editions
+   n'ont pas de constat lu et gardent un rang vide — elles s'ordonnent alors
+   par patronyme, ce qui est arbitraire mais AU MOINS SOUS LEURS MENTIONS.
 
-   CE N'EST PAS LE CODE-BOOK QUI REVIENT. On ne traduit rien ici — les
-   libelles continuent de venir de imeb_music.award_label. On dit seulement
-   OU CES LIGNES SE PLACENT. Traduire un code, c'est dire ce qu'il veut
-   dire, et ca appartient a la donnee ; l'ordonner, c'est de l'affichage.
+   -------------------------------------------------------------------
+   3. TOUT LE RESTE GARDE SON CODE
+   -------------------------------------------------------------------
+   1-4 (rangs), 100-103 (mentions), 197 « Nomine », 198 « Finaliste »,
+   500 « Magistere », 600 « Residence ». Les nomines et finalistes restent
+   SOUS les mentions : ce ne sont pas des recompenses mais des etapes.
+
+   ⚠️ UNE LISTE DE VALEURS EN DUR NE SE MET PAS A JOUR TOUTE SEULE. Le 200 y
+      manquait jusqu'au 2026-08-06 (vu en relisant imeb_music apres 1984,
+      premiere edition a en porter un) ; le 199 n'y etait nulle part (vu sur
+      1985). Deux fois en deux jours. Quand une edition entre, REDEMANDER AU
+      CATALOGUE quelles valeurs existent :
+
+          SELECT award_price, award_label, COUNT(*), MIN(award_year),
+                 MAX(award_year)
+            FROM imeb_music WHERE award_year > 0
+           GROUP BY award_price, award_label ORDER BY award_price;
+
+      Toute valeur > 100 qui n'est pas une mention doit etre classee ici.
+
+   CE N'EST PAS LE CODE-BOOK QUI REVIENT. On ne traduit rien — les libelles
+   continuent de venir de imeb_music.award_label. On dit seulement OU CES
+   LIGNES SE PLACENT. Traduire un code, c'est dire ce qu'il veut dire, et ca
+   appartient a la donnee ; l'ordonner, c'est de l'affichage.
 
    ATTENTION AU 3. « Prix 3 » porte le code 3, quatre oeuvres au fonds :
-   c'est un vrai rang, il ne fait pas partie de cette famille. Le test
-   porte sur une LISTE de valeurs exactes, jamais sur « commence par 3 ». */
-var GRAND_PRIX = {200:1, 300:1, 302:1, 303:1, 304:1};
+   c'est un vrai rang, il ne fait pas partie de ces familles. Le test porte
+   sur une LISTE de valeurs exactes, jamais sur « commence par 3 ». */
+var HORS_CATEGORIE = {200:1, 201:1, 296:1, 297:1, 298:1, 299:1,
+                      300:1, 302:1, 303:1, 304:1};
+var PRIX_SANS_RANG = 199;
 
 function ordreDistinction(code){
-    return GRAND_PRIX[parseInt(code, 10)] ? -1 : code;
+    var n = parseInt(code, 10);
+    if(HORS_CATEGORIE[n])      return -1;
+    if(n === PRIX_SANS_RANG)   return 99;   // un prix, donc avant 100
+    return code;
 }
 
 function cmpValues(a, b){
