@@ -471,7 +471,8 @@ function linkTitle(d){
 
      annee            30 awards in 6 categories
      categorie        1977-1998 — 79 awards to 66 composers, across 20 editions
-     sous-categorie   2000-2009 — 27 awards to 26 composers, in 2 categories
+     sous-categorie   2000-2009 — 27 awards to 26 composers, in 2 categories :
+                      Quadrivium, Trivium B
      compositeur      5 awards in 3 categories
 
    ⚠️ LA PERIODE N'EST PAS L'EFFECTIF D'EDITIONS, et les deux se lisent
@@ -518,10 +519,34 @@ function nodeTitle(d){
        flux entrants ne comptent donc pas des editions.
        Sa periode est OBSERVEE et non declaree — voir subPeriode. Elle se
        presente comme celle des categories parce que le lecteur y cherche la
-       meme chose, et la legende de la page dit d'ou viennent les deux. */
+       meme chose, et la legende de la page dit d'ou viennent les deux.
+
+       ⚠️ ET ELLE NOMME SES CATEGORIES. Une sous-categorie appartient a une,
+          deux ou trois d'entre elles — « Art sonore électroacoustique » est
+          sous Quadrivium, Trivium A ET Trivium B —, et le diagramme le
+          montre par des flux qu'on ne suit pas a l'oeil quand ils se
+          croisent. Trois noms au plus : les ecrire coute une ligne et evite
+          de remonter le flux du regard.
+
+          LES NOMS VIENNENT DE targetLinks, c'est-a-dire de LA MEME SOURCE
+          que le compte qui les precede : les deux ne peuvent pas diverger.
+          Ordre alphabetique, pour qu'une meme sous-categorie se lise
+          toujours pareil. */
     var scomp = subComposers.hasOwnProperty(d.name) ? subComposers[d.name] : to;
     out += " to " + plural(scomp, "composer") +
            ", in " + plural(from, "category");
+
+    var meres = [];
+    for(var m = 0; m < (d.targetLinks ? d.targetLinks.length : 0); m++){
+      if(d.targetLinks[m].source) meres.push(d.targetLinks[m].source.name);
+    }
+    if(meres.length){
+      meres.sort(function(a, b){
+        return String(a).localeCompare(String(b), 'fr', {sensitivity: 'base'});
+      });
+      out += " : " + meres.join(", ");
+    }
+
     if(subPeriode[d.name]){ out = subPeriode[d.name] + " — " + out; }
   } else {
     out += " in " + plural(from, "category");
