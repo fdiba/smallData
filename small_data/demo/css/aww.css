@@ -176,6 +176,28 @@ th{
 #works_table .mem-b{
 	background: #E4E4E4;
 }
+/* La colonne "duration" — mm:ss, ajoutee le 2026-08-06. Elle ne change pas
+   d'alignement : tout le tableau est a gauche, et une seule colonne a droite
+   se remarquerait plus qu'elle ne servirait. Deux precautions seulement — le
+   chiffre a chasse fixe, pour que les deux-points s'alignent d'une ligne a
+   l'autre, et pas de retour a la ligne au milieu d'une duree. */
+#works_table td.dur{
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	font-feature-settings: "tnum";
+}
+
+/* Colonne masquee parce qu'elle ne porte rien pour la selection courante
+   (js/aww.js, masquerColonnesVides). La classe est posee sur l'en-tete ET
+   sur toutes les cellules de la colonne, y compris les cellules fusionnees
+   par rowspan : le tableau reste rectangulaire.
+   ⚠️ display:none et non visibility:hidden — une colonne invisible mais
+      toujours large laisserait un trou, et c'est la largeur qu'on veut
+      rendre aux colonnes qui restent. */
+#works_table .col-vide{
+	display: none;
+}
+
 /* trait de separation entre groupes */
 #works_table tr.group-start > td{
 	border-top: 2px solid #16A085;

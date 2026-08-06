@@ -376,6 +376,77 @@ function cmpValues(a, b){
     return String(a).localeCompare(String(b), 'fr', {sensitivity: 'base'});
 }
 
+/* LES NEUF COLONNES DU TABLEAU, DECRITES UNE FOIS.
+
+   Chaque descripteur porte la classe posee sur la cellule ET la facon de
+   lire sa valeur dans un objet-oeuvre. Les deux ensemble permettent a
+   masquerColonnesVides() de savoir, sans relire le DOM, si une colonne est
+   vide pour la selection courante.
+
+   ⚠️ L'ORDRE EST CELUI DES <th> DE award-winning_works.php, et les classes
+      y sont ecrites aussi. Un contrôle le vérifie à chaque rendu et se
+      plaint dans la console si les deux divergent : c'est le genre de
+      couple qui se desynchronise le jour ou l'on ajoute une colonne d'un
+      seul cote — la colonne « duration » a ete ajoutee le matin meme. */
+var COLONNES = [
+    {cls: 'c-year',  lire: function(o){ return o.year; }},
+    {cls: 'c-cat',   lire: function(o){ return o.cat; }},
+    {cls: 'c-cat2',  lire: function(o){ return o.cat2; }},
+    {cls: 'c-price', lire: function(o){ return o.rank; }},
+    {cls: 'c-fn',    lire: function(o){ return o.fn; }},
+    {cls: 'c-name',  lire: function(o){ return o.name; }},
+    {cls: 'c-ctry',  lire: function(o){ return o.ctry; }},
+    {cls: 'c-title', lire: function(o){ return o.title; }},
+    {cls: 'c-dur',   lire: function(o){ return o.duration; }}
+];
+
+/* UNE COLONNE VIDE POUR TOUTE LA SELECTION NE S'AFFICHE PAS.
+
+   Le tableau est le meme pour les 36 editions, mais toutes n'ont pas les
+   memes colonnes a remplir : de 1973 a 1976 le concours n'avait NI
+   categorie NI sous-categorie, et la sous-categorie reste vide sur la
+   plupart des editions suivantes. Une colonne d'en-tete au-dessus de trente
+   cellules vides n'informe pas — elle fait croire a une donnee manquante la
+   ou il n'y a rien a manquer.
+
+   ⚠️ ON MASQUE, ON NE SUPPRIME PAS. La colonne revient telle quelle des que
+      la selection change, et « All works » les montre toutes : le tableau
+      ne perd aucune colonne, il n'affiche que celles qui portent quelque
+      chose. Le masquage est donc une propriete de la SELECTION, pas du
+      tableau, et il se recalcule a chaque rendu.
+
+   ⚠️ ET UNE SELECTION VIDE NE MASQUE RIEN. Sans cette garde, un filtre qui
+      ne rend aucune oeuvre ferait disparaitre les neuf colonnes d'un coup,
+      en-tetes compris, et la page semblerait cassee plutot que vide. */
+function masquerColonnesVides(objects){
+
+    var table = document.getElementById('works_table');
+    if(!table) return;
+
+    var ths = table.getElementsByTagName('th');
+    if(ths.length !== COLONNES.length){
+        console.log('aww : ' + ths.length + ' en-tetes pour ' +
+                    COLONNES.length + ' colonnes decrites — les deux doivent '
+                    + 'bouger ensemble (COLONNES ici, <th> dans le PHP)');
+    }
+
+    for(var c = 0; c < COLONNES.length; c++){
+
+        var vide = objects.length > 0;
+
+        for(var j = 0; j < objects.length; j++){
+            var v = COLONNES[c].lire(objects[j]);
+            if(v !== undefined && v !== null && String(v).trim() !== ''){
+                vide = false;
+                break;
+            }
+        }
+
+        // th ET td portent la meme classe : un seul selecteur suffit.
+        $('#works_table .' + COLONNES[c].cls).toggleClass('col-vide', vide);
+    }
+}
+
 function buildTableRows(objects){
 
     // on vide les lignes existantes SAUF l'en-tete (1re ligne)
@@ -401,10 +472,12 @@ function buildTableRows(objects){
             // taille du groupe (edition/category/sub category/price) -> rowspan
             var span = 1;
             for(var k=j+1; k<objects.length && groupKey(objects[k])===groupKey(objects[j]); k++) span++;
-            html += '<td class="grp-cell '+grpParity+'" rowspan="'+span+'">'+ objects[j].year + '</td>'
-                  + '<td class="grp-cell '+grpParity+'" rowspan="'+span+'">'+ objects[j].cat + '</td>'
-                  + '<td class="grp-cell '+grpParity+'" rowspan="'+span+'">'+ objects[j].cat2 + '</td>'
-                  + '<td class="grp-cell '+grpParity+'" rowspan="'+span+'">'+ objects[j].rank + '</td>';
+            // les quatre cellules fusionnees, dans l'ordre de COLONNES
+            for(var g = 0; g < 4; g++){
+                html += '<td class="grp-cell '+grpParity+' '+COLONNES[g].cls
+                      + '" rowspan="'+span+'">'
+                      + COLONNES[g].lire(objects[j]) + '</td>';
+            }
         }
 
         // "country" prend la place de l'ancienne colonne "imeb id" (le MISAM,
@@ -427,13 +500,38 @@ function buildTableRows(objects){
                  + esc(objects[j].isni) + '" data-label="' + esc(fullName) + '">' + txt + '</span>';
         };
 
-        html += '<td class="'+memParity+'">'+ nameCell(objects[j].fn) + '</td>'
-              + '<td class="'+memParity+'">'+ nameCell(objects[j].name) + '</td>'
-              + '<td class="'+memParity+'">'+ objects[j].ctry + '</td>'
-              + '<td class="'+memParity+'">'+ objects[j].title + '</td></tr>';
+        /* La duree, ajoutee le 2026-08-06, JUSTE APRES LE TITRE : elle
+           qualifie l'oeuvre et se lit avec lui.
+
+           ⚠️ RIEN N'A CHANGE COTE DONNEES. `imeb_music.duration` voyageait
+              deja dans le flux — septieme champ, arr[i+6] — et servait la
+              boite violette du SMA depuis toujours ; elle n'etait simplement
+              pas dans le tableau. La longueur d'enregistrement ne bouge donc
+              pas, et php/retrieve_works.php n'est pas touche.
+
+           ⚠️ QUARANTE-TROIS LIGNES SUR 755 SORTENT VIDES, et les trois causes
+              sont legitimes :
+                 15  oeuvres primees dont le catalogue ne donne pas la duree
+                     — quatorze depuis toujours, plus celle de Lea Collins
+                     (Quadrivium 2007), qui portait « 00 » et que
+                     DB/duree_zero.sql a ramenee a NULL le meme jour ;
+                  2  distinctions dont l'oeuvre n'est pas au fonds (deuxieme
+                     branche de l'union) ;
+                 26  lignes « not awarded », qui ne portent AUCUNE oeuvre
+                     (troisieme branche : imeb_non_attribution).
+              Une cellule vide dit qu'on ne sait pas ; elle ne se remplit pas
+              d'un tiret, qui se lirait comme une valeur. */
+        html += '<td class="'+memParity+' c-fn">'+ nameCell(objects[j].fn) + '</td>'
+              + '<td class="'+memParity+' c-name">'+ nameCell(objects[j].name) + '</td>'
+              + '<td class="'+memParity+' c-ctry">'+ objects[j].ctry + '</td>'
+              + '<td class="'+memParity+' c-title">'+ objects[j].title + '</td>'
+              + '<td class="'+memParity+' c-dur dur">'+ esc(objects[j].duration) + '</td></tr>';
     }
 
     var table = document.getElementById('works_table');
     var tbody = table.tBodies[0] || table;
     tbody.insertAdjacentHTML('beforeend', html);
+
+    // APRES l'insertion : les cellules doivent exister pour etre masquees.
+    masquerColonnesVides(objects);
 }

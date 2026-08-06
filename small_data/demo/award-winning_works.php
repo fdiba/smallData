@@ -77,6 +77,8 @@
 						<p><strong>Table &amp; agents</strong></p>
 						<ul>
 							<li>the table lists the award-winning works of the Bourges competitions, sorted by edition, category, sub category, price and last name</li>
+							<li>pick an edition in the <em>year</em> menu and <strong>columns that hold nothing for it are hidden</strong> &mdash; from 1973 to 1976 the competition had neither <em>category</em> nor <em>sub category</em>, and most later editions have no sub category either. Nothing is lost: the column comes back as soon as the selection changes, and <em>All works</em> shows all nine</li>
+							<li><em>duration</em> is the length recorded for the work in the <em>Répertoire général</em>, in minutes and seconds. It is blank in <em>43 of the 755 rows</em>: 15 award-winning works for which the catalogue gives no duration, the 2 distinctions whose work is not held at the fonds, and the 26 <em>not awarded</em> rows, which carry no work at all. A blank cell means the duration is unknown, not that it is zero</li>
 							<li>a composer whose name is <span class="composer-isni">underlined with dots</span> has an ISNI: click either part of the name to open their international identity record in the panel on the right &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. The panel stays open while you scroll the table; close it with the cross or the <em>Esc</em> key. Clicking an agent closes it, since it sits over the information boxes &mdash; but the loading counter alone leaves it open</li>
 							<li>the <em>visualization</em> has an ISNI record of its own, and it does not behave like the one above: click an agent whose composer has an ISNI and a box appears in the information column, between the orange box and the purple one, headed by that identifier &mdash; click the header to unfold the record. It sits in the column instead of over it, so nothing is hidden, and nothing is requested until you unfold it</li>
 							<li>on the canvas, each moving ellipse is an agent carrying one award-winning work</li>
@@ -104,15 +106,27 @@
 			</div>
 			<div id="main_table">
 				<table id="works_table">
+					<!-- Les classes c-… nomment la COLONNE, et elles sont posees
+					     sur l'en-tete comme sur chaque cellule : c'est par elles
+					     que js/aww.js masque une colonne restee vide pour la
+					     selection courante (masquerColonnesVides). L'ordre et les
+					     noms doivent correspondre au tableau COLONNES de
+					     js/aww.js, qui verifie le compte a chaque rendu et se
+					     plaint dans la console s'il diverge. -->
 					<tr>
-						<th>edition</th>
-						<th>category</th>
-						<th>sub category</th>
-						<th>price</th>
-						<th>first name</th>
-						<th>last name</th>
-						<th>country</th>
-						<th>title</th>
+						<th class="c-year">edition</th>
+						<th class="c-cat">category</th>
+						<th class="c-cat2">sub category</th>
+						<th class="c-price">price</th>
+						<th class="c-fn">first name</th>
+						<th class="c-name">last name</th>
+						<th class="c-ctry">country</th>
+						<th class="c-title">title</th>
+						<!-- La duree vient de imeb_music.duration, au format mm:ss.
+						     Elle voyageait deja dans le flux depuis l'origine et
+						     servait la boite violette du SMA ; le tableau ne la
+						     montrait pas. Colonne ajoutee le 2026-08-06. -->
+						<th class="c-dur">duration</th>
 					</tr>
 				</table>
 			</div>
