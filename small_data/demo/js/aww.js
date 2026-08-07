@@ -40,7 +40,11 @@ function parseWorks(str){
     // 15 -> 16 le 2026-08-07 : les CO-AUTEURS (arr[i+15]). Meme regle —
     // ajoute en FIN d'enregistrement, longueur ecrite en dur des deux cotes,
     // les deux fichiers bougent ensemble.
-    var numOfElements = 16;
+    //
+    // 16 -> 17 le 2026-08-07 : LE NUMERO DE LA MENTION (arr[i+16]),
+    // imeb_music.award_ordre. Onze oeuvres du fonds en portent un et aucune
+    // ne l'affichait — voir le bloc `rank` ci-dessous.
+    var numOfElements = 17;
     var objects = [];
 
     for (var i = 0; i < arr.length-(numOfElements-1); i+=numOfElements) {
@@ -63,9 +67,28 @@ function parseWorks(str){
         var rg    = $.trim(arr[i+13] || '');
         var lab2  = $.trim(arr[i+14] || '');
 
+        /* LE NUMERO DE LA MENTION — arr[i+16], ajoute le 2026-08-07.
+
+           ONZE OEUVRES DU FONDS PORTENT UN NUMERO DE MENTION et aucune ne
+           l'affichait : 1981 (Doyle), 1983 (Carl, Weidenaar, Uehara), 1987
+           (Schweizer) et 1993 (six). La composition ci-dessus lisait
+           `award_rank`, qui est NULL sur TOUTES les mentions du fonds — le
+           numero vit dans `award_ordre`, et il n'entrait pas dans le flux.
+           Le commentaire de sortAndRender disait deja que ce tri servait
+           « les mentions numerotees de 1981, 1983, 1987 et 1993 » : il ne
+           servait rien, puisque sa colonne etait vide.
+
+           ⚠️ RANG ET ORDRE RESTENT DEUX CHOSES. Le rang dit qui l'emporte,
+              l'ordre dit dans quel ordre c'est proclame (§16.5, §22.8). On
+              affiche l'un OU l'autre — jamais les deux, jamais leur somme —
+              et le rang passe devant quand les deux existent, ce qui
+              n'arrive sur aucune ligne du fonds aujourd'hui. */
+        var ord = $.trim(arr[i+16] || '');
+        var num = rg || ord;
+
         var rank;
         if(label){
-            rank = rg ? (label + ' ' + rg) : label;
+            rank = num ? (label + ' ' + num) : label;
             if(lab2) rank += ' et ' + lab2;
         } else {
             rank = arr[i+1];          // base non migree : on montre le code brut
@@ -93,7 +116,7 @@ function parseWorks(str){
         /* rank_num : le RANG SEUL, en plus du libelle compose. Il ne
            s'affiche nulle part — il sert uniquement au tri, ou rank_code ne
            suffit plus (voir sortAndRender). */
-        objects.push({ year:arr[i], rank:rank, rank_code:arr[i+1], rank_num:rg,
+        objects.push({ year:arr[i], rank:rank, rank_code:arr[i+1], rank_num:num,
                        misam:arr[i+2],
                        fn:arr[i+3], name:arr[i+4], title:arr[i+5], cat:arr[i+8], cat2:cat2,
                        cat2_code:arr[i+9], duration:arr[i+6], id:arr[i+7],
@@ -274,14 +297,25 @@ function renderSelection(works){
        cette separation. Ecrase l'un par l'autre, on melangerait « Prix 1 »
        et « Mention 1 ».
 
-       CE QUE CE TRI SERT AUJOURD'HUI, exactement : les mentions numerotees
-       de 1981, 1983, 1987 et 1993 — douze oeuvres, dont le numero vient du
-       CATALOGUE et dont on ignore la provenance. Il ne sert PLUS 1974 ni
-       1979 : la relecture des constats a montre que ces documents ENUMERENT
-       leurs mentions (« 1°) », le meme ordinal que leurs depots) au lieu de
-       les classer, et leur numero est reparti dans
-       imeb_distinction.ordre_document, qui ne s'affiche pas. Le jour ou ces
-       douze-la seront tranchees a leur tour, ce critere pourra disparaitre.
+       ⚠️ ET IL NE SERVAIT RIEN JUSQU'AU 2026-08-07. `rank_num` valait
+       `award_rank`, qui est NULL sur TOUTES les mentions du fonds : le
+       critere comparait une colonne vide a une autre colonne vide. Le
+       numero des mentions vit dans `award_ordre`, et il n'entrait pas dans
+       le flux. Il y entre depuis aujourd'hui (arr[i+16]).
+
+       CE QUE CE TRI SERT MAINTENANT, exactement : les ONZE mentions
+       numerotees de 1981, 1983, 1987 et 1993. Il ne sert PAS 1974 ni 1979 :
+       la relecture des constats a montre que ces documents ENUMERENT leurs
+       mentions (« 1°) », le meme ordinal que leurs depots) au lieu de les
+       classer, et leur numero est reparti dans
+       imeb_distinction.ordre_document, QUI NE VOYAGE PAS DANS CE FLUX — le
+       servir afficherait un classement que le document n'a pas prononce.
+
+       ⚠️ ET 1987 DONNE ENFIN LA PROVENANCE QU'ON IGNORAIT. Le constat de la
+       musique en direct ecrit « PREMIERE MENTION : bande 215 » puis
+       « MENTIONS : bande 19, bande 197 » : le numero du catalogue
+       (award_ordre = 1, award_price = 101 sur le seul Schweizer) est celui
+       du document. Deux sources independantes, meme lecture (§23.7).
 
        Un rang vide — l'immense majorite des mentions du fonds — compare
        comme chaine vide et laisse le tri retomber sur le patronyme. */
@@ -291,7 +325,7 @@ function renderSelection(works){
             || cmpValues(a.cat, b.cat)
             || cmpValues(a.cat2_code, b.cat2_code)
             || cmpValues(ordreDistinction(a.rank_code), ordreDistinction(b.rank_code))
-            || cmpValues(a.rank_num, b.rank_num)
+            || cmpValues(numeroDeTri(a.rank_num), numeroDeTri(b.rank_num))
             || cmpValues(a.name, b.name);
     });
 
@@ -409,11 +443,49 @@ var HORS_CATEGORIE = {200:1, 201:1, 296:1, 297:1, 298:1, 299:1,
                       300:1, 302:1, 303:1, 304:1};
 var PRIX_SANS_RANG = 199;
 
+/* LA FAMILLE DES MENTIONS SE REPLIE SUR UNE SEULE PLACE — 2026-08-07.
+
+   `award_price` vaut 100 pour une mention sans numero et 101, 102, 103 pour
+   les mentions numerotees. Comparees comme des nombres, les mentions SANS
+   numero passaient donc DEVANT celles que le document numerote :
+
+       1987, musique en direct   Rai (100), Taylor (100), puis Schweizer (101)
+       1983, art visuel          Kershaw (100), puis Weidenaar (101), Uehara (103)
+
+   Le constat de 1987 dit l'inverse en toutes lettres : « PREMIERE MENTION :
+   bande 215 » — Schweizer — PUIS « MENTIONS : bande 19, bande 197 ».
+
+   ⚠️ C'EST LE MEME DEFAUT QUE LE 199, ET POUR LA MEME RAISON : un code qui
+      melange une FORME (« ceci est une mention ») et un RANG (« la
+      premiere ») ne peut pas se trier comme un nombre. Le 199 avait mis
+      onze editions de prix sous leurs mentions ; celui-ci met les mentions
+      numerotees sous les autres. Troisieme fois que ce melange coute.
+
+   Les quatre codes rendent donc la meme place, 100, et c'est `rank_num` —
+   le numero lui-meme, qui voyage dans le flux depuis aujourd'hui — qui
+   departage a l'interieur. */
+var MENTIONS = {100:1, 101:1, 102:1, 103:1};
+
 function ordreDistinction(code){
     var n = parseInt(code, 10);
     if(HORS_CATEGORIE[n])      return -1;
     if(n === PRIX_SANS_RANG)   return 99;   // un prix, donc avant 100
+    if(MENTIONS[n])            return 100;  // toutes les mentions au meme rang
     return code;
+}
+
+/* UNE DISTINCTION SANS NUMERO PASSE APRES CELLES QUI EN ONT UN.
+
+   `cmpValues` compare une chaine vide comme une chaine, donc AVANT « 1 ».
+   Il faut l'inverse : le document proclame d'abord ce qu'il numerote, puis
+   le reste. On repousse donc les valeurs vides a la fin de leur famille.
+
+   ⚠️ 99 ET NON 999 : la valeur ne sert qu'a comparer entre elles des lignes
+      qui ont deja la meme place de distinction, la meme categorie et la
+      meme annee. Aucune edition n'a jamais eu 99 mentions dans une
+      categorie — la plus fournie en a six (1981, analogique). */
+function numeroDeTri(v){
+    return (v === undefined || v === null || v === '') ? 99 : parseFloat(v);
 }
 
 function cmpValues(a, b){

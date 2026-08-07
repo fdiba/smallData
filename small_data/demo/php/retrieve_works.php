@@ -136,7 +136,8 @@
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
 							imeb_artist.isni AS isni,
 							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry,
-							co.coauteurs AS coauteurs
+							co.coauteurs AS coauteurs,
+							imeb_music.award_ordre AS award_ordre
 							FROM imeb_music
 							INNER JOIN imeb_artist
 							ON imeb_music.id_artist = imeb_artist.id
@@ -169,7 +170,8 @@
 							a.firstName, a.name, -b.id,
 							a.isni,
 							COALESCE(NULLIF(pays.c_name_en, \'\'), pays.c_name),
-							cod.coauteurs
+							cod.coauteurs,
+							NULL
 							FROM imeb_distinction d
 							INNER JOIN imeb_bande b ON b.id = d.id_bande
 							INNER JOIN imeb_pv p ON p.id = b.id_pv
@@ -205,6 +207,7 @@
 							cat.libelle, NULL, 0,
 							\'not awarded\', NULL, NULL,
 							NULL, NULL, -1000000 - n.id,
+							NULL,
 							NULL,
 							NULL,
 							NULL
@@ -316,11 +319,41 @@
 			$coauteurs = isset($row['coauteurs']) && $row['coauteurs'] !== null
 						? $row['coauteurs'] : '';
 
+			// 17e champ : LE NUMERO DE LA MENTION, ajoute le 2026-08-07.
+			//
+			// ONZE OEUVRES DU FONDS PORTENT UN NUMERO DE MENTION — 1981,
+			// 1983 (trois), 1987 et 1993 (six) — ET AUCUNE NE L'AFFICHAIT.
+			// La page compose « libelle + rang » (arr[i+12] + arr[i+13]), et
+			// `award_rank` est NULL sur TOUTES les mentions du fonds : le
+			// numero vit dans `award_ordre`, qui n'entrait pas dans le flux.
+			// Le tri de js/aww.js s'en plaignait deja sans le dire — son
+			// critere `rank_num` comparait une colonne toujours vide.
+			//
+			// ⚠️ AWARD_ORDRE N'EST PAS AWARD_RANK, ET LES DEUX RESTENT DEUX
+			//    COLONNES. Le §16.5 et le §22.8 du chantier ont tranche deux
+			//    fois : « 1°) » dans un palmares est l'ordinal dont le meme
+			//    document numerote ses depots, pas un classement. Le rang dit
+			//    QUI L'EMPORTE, l'ordre dit DANS QUEL ORDRE C'EST PROCLAME.
+			//    Les fondre en une colonne les rendrait indistinguables pour
+			//    toujours ; les fondre dans le FLUX les rendrait
+			//    indistinguables a l'affichage seulement, et c'est deja trop.
+			//    D'ou un champ de plus, et non un COALESCE.
+			//
+			// ⚠️ LES DEUX AUTRES BRANCHES SERVENT NULL, ET C'EST VOULU.
+			//    `imeb_distinction.ordre_document` existe sur 113 lignes —
+			//    toutes les mentions depuis 1974 — parce qu'il compte la
+			//    POSITION DANS L'ENUMERATION du constat. Le servir ici
+			//    afficherait « Mention 1 », « Mention 2 »… sur des mentions
+			//    que le document n'a JAMAIS numerotees : on inventerait un
+			//    classement. Seul le catalogue dit ou le document a ecrit un
+			//    numero, et il ne le dit que pour onze oeuvres.
+			$award_ordre = $row['award_ordre'] !== null ? $row['award_ordre'] : '';
+
 			if($award_year!=null){
 
 				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat,
 							$award_cat2, $ctry, $isni, $award_label, $award_rank, $award_label2,
-							$coauteurs);
+							$coauteurs, $award_ordre);
 
 				/*if($euphonies>0){
 
