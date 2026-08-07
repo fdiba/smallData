@@ -684,8 +684,33 @@ Particle.prototype.display = function(){
 	    		if(this.counts[j]>0)referenced++;
 	    	}
 
+	    	/* « 12/58 composers » disait : douze de ces cinquante-huit ont une
+	    	   oeuvre archivee. ⚠️ HORS VUE DE TRAVAIL, LE RAPPORT N'APPREND
+	    	   PLUS RIEN — `compute all` n'admet plus que les compositeurs ayant
+	    	   au moins une oeuvre (voir computeAll dans js/network.js), donc il
+	    	   vaut toujours « 58/58 ». Un rapport dont le numerateur egale
+	    	   toujours le denominateur se lit comme une information alors qu'il
+	    	   n'en est plus une.
+
+	    	   Le second test ne dit pas la meme chose que le premier, et les
+	    	   deux sont utiles : `?v=all` avec un groupe entierement reference
+	    	   afficherait « 58/58 » lui aussi, et il n'y a pas plus de raison de
+	    	   l'ecrire la. On compte donc l'ecart, et on ne l'affiche que
+	    	   lorsqu'il existe.
+
+	    	   ⚠️ `compute traces` N'EST PAS FILTRE (meme renvoi) : une trace de
+	    	      navigation peut contenir des compositeurs sans oeuvre, meme
+	    	      hors `?v=all`. Le rapport y aurait un sens ; il est tu quand
+	    	      meme, parce que la regle demandee porte sur la VUE et non sur
+	    	      le contenu du groupe. « 58 composers » reste vrai dans tous les
+	    	      cas — c'est un effectif, pas une affirmation sur les oeuvres. */
+	    	var effectif = (typeof SHOW_ALL_NAMES !== 'undefined' && SHOW_ALL_NAMES
+	    	                && referenced !== this.ids.length)
+	    	             ? referenced + '/' + this.ids.length + ' composers'
+	    	             : this.ids.length + ' composers';
+
 	    	ctx.font = (8*this.scale) + "pt Calibri";
-	    	ctx.fillText(referenced + '/' + this.ids.length + ' composers', this.x, this.y + 7*this.scale);
+	    	ctx.fillText(effectif, this.x, this.y + 7*this.scale);
 	    	ctx.font = this.font;
 
 	    } else {

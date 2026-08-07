@@ -76,7 +76,9 @@
 				<div>
 					<p><strong>Controls</strong></p>
 					<ul>
-						<li><em>compute all</em> builds the multi-agent system from every composer of the database; <em>compute traces</em> builds it only from the composers you have consulted in Overview (your navigation path)</li>
+						<!-- « with at least one archived work » : le filtre est pose par
+						     computeAll() dans js/network.js, et leve par ?v=all. -->
+						<li><em>compute all</em> builds the multi-agent system from every composer of the database <strong>who has at least one archived work</strong> &mdash; about half of the people recorded in the minutes entered the competition without a recording joining the collection, and an agent with nothing to show has nothing to open; <em>compute traces</em> builds it only from the composers you have consulted in Overview (your navigation path)</li>
 						<li>both buttons can be clicked at any time to restart the simulation</li>
 						<li><em>pause</em> (or the space bar) freezes the system; the <em>p</em> key toggles the agents' drift</li>
 					</ul>

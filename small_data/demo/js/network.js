@@ -193,7 +193,33 @@ function computeAll(){
     var editions=allData[i+4];
     var iso=allData[i+5];*/
 
-    for (var i=0; i<allData.length-5; i+=6)composers.push({id:allData[i], count:allData[i+3]});
+    /* ⚠️ SEULS LES COMPOSITEURS AYANT AU MOINS UNE OEUVRE ARCHIVEE ENTRENT
+       DANS LE SYSTEME — 2026-08-07. Ils sont 1 259 sur 2 550 : la moitie de
+       la population etait faite d'agents qui n'avaient rien a montrer.
+       Ouvrir leur groupe rendait une liste d'oeuvres vide, et le clic sur
+       leur noeud nommait une personne dont la base ne connait qu'une
+       CANDIDATURE — la meme population que Line Charts ne nomme plus.
+
+       Le compte lu est le 4e champ du `case 10`, celui-la meme qui ecrit
+       « 1259 / 2550 composers with archived works » en tete des Line
+       Charts : un seul critere pour les deux pages.
+
+       `?v=all` rend la population entiere — c'est la vue de travail (voir
+       SHOW_ALL_NAMES dans js/functions.js).
+
+       ⚠️ `compute traces` N'EST PAS TOUCHE : ce sont les compositeurs que
+          l'utilisateur a lui-meme consultes dans l'Overview, ecrits dans
+          son cookie. Y appliquer un filtre reviendrait a lui retirer de sa
+          propre trace des noms qu'il a vus — et les traces anciennes en
+          contiennent, puisqu'elles ont ete constituees avant tout ceci. */
+    var ecartes = 0;
+    for (var i=0; i<allData.length-5; i+=6){
+        var n = parseInt(allData[i+3], 10);
+        if(!SHOW_ALL_NAMES && !(n>0)){ ecartes++; continue; }
+        composers.push({id:allData[i], count:allData[i+3]});
+    }
+    if(ecartes>0) console.log(ecartes + ' compositeurs sans oeuvre archivee ecartes du systeme ('
+                              + composers.length + ' retenus)');
 
     if(composers.length>0){
         animation01=setInterval(sma_animation, 1000/30);
