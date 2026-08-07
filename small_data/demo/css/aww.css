@@ -147,16 +147,30 @@ th{
 }
 
 /* --- regroupement par edition + category + sub category + price --- */
+/* TOUTES LES CELLULES SE CENTRENT VERTICALEMENT — 2026-08-07.
+
+   Les cellules fusionnees le faisaient depuis le 2026-08-06, pour une
+   raison qui reste vraie : un bloc de huit lignes — les huit mentions de
+   1975, que le jury nomme sans les classer et qui partagent une seule
+   cellule « price » — laissait son libelle colle en haut, a huit lignes de
+   la derniere oeuvre qu'il couvre. On croyait que seule la premiere portait
+   la mention.
+
+   Les cellules ORDINAIRES restaient en haut, et cela se voyait des qu'une
+   valeur tenait sur DEUX lignes : un titre long, un pays a deux mots
+   (« United Kingdom »), un nom de co-auteur qui passe a la ligne. Les
+   autres cellules de la meme ligne remontaient, et la ligne ne se lisait
+   plus d'un trait.
+
+   ⚠️ ET LA COLONNE « with » A RENDU LE DEFAUT VISIBLE, parce qu'elle porte
+      des noms longs — « Douglas Doherty », « Hans van Helvert » — dans une
+      colonne etroite, a cote de titres qui debordent eux aussi. Une colonne
+      ajoutee ne cree pas le defaut, elle le met sous les yeux : c'est la
+      meme mecanique que la duree au §21.17, qui avait fait sortir 127 zeros
+      en une heure. */
 #works_table td{
-	vertical-align: top;
+	vertical-align: middle;
 }
-/* Les cellules FUSIONNEES se centrent verticalement, pas les autres.
-   Un bloc d'une ou deux lignes ne fait pas la difference ; un bloc de huit,
-   si. Les huit mentions de 1975 — le jury les nomme sans les classer, elles
-   partagent donc une seule cellule « price » — laissaient le libelle colle
-   en haut, a huit lignes de la derniere oeuvre qu'il couvre : on croyait que
-   seule la premiere portait la mention. Centre, il se lit comme couvrant
-   son bloc. */
 #works_table .grp-cell{
 	vertical-align: middle;
 }

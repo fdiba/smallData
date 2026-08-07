@@ -36,7 +36,11 @@ function parseWorks(str){
     // 12 -> 15 le 2026-08-04 : award_label, award_rank et award_label_2
     // ajoutes EN FIN d'enregistrement par php/retrieve_works.php. Le pas doit
     // suivre, sinon la lecture se decale des la deuxieme oeuvre.
-    var numOfElements = 15;
+    //
+    // 15 -> 16 le 2026-08-07 : les CO-AUTEURS (arr[i+15]). Meme regle —
+    // ajoute en FIN d'enregistrement, longueur ecrite en dur des deux cotes,
+    // les deux fichiers bougent ensemble.
+    var numOfElements = 16;
     var objects = [];
 
     for (var i = 0; i < arr.length-(numOfElements-1); i+=numOfElements) {
@@ -93,7 +97,8 @@ function parseWorks(str){
                        misam:arr[i+2],
                        fn:arr[i+3], name:arr[i+4], title:arr[i+5], cat:arr[i+8], cat2:cat2,
                        cat2_code:arr[i+9], duration:arr[i+6], id:arr[i+7],
-                       ctry:arr[i+10], isni:arr[i+11] });
+                       ctry:arr[i+10], isni:arr[i+11],
+                       coauth:$.trim(arr[i+15] || '') });
     }
     return objects;
 }
@@ -395,6 +400,19 @@ var COLONNES = [
     {cls: 'c-price', lire: function(o){ return o.rank; }},
     {cls: 'c-fn',    lire: function(o){ return o.fn; }},
     {cls: 'c-name',  lire: function(o){ return o.name; }},
+    /* LES CO-AUTEURS, ajoutes le 2026-08-07.
+
+       `imeb_music.id_artist` est un entier UNIQUE — le catalogue n'a jamais
+       connu la co-signature. Trois bandes de 1986 sont co-signees ET
+       distinguees, les premieres du corpus : 94 De Clercq / Van Helvert,
+       149 Harrison / Doherty, 226 Schryer / Scheidt. Le second nom
+       n'apparaissait nulle part.
+
+       ⚠️ LA COLONNE EST VIDE SUR TOUTES LES AUTRES SELECTIONS, et elle se
+          masque donc toute seule (masquerColonnesVides). C'est exactement ce
+          pour quoi ce mecanisme a ete ecrit la veille : une colonne d'en-tete
+          au-dessus de trente cellules vides n'informe pas. */
+    {cls: 'c-coauth', lire: function(o){ return o.coauth; }},
     {cls: 'c-ctry',  lire: function(o){ return o.ctry; }},
     {cls: 'c-title', lire: function(o){ return o.title; }},
     {cls: 'c-dur',   lire: function(o){ return o.duration; }}
@@ -523,6 +541,11 @@ function buildTableRows(objects){
               d'un tiret, qui se lirait comme une valeur. */
         html += '<td class="'+memParity+' c-fn">'+ nameCell(objects[j].fn) + '</td>'
               + '<td class="'+memParity+' c-name">'+ nameCell(objects[j].name) + '</td>'
+              /* Les co-auteurs ne portent PAS le marqueur ISNI : le flux ne
+                 transporte que celui du compositeur principal, et poser le
+                 marqueur sur un nom dont on n'a pas l'identifiant ouvrirait la
+                 fiche de quelqu'un d'autre. Texte simple, echappe. */
+              + '<td class="'+memParity+' c-coauth">'+ esc(objects[j].coauth) + '</td>'
               + '<td class="'+memParity+' c-ctry">'+ objects[j].ctry + '</td>'
               + '<td class="'+memParity+' c-title">'+ objects[j].title + '</td>'
               + '<td class="'+memParity+' c-dur dur">'+ esc(objects[j].duration) + '</td></tr>';

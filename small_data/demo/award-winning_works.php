@@ -120,6 +120,14 @@
 						<th class="c-price">price</th>
 						<th class="c-fn">first name</th>
 						<th class="c-name">last name</th>
+						<!-- Les co-auteurs, ajoutes le 2026-08-07. imeb_music.id_artist
+						     est un entier unique : le catalogue n'a jamais connu la
+						     co-signature, que imeb_bande_artiste porte depuis 1981.
+						     Trois bandes de 1986 sont concernees, les premieres du
+						     corpus a etre a la fois co-signees et distinguees. La
+						     colonne se masque d'elle-meme sur les selections qui n'en
+						     portent aucune. -->
+						<th class="c-coauth">with</th>
 						<th class="c-ctry">country</th>
 						<th class="c-title">title</th>
 						<!-- La duree vient de imeb_music.duration, au format mm:ss.

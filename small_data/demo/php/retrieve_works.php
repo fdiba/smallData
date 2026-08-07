@@ -135,12 +135,24 @@
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
 							imeb_artist.isni AS isni,
-							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry
+							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry,
+							co.coauteurs AS coauteurs
 							FROM imeb_music
 							INNER JOIN imeb_artist
 							ON imeb_music.id_artist = imeb_artist.id
 							LEFT JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id
+							LEFT JOIN (
+								SELECT b2.id_music AS m_id,
+									GROUP_CONCAT(TRIM(CONCAT(COALESCE(a2.firstName, \'\'), \' \', a2.name))
+													ORDER BY ba2.rang SEPARATOR \', \') AS coauteurs
+								FROM imeb_bande b2
+								INNER JOIN imeb_bande_artiste ba2
+									ON ba2.id_bande = b2.id AND ba2.rang > 1
+								INNER JOIN imeb_artist a2 ON a2.id = ba2.id_artist
+								WHERE b2.id_music IS NOT NULL
+								GROUP BY b2.id_music
+							) co ON co.m_id = imeb_music.id
 
 							UNION ALL
 
@@ -154,19 +166,31 @@
 							b.titre_declare, NULL, NULL,
 							a.firstName, a.name, -b.id,
 							a.isni,
-							COALESCE(NULLIF(pays.c_name_en, \'\'), pays.c_name)
+							COALESCE(NULLIF(pays.c_name_en, \'\'), pays.c_name),
+							cod.coauteurs
 							FROM imeb_distinction d
 							INNER JOIN imeb_bande b ON b.id = d.id_bande
 							INNER JOIN imeb_pv p ON p.id = b.id_pv
 							INNER JOIN imeb_concours c ON c.id = p.id_concours
-							INNER JOIN imeb_artist a ON a.id = b.id_artist
+							LEFT JOIN imeb_bande_artiste ba ON ba.id_bande = b.id AND ba.rang = 1
+							LEFT JOIN imeb_artist a ON a.id = ba.id_artist
 							LEFT JOIN imeb_country pays ON a.id_country = pays.id
 							LEFT JOIN imeb_categorie catd ON catd.id = d.id_categorie
+							LEFT JOIN (
+								SELECT ba3.id_bande AS b_id,
+									GROUP_CONCAT(TRIM(CONCAT(COALESCE(a3.firstName, \'\'), \' \', a3.name))
+													ORDER BY ba3.rang SEPARATOR \', \') AS coauteurs
+								FROM imeb_bande_artiste ba3
+								INNER JOIN imeb_artist a3 ON a3.id = ba3.id_artist
+								WHERE ba3.rang > 1
+								GROUP BY ba3.id_bande
+							) cod ON cod.b_id = b.id
 							WHERE d.type <> \'selection\'
 							AND NOT EXISTS (
-								SELECT 1 FROM imeb_music m
-								WHERE m.id_artist = b.id_artist
-								AND m.award_year = c.annee)
+								SELECT 1 FROM imeb_bande_artiste ba4
+								INNER JOIN imeb_music m ON m.id_artist = ba4.id_artist
+													AND m.award_year = c.annee
+								WHERE ba4.id_bande = b.id)
 
 							UNION ALL
 
@@ -177,6 +201,7 @@
 							cat.libelle, NULL, 0,
 							\'not awarded\', NULL, NULL,
 							NULL, NULL, -1000000 - n.id,
+							NULL,
 							NULL,
 							NULL
 							FROM imeb_non_attribution n
@@ -226,10 +251,56 @@
 			$award_rank   = $row['award_rank']    !== null ? $row['award_rank']    : '';
 			$award_label2 = $row['award_label_2'] !== null ? $row['award_label_2'] : '';
 
+			// 16e champ : LES CO-AUTEURS, ajoute le 2026-08-07.
+			//
+			// `imeb_music.id_artist` est un entier UNIQUE : le catalogue n'a
+			// jamais connu la co-signature. `imeb_bande_artiste` la porte
+			// depuis 1981 (§13.2), et depuis le 2026-08-07 `imeb_bande.id_music`
+			// relie les deux (§22.9) — c'est ce lien qui rend la requete
+			// ci-dessus possible, et il n'existe que pour 1986.
+			//
+			// TROIS BANDES SONT CONCERNEES : 94 (De Clercq / Van Helvert),
+			// 149 (Harrison / Doherty) et 226 (Schryer / Scheidt), toutes de
+			// 1986 — les PREMIERES bandes co-signees distinguees du corpus.
+			//
+			// ⚠️ LE CHAMP EST VIDE PARTOUT AILLEURS, et c'est normal : la
+			//    colonne se masque toute seule quand la selection ne porte
+			//    aucune oeuvre co-signee (masquerColonnesVides, §21.18).
+			//
+			// ⚠️ C'EST UNE JOINTURE SUR UNE TABLE DERIVEE, ET NON UNE
+			//    SOUS-REQUETE CORRELEE — corrige le 2026-08-07, une heure
+			//    apres l'avoir ecrite dans l'autre sens.
+			//
+			//    La premiere branche de cette union N'A PAS DE WHERE : elle
+			//    lit les 6 772 lignes de imeb_music et c'est le PHP qui
+			//    ecarte les non primees ($award_year != null). Une
+			//    sous-requete correlee s'y executait donc SIX MILLE SEPT CENT
+			//    SOIXANTE-DOUZE FOIS, pour dix-neuf lignes de resultat. La
+			//    table derivee, elle, est calculee UNE FOIS et jointe.
+			//
+			//    Mesure sur le banc, base locale : 44 ms sans co-auteurs,
+			//    64 ms avec la sous-requete correlee, 45 ms avec la jointure.
+			//    Le surcout tombe de 45 % a 2 %. Sur le serveur, ou la base
+			//    est sur un HOTE DISTANT, l'ecart etait bien plus visible —
+			//    c'est Florent qui l'a signale, pas une mesure.
+			//
+			//    ⚠️ ET LA TABLE DERIVEE FILTRE SUR `ba2.rang > 1`, non sur
+			//       « different de imeb_music.id_artist » : c'est ce qui la
+			//       rend independante de la ligne courante, donc calculable
+			//       une fois. Cela SUPPOSE que l'auteur du catalogue soit
+			//       l'auteur de rang 1 de la bande liee — vrai pour les
+			//       dix-neuf liens de 1986, et VERIFIE PAR UN CONTROLE
+			//       PERMANENT (§5.7 de DB/controles_toutes_editions.sql),
+			//       parce qu'une hypothese qui ne se controle pas finit par
+			//       etre fausse en silence.
+			$coauteurs = isset($row['coauteurs']) && $row['coauteurs'] !== null
+						? $row['coauteurs'] : '';
+
 			if($award_year!=null){
 
 				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat,
-							$award_cat2, $ctry, $isni, $award_label, $award_rank, $award_label2);
+							$award_cat2, $ctry, $isni, $award_label, $award_rank, $award_label2,
+							$coauteurs);
 
 				/*if($euphonies>0){
 
