@@ -98,9 +98,52 @@ function parseWorks(str){
                        fn:arr[i+3], name:arr[i+4], title:arr[i+5], cat:arr[i+8], cat2:cat2,
                        cat2_code:arr[i+9], duration:arr[i+6], id:arr[i+7],
                        ctry:arr[i+10], isni:arr[i+11],
-                       coauth:$.trim(arr[i+15] || '') });
+                       coauth:parseCoauteurs(arr[i+15]) });
     }
     return objects;
+}
+
+/* LES CO-AUTEURS — « Nom|ISNI;Nom|ISNI », ajoute le 2026-08-07.
+
+   Le flux porte le nom ET l'ISNI de chaque co-auteur, pour que son nom soit
+   cliquable comme celui du compositeur principal. Point-virgule entre
+   co-auteurs, barre verticale entre le nom et l'ISNI.
+
+   ⚠️ LES DEUX SEPARATEURS SONT VERIFIES SUR LA BASE, pas choisis au hasard :
+      aucune des 3 258 fiches ne porte « | », « ; » ni « % » dans son nom.
+
+   ⚠️ ET L'ISNI EST VIDE POUR LES TROIS CO-AUTEURS D'AUJOURD'HUI — Doherty,
+      Van Helvert, Scheidt. Le lien apparaitra le jour ou la campagne ISNI les
+      atteindra, sans qu'une ligne de code bouge : c'est la difference entre
+      « la page ne sait pas le faire » et « la donnee n'est pas la ». */
+function parseCoauteurs(champ){
+    var out = [];
+    var brut = $.trim(champ || '');
+    if(!brut) return out;
+    var parts = brut.split(';');
+    for(var k = 0; k < parts.length; k++){
+        if(!$.trim(parts[k])) continue;
+        var t = parts[k].split('|');
+        out.push({ nom: $.trim(t[0]), isni: $.trim(t[1] || '') });
+    }
+    return out;
+}
+
+/* Le NOM d'un compositeur, cliquable quand — et seulement quand — son ISNI est
+   renseigne : rien n'invite a cliquer la ou il n'y a rien a ouvrir. Le repere
+   est un souligne pointille, comme sur catalog.php et dans le diagramme de
+   flux. `data-label` sert l'en-tete de la fiche.
+
+   ⚠️ UNE SEULE FONCTION POUR LE COMPOSITEUR ET SES CO-AUTEURS depuis le
+      2026-08-07. Elle etait ecrite en dur dans buildTableRows et ne servait
+      qu'au premier ; la dupliquer pour les co-auteurs aurait remis deux
+      copies d'une meme chose dans ce fichier — la panne habituelle du
+      projet (§16.5, §21.19). */
+function nomCliquable(txt, isni, label){
+    if(!isni) return esc(txt);
+    return '<span class="composer-isni" role="button" tabindex="0" data-isni="'
+         + esc(isni) + '" data-label="' + esc(label || txt) + '">' + esc(txt)
+         + '</span>';
 }
 
 /* =========================================================================
@@ -398,8 +441,19 @@ var COLONNES = [
     {cls: 'c-cat',   lire: function(o){ return o.cat; }},
     {cls: 'c-cat2',  lire: function(o){ return o.cat2; }},
     {cls: 'c-price', lire: function(o){ return o.rank; }},
-    {cls: 'c-fn',    lire: function(o){ return o.fn; }},
-    {cls: 'c-name',  lire: function(o){ return o.name; }},
+    /* LE COMPOSITEUR EN UNE SEULE COLONNE — 2026-08-07.
+
+       « first name » et « last name » etaient deux colonnes, et le nom
+       s'ecrivait donc en deux morceaux qu'il fallait relire ensemble. Elles
+       n'en font plus qu'une, « composer », et le marqueur ISNI ne se pose
+       plus qu'une fois au lieu de deux.
+
+       ⚠️ LE TRI, LUI, RESTE SUR LE PATRONYME (`o.name`, dernier critere de
+          sortAndRender). L'affichage est « Prenom Nom », l'ordre est celui
+          des noms de famille : c'est voulu, et c'est ce que fait toute
+          liste de compositeurs. */
+    {cls: 'c-composer', lire: function(o){
+        return ((o.fn || '') + ' ' + (o.name || '')).trim(); }},
     /* LES CO-AUTEURS, ajoutes le 2026-08-07.
 
        `imeb_music.id_artist` est un entier UNIQUE — le catalogue n'a jamais
@@ -412,7 +466,8 @@ var COLONNES = [
           masque donc toute seule (masquerColonnesVides). C'est exactement ce
           pour quoi ce mecanisme a ete ecrit la veille : une colonne d'en-tete
           au-dessus de trente cellules vides n'informe pas. */
-    {cls: 'c-coauth', lire: function(o){ return o.coauth; }},
+    {cls: 'c-coauth', lire: function(o){
+        return o.coauth.map(function(c){ return c.nom; }).join(', '); }},
     {cls: 'c-ctry',  lire: function(o){ return o.ctry; }},
     {cls: 'c-title', lire: function(o){ return o.title; }},
     {cls: 'c-dur',   lire: function(o){ return o.duration; }}
@@ -512,11 +567,6 @@ function buildTableRows(objects){
         // indifferemment l'un ou l'autre. data-label sert l'en-tete de la
         // fiche, qui affiche le nom complet.
         var fullName = ((objects[j].fn || '') + ' ' + (objects[j].name || '')).trim();
-        var nameCell = function(txt){
-            if(!objects[j].isni) return txt;
-            return '<span class="composer-isni" role="button" tabindex="0" data-isni="'
-                 + esc(objects[j].isni) + '" data-label="' + esc(fullName) + '">' + txt + '</span>';
-        };
 
         /* La duree, ajoutee le 2026-08-06, JUSTE APRES LE TITRE : elle
            qualifie l'oeuvre et se lit avec lui.
@@ -539,13 +589,17 @@ function buildTableRows(objects){
                      (troisieme branche : imeb_non_attribution).
               Une cellule vide dit qu'on ne sait pas ; elle ne se remplit pas
               d'un tiret, qui se lirait comme une valeur. */
-        html += '<td class="'+memParity+' c-fn">'+ nameCell(objects[j].fn) + '</td>'
-              + '<td class="'+memParity+' c-name">'+ nameCell(objects[j].name) + '</td>'
-              /* Les co-auteurs ne portent PAS le marqueur ISNI : le flux ne
-                 transporte que celui du compositeur principal, et poser le
-                 marqueur sur un nom dont on n'a pas l'identifiant ouvrirait la
-                 fiche de quelqu'un d'autre. Texte simple, echappe. */
-              + '<td class="'+memParity+' c-coauth">'+ esc(objects[j].coauth) + '</td>'
+        /* LES CO-AUTEURS PORTENT LEUR PROPRE MARQUEUR ISNI depuis le
+           2026-08-07 — chacun le sien, jamais celui du compositeur
+           principal : poser le marqueur d'un autre ouvrirait la fiche de
+           quelqu'un d'autre, ce qui est pire que de ne rien poser. */
+        var coauth = objects[j].coauth.map(function(c){
+            return nomCliquable(c.nom, c.isni);
+        }).join(', ');
+
+        html += '<td class="'+memParity+' c-composer">'
+              + nomCliquable(fullName, objects[j].isni, fullName) + '</td>'
+              + '<td class="'+memParity+' c-coauth">'+ coauth + '</td>'
               + '<td class="'+memParity+' c-ctry">'+ objects[j].ctry + '</td>'
               + '<td class="'+memParity+' c-title">'+ objects[j].title + '</td>'
               + '<td class="'+memParity+' c-dur dur">'+ esc(objects[j].duration) + '</td></tr>';

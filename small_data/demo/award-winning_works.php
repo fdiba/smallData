@@ -118,8 +118,12 @@
 						<th class="c-cat">category</th>
 						<th class="c-cat2">sub category</th>
 						<th class="c-price">price</th>
-						<th class="c-fn">first name</th>
-						<th class="c-name">last name</th>
+						<!-- « first name » et « last name » n'en font plus qu'une
+						     depuis le 2026-08-07 : le nom s'ecrivait en deux
+						     morceaux qu'il fallait relire ensemble, et le marqueur
+						     ISNI se posait deux fois pour une seule personne. Le
+						     TRI reste sur le patronyme. -->
+						<th class="c-composer">composer</th>
 						<!-- Les co-auteurs, ajoutes le 2026-08-07. imeb_music.id_artist
 						     est un entier unique : le catalogue n'a jamais connu la
 						     co-signature, que imeb_bande_artiste porte depuis 1981.

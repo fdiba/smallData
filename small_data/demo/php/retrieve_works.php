@@ -144,8 +144,10 @@
 							ON imeb_artist.id_country = imeb_country.id
 							LEFT JOIN (
 								SELECT b2.id_music AS m_id,
-									GROUP_CONCAT(TRIM(CONCAT(COALESCE(a2.firstName, \'\'), \' \', a2.name))
-													ORDER BY ba2.rang SEPARATOR \', \') AS coauteurs
+									GROUP_CONCAT(CONCAT(
+											TRIM(CONCAT(COALESCE(a2.firstName, \'\'), \' \', a2.name)),
+											\'|\', COALESCE(a2.isni, \'\'))
+										ORDER BY ba2.rang SEPARATOR \';\') AS coauteurs
 								FROM imeb_bande b2
 								INNER JOIN imeb_bande_artiste ba2
 									ON ba2.id_bande = b2.id AND ba2.rang > 1
@@ -178,8 +180,10 @@
 							LEFT JOIN imeb_categorie catd ON catd.id = d.id_categorie
 							LEFT JOIN (
 								SELECT ba3.id_bande AS b_id,
-									GROUP_CONCAT(TRIM(CONCAT(COALESCE(a3.firstName, \'\'), \' \', a3.name))
-													ORDER BY ba3.rang SEPARATOR \', \') AS coauteurs
+									GROUP_CONCAT(CONCAT(
+											TRIM(CONCAT(COALESCE(a3.firstName, \'\'), \' \', a3.name)),
+											\'|\', COALESCE(a3.isni, \'\'))
+										ORDER BY ba3.rang SEPARATOR \';\') AS coauteurs
 								FROM imeb_bande_artiste ba3
 								INNER JOIN imeb_artist a3 ON a3.id = ba3.id_artist
 								WHERE ba3.rang > 1
@@ -293,6 +297,22 @@
 			//       PERMANENT (§5.7 de DB/controles_toutes_editions.sql),
 			//       parce qu'une hypothese qui ne se controle pas finit par
 			//       etre fausse en silence.
+			//
+			// ⚠️ LE CHAMP PORTE LE NOM **ET L'ISNI** DE CHAQUE CO-AUTEUR
+			//    depuis le 2026-08-07, pour que son nom soit cliquable comme
+			//    celui du compositeur principal. La forme est
+			//    « Nom|ISNI;Nom|ISNI » : point-virgule entre co-auteurs,
+			//    barre verticale entre le nom et l'ISNI, ISNI VIDE quand la
+			//    fiche n'en porte pas — c'est le cas des trois co-auteurs de
+			//    1986 aujourd'hui, et le lien apparaitra le jour ou la
+			//    campagne ISNI les atteindra, sans toucher au code.
+			//
+			//    ⚠️ LES DEUX SEPARATEURS ONT ETE VERIFIES SUR LA BASE, pas
+			//       choisis au hasard : AUCUNE des 3 258 fiches ne porte
+			//       « | », « ; » ni « % » dans son nom ou son prenom. Le
+			//       troisieme est le separateur d'enregistrement du flux
+			//       lui-meme — le seul dont la presence casserait la page
+			//       entiere, et il n'apparait pas.
 			$coauteurs = isset($row['coauteurs']) && $row['coauteurs'] !== null
 						? $row['coauteurs'] : '';
 
