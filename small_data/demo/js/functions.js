@@ -335,6 +335,57 @@ function countryLineHtml(origin, ctry){
 
     return '<p class="sd-country">' + esc(txt) + '</p>';
 }
+/* =======================================================================
+   LA VUE DE TRAVAIL — `?v=all` (2026-08-07)
+
+   Deux pages retiennent quelque chose par defaut, et c'est le MEME geste :
+
+     - Line Charts (js/animated_data.js) — un compositeur sans oeuvre
+       archivee n'est ni nomme ni cliquable dans la liste ;
+     - Overview (js/overview.js) — la recherche par nom ne rend que les
+       compositeurs ayant au moins une oeuvre archivee, et le filtre
+       « num of records » ne descend plus sous 1.
+
+   Ce que les deux protegent est la meme population : les personnes dont la
+   base ne connait qu'une CANDIDATURE relevee dans un proces-verbal. Une
+   candidature n'est pas une publication ; un nom d'oeuvre archivee, si.
+
+   `?v=all` dans l'adresse leve les deux a la fois : c'est la vue qui sert a
+   relire le depouillement.
+
+   ⚠️ UNE SEULE DEFINITION, ICI, ET NON UNE PAR PAGE. Deux copies d'une
+      regle de discretion se separent a la premiere correction faite d'un
+      seul cote — et se separent SILENCIEUSEMENT : la page restee en
+      arriere continue de fonctionner, elle montre seulement ce que l'autre
+      cache. js/functions.js est charge par les deux pages, avant leur
+      script propre.
+
+   ⚠️ ET C'EST UN AFFICHAGE, PAS UNE PROTECTION. php/retrieve_data.php
+      continue de livrer les noms complets au navigateur : les cas 0 et 28
+      ne sont pas filtres. Ce qui est gagne, c'est qu'un nom releve au
+      proces-verbal ne se lise plus par-dessus l'epaule de qui regarde la
+      page. Si l'exigence devient de ne pas TRANSMETTRE ces noms, elle se
+      tient cote PHP, et ce commentaire devra le dire.
+
+   Une expression reguliere plutot que URLSearchParams : le site est ecrit
+   en ES5 et charge jQuery 3.1 ; on ne change pas le socle pour lire un
+   parametre. */
+var SHOW_ALL_NAMES = /(^|[?&])v=all([&#]|$)/.test(window.location.search || '');
+
+/* Initiales + etoiles : « Jean-Pierre Dupont » -> « J********** D***** ».
+   TOUT ce qui suit la premiere lettre d'un mot devient une etoile, traits
+   d'union et apostrophes compris — les garder dessinerait la forme du nom
+   (« J***-P***** D***** »), ce qui, sur un corpus ou les noms composes sont
+   rares, en designe deja quelques-uns. */
+function maskName(txt){
+    return String(txt == null ? '' : txt)
+        .split(/\s+/)
+        .filter(function(mot){ return mot.length > 0; })
+        .map(function(mot){
+            return mot.charAt(0) + new Array(mot.length).join('*');
+        })
+        .join(' ');
+}
 //----------------------------------------------//
 function dist(x1, x2, y1, y2){
 	var a = x1 - x2;

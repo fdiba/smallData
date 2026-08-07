@@ -275,7 +275,13 @@
    n'a aucune ligne de participation dans imeb_edition, donc aucun carre a
    surligner. La ligne reste affichee — c'est le seul endroit de la page ou ces
    compositeurs apparaissent — mais elle est grisee, en italique, et n'invite
-   pas au clic. */
+   pas au clic.
+
+   La meme regle habille, depuis le 2026-08-07, la ligne « N entrants — no
+   archived work, name not listed » : deux enonces differents, mais un seul
+   etat a l'ecran — quelque chose existe et n'est pas cliquable. Leur donner
+   deux apparences aurait demande au lecteur de distinguer ce que la page ne
+   distingue pas. */
 #results p.no-index{
 	color: var(--sd-asbestos);
 	font-style: italic;

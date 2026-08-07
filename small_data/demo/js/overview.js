@@ -43,6 +43,79 @@ var count002=0;
 var composers=[];
 var newResults=false;
 
+/* =======================================================================
+   LE PLANCHER DU FILTRE, ET LE FILTRE DE LA RECHERCHE (2026-08-07)
+
+   Hors vue de travail (`?v=all` — voir SHOW_ALL_NAMES dans
+   js/functions.js), cette page ne montre plus les compositeurs dont la
+   base ne connait qu'une CANDIDATURE : « num of records » ne descend plus
+   sous 1, et la recherche par nom ne rend que les fiches ayant au moins
+   une oeuvre archivee.
+
+   ⚠️ CE QUE CE FILTRE CACHE, ET CE QU'IL NE DOIT PAS CACHER. La liste de
+      resultats porte trois etats, et ils ne se valent pas :
+
+        `12` — dans l'index, douze oeuvres archivees   -> montre
+        ` 0` — dans l'index, AUCUNE oeuvre archivee    -> RETENU
+        `-1` — pas dans l'index du tout                -> montre
+
+      Le `-1` n'est pas un compte, c'est une absence de ligne de
+      participation : ces fiches sont entrees par les CATALOGUES, elles ont
+      donc des oeuvres — le §3 de claude/Overview_le_-1_de_la_recherche.md
+      les compte, et la mesure refaite sur la base le 2026-08-07 donne
+      **706 fiches hors index, 706 avec au moins une oeuvre, zero sans**.
+      Les retenir aurait repondu « no result » a qui cherche Jean-Luc
+      d'Aleo — un laureat du concours, dont l'oeuvre est affichee deux
+      pages plus loin. C'est exactement l'enonce faux que le §6 du meme
+      document avait refuse le 2026-08-03.
+
+   ⚠️ ET CETTE EXACTITUDE EST MESUREE, PAS GARANTIE. Rien dans le schema
+      n'interdit une fiche sans participation ET sans oeuvre : elle
+      s'afficherait alors comme « not in this index » alors qu'elle n'a
+      rien d'archive. Le flux de la recherche (case 28) ne porte que
+      l'identifiant et le nom — il faudrait lui ajouter le compte d'oeuvres
+      pour trancher au client, et cette longueur d'enregistrement est
+      codee en dur des DEUX cotes (`numOfElements` ici, l'ordre des
+      `array_push` la-bas). Le controle a refaire tient en une requete :
+        SELECT COUNT(*) FROM imeb_artist a
+         WHERE NOT EXISTS (SELECT 1 FROM imeb_participation p WHERE p.id_artist=a.id)
+           AND NOT EXISTS (SELECT 1 FROM imeb_music        m WHERE m.id_artist=a.id);
+      Tant qu'elle rend 0, la regle ci-dessous est exacte. */
+var NUM_RECORDS_MIN = SHOW_ALL_NAMES ? 0 : 1;
+
+/* Le plancher, applique en UN SEUL endroit — toute lecture du champ passe
+   par ici. Les quatre chemins qui posaient une valeur (le chargement, le
+   bouton du filtre, la touche Entree, et la reconstruction declenchee par
+   un resultat de recherche) l'auraient sinon fait chacun a sa facon, et le
+   dernier — `$('#numOfRecords').val(0)` dans showAndHighlightComposer() —
+   remettait le champ a 0 SANS QUE PERSONNE NE LE DEMANDE : un filtre qui
+   se defait tout seul est precisement ce qui rendrait la regle inutile.
+   Une valeur illisible (champ vide, texte) retombe sur le plancher, jamais
+   sur 0. */
+function clampNumOfRecords(n){
+    var v = parseInt(n, 10);
+    if(!isFinite(v)) v = NUM_RECORDS_MIN;
+    return Math.max(NUM_RECORDS_MIN, v);
+}
+/* Lit le champ, le corrige s'il le faut — le champ AFFICHE alors ce qui est
+   reellement applique. Ecrire 0 et voir 1 revenir est le seul retour dont
+   l'utilisateur dispose ; laisser 0 dans la case en filtrant a 1 aurait
+   menti sur ce que la grille montre. */
+function readNumOfRecords(){
+    var v = clampNumOfRecords($('#numOfRecords').val());
+    if(String($('#numOfRecords').val()) !== String(v)) $('#numOfRecords').val(v);
+    return v;
+}
+/* Une ligne de resultat est-elle affichee ? Voir le tableau des trois etats
+   ci-dessus. NaN est traite comme 0 : un compte illisible ne doit pas faire
+   apparaitre un nom par accident. */
+function resultIsListed(count){
+    if(SHOW_ALL_NAMES) return true;
+    var c = parseInt(count, 10);
+    if(!isFinite(c)) c = 0;
+    return c !== 0;
+}
+
 window.onload = function() {
 
 	//------------ navigation ------------//
@@ -86,6 +159,12 @@ window.onload = function() {
     document.getElementById('numOfRecords').addEventListener("keydown", function(e){
         if(e.key === "Enter" || e.keyCode === 13){ e.preventDefault(); filterData(); }
     });
+    /* Le champ se corrige aussi quand on le QUITTE sans valider : sans cela,
+       une case affichant 0 resterait sous les yeux a cote d'une grille
+       filtree a 1, et c'est la case qu'on croit. */
+    document.getElementById('numOfRecords').addEventListener("blur", function(){
+        readNumOfRecords();
+    });
 
     //----------------------------------//
 
@@ -114,7 +193,12 @@ window.onload = function() {
     $("#titles").css({"clear": "both"});
 
     // la note "Coverage" n'apparait que lorsque num of records < 1 (defaut = 1)
-    updateCoverageNote(parseInt($('#numOfRecords').val()));
+    updateCoverageNote(readNumOfRecords());
+
+    /* La puce « a result marked not in this index… » et celle du filtre
+       restent vraies dans les deux vues ; celle-ci ne vaut que pour la vue
+       publique, ou la recherche retient les candidats sans oeuvre. */
+    if(SHOW_ALL_NAMES) $('#lg-archived-only').hide();
 
     /* Fiche ISNI du compositeur selectionne (js/isni_box.js, partage avec
        euphonies, catalog et award-winning_works).
@@ -259,9 +343,14 @@ function reflowGrid(){
 
     maxWidth = w;
 
-    var n = parseInt($('#numOfRecords').val());
-    if(Number.isInteger(n) && n >= 1) processData002(n);
-    else                              processData();
+    /* ⚠️ readNumOfRecords() ET NON parseInt() : ce chemin-ci est declenche
+       par un REDIMENSIONNEMENT de la fenetre. Lu brut, un champ vide ou a 0
+       aurait reconstruit la grille entiere — filtre leve — sans qu'aucun
+       geste ne l'ait demande. Le plancher doit tenir surtout la ou personne
+       ne regarde. */
+    var n = readNumOfRecords();
+    if(n >= 1) processData002(n);
+    else       processData();
 
     // le compositeur selectionne garde son marquage
     if(pAId >= 0) processAllRectWhithId(pAId);
@@ -787,9 +876,12 @@ function getData(){
         var txt2 = numComposersInCapsules+ " / " + num + " composers with archived works";
         $("#info p:eq(0)").text(txt2);
 
-        // construire l'index selon le champ "num of records >=" (defaut 1)
-        var n = parseInt($('#numOfRecords').val());
-        if(Number.isInteger(n) && n >= 1) processData002(n);
+        /* Construire l'index selon le champ "num of records >=" (defaut 1).
+           processData(), qui batissait la grille SANS seuil, n'est plus
+           atteignable que par la vue de travail : hors d'elle, le plancher
+           vaut 1 et la branche filtree est la seule. */
+        var n = readNumOfRecords();
+        if(n >= 1) processData002(n);
         else processData();
         updateCoverageNote(n);
 
@@ -873,20 +965,21 @@ function filterData(){
 
     var year_01 = parseInt($('#year_01').val());
     var year_02 = parseInt($('#year_02').val());
-    var numOfRecords = parseInt($('#numOfRecords').val());
 
-    // console.log(year_01, year_02, numOfRecords);
+    /* readNumOfRecords() lit ET corrige : un 0 saisi redevient 1 dans la
+       case avant que la grille ne soit redessinee. La derniere branche —
+       champ vide ou illisible — reconstruisait l'index a 0, c'est-a-dire
+       tout le monde ; elle retombe maintenant sur le plancher, sans quoi
+       il aurait suffi d'effacer le champ pour passer dessous. */
+    var numOfRecords = readNumOfRecords();
 
-    if(Number.isInteger(year_01) && Number.isInteger(year_02) && Number.isInteger(numOfRecords)){
+    if(Number.isInteger(year_01) && Number.isInteger(year_02)){
         console.log("all three");
-    } else if (Number.isInteger(year_01) && Number.isInteger(numOfRecords)){
-        console.log("two of them");
     } else if (Number.isInteger(year_01)){
         console.log("year_01");
-    } else if (Number.isInteger(numOfRecords)){
-        if(numOfRecords>=0){ processData002(numOfRecords); updateCoverageNote(numOfRecords); }
     } else {
-        processData002(0); updateCoverageNote(0);
+        processData002(numOfRecords);
+        updateCoverageNote(numOfRecords);
     }
 
 }
@@ -943,11 +1036,15 @@ function getSearchTerms(){
 
                 createComposersListing(numOfElements);
 
-                // Resultat unique : on le surligne d'office, MAIS seulement s'il
-                // existe dans l'index. Sinon showAndHighlightComposer remettrait
-                // "num of records" a 0 et redessinerait toute la grille pour ne
-                // surligner personne (le compositeur n'y est a aucun seuil).
-                if(indexCountFor(composers[0])>=0) showAndHighlightComposer(composers[0]);
+                /* Resultat unique : on le surligne d'office, MAIS seulement
+                   s'il existe dans l'index — sinon showAndHighlightComposer
+                   rouvrirait l'index et redessinerait toute la grille pour
+                   ne surligner personne (le compositeur n'y est a aucun
+                   seuil). Et seulement s'il est AFFICHE : surligner un carre
+                   sous une liste ou le nom n'apparait pas designerait
+                   precisement la personne qu'on ne nomme pas. */
+                var c0 = indexCountFor(composers[0]);
+                if(c0>=0 && resultIsListed(c0)) showAndHighlightComposer(composers[0]);
 
             } else {
 
@@ -984,11 +1081,21 @@ function indexCountFor(id){
 function createComposersListing(num){
 
     var arr=[];
+    var retenus=0;          // lignes ecartees par la vue publique
 
     for (var i = 0; i < composers.length; i+=num) {
 
         var id = composers[i];
         var count = indexCountFor(id);
+
+        /* Vue publique : la fiche n'a AUCUNE oeuvre archivee, la base ne
+           connait d'elle qu'une candidature relevee au proces-verbal. Le
+           nom n'est pas ecrit — pas meme masque : une liste d'initiales
+           repondrait a une recherche par nom, donc confirmerait le nom
+           cherche, ce qui est le contraire de ce qu'on veut ici. C'est la
+           difference avec Line Charts, ou la liste n'est pas une reponse a
+           une question mais l'inventaire d'un pays. */
+        if(!resultIsListed(count)){ retenus++; continue; }
 
         // -1 n'est pas un compte : c'est une absence. On l'ecrit en toutes
         // lettres plutot que de le laisser passer pour un nombre d'oeuvres, et
@@ -1033,6 +1140,20 @@ function createComposersListing(num){
         $("#results").append(arr[l][1]);
     }
 
+    /* ⚠️ TOUT A ETE RETENU : il y avait des reponses, aucune n'est
+       montrable. Ecrire « no result » serait faux — la recherche a trouvee
+       — et laisser la liste vide serait pire, puisque rien ne
+       distinguerait alors ce cas d'une panne. On dit donc COMBIEN sans
+       dire QUI : le nombre ne designe personne, et il est la seule chose
+       qui permette a un lecteur de comprendre que la base contient bien ce
+       qu'il cherche. C'est la ligne editoriale du chantier — rendre
+       explicite plutot que taire — appliquee sous la contrainte nouvelle. */
+    if(arr.length<1 && retenus>0){
+        $("#results").append('<p class="no-index">' + retenus +
+            ' entrant' + (retenus>1 ? 's' : '') +
+            ' &mdash; no archived work, name not listed</p>');
+    }
+
     // Seules les lignes presentes dans l'index sont cliquables. L'identifiant
     // est relu dans data-id avec attr() et NON avec data() : data() convertirait
     // "2373" en nombre, alors que showAndHighlightComposer le compare a
@@ -1055,10 +1176,17 @@ function showAndHighlightComposer(composerId){
         if(rectangles[j].id===composerId){ present = true; break; }
     }
 
+    /* Absent de la grille DESSINEE — par exemple deux oeuvres alors que le
+       filtre est a cinq. On rouvre l'index jusqu'au PLANCHER, et non plus
+       jusqu'a 0 : hors vue de travail, descendre a 0 ferait rentrer par la
+       fenetre les 1 287 fiches sans oeuvre que le filtre tient dehors, et
+       personne ne l'aurait demande — c'est un clic sur un resultat de
+       recherche qui declenche ce chemin. */
     if(!present){
-        $('#numOfRecords').val(0);
-        processData002(0);
-        updateCoverageNote(0);
+        var plancher = NUM_RECORDS_MIN;
+        $('#numOfRecords').val(plancher);
+        processData002(plancher);
+        updateCoverageNote(plancher);
     }
 
     editRectanglesColorBasedOnQueryWithComposerId(composerId);

@@ -42,7 +42,7 @@ var numCpByCountry=[];
 var takeCountIntoAccount;
 
 /* ------------------------------------------------------------------------
-   NOMS EN CLAIR OU NOMS MASQUES — 2026-08-07
+   NOMS EN CLAIR OU NOMS MASQUES
 
    Par defaut, un compositeur SANS oeuvre archivee n'est ni nomme ni
    cliquable : la liste n'affiche que ses initiales, les autres lettres
@@ -50,36 +50,11 @@ var takeCountIntoAccount;
    ONT une oeuvre dans les capsules restent nommes et cliquables : leur nom
    est deja publie avec l'oeuvre, ailleurs sur le site.
 
-   Le masque tombe quand l'adresse porte `?v=all` — c'est la vue de
-   travail, celle qui sert a relire le depouillement des proces-verbaux.
-
-   ⚠️ C'EST UN AFFICHAGE, PAS UNE PROTECTION. Le flux qui alimente la page
-      (php/retrieve_data.php, case 0) continue de livrer les noms complets,
-      et il suffit de le lire pour les voir. Ce qui est fait ici, c'est
-      qu'un nom releve dans un proces-verbal — une candidature, pas une
-      oeuvre — ne se lise plus par-dessus l'epaule de qui regarde le
-      graphique. Si l'exigence devient de ne PAS transmettre ces noms, elle
-      se tient du cote de PHP, pas ici.
-
-   Une expression reguliere plutot que URLSearchParams : le reste de la
-   page est ecrit en ES5 et charge jQuery 3.1, on ne change pas le socle
-   pour lire un parametre. */
-var SHOW_ALL_NAMES = /(^|[?&])v=all([&#]|$)/.test(window.location.search || '');
-
-/* Initiales + etoiles. TOUT ce qui suit la premiere lettre d'un mot devient
-   une etoile, y compris les traits d'union et les apostrophes :
-   « Jean-Pierre Dupont » -> « J********** D***** ». Les garder dessinerait
-   la forme du nom (« J***-P***** D***** »), ce qui, sur un corpus ou les
-   noms composes sont rares, en designe deja quelques-uns. */
-function maskName(txt){
-    return String(txt == null ? '' : txt)
-        .split(/\s+/)
-        .filter(function(mot){ return mot.length > 0; })
-        .map(function(mot){
-            return mot.charAt(0) + new Array(mot.length).join('*');
-        })
-        .join(' ');
-}
+   `SHOW_ALL_NAMES` et `maskName()` sont dans **js/functions.js** : la meme
+   regle vaut pour la recherche de l'Overview, et une regle de discretion
+   ecrite deux fois se separe a la premiere correction faite d'un seul
+   cote. L'en-tete de la fonction, la-bas, dit ce que `?v=all` leve et ce
+   qu'il ne leve pas. */
 
 /* Ordre alphabetique de la liste des compositeurs — 2026-08-07.
 

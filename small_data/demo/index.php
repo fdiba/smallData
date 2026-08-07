@@ -90,7 +90,10 @@
 						<li>click a square to select a composer: the boxes on the right fill up, and each of them is <strong>folded</strong> &mdash; the orange one names the composer, their country code and how many editions they entered; the purple one counts their archived works. Click a box's header to unfold it, click again to fold it back</li>
 						<li>a third box appears between the two <strong>only for composers who have an ISNI</strong>, and its header is that identifier. Unfold it to load the international identity record &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. Nothing is requested until you unfold it, and a record already opened once is kept for the session. Selecting another composer replaces it; selecting one without an ISNI removes it</li>
 						<li>type a name in <em>composer name</em> to list matching composers; click a result to highlight their squares in yellow</li>
-						<li><em>num of records &gt;=</em> rebuilds the index with only the composers having at least that many archived works</li>
+						<li><em>num of records &gt;=</em> rebuilds the index with only the composers having at least that many archived works &mdash; one is the lowest it goes</li>
+						<!-- Retiree par js/overview.js dans la vue de travail (?v=all),
+						     ou la recherche rend aussi les candidats sans oeuvre. -->
+						<li id="lg-archived-only">the search lists only composers with <strong>at least one archived work</strong>. Many more names appear in the minutes &mdash; people who entered the competition without a recording joining the collection: an application is not a publication, so those names are not listed here</li>
 						<li>a result marked <em>not in this index</em> has no square to highlight: some composers are in the repertoire without appearing in this participation grid, because no participation has been recorded for them in the minutes entered so far &mdash; their works are still listed on the catalogue and award pages</li>
 						<!-- La reserve de provenance : imeb_edition melange une candidature
 						     attestee, un nom releve au proces-verbal et une oeuvre programmee
