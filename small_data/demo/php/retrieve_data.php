@@ -23,6 +23,63 @@
 		retrieveAllComposersNamed($terms);
 	}
 
+	/* =====================================================================
+	   LA VUE DE TRAVAIL, COTE SERVEUR — 2026-08-07
+
+	   Par defaut, le `case 0` (liste des compositeurs d'un pays, affichee
+	   par Line Charts) NE TRANSMET PLUS le nom des personnes dont la base
+	   ne connait qu'une CANDIDATURE, c'est-a-dire aucune oeuvre archivee.
+	   Il envoie des initiales suivies d'etoiles, et rien d'autre : ni
+	   identifiant de fiche, ni ISNI, ni pays d'origine.
+
+	   Jusqu'ici le masque etait POSE PAR LE NAVIGATEUR (js/functions.js).
+	   Il reste — les deux couches disent la meme chose — mais il ne
+	   protegeait rien : les noms complets partaient sur le reseau, et il
+	   suffisait d'ouvrir l'onglet Reseau du navigateur pour les lire.
+	   Desormais ils ne partent plus.
+
+	   ⚠️ ET CE N'EST TOUJOURS PAS UN CONTROLE D'ACCES. Le drapeau arrive
+	      du client, en clair, dans le POST : n'importe qui peut poster
+	      `v=all` et recevoir tout. Ce qui est gagne est REEL mais precis —
+	      le nom d'un candidat ne se trouve plus dans une page qu'on lit,
+	      ni dans une reponse qu'on inspecte par curiosite, ni dans un cache
+	      intermediaire. Ce qui n'est PAS gagne l'est tout autant : cela
+	      n'arrete personne qui cherche a contourner.
+
+	      Le rendre effectif tient en une ligne, et demande une decision :
+	      remplacer le test ci-dessous par la comparaison de `v` a un jeton
+	      secret range a cote de /access/connexion.php — hors de l'arbre
+	      web, comme les identifiants de base. L'adresse de travail
+	      deviendrait `?v=<jeton>` au lieu de `?v=all`. Tant que ce n'est
+	      pas fait, ce fichier ne doit pas etre presente comme protegeant
+	      quoi que ce soit.
+
+	   ⚠️ LE CRITERE DOIT RESTER LE MEME QUE CELUI DU `case 10`, qui compte
+	      les oeuvres avec `statut <> 'hors_repertoire'` (28 oeuvres
+	      ecartees sur 6 772 ; la colonne est NOT NULL, donc le `<>` ne perd
+	      aucune ligne). S'ils divergeaient, le navigateur nommerait
+	      quelqu'un que le serveur a masque — ou masquerait un nom qu'il
+	      vient de recevoir entier, ce qui ne se verrait nulle part.
+	   ===================================================================== */
+	function viewAll(){
+		return isset($_POST['v']) && $_POST['v'] === 'all';
+	}
+	/* Initiales + etoiles, MEME REGLE QUE maskName() dans js/functions.js :
+	   tout ce qui suit la premiere lettre d'un mot devient une etoile,
+	   traits d'union et apostrophes compris.
+
+	   Le motif `(?<=.)` avec le drapeau /u plutot que mb_substr() : il
+	   compte en caracteres UTF-8 sans dependre de l'extension mbstring, qui
+	   n'est pas garantie sur l'hebergement. Un « É » vaut une lettre, pas
+	   deux etoiles. */
+	function maskName($txt){
+		$out = array();
+		foreach(preg_split('/\s+/u', trim((string)$txt), -1, PREG_SPLIT_NO_EMPTY) as $mot){
+			$out[] = preg_replace('/(?<=.)./u', '*', $mot);
+		}
+		return implode(' ', $out);
+	}
+
 	//-------------------------------- functions --------------------------------------//
 
 	function retrieveAllComposersNamed($str){
@@ -409,9 +466,16 @@
 		   personne a au moins une participation »), sans quoi la fonction
 		   se mettrait a servir des compositeurs qu'elle n'a jamais servis.
 		   Une bascule doit rendre la meme chose, y compris ses silences. */
+		/* `nb` — le nombre d'oeuvres archivees, qui decide du masque. Il
+		   n'est PAS ajoute au flux : la longueur d'enregistrement reste de
+		   six champs, codee en dur des deux cotes (le pas de la boucle dans
+		   js/linechart.js). Il ne sert qu'ici, a l'ecriture. */
 		$sth = $dbh->prepare('SELECT imeb_artist.id AS a_id, imeb_artist.firstName,
 							imeb_artist.name, imeb_artist.isni,
 							COALESCE(NULLIF(orig.c_name_en, \'\'), orig.c_name) AS \'origin\',
+							(SELECT COUNT(*) FROM imeb_music m
+								WHERE m.id_artist = imeb_artist.id
+								  AND m.statut <> \'hors_repertoire\') AS nb,
 							EXISTS(SELECT 1 FROM imeb_participation p
 									WHERE p.id_artist = imeb_artist.id
 									  AND p.annee = ?) AS ed
@@ -444,9 +508,43 @@
 		   COURANT n'est pas envoye : l'appel porte deja sur un pays unique
 		   (parametre cId), et js/linechart.js en tient le libelle dans
 		   this.sl_ctry. Le pas passe donc de 5 a 6. */
+		$tout = viewAll();
+
 		while($row = $sth->fetch()) {
+
+			$a_id      = $row['a_id'];
+			$firstName = $row['firstName'];
+			$name      = $row['name'];
+			$isni      = ($row['isni']   === null ? '' : $row['isni']);
+			$origin    = ($row['origin'] === null ? '' : $row['origin']);
+
+			/* AUCUNE OEUVRE ARCHIVEE, ET NOUS NE SOMMES PAS EN VUE DE
+			   TRAVAIL : la personne reste COMPTEE — la ligne part, sans
+			   quoi les totaux de la barre orange (« all editions : c/t »)
+			   et la longueur de la liste changeraient — mais elle n'est
+			   plus NOMMEE.
+
+			   ⚠️ L'IDENTIFIANT PART AVEC LE NOM, et c'est le point qui
+			      compte. Un nom masque a cote de son id de fiche ne serait
+			      pas masque : l'id se repose au `case 1`, qui rend les
+			      oeuvres, et il se compare a la grille de l'Overview.
+			      L'ISNI encore moins — c'est un identifiant PUBLIC et
+			      mondial, il nomme la personne mieux que son nom.
+
+			   Le pays d'origine part aussi : le navigateur ne l'affiche que
+			   dans la boite d'un compositeur choisi, et une ligne masquee
+			   ne peut pas etre choisie. Ce qui ne sert a rien n'a pas a
+			   etre transmis. */
+			if(!$tout && (int)$row['nb'] < 1){
+				$a_id      = '';
+				$firstName = maskName($firstName);
+				$name      = maskName($name);
+				$isni      = '';
+				$origin    = '';
+			}
+
 			if(strlen($str_all)>0) $str_all .=  "%";
-			$str_all .= $row['a_id'] . "%" . $row['firstName'] . "%" . $row['name'] . "%" . $row['ed'] . "%" . ($row['isni'] === null ? '' : $row['isni']) . "%" . ($row['origin'] === null ? '' : $row['origin']);
+			$str_all .= $a_id . "%" . $firstName . "%" . $name . "%" . $row['ed'] . "%" . $isni . "%" . $origin;
 		}
 
 		echo $str_all;

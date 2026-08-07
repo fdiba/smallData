@@ -133,7 +133,13 @@ LineChart.prototype.retrieveData = function(cId, year, value){
     $.ajax({                                      
         url: 'php/retrieve_data.php',       
         type: "POST",
-        data: { cId: cId, year:year, value:value, case:0 } 
+        /* `v` — la vue demandee. Sans lui, php/retrieve_data.php masque les
+           compositeurs sans oeuvre archivee : il ne peut pas lire l'adresse
+           de la page, seulement ce qu'on lui poste. Voir SHOW_ALL_NAMES dans
+           js/functions.js, et l'en-tete de viewAll() cote PHP — qui dit aussi
+           pourquoi ce drapeau n'est pas une protection. */
+        data: { cId: cId, year:year, value:value, case:0,
+                v: (typeof SHOW_ALL_NAMES !== 'undefined' && SHOW_ALL_NAMES) ? 'all' : '' }
     }).done(function(str) {
 
         var arr=str.split("%");

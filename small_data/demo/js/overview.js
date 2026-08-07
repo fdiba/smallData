@@ -56,7 +56,7 @@ var newResults=false;
       resultats porte trois etats, et ils ne se valent pas :
 
         `12` — dans l'index, douze oeuvres archivees   -> montre
-        ` 0` — dans l'index, AUCUNE oeuvre archivee    -> RETENU
+        ` 0` — dans l'index, AUCUNE oeuvre archivee    -> NON LISTE
         `-1` — pas dans l'index du tout                -> montre
 
       Le `-1` n'est pas un compte, c'est une absence de ligne de
@@ -197,7 +197,8 @@ window.onload = function() {
 
     /* La puce « a result marked not in this index… » et celle du filtre
        restent vraies dans les deux vues ; celle-ci ne vaut que pour la vue
-       publique, ou la recherche retient les candidats sans oeuvre. */
+       publique — en vue de travail, la recherche liste aussi les candidats
+       sans oeuvre, et la puce serait fausse. */
     if(SHOW_ALL_NAMES) $('#lg-archived-only').hide();
 
     /* Fiche ISNI du compositeur selectionne (js/isni_box.js, partage avec
@@ -1081,7 +1082,7 @@ function indexCountFor(id){
 function createComposersListing(num){
 
     var arr=[];
-    var retenus=0;          // lignes ecartees par la vue publique
+    var nonListes=0;        // reponses trouvees, mais non affichables
 
     for (var i = 0; i < composers.length; i+=num) {
 
@@ -1095,7 +1096,7 @@ function createComposersListing(num){
            cherche, ce qui est le contraire de ce qu'on veut ici. C'est la
            difference avec Line Charts, ou la liste n'est pas une reponse a
            une question mais l'inventaire d'un pays. */
-        if(!resultIsListed(count)){ retenus++; continue; }
+        if(!resultIsListed(count)){ nonListes++; continue; }
 
         // -1 n'est pas un compte : c'est une absence. On l'ecrit en toutes
         // lettres plutot que de le laisser passer pour un nombre d'oeuvres, et
@@ -1140,17 +1141,17 @@ function createComposersListing(num){
         $("#results").append(arr[l][1]);
     }
 
-    /* ⚠️ TOUT A ETE RETENU : il y avait des reponses, aucune n'est
-       montrable. Ecrire « no result » serait faux — la recherche a trouvee
+    /* ⚠️ AUCUNE DES REPONSES N'EST AFFICHABLE — la recherche a trouve,
+       mais tout ce qu'elle a trouve est un candidat sans oeuvre archivee. Ecrire « no result » serait faux — la recherche a trouvee
        — et laisser la liste vide serait pire, puisque rien ne
        distinguerait alors ce cas d'une panne. On dit donc COMBIEN sans
        dire QUI : le nombre ne designe personne, et il est la seule chose
        qui permette a un lecteur de comprendre que la base contient bien ce
        qu'il cherche. C'est la ligne editoriale du chantier — rendre
        explicite plutot que taire — appliquee sous la contrainte nouvelle. */
-    if(arr.length<1 && retenus>0){
-        $("#results").append('<p class="no-index">' + retenus +
-            ' entrant' + (retenus>1 ? 's' : '') +
+    if(arr.length<1 && nonListes>0){
+        $("#results").append('<p class="no-index">' + nonListes +
+            ' entrant' + (nonListes>1 ? 's' : '') +
             ' &mdash; no archived work, name not listed</p>');
     }
 
