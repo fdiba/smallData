@@ -79,7 +79,17 @@
 	-webkit-column-break-inside: avoid;
 	break-inside: avoid;
 }
-#composers li:hover{
+/* ⚠️ `:not(.masked)` ET NON UNE REGLE DE PLUS SUR .masked — 2026-08-07.
+   Le survol repond a un clic possible ; une ligne masquee n'en accepte pas,
+   elle ne doit donc pas s'allumer. Mais la neutraliser en ecrivant
+   `#composers li.masked:hover{ background: none }` effacait AUSSI le fond
+   turquoise de .selected — « showing this edition only » : le survol
+   emportait avec le surlignage de survol le surlignage de selection, qui
+   ne lui appartenait pas. Un :hover bat une classe simple, et « none »
+   n'annule pas le seul fond qu'on visait. On retire donc le survol a la
+   source, la ou il est pose, plutot que d'empiler une regle qui le
+   recouvre. */
+#composers li:not(.masked):hover{
 	background: rgba(255, 255, 255, 0.14);
 }
 /* possede des oeuvres archivees dans les capsules */
@@ -96,6 +106,26 @@
 }
 #composers li.active.selected{
 	color: #fff;
+}
+/* Nom retenu : aucune oeuvre archivee, et l'adresse ne porte pas `?v=all`.
+   La ligne n'ecoute aucun clic (voir appendComposerLi dans
+   js/animated_data.js) — il faut donc qu'elle ne se PRESENTE pas comme
+   cliquable, sans quoi le curseur promet une action qui n'arrive jamais.
+   `#composers li` pose cursor:pointer pour tout le monde ; c'est ici qu'on
+   le reprend. */
+#composers li.masked{
+	cursor: default;
+	letter-spacing: 0.04em;   /* les etoiles se collent, un peu d'air les separe */
+}
+
+/* La 2e ligne sous le titre est vide en mode line chart : il n'y a rien a en
+   dire, et elle ecrivait « no info » — un texte qui occupe la place d'une
+   information pour annoncer qu'il n'y en a pas. Vide, elle mesurerait encore
+   sa hauteur de ligne et pousserait la troisieme ; :empty la retire du flux.
+   Le <p> RESTE dans la page : les trois lignes sont adressees par leur rang
+   (`#info p:eq(0..2)`), en supprimer une deplacerait les deux autres. */
+#ctrl_bar #info p:empty{
+	display: none;
 }
 
 /* ---------- liste des oeuvres d'un compositeur ---------- */

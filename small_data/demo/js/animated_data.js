@@ -41,6 +41,64 @@ var numCpByCountry=[];
 
 var takeCountIntoAccount;
 
+/* ------------------------------------------------------------------------
+   NOMS EN CLAIR OU NOMS MASQUES — 2026-08-07
+
+   Par defaut, un compositeur SANS oeuvre archivee n'est ni nomme ni
+   cliquable : la liste n'affiche que ses initiales, les autres lettres
+   remplacees par des etoiles (« F****** D****** »). Les compositeurs qui
+   ONT une oeuvre dans les capsules restent nommes et cliquables : leur nom
+   est deja publie avec l'oeuvre, ailleurs sur le site.
+
+   Le masque tombe quand l'adresse porte `?v=all` — c'est la vue de
+   travail, celle qui sert a relire le depouillement des proces-verbaux.
+
+   ⚠️ C'EST UN AFFICHAGE, PAS UNE PROTECTION. Le flux qui alimente la page
+      (php/retrieve_data.php, case 0) continue de livrer les noms complets,
+      et il suffit de le lire pour les voir. Ce qui est fait ici, c'est
+      qu'un nom releve dans un proces-verbal — une candidature, pas une
+      oeuvre — ne se lise plus par-dessus l'epaule de qui regarde le
+      graphique. Si l'exigence devient de ne PAS transmettre ces noms, elle
+      se tient du cote de PHP, pas ici.
+
+   Une expression reguliere plutot que URLSearchParams : le reste de la
+   page est ecrit en ES5 et charge jQuery 3.1, on ne change pas le socle
+   pour lire un parametre. */
+var SHOW_ALL_NAMES = /(^|[?&])v=all([&#]|$)/.test(window.location.search || '');
+
+/* Initiales + etoiles. TOUT ce qui suit la premiere lettre d'un mot devient
+   une etoile, y compris les traits d'union et les apostrophes :
+   « Jean-Pierre Dupont » -> « J********** D***** ». Les garder dessinerait
+   la forme du nom (« J***-P***** D***** »), ce qui, sur un corpus ou les
+   noms composes sont rares, en designe deja quelques-uns. */
+function maskName(txt){
+    return String(txt == null ? '' : txt)
+        .split(/\s+/)
+        .filter(function(mot){ return mot.length > 0; })
+        .map(function(mot){
+            return mot.charAt(0) + new Array(mot.length).join('*');
+        })
+        .join(' ');
+}
+
+/* Ordre alphabetique de la liste des compositeurs — 2026-08-07.
+
+   ⚠️ LE TRI PORTE SUR LE NOM DE FAMILLE, alors que la ligne affiche
+      « Prenom Nom ». C'est l'ordre d'un catalogue, pas celui de la chaine
+      affichee : trier sur ce qui est ecrit rangerait le corpus par prenoms.
+      Le prenom departage les homonymes.
+
+   localeCompare et non `<` : sans lui, « Ålander » et « Zorn » se rangent
+   par code de caractere, et tous les noms accentues partent apres le Z. */
+function compareComposers(a, b){
+    var na = String(a && a.n  != null ? a.n  : ''),
+        nb = String(b && b.n  != null ? b.n  : ''),
+        fa = String(a && a.fn != null ? a.fn : ''),
+        fb = String(b && b.fn != null ? b.fn : '');
+    var c = na.localeCompare(nb);
+    return c !== 0 ? c : fa.localeCompare(fb);
+}
+
 window.onload = function() {
 
     //TODO CONTROL USING GUI
@@ -355,90 +413,97 @@ function matchComposersHeight(){
     var comp=document.getElementById('composers');
     if(comp) comp.style.minHeight='';
 }
+/* UNE SEULE LIGNE DE LA LISTE — 2026-08-07.
+
+   ⚠️ CETTE FONCTION N'EXISTAIT PAS : displayCpInfos() portait DEUX FOIS le
+      meme bloc, une fois pour les compositeurs de l'edition selectionnee,
+      une fois pour les autres, a la classe CSS pres. Les deux copies
+      etaient deja divergentes d'un caractere (« ' ' » contre « " " » entre
+      prenom et nom). Ajouter le masque a l'une et pas a l'autre aurait
+      donne exactement le defaut le plus difficile a voir : la page qui
+      protege un nom dans un cas et l'affiche dans l'autre, sans erreur ni
+      compte anormal. Les deux branches appellent donc le meme code, et il
+      n'y a plus qu'un endroit ou se tromper. */
+function appendComposerLi(obj, count, inSelectedEdition){
+
+    /* MASQUE : aucune oeuvre archivee, et l'adresse ne porte pas `?v=all`.
+       Le nom d'un compositeur qui a une oeuvre est deja publie avec elle. */
+    var masked = !SHOW_ALL_NAMES && !(count>0);
+
+    var nom = $.trim((obj.fn || '') + ' ' + (obj.n || ''));
+    var libelle = masked ? maskName(nom) : nom;
+    if(count>0) libelle += ' (' + count + ')';
+
+    var cls = [];
+    if(count>0)            cls.push('active');
+    if(inSelectedEdition)  cls.push('selected');
+    if(masked)             cls.push('masked');
+
+    var li = $('<li>').text(libelle);
+    if(cls.length) li.attr('class', cls.join(' '));
+
+    var tip = '';
+    if(inSelectedEdition) tip += 'took part in the selected edition';
+    if(count>0)           tip += (tip ? ' · ' : '') + count + ' archived work(s) — click to list them';
+    if(!tip)              tip  = 'no archived work';
+    if(masked)            tip += ' — name withheld';
+    li.attr('title', tip);
+
+    /* ⚠️ NI IDENTIFIANT NI ISNI SUR UNE LIGNE MASQUEE. Masquer le libelle
+       et laisser `data-id` ou `data-isni` dans le document reviendrait a
+       ecrire le nom en clair juste a cote, une inspection plus loin —
+       l'identifiant est precisement ce qui permet de le redemander. Le
+       pays reste : il est celui de la courbe cliquee, il ne designe
+       personne. */
+    if(!masked){
+        li.attr('data-id', obj.id);
+        // attr et non data : un ISNI tout en chiffres serait converti en
+        // nombre par jQuery, et ses zeros de tete disparaitraient.
+        if(obj.isni)   li.attr('data-isni', obj.isni);
+        // Pays et pays d'origine voyagent avec la ligne : la boite du nom
+        // les affiche en couple (« Argentina / France »), cf. #composerBox.
+        if(obj.ctry)   li.attr('data-ctry', obj.ctry);
+        if(obj.origin) li.attr('data-origin', obj.origin);
+
+        li.click(function(event) {
+            var el = $(event.target);
+            retrieveAllTitleFrom(el.data("id"));
+            /* Le libelle de la liste porte le compte entre parentheses
+               (« Dhomont (12) ») : il est retire ici, la boite violette
+               l'annonce maintenant elle-meme. */
+            lastComposerSelected = $.trim(el.text().replace(/\s*\(\d+\)\s*$/, ''));
+            lastComposerIsni = el.attr('data-isni') || '';
+            lastComposerCtry = el.attr('data-ctry') || '';
+            lastComposerOrigin = el.attr('data-origin') || '';
+        });
+    }
+    /* Pas de `click` du tout sur une ligne masquee — et non un gestionnaire
+       qui refuserait d'agir : ce qui n'ecoute pas ne peut pas fuir. Le
+       curseur cesse de se transformer en main (css/animated_data.css,
+       `#composers li.masked`), donc la ligne ne se PRESENTE pas comme
+       cliquable. */
+
+    $("#composers").append(li);
+}
 function displayCpInfos(){
 
 	$("#composers").empty();
 
-    for (var j=0; j<composers.length; j++) {
+    /* Ordre alphabetique — sur une COPIE. `composers` est aussi lu par
+       getNumComposersInCapsulesAndTitles(), et la barre orange dit « this
+       edition / all editions » : des comptes, insensibles a l'ordre. Trier
+       en place n'aurait donc rien casse AUJOURD'HUI, ce qui est une raison
+       insuffisante de le faire — le tableau vient du flux, il garde l'ordre
+       du flux. */
+    var liste = composers.slice().sort(compareComposers);
 
-        var obj=composers[j];
+    for (var j=0; j<liste.length; j++) {
 
-        // console.log(numTitlesByArtist[aId]);
-
+        var obj=liste[j];
         var count=numTitlesByArtist[obj.id];
 
-        if(obj.y>0){ //selected year
-            var div='<li';
-            
-
-            if(count>0)div+= ' class="active selected">'+obj.fn+' '+obj.n+' ('+count+')</li>';
-            else div +=' class="selected">'+obj.fn+" "+obj.n+'</li>';
-
-            $("#composers").append(div);
-
-            $("#composers li:last-child").attr("data-id", obj.id);
-            // attr et non data : un ISNI tout en chiffres serait converti en
-            // nombre par jQuery, et ses zeros de tete disparaitraient.
-            if(obj.isni) $("#composers li:last-child").attr("data-isni", obj.isni);
-            // Pays et pays d'origine voyagent avec la ligne : la boite du nom
-            // les affiche en couple (« Argentina / France »), cf. #composerBox.
-            if(obj.ctry)   $("#composers li:last-child").attr("data-ctry", obj.ctry);
-            if(obj.origin) $("#composers li:last-child").attr("data-origin", obj.origin);
-
-            var tip = '';
-            if(obj.y>0) tip += 'took part in the selected edition';
-            if(count>0) tip += (tip ? ' · ' : '') + count + ' archived work(s) — click to list them';
-            if(!tip) tip = 'no archived work';
-            $("#composers li:last-child").attr("title", tip);
-
-            $("#composers li:last-child").click(function(event) {
-                var li = $(event.target);
-                retrieveAllTitleFrom(li.data("id"));
-                /* Le libelle de la liste porte le compte entre parentheses
-                   (« Dhomont (12) ») : il est retire ici, la boite violette
-                   l'annonce maintenant elle-meme. */
-                lastComposerSelected = $.trim(li.text().replace(/\s*\(\d+\)\s*$/, ''));
-                lastComposerIsni = li.attr('data-isni') || '';
-                lastComposerCtry = li.attr('data-ctry') || '';
-                lastComposerOrigin = li.attr('data-origin') || '';
-            });
-        } else if(!yearSelection){
-
-            var div='<li';
-
-            if(count>0)div+= ' class="active">'+obj.fn+" "+obj.n+' ('+count+')</li>';
-            else div +='>'+obj.fn+" "+obj.n+'</li>';
-
-            $("#composers").append(div);
-
-            $("#composers li:last-child").attr("data-id", obj.id);
-            // attr et non data : un ISNI tout en chiffres serait converti en
-            // nombre par jQuery, et ses zeros de tete disparaitraient.
-            if(obj.isni) $("#composers li:last-child").attr("data-isni", obj.isni);
-            // Pays et pays d'origine voyagent avec la ligne : la boite du nom
-            // les affiche en couple (« Argentina / France »), cf. #composerBox.
-            if(obj.ctry)   $("#composers li:last-child").attr("data-ctry", obj.ctry);
-            if(obj.origin) $("#composers li:last-child").attr("data-origin", obj.origin);
-
-            var tip = '';
-            if(obj.y>0) tip += 'took part in the selected edition';
-            if(count>0) tip += (tip ? ' · ' : '') + count + ' archived work(s) — click to list them';
-            if(!tip) tip = 'no archived work';
-            $("#composers li:last-child").attr("title", tip);
-
-            $("#composers li:last-child").click(function(event) {
-                var li = $(event.target);
-                retrieveAllTitleFrom(li.data("id"));
-                /* Le libelle de la liste porte le compte entre parentheses
-                   (« Dhomont (12) ») : il est retire ici, la boite violette
-                   l'annonce maintenant elle-meme. */
-                lastComposerSelected = $.trim(li.text().replace(/\s*\(\d+\)\s*$/, ''));
-                lastComposerIsni = li.attr('data-isni') || '';
-                lastComposerCtry = li.attr('data-ctry') || '';
-                lastComposerOrigin = li.attr('data-origin') || '';
-            });
-
-        }
+        if(obj.y>0)             appendComposerLi(obj, count, true);   //selected year
+        else if(!yearSelection) appendComposerLi(obj, count, false);
     }
     matchComposersHeight();
 }
@@ -575,8 +640,13 @@ function updateSlData(){
             }
         }
 
-        var inf1="no info";
-        $("#info p:eq(1)").text(inf1);
+        /* Rien a dire ici en mode line chart : le chiffre qui a un sens
+           (« composers: N ») est celui d'UNE edition, et on en affiche
+           plusieurs. La ligne est donc laissee VIDE au lieu de porter « no
+           info » — un texte qui prend la place d'une information pour
+           annoncer qu'il n'y en a pas. Vide, elle disparait (css
+           `#ctrl_bar #info p:empty`) et la ligne suivante remonte. */
+        $("#info p:eq(1)").text('');
 
         //pays par ordre alphabetique (courbes et legende)
         f_data.sort(function(a, b){
@@ -1058,8 +1128,13 @@ function getData(){
         $("#selection").empty().append('<p>');
         $("#selection p").append(txt);
 
+        /* « 1259 / 2550 » ne disait pas ce qu'il comptait : deux nombres
+           sous un titre, a charge pour le lecteur de deviner lequel est le
+           tout. Les DEUX VARIABLES SONT INCHANGEES — numComposersInCapsules
+           est compte juste au-dessus, num se deduit de la longueur du flux
+           (six champs par compositeur) — seule la legende s'ajoute. */
         var num = allData.length / 6;
-        var txt2 = numComposersInCapsules+ " / " + num;
+        var txt2 = numComposersInCapsules+ " / " + num + " composers with archived works";
         $("#info p:eq(0)").text(txt2);
 
         //TODO REMOVE 

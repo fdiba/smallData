@@ -76,7 +76,8 @@
 					<ul>
 						<li><span class="demo demo-active">Name (n)</span> n works archived in the IMEB capsules — click the name to list them</li>
 						<li><span class="demo demo-selected">Name</span> took part in the selected edition</li>
-						<li><span class="demo">Name</span> listed in the minutes, but no archived work</li>
+						<!-- Le nom masque : voir SHOW_ALL_NAMES / maskName dans js/animated_data.js. -->
+						<li><span class="demo">J****** D*****</span> listed in the minutes, but no archived work &mdash; the name is withheld and the entry is not clickable: what is recorded here is an <em>application</em> to the competition, not a published work</li>
 						<li>the orange bar sums up the current selection — click it to switch between all composers and those of the selected edition only</li>
 						<li>clicking a name opens a panel on the right: the composer's name, then the number of their archived works &mdash; click that count to unfold the list. For a composer who <strong>has an ISNI</strong>, a third box appears between the two, headed by that identifier: click the header to unfold the international identity record. Nothing is requested until you unfold it</li>
 					</ul>
