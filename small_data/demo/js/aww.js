@@ -113,12 +113,49 @@ function parseWorks(str){
         else if(cat2==11)cat2="tendance création";
         else if(cat2==12)cat2="tendance performance";
 
+        /* ⚠️ DEUX « CATEGORIES » QUI N'EN SONT PAS — 2026-08-08.
+
+           `imeb_music`.`award_cat` porte « Magistère » et « Résidence » sur
+           les codes 500 et 600 : UN TYPE DE DISTINCTION DANS LA COLONNE DE
+           CATEGORIE. Or sortAndRender compare `cat` AVANT ordreDistinction.
+           Le Magistere s'affichait donc comme une categorie musicale,
+           intercalee entre Live et Mixte par ordre alphabetique, et la
+           Residence apres Programme.
+
+           146 oeuvres sont concernees — 21 Magisteres de 1988 a 2008, 125
+           Residences de 1988 a 2009 —, et AUCUNE AVANT 1988 : c'est le
+           constat de cette annee-la qui les introduit dans le fonds, et
+           c'est pourquoi le defaut s'est vu ce jour-la.
+
+           ⚠️ QUATRIEME FOIS QU'UN CODE MELANT DEUX NATURES COUTE QUELQUE
+              CHOSE : le 199 qui mettait onze editions de prix sous leurs
+              mentions (§21.13), les mentions numerotees classees sous les
+              autres (§23.13), les secondes distinctions invisibles
+              (§22.12). Ici le melange n'est pas dans `award_price` mais
+              dans `award_cat`, et il fait le meme genre de degat.
+
+           ON NE TRADUIT RIEN ET ON NE CORRIGE PAS LA BASE : on dit
+           seulement OU CES LIGNES SE PLACENT, ce qui est de l'affichage.
+           Le libelle continue de venir de `award_label`, et la colonne
+           « price » affiche donc « Magistère » ou « Résidence ».
+
+           ⚠️ LE TEST PORTE SUR LE CODE, PAS SUR LE LIBELLE. `award_price`
+              est stable ; `award_cat` est une chaine que quelqu'un peut
+              corriger un jour. Et la cellule n'est videe QUE si elle
+              repete le libelle : si un Magistere recevait un jour une
+              VRAIE categorie — le catalogue sait le faire, il donne
+              « Mixte » aux trois prix hors categorie de 1987 —, elle
+              resterait affichee et seul le rang de tri jouerait. */
+        var cat = arr[i+8];
+        var catRang = CAT_HORS_AXE[parseInt(arr[i+1], 10)] || 0;
+        if(catRang && (cat === 'Magistère' || cat === 'Résidence')) cat = '';
+
         /* rank_num : le RANG SEUL, en plus du libelle compose. Il ne
            s'affiche nulle part — il sert uniquement au tri, ou rank_code ne
            suffit plus (voir sortAndRender). */
         objects.push({ year:arr[i], rank:rank, rank_code:arr[i+1], rank_num:num,
-                       misam:arr[i+2],
-                       fn:arr[i+3], name:arr[i+4], title:arr[i+5], cat:arr[i+8], cat2:cat2,
+                       misam:arr[i+2], cat_rang:catRang,
+                       fn:arr[i+3], name:arr[i+4], title:arr[i+5], cat:cat, cat2:cat2,
                        cat2_code:arr[i+9], duration:arr[i+6], id:arr[i+7],
                        ctry:arr[i+10], isni:arr[i+11],
                        coauth:parseCoauteurs(arr[i+15]) });
@@ -319,9 +356,24 @@ function renderSelection(works){
 
        Un rang vide — l'immense majorite des mentions du fonds — compare
        comme chaine vide et laisse le tri retomber sur le patronyme. */
+    /* ⚠️ `cat_rang` PASSE AVANT `cat`, ET L'ORDRE DES DEUX LIGNES EST TOUT
+       LE CORRECTIF DU 2026-08-08.
+
+       Le Magistere et la Residence portent leur propre nom dans
+       `award_cat` (voir parseWorks). Compare comme une chaine, « Magistère »
+       tombait entre « Live » et « Mixte », et « Résidence » apres
+       « Programme » : les deux s'affichaient comme des categories
+       musicales. `ordreDistinction` n'avait aucune chance de corriger cela
+       — elle est consultee DEUX LIGNES PLUS BAS, quand `cat` a deja
+       tranche.
+
+       Le rang hors-axe passe donc devant : -1 le Magistere, qui couronne
+       l'edition entiere, 0 les vraies categories, +1 la Residence, qui est
+       un sejour et non une recompense de rang. */
     var objects = works.slice();
     objects.sort(function(a, b){
         return cmpValues(b.year, a.year)
+            || cmpValues(a.cat_rang || 0, b.cat_rang || 0)
             || cmpValues(a.cat, b.cat)
             || cmpValues(a.cat2_code, b.cat2_code)
             || cmpValues(ordreDistinction(a.rank_code), ordreDistinction(b.rank_code))
@@ -466,11 +518,37 @@ var PRIX_SANS_RANG = 199;
    departage a l'interieur. */
 var MENTIONS = {100:1, 101:1, 102:1, 103:1};
 
+/* LES DEUX DISTINCTIONS QUI SORTENT DE L'AXE DES CATEGORIES — 2026-08-08.
+
+   Elles ne couronnent pas une categorie : le Magistere couronne l'EDITION
+   ENTIERE, la Residence n'est pas une recompense de rang mais un sejour.
+   Toutes deux portent leur propre nom dans `award_cat`, ce qui les faisait
+   trier comme des categories musicales (voir le bloc de parseWorks).
+
+   La valeur est un RANG SUR L'AXE DES CATEGORIES, pas une place de
+   distinction : -1 passe devant les categories, +1 passe derriere.
+
+   ⚠️ ET LE COMMENTAIRE DU 2026-08-06 LE DEMANDAIT DEJA : « toute valeur
+      > 100 qui n'est pas une mention doit etre classee ici ». 500 et 600
+      etaient dans « tout le reste garde son code » depuis toujours, c'est-
+      a-dire nulle part. La liste en dur ne s'est pas mise a jour toute
+      seule, TROISIEME FOIS — apres le 200 en 1984 et le 199 en 1985. */
+var CAT_HORS_AXE = {500: -1, 600: 1};
+
 function ordreDistinction(code){
     var n = parseInt(code, 10);
     if(HORS_CATEGORIE[n])      return -1;
     if(n === PRIX_SANS_RANG)   return 99;   // un prix, donc avant 100
     if(MENTIONS[n])            return 100;  // toutes les mentions au meme rang
+    /* ⚠️ LE MAGISTERE ET LA RESIDENCE SONT DEJA SEPARES PAR `cat_rang`,
+       AVANT que cette fonction soit consultee — dans le cas ordinaire elle
+       ne les voit donc jamais. Mais si l'un d'eux recevait un jour une
+       VRAIE categorie, `cat_rang` vaudrait quand meme -1 ou +1 et les
+       sortirait de l'axe : c'est le comportement voulu, et il faut que la
+       place de distinction suive. Le Magistere passe devant les prix hors
+       categorie ; la Residence se range juste apres les mentions. */
+    if(n === 500)              return -2;
+    if(n === 600)              return 101;
     return code;
 }
 
