@@ -46,16 +46,20 @@
 				How to read this page<span class="lg-caret" aria-hidden="true"></span>
 			</button>
 			<div id="lg_body">
-			<p class="lg-note">Coverage &mdash; this chart is knowingly incomplete, and the strip above each edition square says how. The minutes were transcribed <em>and</em> entered into the database for the <em>22 editions of 1973&ndash;1994</em>. For <em>six editions</em> (1996, 1999, 2005, 2006, 2007, 2008) the minutes were transcribed but <em>never imported</em>: the 1996 minutes list 500 entrants, the database holds 128. For <em>eight editions</em> (1997, 1998, 2000&ndash;2004, 2009) <em>no minutes were processed at all</em>. From 1996 on, what the chart counts is therefore mostly composers whose work entered the collection, not entrants to the competition &mdash; the drop after 1995 measures the archiving effort, not the competition, which kept drawing 500 to 633 entrants an edition. A selection is therefore flagged <em>complete data</em> up to 1994 and <em>incomplete data</em> from 1996 on (next to the page title). No competition was held in <em>1995</em> (36 editions in all), so the timeline skips that year and the lines join 1994 directly to 1996. The visible dip in <em>1992</em> is real: that edition marked the competition's 20th anniversary and took the form of a retrospective &mdash; the <em>Euphonies d'Or</em>, honouring the finest works of 1973&ndash;1991 &mdash; rather than an open call for new entries, so far fewer participants were recorded that year.</p>
+			<p class="lg-note">Coverage &mdash; this chart is knowingly incomplete, and the strip above each edition square says <em>on what authority</em> each edition is counted. For the <em>fifteen editions of 1973&ndash;1987</em> the bailiff's record of deposit &mdash; the original is at the Biblioth&egrave;que nationale de France &mdash; has been <em>transcribed into the database in full</em>: those counts are attested entry by entry, and they are exact. For <em>1988&ndash;1994</em> a transcription of the minutes was entered, but no bailiff's record backs it. From <em>1996 on</em> the count rests mainly on a recapitulative list of entrants kept by the IMEB itself &mdash; a second-hand document, and a fallible one: it omits 92 deposits that the bailiff's records attest. Where a first-hand record exists, that record wins and the list is never allowed to contradict it. Against the minutes themselves, the database holds roughly <em>three quarters</em> of the entrants they list: 348 of 500 for 1996, 474 of 633 for 2005, 364 of 506 for 2008. A selection is flagged <em>complete data</em> up to 1994 and <em>incomplete data</em> from 1996 on, next to the page title. No competition was held in <em>1995</em> (36 editions in all), so the timeline skips that year and the lines join 1994 directly to 1996. Two low editions are not gaps in the record: <em>2004</em> (138), because the competition itself ran at a third of its size &mdash; the first three categories, the <em>Trivium A</em>, were not opened, and the IMEB's own chronicle records 154 works from only 132 composers, fewer than the database holds; and <em>1992</em> (124), because that edition marked the competition's 20th anniversary and took the form of a retrospective &mdash; the <em>Euphonies d'Or</em>, honouring the finest works of 1973&ndash;1991 &mdash; rather than an open call.</p>
+			<p class="lg-note">Most of the people counted here have <em>no work in the collection at all</em>. The two figures beside the page title say how many of each: composers with a work in the IMEB capsules, and everyone the database records as an entrant. The gap between them is made of candidacies and nothing else &mdash; a name read off an entry list, with no music attached. That is why most names in the list below are withheld, and why the strip above each square matters more than the height of the line.</p>
 			<div class="lg-cols">
 				<div>
 					<p><strong>Timeline (top strip)</strong></p>
 					<ul>
 						<li><span class="sq" style="background:#ecf0f1"></span> one square per edition of the competition — the first square, <em>all</em>, charts every edition from 1973 to 2009</li>
-						<!-- Le lisere de provenance, dessine par drawPvStrip() dans js/animated_data.js. -->
-						<li><span class="sq" style="background:#2ecc71"></span> minutes transcribed <em>and</em> entered &mdash; the count is reliable</li>
-						<li><span class="sq" style="background:#e67e22"></span> minutes transcribed but <em>never imported</em> &mdash; the count falls far short</li>
-						<li><span class="sq" style="background:#7f8c8d"></span> <em>no minutes processed</em> &mdash; only composers with an archived work appear</li>
+						<!-- Le lisere de provenance, dessine par drawPvStrip() dans js/animated_data.js.
+						     Il n'est PLUS CODE EN DUR : il est lu dans imeb_participation par le
+						     case 12 de php/retrieve_data.php, et se corrige a chaque edition versee. -->
+						<li><span class="sq" style="background:#2ecc71"></span> <em>transcribed in full from the bailiff's record</em> &mdash; every entry is attested (1973&ndash;1987)</li>
+						<li><span class="sq" style="background:#e67e22"></span> <em>minutes transcribed</em>, but not from the bailiff's record &mdash; the count is entered, not attested (1988&ndash;1994)</li>
+						<li><span class="sq" style="background:#5dade2"></span> <em>counted from the entrants list</em> and from archived works &mdash; second-hand, and short of the minutes (1996&ndash;2009)</li>
+						<li>within that last group, six editions have minutes that were transcribed but <em>never imported</em> (1996, 1999, 2005&ndash;2008), and eight have <em>no transcription at all</em> (1997, 1998, 2000&ndash;2004, 2009). That difference says what is left to do, not what the count is worth &mdash; so it is written here and not in the strip</li>
 						<li><span class="sq" style="background:#1abc9c"></span> selected edition(s)</li>
 						<li><span class="sq" style="background:#f1c40f"></span> editions inside the selected time span</li>
 						<li><span class="sq" style="background:#e74c3c"></span> <em>span</em> toggle on: pick two years to chart the period between them &middot; <span class="sq" style="background:#ffcccc"></span> off: pick a single year to get a bar chart of that edition</li>
@@ -64,7 +68,7 @@
 				<div>
 					<p><strong>Charts</strong></p>
 					<ul>
-						<li>each line (or bar) is a country; the vertical axis counts the participants found in the competition minutes</li>
+						<li>each line (or bar) is a country; the vertical axis counts the entrants recorded for that edition &mdash; on the authority the strip above the edition square names</li>
 					<li>the vertical scale is square-root: countries with few participants stay readable next to the biggest ones (gridlines at 1, 2, 5, 10, 20, 50, 100&hellip;)</li>
 						<li>in the chart legend, <em>c/t</em> means: <em>c</em> composers with archived works out of <em>t</em> participants from that country</li>
 						<li>next to each country, the left square shows or hides its line, the right one highlights it</li>
@@ -77,7 +81,7 @@
 						<li><span class="demo demo-active">Name (n)</span> n works archived in the IMEB capsules — click the name to list them</li>
 						<li><span class="demo demo-selected">Name</span> took part in the selected edition</li>
 						<!-- Le nom masque : voir SHOW_ALL_NAMES / maskName dans js/animated_data.js. -->
-						<li><span class="demo">J****** D*****</span> listed in the minutes, but no archived work &mdash; the name is withheld and the entry is not clickable: what is recorded here is an <em>application</em> to the competition, not a published work</li>
+						<li><span class="demo">J****** D*****</span> recorded as an entrant, but no archived work &mdash; the name is withheld and the entry is not clickable: what is recorded here is an <em>application</em> to the competition, not a published work</li>
 						<li>the orange bar sums up the current selection — click it to switch between all composers and those of the selected edition only</li>
 						<li>clicking a name opens a panel on the right: the composer's name, then the number of their archived works &mdash; click that count to unfold the list. For a composer who <strong>has an ISNI</strong>, a third box appears between the two, headed by that identifier: click the header to unfold the international identity record. Nothing is requested until you unfold it</li>
 					</ul>

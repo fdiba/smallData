@@ -101,6 +101,7 @@ window.onload = function() {
     btn01 = {x:lr.x+23, y:lr.y, state:true};
 
     drawMenu(menu);
+    loadPvProvenance();   // repeint le liseré des qu'elle repond
 
     document.getElementById('cv_nav').addEventListener("click", selectData);
     document.getElementById('myCanvas').addEventListener("click", editData);
@@ -981,45 +982,108 @@ function createMenu(){
     }
      return arr;
 }
-/* --- Etat documentaire de chaque edition (2026-08-04) ---------------------
+/* --- Etat documentaire de chaque edition ---------------------------------
+   Ecrit le 2026-08-04, REFAIT LE 2026-08-07.
+
    Une courbe qui s'effondre apres 1995 se lit spontanement comme un concours
    qui decline. C'est faux : les editions de 1996 a 2008 comptent 500 a 633
-   candidats au proces-verbal. Ce qui manque, ce sont les SAISIES.
+   candidats au proces-verbal.
 
-   Trois etats, releves dans sources/attribution des proces verbaux.xlsx :
+   ⚠️ CE LISERE ETAIT CODE EN DUR, ET IL EST DEVENU FAUX. Ses deux tableaux
+      d'annees etaient releves a la main dans le fichier de suivi du
+      depouillement. Ils decrivaient l'etat du DEPOUILLEMENT — un travail
+      mene hors de la base — et non l'etat de la BASE. Le jour ou les
+      constats d'huissier ont commence a etre verses, edition par edition,
+      ils ont cesse de dire la verite : ils peignaient 1973-1994 en vert
+      alors que seules 1973-1987 sont attestees.
 
-     - VERSE      : PV depouille et entre en base — le compte est fiable ;
-     - NON VERSE  : PV depouille mais jamais importe (6 editions) — la courbe
-                    ne montre alors que les auteurs d'oeuvres programmees ;
-     - ABSENT     : aucun PV depouille (8 editions, dont 2002 signale
-                    defectueux dans le fichier).
+      Et ils auraient menti a nouveau a chaque versement. La provenance est
+      donc LUE DANS LA BASE (`case 12` de retrieve_data.php), et le liseré
+      se corrige tout seul.
 
-   L'information est portee par un liseré AU-DESSUS du carre de l'edition, et
-   non par le carre lui-meme : celui-ci encode deja la selection et est repeint
-   par une dizaine de fonctions. Le liseré vit en dehors de son rectangle, donc
-   il survit a tous ces repeints. Au-dessus et non en dessous : sous les carres
+   TROIS ETATS, ET PAS QUATRE. On en attendait quatre — le quatrieme aurait
+   ete « le compte ne repose que sur les oeuvres archivees ». Le versement
+   de la liste des candidats l'a VIDE : plus aucune edition n'est dans ce
+   cas. Un etat qu'aucune donnee ne porte n'a pas a figurer dans une
+   legende.
+
+     - CONSTAT (emeraude) : un constat d'huissier est en base et a ete lu en
+       entier. Le compte est atteste ligne a ligne. Quinze editions,
+       1973-1987, et le nombre monte a chaque versement.
+     - DEPOUILLEMENT (carotte) : pas de constat, mais un releve de
+       proces-verbal a ete saisi. Sept editions, 1988-1994.
+     - LISTE (bleu) : le compte repose sur la liste des candidats et sur les
+       oeuvres archivees. Quatorze editions, 1996-2009. Six de leurs PV ont
+       ete depouilles sans jamais etre importes — 1996, 1999, 2005, 2006,
+       2007, 2008 — et les huit autres n'ont pas ete depouilles du tout.
+       Cette distinction-la n'est pas dans le liseré : elle dit ce qui
+       RESTE A FAIRE, pas ce que le compte VAUT, et melanger les deux sur
+       un meme canal de couleur les rendrait illisibles tous les deux. Elle
+       est dans le texte de la legende.
+
+   Le liseré est porte AU-DESSUS du carre de l'edition, et non par le carre
+   lui-meme : celui-ci encode deja la selection et est repeint par une
+   dizaine de fonctions. Le liseré vit en dehors de son rectangle, donc il
+   survit a tous ces repeints. Au-dessus et non en dessous : sous les carres
    (y=13, hauteur 15) courent les etiquettes d'annee, dont le texte de 9 px
    remonte jusqu'a y=30 — un liseré la se serait pose sur les chiffres. La
-   bande y=8..11 est libre. Aucune ligne ni couleur n'est prise sur les pays —
-   c'est la contrainte posee : le chart en porte deja soixante-dix.
+   bande y=8..11 est libre.
 
-   Detail et chiffres : claude/Provenance_des_participations_1973_2009.md. */
-var PV_NON_VERSE = [1996, 1999, 2005, 2006, 2007, 2008];
-var PV_ABSENT    = [1997, 1998, 2000, 2001, 2002, 2003, 2004, 2009];
+   Detail et chiffres : claude/Provenance_des_participations_1973_2009.md et
+   PV/phase2_liste_cc4160.md. */
+
+var pvByYear = {};        // annee -> {constat, inconnu, liste, inexplique}
+var pvLoaded = false;
+
+/* Le seuil. `inexplique` vaut 10 a 62 de 1988 a 1994, et ZERO partout
+   ailleurs — sauf UNE ligne en 2005, Philippe Auclair (fiche 1426), deja
+   nommee au §3 de Provenance_des_participations. Entre 1 et 10 il y a un
+   ordre de grandeur : n'importe quelle valeur de 2 a 9 donne le meme
+   decoupage. On prend 5, au milieu, et on ecrit pourquoi. */
+var PV_SEUIL_DEPOUILLEMENT = 5;
 
 function pvState(year){
-    if(PV_ABSENT.indexOf(year) >= 0)    return 'absent';
-    if(PV_NON_VERSE.indexOf(year) >= 0) return 'nonverse';
-    return 'verse';
+    var d = pvByYear[year];
+    if(!d) return 'inconnu';                              // pas encore charge
+    if(d.constat > 0)                        return 'constat';
+    if(d.inexplique >= PV_SEUIL_DEPOUILLEMENT) return 'depouillement';
+    return 'liste';
 }
 function drawPvStrip(menu){
     for (var i = 1; i < menu.length; i++) {          // i=0 : le bouton "all"
         var st = pvState(menu[i].id);
-        ctx_nav.fillStyle = (st === 'verse')    ? '#2ecc71'    // emeraude
-                          : (st === 'nonverse') ? '#e67e22'    // carotte
-                          :                       '#7f8c8d';   // asbeste
+        ctx_nav.fillStyle = (st === 'constat')       ? '#2ecc71'   // emeraude
+                          : (st === 'depouillement') ? '#e67e22'   // carotte
+                          : (st === 'liste')         ? '#5dade2'   // bleu clair
+                          :                            '#7f8c8d';  // asbeste
         ctx_nav.fillRect(menu[i].x, menu[i].y - 5, bw, 3);
     }
+}
+/* Charge la provenance et REPEINT LE SEUL LISERE. Pas drawMenu() : celui-ci
+   redessine les carres, et il est appele avant que l'utilisateur ait pu
+   selectionner quoi que ce soit — mais la reponse, elle, arrive apres. Le
+   liseré vivant hors des rectangles, le repeindre seul ne touche a aucun
+   etat de selection. Si l'appel echoue, tout reste gris : la page marche,
+   et elle ne pretend rien savoir. */
+function loadPvProvenance(){
+    $.ajax({
+        url: 'php/retrieve_data.php',
+        type: "POST",
+        data: {case:12}
+    }).done(function(str){
+        if(!str) return;
+        var f = str.split("%");
+        for (var i = 0; i + 4 < f.length; i += 5) {
+            pvByYear[parseInt(f[i], 10)] = {
+                constat:    parseInt(f[i+1], 10),
+                inconnu:    parseInt(f[i+2], 10),
+                liste:      parseInt(f[i+3], 10),
+                inexplique: parseInt(f[i+4], 10)
+            };
+        }
+        pvLoaded = true;
+        drawPvStrip(menu);
+    });
 }
 function drawMenu(menu){
 

@@ -18,6 +18,8 @@
 	} elseif ($case==11){
 		$aId = $_POST['aId'];
 		retrieveAllCompositionsFrom03($aId);
+	} elseif ($case==12){ //animated_data.js — liseré de provenance
+		pvProvenance();
 	} elseif($case==28){ //overview.js
 		$terms = $_POST['terms'];
 		retrieveAllComposersNamed($terms);
@@ -131,6 +133,65 @@
 
 	}
 
+
+	/* =====================================================================
+	   CASE 12 — CE QUE LA BASE SAIT DE CHAQUE EDITION (2026-08-07)
+
+	   Le liseré de provenance d'animated_data.js etait CODE EN DUR : deux
+	   tableaux d'annees, releves a la main dans
+	   `sources/attribution des proces verbaux.xlsx`. Il decrivait l'etat du
+	   DEPOUILLEMENT, pas celui de la base — et il est devenu faux le jour
+	   ou les constats d'huissier ont commence a etre verses.
+
+	   Il le redeviendra a chaque edition versee. D'ou ce case : la
+	   provenance est desormais LUE DANS imeb_participation, et le liseré
+	   se corrige tout seul.
+
+	   Une ligne par edition, cinq champs separes par « % », sans en-tete :
+
+	     annee % constat % inconnu % liste % inexplique
+
+	   `inexplique` compte les participations de provenance 'inconnu' que
+	   NI la liste des candidats NI une oeuvre du catalogue ne portent.
+	   C'est la signature d'un DEPOUILLEMENT SAISI : le nom vient de
+	   quelque part, et il ne reste que le releve des proces-verbaux des
+	   annees 1990 pour l'expliquer.
+
+	   ⚠️ POURQUOI CE TROISIEME COMPTE, ET PAS SIMPLEMENT `inconnu`. De
+	      1996 a 2009, TOUTES les lignes 'inconnu' sont expliquees par une
+	      oeuvre ou par la liste — `inexplique` y vaut zero, sauf UNE, en
+	      2005 : Philippe Auclair, fiche 1426, deja signale au §3 de
+	      Provenance_des_participations. De 1988 a 1994 il vaut 10 a 62.
+	      L'ecart est d'un ordre de grandeur, et c'est lui qui separe
+	      « un dépouillement est en base » de « il n'y en a pas ».
+	   ===================================================================== */
+	function pvProvenance(){
+
+		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
+
+		$sth = $dbh->query('SELECT `annee`,
+								SUM(`source` = \'constat\') AS n_constat,
+								SUM(`source` = \'inconnu\') AS n_inconnu,
+								SUM(`source` = \'liste\')   AS n_liste,
+								SUM(`source` = \'inconnu\'
+									AND `cite_par_liste`  = 0
+									AND `cite_par_oeuvre` = 0) AS n_inexplique
+							FROM `imeb_participation`
+							GROUP BY `annee`
+							ORDER BY `annee`');
+
+		$sth->setFetchMode(PDO::FETCH_ASSOC);
+
+		$str_all = "";
+		while($row = $sth->fetch()) {
+			if(strlen($str_all)>0) $str_all .= "%";
+			$str_all .= $row['annee']      . "%" . $row['n_constat'] . "%"
+			          . $row['n_inconnu']  . "%" . $row['n_liste']   . "%"
+			          . $row['n_inexplique'];
+		}
+
+		echo $str_all;
+	}
 
 	function queryDB(){
 
