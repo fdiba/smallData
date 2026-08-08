@@ -41,6 +41,19 @@
 			     tout moment qu'aucune fonction n'a ete perdue. Grise quand
 			     une seule edition est selectionnee (diagramme en barres) :
 			     voir setViewSwitchEnabled() dans js/animated_data.js. -->
+			<!-- Le commutateur de COMPTE. Il agit en amont des trois vues, dans
+			     updateSlData() : c'est la meme question posee aux memes
+			     donnees, et les trois figures changent ensemble. Le drapeau
+			     qu'il pilote, `takeCountIntoAccount`, existait depuis
+			     l'origine dans js/animated_data.js, fige a `false` sous un
+			     « TODO CONTROL USING GUI » : c'est ce controle-la. -->
+			<div id="count">
+				<label>count</label>
+				<ul>
+					<li class="b_on" data-count="all" role="button" tabindex="0" aria-pressed="true">all entrants</li>
+					<li class="b_off" data-count="works" role="button" tabindex="0" aria-pressed="false">only those with a work</li>
+				</ul>
+			</div>
 			<div id="view">
 				<label>chart</label>
 				<ul>
@@ -86,6 +99,14 @@
 					</ul>
 				</div>
 				<div>
+					<p><strong>Count</strong> &mdash; what the three charts count</p>
+					<ul>
+						<li><em>all entrants</em> &mdash; everyone the database records as having entered that edition, whether or not any music of theirs is in the collection. This is what the charts have always counted, and it is the honest measure of the <em>competition</em></li>
+						<li><em>only those with a work</em> &mdash; the same people, minus those the database knows by a candidacy alone. This is the measure of the <em>collection</em>, and it is a good deal smaller: about half the 2 550 names in the index have no archived work at all</li>
+						<li>the switch acts on all three charts at once, and on the composer lists below them &mdash; it is the same question put to the same data, so the figures change together. The <em>c/t</em> counts beside each country do not move: they state a fact about that country across all editions, not about the current selection</li>
+					</ul>
+				</div>
+				<div>
 					<p><strong>Matrix</strong> &mdash; the default chart</p>
 					<ul>
 						<li>one row per country, one column per edition; the colour of a cell counts the entrants recorded for that country in that edition &mdash; on the authority the strip above the column names</li>
@@ -117,6 +138,7 @@
 					<p><strong>Line chart</strong> &mdash; the other view</p>
 					<ul>
 						<li>each line is a country; the vertical axis counts the entrants recorded for that edition, and the scale is square-root (gridlines at 1, 2, 5, 10, 20, 50, 100&hellip;)</li>
+						<li>this is the one chart with <em>no provenance strip of its own</em>: the strip on the edition squares, immediately above it, is close enough to be read with the chart, and a second band of the same three colours twenty pixels below it read as a repetition rather than as an alignment</li>
 						<li>it is kept because it reads a <em>single</em> trajectory better than any matrix once a handful of countries are isolated &mdash; and because two views answering the same click on the same data is what makes a regression something anyone can check rather than something to be argued about</li>
 						<li>in the chart legend, <em>c/t</em> has the same meaning; the square next to each country shows or hides its line</li>
 						<li>click a point on a line to list, below, all the composers of that country</li>

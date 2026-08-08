@@ -120,14 +120,22 @@ ul{
 }
 
 /* ---------- Boutons d'action (get all data, anim, etc.) ---------- */
-/* #view (categories.php) partage ce panneau : c'est le meme geste — deux
-   boutons b_on / b_off dans la barre — et il n'y avait aucune raison de lui
-   inventer une apparence. Seule difference de structure : #launcher EST le
-   <ul>, tandis que #view est un <div> qui porte d'abord un <label>, comme
-   #searchBox sur index.php, puis le <ul> ; d'ou les deux regles
-   supplementaires plus bas. */
+/* #view (categories.php, animated_data.php) et #count (animated_data.php)
+   partagent ce panneau : c'est le meme geste — des boutons b_on / b_off dans
+   la barre — et il n'y avait aucune raison de leur inventer une apparence.
+   Seule difference de structure : #launcher EST le <ul>, tandis que #view et
+   #count sont des <div> qui portent d'abord un <label>, comme #searchBox sur
+   index.php, puis le <ul> ; d'ou les regles supplementaires plus bas.
+
+   ⚠️ #count est AJOUTE AUX SELECTEURS EXISTANTS et n'a pas de bloc a lui :
+      une copie de ces regles dans css/animated_data.css aurait diverge a la
+      premiere retouche faite d'un seul cote — c'est le mecanisme decrit au
+      §14.4. La contrepartie est que main.css, charge par les sept pages, doit
+      monter avec animated_data.php ; l'ajout est purement additif et ne peut
+      rien changer aux six autres, qui ne portent aucun #count. */
 #ctrl_bar #launcher,
-#ctrl_bar #view{
+#ctrl_bar #view,
+#ctrl_bar #count{
 	padding: var(--sd-gap);
 	background: var(--sd-amethyst);
 	gap: 3px;
@@ -135,7 +143,8 @@ ul{
 	color: white;
 }
 #ctrl_bar #launcher li,
-#ctrl_bar #view li{
+#ctrl_bar #view li,
+#ctrl_bar #count li{
 	margin: 0;
 	padding: 4px 10px;
 	cursor: pointer;
@@ -144,26 +153,30 @@ ul{
 	user-select: none;
 }
 #ctrl_bar #launcher li:hover,
-#ctrl_bar #view li:hover{
+#ctrl_bar #view li:hover,
+#ctrl_bar #count li:hover{
 	background: var(--sd-emerald);
 }
 /* Le libelle reprend la casse et l'interlettrage du titre de #info : c'est la
    meme fonction, nommer le bloc au-dessus de son contenu. */
-#ctrl_bar #view label{
+#ctrl_bar #view label,
+#ctrl_bar #count label{
 	margin: 0 0 4px 0;
 	font-size: 11px;
 	font-weight: 600;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
 }
-#ctrl_bar #view ul{
+#ctrl_bar #view ul,
+#ctrl_bar #count ul{
 	margin: 0;
 	padding: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 3px;
 }
-#ctrl_bar #view li{
+#ctrl_bar #view li,
+#ctrl_bar #count li{
 	white-space: nowrap;
 }
 #anim{
@@ -373,7 +386,7 @@ ul{
 	margin: 0;
 }
 
-/* --- La ligne de pays des boites d'identite (network, line charts) ---
+/* --- La ligne de pays des boites d'identite (network, participation) ---
    Produite par countryLineHtml() dans js/functions.js : le pays courant, et
    devant lui le pays d'origine quand la base en porte un — « Argentina /
    France », dans l'ordre des notices d'autorite de la BnF.
@@ -465,7 +478,7 @@ ul{
 }
 
 /* =========================================================
-   3. LEGENDE DE PAGE (#legend) — partagee (line charts, network)
+   3. LEGENDE DE PAGE (#legend) — partagee (participation, network)
    ========================================================= */
 
 #legend{

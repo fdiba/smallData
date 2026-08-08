@@ -170,16 +170,16 @@ footer{
 			<span>Each square stands for one entry in the competition; its hue indicates the year of the edition. Clicking selects a composer and lists their works. Search by name, filter by number of records.</span>
 		</li>
 		<li>
-			<a href="<?php echo $app ?>network.php">Network</a>
-			<span>A multi-agent system computes and displays navigation traces through the corpus, revealing proximities between composers and editions.</span>
-		</li>
-		<li>
-			<a href="<?php echo $app ?>animated_data.php">Line Charts</a>
-			<span>How the number of participants evolved by country and by year. Any country can be isolated to follow its own curve.</span>
+			<a href="<?php echo $app ?>animated_data.php">Participation</a>
+			<span>How many people entered, by country and by edition. Three charts read the same figures &mdash; a matrix of countries by editions, a line chart, and a bar chart for a single edition &mdash; and a switch chooses whether to count every entrant or only those whose work is in the collection.</span>
 		</li>
 		<li>
 			<a href="<?php echo $app ?>categories.php">Categories</a>
 			<span>A flow diagram retracing how the competition's categories appeared, merged and disappeared across the editions.</span>
+		</li>
+		<li>
+			<a href="<?php echo $app ?>network.php">Network</a>
+			<span>A multi-agent system computes and displays navigation traces through the corpus, revealing proximities between composers and editions.</span>
 		</li>
 		<li class="catalogue">
 			<a href="<?php echo $app ?>award-winning_works.php">Award-Winning Works</a>

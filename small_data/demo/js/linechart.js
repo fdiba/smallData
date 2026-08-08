@@ -71,7 +71,11 @@ function LineChart(config){
     this.numXTicks = Math.round(this.rangeX / this.unitsPerTickX);
     this.numYTicks = Math.round(this.rangeY / this.unitsPerTickY);
     this.x = this.getLongestValueWidth() + this.padding * 2;
-    this.y = this.padding * 2;
+    /* UNE LIGNE D'EN-TETE : le nom de la mesure, la meme phrase que dans les
+       deux autres vues. (Elle en a porte deux le temps d'un lot — la seconde
+       tenait un liseré de provenance, retire depuis : voir drawHeader().) */
+    this.hdr1 = 11;
+    this.y = 24;
     this.width = this.w - this.x - this.padding * 2;
     this.height = this.h - this.y - this.padding - this.fontHeight;
     this.scaleX = this.width / this.rangeX;
@@ -396,9 +400,37 @@ LineChart.prototype.getLongestValueWidth = function(){
     return longestValueWidth;
 };
 
+/* L'EN-TETE DU GRAPHE : le nom de la mesure, et rien d'autre.
+
+   ⚠️ IL A PORTE UN LISERE DE PROVENANCE, RETIRE LE JOUR MEME. L'idee etait
+      bonne dans la matrice — la bande de navigation y est loin, en haut d'un
+      canvas de mille pixels, et ses carres ne sont pas au meme pas horizontal
+      que les colonnes. Ici elle ne l'etait pas : le liseré tombait a VINGT
+      PIXELS sous la bande de navigation, qui porte deja les memes couleurs.
+      Deux bandes vert/orange/bleu l'une sous l'autre, a deux pas differents,
+      et une etiquette entre les deux — signale a l'usage comme un reste de la
+      vue precedente, ce qui dit assez bien ce qu'on en comprenait.
+
+      *Porter une meme information partout n'est pas l'harmoniser : c'est
+      l'harmoniser la ou elle manque.* Elle reste donc dans la matrice
+      (liseré aligne sur les colonnes) et dans le diagramme en barres (une
+      edition unique, une phrase), et le line chart s'en remet a la bande de
+      navigation, qui est juste au-dessus de lui. */
+LineChart.prototype.drawHeader = function(){
+    var ctx = this.context;
+    ctx.save();
+    ctx.font = '10px "Helvetica Neue", Helvetica, Arial, sans-serif';
+    ctx.fillStyle = "#8fa3b0";
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "right";
+    ctx.fillText("entrants per country", this.x + this.width, this.hdr1);
+    ctx.restore();
+};
 LineChart.prototype.drawXAxis = function(){
 
     // console.log(this.x);
+
+    this.drawHeader();
 
     var ctx = this.context;
     ctx.save();
@@ -701,6 +733,45 @@ LineChart.prototype.hover = function(mouseX, mouseY){
         this.startHoverAnim();   //transition progressive (couleur + opacite)
     }
 };
+/* Meme point d'entree que la matrice et le diagramme en barres, et meme
+   richesse d'infobulle.
+
+   ⚠️ ELLE NE DISAIT QUE LE NOM DU PAYS. Les deux autres vues annoncent pays,
+      edition et effectif ; ici l'annee etait pourtant deja calculee au clic
+      (requestData fait exactement cette recherche), et l'effectif est dans le
+      tableau. Une asymetrie gratuite, et sur le geste le plus frequent des
+      trois. La regle « a gauche de `w` les donnees, a droite la legende »
+      reste enfermee ici, ou elle a un sens, au lieu de vivre dans la page. */
+LineChart.prototype.handleHover = function(mx, my){
+    if(this._retired) return "";
+
+    if(mx >= this.w){ this.clearHover(); return ""; }   // curseur sur la legende
+
+    this.hover(mx, my);
+
+    var i = this.hoverIdx;
+    if(i<0 || !this.data[i]) return "";
+
+    // l'annee (point non saute) la plus proche SUR cette ligne — meme
+    // recherche que requestData(), pour que l'infobulle annonce l'annee que
+    // le clic chargera
+    var arr = this.data[i].arr, bj=-1, bd=1e9;
+    for (var j=0; j<arr.length; j++){
+        if(this.minYear + j === 1995) continue;
+        var px = j*5*this.scaleX + this.x, py = this.yPos(arr[j]);
+        var d = dist(px, mx, py, my);
+        if(d<bd){ bd=d; bj=j; }
+    }
+
+    var lbl = this.data[i].ctry;
+    if(bj>=0){
+        var v = parseInt(arr[bj], 10) || 0;
+        lbl += " · " + (this.minYear+bj) + " · " +
+               (v>0 ? v + (v>1 ? " entrants" : " entrant") : "no entrant recorded");
+    }
+    return lbl + (this.selectedIndexOf(i)>=0 ? " — click to move the marker"
+                                             : " — click to list them");
+};
 LineChart.prototype.clearHover = function(){
     if(this.hoverIdx !== -1){
         this.hoverIdx=-1;
@@ -717,6 +788,11 @@ LineChart.prototype.clearHover = function(){
    clics et les survols — donc l'ecran restait fige pendant que l'etat interne
    changeait et que des requetes partaient. Le pire des deux mondes : ni image
    juste, ni inaction. Les points d'entree testent donc tous `_retired`. */
+/* `repaint` — LE NOM COMMUN AUX TROIS VUES. La matrice et le diagramme en
+   barres redessinent par `draw()`, le line chart par `redrawLineChart()` :
+   la page appelait donc l'un ou l'autre en testant la methode, c'est-a-dire
+   en devinant lequel des trois elle tenait. Un seul nom suffit. */
+LineChart.prototype.repaint = function(){ this.redrawLineChart(); };
 LineChart.prototype.retire = function(){
     this._retired=true;
     this.hoverIdx=-1;

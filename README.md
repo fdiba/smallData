@@ -15,9 +15,9 @@ The application is available online at [webodrome.fr/small_data](https://www.web
 The web application (in `small_data/`) offers several views of the same database, each focusing on one property of the collection:
 
 - **Overview** — an interactive index of the 2,590 identified participants. Each composer is represented by a grey square followed by one coloured square per participation, the hue encoding the edition year (from red for 1973 to purple for 2009). Semi-transparent squares mark composers whose works are absent from the archive, making visible what is missing as well as what is preserved. The index can be filtered by name or by number of archived records, following Ben Shneiderman's mantra: *overview first, zoom and filter, then details-on-demand*.
-- **Network** — a "live visualisation" driven by a multi-agent system. Each record consulted through the index spawns an autonomous agent; agents interact locally (a behaviour inspired by firefly synchronisation) to detect the properties their information nodes share, and regroup accordingly — by country, by category — drawing an evolving map of the user's own navigation path through the corpus.
-- **Line Charts** — the evolution of the number of participants by country and by year, based on the minutes of each competition. Any country can be isolated to follow its own curve.
+- **Participation** — how many people entered, by country and by edition, based on the minutes of each competition. Three commutable charts read the same figures: a **matrix** (one row per country, one column per edition, the colour of a cell counting the entrants), a **line chart** (one line per country), and, for a single edition, a **bar chart** whose bars separate the entrants from those whose work is in the collection. A switch chooses what is counted — every entrant, or only those with an archived work — and any country can be isolated and followed across the three. Each edition carries the record it rests on: a bailiff's deposit record, a transcription of the minutes, or the institute's own list of entrants.
 - **Categories** — a Sankey flow diagram retracing how the competition's categories appeared, merged and disappeared across the 36 editions (e.g. the appearance in 1988 of "Magister", "Residency" and "Quadrivium").
+- **Network** — a "live visualisation" driven by a multi-agent system. Each record consulted through the index spawns an autonomous agent; agents interact locally (a behaviour inspired by firefly synchronisation) to detect the properties their information nodes share, and regroup accordingly — by country, by category — drawing an evolving map of the user's own navigation path through the corpus.
 - **Award-Winning Works** — the complete table of the 728 award-winning works, with composer, duration, year and award category.
 - **Sound Archives catalogues** — the two phonothèques assembled by the IMEB: the International Sound Archives and the IMEB Sound Archives (765 works produced in the institute's studios by 274 composers from 42 countries).
 - **Euphonies d'Or** — the roll of honour of the 35 works distinguished across the competition's history, linked to their records at the BnF through ISNI identifiers.
@@ -32,9 +32,9 @@ smallData/
 │   ├── index.php          Landing page
 │   └── demo/              The visualisations
 │       ├── index.php      Overview (interactive index)
-│       ├── network.php    Multi-agent system / live visualisation
-│       ├── animated_data.php  Line charts
+│       ├── animated_data.php  Participation (matrix, line chart, bar chart)
 │       ├── categories.php Sankey diagram of categories (reads from the database)
+│       ├── network.php    Multi-agent system / live visualisation
 │       ├── award-winning_works.php
 │       ├── catalog.php    Sound archives catalogues
 │       ├── euphonies.php  Euphonies d'Or

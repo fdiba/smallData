@@ -53,6 +53,7 @@ var myLineChart;
    ------------------------------------------------------------------------ */
 var chartView = 'matrix';        // 'matrix' | 'line'
 var matrixSort = 'total';        // survit aux reconstructions de la matrice
+var barSort    = 'value';        // idem pour le diagramme en barres
 
 /* LES PAYS ISOLES SURVIVENT A LA COMMUTATION — 2026-08-08.
 
@@ -242,6 +243,7 @@ window.onload = function() {
     setCanvasWidthAndHeight();
 
     bindViewSwitch();
+    bindCountSwitch();
 
     // les boites d'info (orange #selection + liste #composers) prennent EXACTEMENT
     // la largeur de la legende "How to read".
@@ -621,7 +623,16 @@ function displayCpInfos(){
    constructions, plutot que devant chacune : c'est ce qui garantit qu'un
    quatrieme graphe, un jour, ne l'oubliera pas. */
 function retireCurrentChart(){
-    if(myLineChart && typeof myLineChart.retire === 'function') myLineChart.retire();
+    /* ⚠️ ON RELEVE L'ISOLEMENT AVANT DE RETIRER LE GRAPHE. Il ne survivait
+       qu'a la commutation de vue — changer de periode ou passer au diagramme
+       en barres l'effacait —, alors que le TRI, lui, survivait a tout. Deux
+       reglages voisins, deux memoires differentes, sans raison. C'est ici
+       qu'on releve, parce que c'est le seul endroit par ou passent les trois
+       constructions et qu'il est appele AVANT elles. */
+    if(myLineChart){
+        pendingSolo = captureIsolatedCountries(myLineChart);
+        if(typeof myLineChart.retire === 'function') myLineChart.retire();
+    }
 }
 /* ⚠️ LE PANNEAU DE DROITE SUIT LA SELECTION, IL NE LUI SURVIT PAS — 2026-08-08.
 
@@ -935,7 +946,11 @@ function generateLineGraph(data, minYear, maxYear){ //display several years TODO
     }
     pendingSolo = [];
 
-    var txt='<p>'+myLineChart.data.length.toString()+ " countries</p>";
+    /* La meme tournure que la matrice et le diagramme en barres : un compte,
+       puis ce qu'on peut faire de la souris. Elle disait « 64 countries » et
+       rien d'autre — la seule des trois a ne pas dire ce qui est cliquable. */
+    var txt='<p>'+myLineChart.data.length.toString()+
+            " countries · click a point on a line to list the composers of that country</p>";
     $("#selection").empty();
     $("#selection").append(txt);
 
@@ -1036,9 +1051,9 @@ function bindViewSwitch(){
         var m = el.getAttribute('data-view');
         if(!m || m === chartView) return;
 
-        // ce qui est isole doit se retrouver dans l'autre vue (cf. pendingSolo)
-        pendingSolo = init ? captureIsolatedCountries(myLineChart) : [];
-
+        /* (Le releve de l'isolement n'est plus ici : il est fait par
+           retireCurrentChart(), donc pour TOUTES les reconstructions et non
+           pour la seule commutation de vue.) */
         chartView = m;
         paint();
         hideLineTooltip();
@@ -1047,6 +1062,68 @@ function bindViewSwitch(){
            sont les memes pour les deux vues, et c'est la seule facon d'etre
            sur que l'on commute la VUE sans commuter aussi, par inadvertance,
            ce qui est montre. */
+        if(init) updateSlData();
+    }
+
+    for (var i=0; i<items.length; i++) {
+        (function(el){
+            el.onclick = function(){ choose(el); };
+            el.onkeydown = function(evt){
+                var k = evt.keyCode || evt.which;
+                if(k === 13 || k === 32){          // entree, espace
+                    if(evt.preventDefault) evt.preventDefault();
+                    choose(el);
+                }
+            };
+        })(items[i]);
+    }
+
+    paint();
+}
+/* LE COMMUTATEUR DE COMPTE (#count dans animated_data.php).
+
+   ⚠️ IL AGIT EN AMONT DES TROIS VUES, et c'est tout son interet. Le drapeau
+      qu'il pilote, `takeCountIntoAccount`, est lu par updateSlData() au moment
+      ou les donnees sont regroupees par pays et par edition — donc avant que
+      la moindre figure soit choisie. Les trois vues, la liste des compositeurs
+      et la barre orange changent ensemble, parce que c'est la MEME question
+      posee aux MEMES donnees.
+
+   Ce drapeau existait depuis l'origine, fige a `false`, sous un commentaire
+   « TODO CONTROL USING GUI ». C'est ce controle.
+
+   Ce qu'il oppose : le compte de la COMPETITION (tous les candidats, dont la
+   moitie n'a laisse qu'une candidature) et le compte du FONDS (les seuls
+   candidats dont une oeuvre est archivee). Les deux sont vrais ; ils ne
+   repondent pas a la meme question, et jusqu'ici la page n'en montrait qu'un.
+
+   ⚠️ LES COMPTEURS `c/t` NE BOUGENT PAS avec lui, et c'est voulu : ils
+      enoncent un fait sur un pays a travers TOUTES les editions, pas sur la
+      selection courante. Les faire suivre en ferait « c/c », c'est-a-dire
+      rien. La legende le dit. */
+function bindCountSwitch(){
+
+    var box = document.getElementById('count');
+    if(!box) return;
+
+    var items = box.getElementsByTagName('li');
+
+    function paint(){
+        for (var p=0; p<items.length; p++) {
+            var on = (items[p].getAttribute('data-count') === 'works') === !!takeCountIntoAccount;
+            items[p].className = on ? 'b_on' : 'b_off';
+            items[p].setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+    }
+
+    function choose(el){
+        var m = el.getAttribute('data-count');
+        if(!m) return;
+        var v = (m === 'works');
+        if(v === !!takeCountIntoAccount) return;
+        takeCountIntoAccount = v;
+        paint();
+        hideLineTooltip();
         if(init) updateSlData();
     }
 
@@ -1169,7 +1246,16 @@ function generateBarChart(data){ //display only one year TODO
 	   deduire de l'etat des menus lequel des trois est a l'ecran. */
 	myLineChart = new BarChart({canvasId: "myCanvas", data: arr, width: chartWidth, height: 500,
 	              minValue: 0, maxValue: max, gridLineIncrement: increment,
-	              year: sl_years[0]});
+	              year: sl_years[0],
+	              sortMode: barSort,
+	              /* Comme la matrice : le graphe ne connait pas la page, il
+	                 previent ; c'est la page qui retient l'ordre choisi. */
+	              onSort: function(mode){ barSort = mode; }});
+	barSort = myLineChart.sortMode;
+
+	// les pays isoles ailleurs, reposes ici (cf. pendingSolo)
+	if(applyIsolatedCountries(myLineChart, pendingSolo)) myLineChart.draw();
+	pendingSolo = [];
 }
 //---------------------------------------//
 function editData(evt){
@@ -1223,26 +1309,16 @@ function hoverData(evt){
        ce qu'une ligne designe. Le graphe compose donc l'infobulle, la page la
        pose. (Le test d'etat des menus est descendu sous ce bloc : il ne vaut
        que pour le line chart, et il empechait le survol des barres.) */
-    if(typeof myLineChart.handleHover === 'function'){
-        var lbl = myLineChart.handleHover(mouseX, mouseY);
-        if(lbl) showLineTooltip(lbl, evt.clientX, evt.clientY);
-        else    hideLineTooltip();
-        return;
-    }
+    /* UN SEUL CHEMIN POUR LES TROIS VUES. Chaque graphe sait ce qu'il y a
+       sous le curseur et compose l'infobulle ; la page la pose. La branche de
+       repli — « a gauche de `w` les donnees, a droite la legende » — a
+       disparu d'ici : elle ne valait que pour le line chart, et elle vit
+       desormais dans LineChart.handleHover(), ou elle a un sens. */
+    if(typeof myLineChart.handleHover !== 'function'){ hideLineTooltip(); return; }
 
-    if(!(sl_years.length===2 || menu[0].state)){ hideLineTooltip(); return; }   //uniquement en mode line chart
-
-    if(mouseX < myLineChart.w){
-        myLineChart.hover(mouseX, mouseY);
-        if(myLineChart.hoverIdx>=0 && myLineChart.data[myLineChart.hoverIdx]){
-            showLineTooltip(myLineChart.data[myLineChart.hoverIdx].ctry, evt.clientX, evt.clientY);
-        } else {
-            hideLineTooltip();
-        }
-    } else {
-        myLineChart.clearHover();     //curseur sur la legende : pas de survol de ligne
-        hideLineTooltip();
-    }
+    var lbl = myLineChart.handleHover(mouseX, mouseY);
+    if(lbl) showLineTooltip(lbl, evt.clientX, evt.clientY);
+    else    hideLineTooltip();
 }
 function clearHoverData(){
     if(myLineChart) myLineChart.clearHover();
@@ -1539,6 +1615,53 @@ function createMenu(){
 var pvByYear = {};        // annee -> {constat, inconnu, liste, inexplique}
 var pvLoaded = false;
 
+/* LE CODAGE DE LA PROVENANCE, EN UN SEUL ENDROIT — 2026-08-08.
+
+   Les couleurs vivaient dans drawPvStrip() (ici) ET dans
+   MatrixChart.drawProvenanceStrip(). Deux copies d'un codage que la legende
+   decrit une seule fois : la premiere retouche faite d'un seul cote aurait
+   donne une bande de navigation et une matrice qui se contredisent — et rien
+   ne l'aurait signale, puisque les deux auraient continue de fonctionner.
+   Depuis que le line chart et le diagramme en barres le portent aussi, il y
+   en aurait eu quatre.
+
+   Les LIBELLES sont ici pour la meme raison, et parce qu'ils doivent dire
+   exactement ce que dit la legende « How to read » — c'est le meme texte,
+   abrege. */
+var PV_COLORS = {constat:'#2ecc71', depouillement:'#e67e22', liste:'#5dade2', inconnu:'#7f8c8d'};
+var PV_LABELS = {
+    constat:       "transcribed in full from the bailiff's record — every entry attested",
+    depouillement: "minutes transcribed, but not attested by a bailiff's record",
+    liste:         "counted from the entrants list and from archived works — second-hand",
+    inconnu:       "provenance not loaded"
+};
+/* ⚠️ TANT QUE LA PROVENANCE N'EST PAS CHARGEE, ON NE DESSINE RIEN — 2026-08-08.
+
+   Les liserés se peignaient en GRIS avant la reponse du `case 12`, et le gris
+   ne figure dans aucune legende : il ne disait donc pas « on ne sait pas
+   encore », il disait quelque chose que le lecteur ne pouvait pas lire. Pire,
+   dans le line chart, la bande grise laissait son etiquette « on what
+   authority » seule au-dessus d'un trait sans couleur — un texte qui semble
+   avoir ete oublie la.
+
+   Et ce n'est pas seulement l'affaire des deux cents millisecondes du
+   chargement : si `js/animated_data.js` n'est pas monte en meme temps que les
+   trois fichiers de graphe, `pvColor` n'existe pas et TOUT reste gris,
+   indefiniment. Une degradation doit se voir comme une absence, pas comme une
+   valeur.
+
+   Rien dessine, donc : ni bande, ni etiquette. La page ne pretend rien savoir
+   — et elle se repeint d'elle-meme des que la reponse arrive. */
+function pvKnown(){ return !!pvLoaded; }
+function pvColor(year){
+    var st = (typeof pvState==='function') ? pvState(year) : 'inconnu';
+    return PV_COLORS[st] || PV_COLORS.inconnu;
+}
+function pvLabel(year){
+    var st = (typeof pvState==='function') ? pvState(year) : 'inconnu';
+    return PV_LABELS[st] || PV_LABELS.inconnu;
+}
+
 /* Le seuil. `inexplique` vaut 10 a 62 de 1988 a 1994, et ZERO partout
    ailleurs — sauf UNE ligne en 2005, Philippe Auclair (fiche 1426), deja
    nommee au §3 de Provenance_des_participations. Entre 1 et 10 il y a un
@@ -1554,12 +1677,9 @@ function pvState(year){
     return 'liste';
 }
 function drawPvStrip(menu){
+    if(!pvKnown()) return;                           // cf. l'en-tete de pvKnown()
     for (var i = 1; i < menu.length; i++) {          // i=0 : le bouton "all"
-        var st = pvState(menu[i].id);
-        ctx_nav.fillStyle = (st === 'constat')       ? '#2ecc71'   // emeraude
-                          : (st === 'depouillement') ? '#e67e22'   // carotte
-                          : (st === 'liste')         ? '#5dade2'   // bleu clair
-                          :                            '#7f8c8d';  // asbeste
+        ctx_nav.fillStyle = pvColor(menu[i].id);     // cf. PV_COLORS
         ctx_nav.fillRect(menu[i].x, menu[i].y - 5, bw, 3);
     }
 }
@@ -1601,10 +1721,11 @@ function loadPvProvenance(){
            Seule la matrice est concernee — le line chart ne porte pas de
            liseré —, d'ou le test sur la methode plutot que sur la vue : la
            page n'a pas a savoir quel graphe elle tient. */
-        if(myLineChart && typeof myLineChart.drawProvenanceStrip === 'function'
-                       && typeof myLineChart.draw === 'function'){
-            myLineChart.draw();
-        }
+        /* Les TROIS vues portent desormais un liseré (ou, pour le diagramme
+           en barres, la provenance ecrite en toutes lettres) : on repeint la
+           vue courante quelle qu'elle soit. `repaint` est le nom commun aux
+           trois — la page n'a pas a savoir laquelle elle tient. */
+        if(myLineChart && typeof myLineChart.repaint === 'function') myLineChart.repaint();
     });
 }
 function drawMenu(menu){

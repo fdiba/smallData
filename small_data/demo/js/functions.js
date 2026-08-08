@@ -46,7 +46,39 @@ function displayTitlesInfosGN(arr){
 
         for (var i=0; i<arr.length; i++) {
             var obj=arr[i];
-            var div='<li class="'+(i%2===0 ? 't-a' : 't-b')+'">'+obj.t;
+
+            /* LE MISAM AU SURVOL — 2026-08-08.
+
+               `obj.m` est le numero de repertoire Clozier de l'oeuvre
+               (`imeb_music.misam`), deja transporte par les trois flux qui
+               alimentent cette boite : le `case 1` d'Overview et de
+               Participation, le `case 11` de Network. Il etait donc lu et
+               jete par les trois pages depuis toujours.
+
+               ⚠️ C'est un NUMERO D'INVENTAIRE, et c'est ce qui le rend utile a
+                  cet endroit : un titre se recopie mal — sous-titre coupe,
+                  apostrophe, chiffre romain, points de suspension : six
+                  natures d'ecart relevees sur dix-neuf paires au chantier des
+                  PV — tandis qu'un numero d'inventaire designe une piece et
+                  une seule. C'est la cle par laquelle on retrouve l'oeuvre
+                  dans le fonds, et elle n'apparaissait nulle part dans
+                  l'interface.
+
+               Au SURVOL et non en clair : la boite violette est une liste
+               d'oeuvres, pas un bordereau, et une colonne de six chiffres a
+               cote de chaque titre en ferait un bordereau.
+
+               Attribut `title` natif plutot qu'une infobulle maison : c'est
+               deja ce que font les lignes de `#composers` (voir
+               appendComposerLi dans js/animated_data.js), et il n'y a aucune
+               raison d'en avoir deux sortes sur la meme page.
+
+               Rien n'est ecrit quand le MISAM manque : une bulle qui promet un
+               numero et n'en montre aucun vaut moins que pas de bulle. */
+            var misam = (obj.m == null) ? '' : String(obj.m).replace(/^\s+|\s+$/g, '');
+            var tip = misam ? ' title="MISAM ' + misam.replace(/"/g, '&quot;') + '"' : '';
+
+            var div='<li class="'+(i%2===0 ? 't-a' : 't-b')+'"'+tip+'>'+obj.t;
             if(obj.d) div += ' ('+obj.d+')';
             var eds = editionYears(obj.ed);
             if(eds.length){
@@ -165,7 +197,7 @@ function displayFirstnameAndNameGN(obj){
 /* Accorder la fiche ISNI a la selection courante — TROIS PAGES, UN SEUL
    ENDROIT.
 
-   Overview, Network et Line Charts affichent chacune une boite d'identite
+   Overview, Network et Participation affichent chacune une boite d'identite
    (respectivement #selection, #selection et #composerBox) et chacune, depuis
    le 2026-08-05, doit poser la fiche ISNI EN MEME TEMPS : l'ancienne paire
    « un clic pour ouvrir, un observateur de mutations pour fermer » pouvait
@@ -233,7 +265,7 @@ function syncIsniFicheGN(isni, label){
    identite.
 
    Chacune ne dit plus qu'une chose, et c'est la meme repartition que sur
-   Overview, Network et Line Charts :
+   Overview, Network et Participation :
      - ORANGE : QUI — le nom, puis le pays en dessous ;
      - BLEUE  : son identifiant international, et rien d'autre ;
      - VIOLETTE : QUOI — l'oeuvre, son palmares, ses dates.
@@ -340,7 +372,7 @@ function countryLineHtml(origin, ctry){
 
    Deux pages retiennent quelque chose par defaut, et c'est le MEME geste :
 
-     - Line Charts (js/animated_data.js) — un compositeur sans oeuvre
+     - Participation (js/animated_data.js) — un compositeur sans oeuvre
        archivee n'est ni nomme ni cliquable dans la liste ;
      - Overview (js/overview.js) — la recherche par nom ne rend que les
        compositeurs ayant au moins une oeuvre archivee, et le filtre

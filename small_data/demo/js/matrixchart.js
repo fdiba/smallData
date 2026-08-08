@@ -273,10 +273,17 @@ MatrixChart.prototype.visibleCount = function(){ return this.data.length; };
    laquelle des deux vues il tient. */
 MatrixChart.prototype.isVisible = function(i){ return true; };
 
-//niveau d'attenuation d'une ligne : 1 = pleine, <1 = en retrait
+/* Niveau d'attenuation d'une ligne : 1 = pleine, <1 = en retrait.
+
+   ⚠️ UNE LIGNE DONT UNE CELLULE EST SELECTIONNEE N'EST JAMAIS ATTENUEE. La
+      selection est un geste explicite ; l'effacer parce qu'un AUTRE pays est
+      isole ferait se contredire les deux facons de designer un pays. Meme
+      regle dans le diagramme en barres. */
 MatrixChart.prototype.rowAlpha = function(i){
     if(this.numSolos<=0) return 1;
-    return (this.solo_btns[i] && this.solo_btns[i].state) ? 1 : 0.30;
+    if(this.solo_btns[i] && this.solo_btns[i].state) return 1;
+    if(this.selectedIndexOf(i) >= 0) return 1;
+    return 0.30;
 };
 
 //les pays dans l'ordre d'affichage. Toutes les lignes, toujours.
@@ -408,6 +415,8 @@ MatrixChart.prototype.spanLabel = function(){
    encore clics et survols. Constate au banc — on isolait un pays et on
    selectionnait une cellule, l'etat interne changeait, une requete partait, et
    l'image ne bougeait pas d'un pixel. Ni image juste, ni inaction. */
+//`repaint` : le nom commun aux trois vues (cf. js/linechart.js)
+MatrixChart.prototype.repaint = function(){ this.draw(); };
 MatrixChart.prototype.retire = function(){
     this._retired=true;
     this.hoverRow=-1; this.hoverCol=-1;
@@ -658,14 +667,15 @@ MatrixChart.prototype.drawFlowBand = function(){
    ne pretend rien savoir. */
 MatrixChart.prototype.drawProvenanceStrip = function(){
     var ctx=this.context;
+    if(typeof pvKnown === 'function' && !pvKnown()) return;   // cf. pvKnown()
     for (var j=0;j<this.nCols;j++){
-        var year=this.minYear+j;
-        var st = (typeof pvState==='function') ? pvState(year) : 'inconnu';
         if(this.isSkipped(j)) continue;                 // 1995 : pas d'edition
-        ctx.fillStyle = (st==='constat')       ? '#2ecc71'
-                      : (st==='depouillement') ? '#e67e22'
-                      : (st==='liste')         ? '#5dade2'
-                      :                          '#7f8c8d';
+        var year=this.minYear+j;
+        /* La table des couleurs vivait ICI et dans drawPvStrip() : deux copies
+           d'un codage que la legende decrit une fois. Elle est desormais dans
+           js/animated_data.js (pvColor), avec les libelles, et les trois vues
+           y puisent. */
+        ctx.fillStyle = (typeof pvColor==='function') ? pvColor(year) : '#7f8c8d';
         ctx.fillRect(this.colX(j)+1, this.stripY, Math.max(1,this.colW-2), this.stripH);
     }
     ctx.font=this.fontSmall;
@@ -1016,7 +1026,9 @@ MatrixChart.prototype.handleHover = function(mx,my){
         else {
             var v=this.data[c.i].arr[c.j]||0;
             label = this.data[c.i].ctry + " · " + year + " · " +
-                    (v>0 ? (v + (v>1?" entrants":" entrant")) : "no entrant recorded");
+                    (v>0 ? (v + (v>1?" entrants":" entrant")) : "no entrant recorded") +
+                    (this.selectedIndexOf(c.i)>=0 && this.selectedCells[this.selectedIndexOf(c.i)].yearId===c.j
+                        ? " — click again to clear" : " — click to list them");
         }
     } else {
         var g=this.hitRowGutter(mx,my);
