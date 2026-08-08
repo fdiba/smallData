@@ -113,8 +113,8 @@
 						<li><em>an empty cell is not a zero</em>: that country entered nothing that year. The grid keeps the hole, so a country's first entry, its single-edition appearances and the 1995 gap are read directly &mdash; none of which a line could show</li>
 						<li>the scale is square-root, as it was on the old vertical axis: it now runs through the colour, so one entrant stays visible next to a hundred. The key sits top right</li>
 						<li><em>rows: total &middot; first entry &middot; A&ndash;Z</em> reorders the matrix. Three orders, three questions: how large, how early, where is a given country</li>
-						<li>click a country's name to isolate it: it takes a colour, and its share is stacked inside the band above. <em>The other rows do not disappear</em> &mdash; they fade back but keep their place, so isolating a second and a third country is the same gesture again, and the ones you chose are read <em>among</em> the others rather than instead of them. Eight at most carry a colour; beyond that they stay in the grey mass, because a ninth band is one nobody can read</li>
-						<li>click a cell to list, below, all the composers of that country, and <em>click the same cell again to drop it</em> &mdash; a grid has no empty space to click into, so undoing is the same gesture twice. Clicking a column that is crossed out (1995), or the key, or the band, does nothing. <em>reset all</em> clears everything at once</li>
+						<li>click a country's name to isolate it: it takes a colour, and its share is stacked inside the band above. <em>The other rows fade back but keep their place</em>, so isolating a second and a third country is the same gesture again, and the ones you chose are read <em>among</em> the others rather than instead of them. Eight at most carry a colour; beyond that they stay in the grey mass, because a ninth band is one nobody can read</li>
+						<li>click a cell to list, below, all the composers of that country, and <em>click the same cell again to drop it</em>. Clicking a column that is crossed out (1995), or the key, or the band, does nothing. <em>reset all</em> clears everything at once</li>
 					</ul>
 				</div>
 				<div>
@@ -130,7 +130,7 @@
 					<p><strong>Bar chart</strong> &mdash; one edition on its own</p>
 					<ul>
 						<li>turn <em>span</em> off and pick a single year: one bar per country, and the bar is read in two. Its full height counts the <em>entrants</em> recorded for that country &mdash; the same quantity as a point on a line or the colour of a cell. Its emerald foot counts how many of them have <em>a work in the collection</em></li>
-						<li><em>the gap between the two is the subject of this database.</em> Of the people the index counts, about half left nothing but a candidacy &mdash; a name read off an entry list, with no music attached. The page has said so at the top and in the <em>c/t</em> figure since the start; the bars used to stack both into a single height, so a country with forty entrants of which two are archived and a country with forty entrants all archived drew the same bar</li>
+						<li><em>the gap between the two is the subject of this database</em>: of the people the index counts, about half left nothing but a candidacy &mdash; a name read off an entry list, with no music attached. Two countries can send the same number of entrants and leave very different amounts of music behind, and it is the height of the emerald foot that says so</li>
 						<li>hover a column for the exact figures; <em>click it to list that country's composers below</em>, exactly as clicking a line or a cell does &mdash; same orange bar, same list, same works panel. Click it again to clear</li>
 					</ul>
 				</div>
@@ -138,7 +138,7 @@
 					<p><strong>Line chart</strong> &mdash; the other view</p>
 					<ul>
 						<li>each line is a country; the vertical axis counts the entrants recorded for that edition, and the scale is square-root (gridlines at 1, 2, 5, 10, 20, 50, 100&hellip;)</li>
-						<li>this is the one chart with <em>no provenance strip of its own</em>: the strip on the edition squares, immediately above it, is close enough to be read with the chart, and a second band of the same three colours twenty pixels below it read as a repetition rather than as an alignment</li>
+						<li>this chart carries <em>no provenance strip of its own</em>: the strip on the edition squares sits immediately above it and is read with it</li>
 						<li>it is kept because it reads a <em>single</em> trajectory better than any matrix once a handful of countries are isolated &mdash; and because two views answering the same click on the same data is what makes a regression something anyone can check rather than something to be argued about</li>
 						<li>in the chart legend, <em>c/t</em> has the same meaning; the square next to each country shows or hides its line</li>
 						<li>click a point on a line to list, below, all the composers of that country</li>

@@ -126,6 +126,84 @@ function vizTakeSlot(slots){
     return s;
 }
 
+/* ------------------------------------------------------------------------
+   LA RAMPE DES ANNEES (grille de l'Overview) — 2026-08-08.
+
+   ⚠️ ELLE REMPLACE UN ARC-EN-CIEL, et l'arc-en-ciel etait faux de trois
+      facons, mesurees et non jugees a l'oeil. L'annee etait codee par la
+      TEINTE : `hue = (annee-1973) x 310/36`, de 0° a 310°.
+
+      1. LA TEINTE EST UN CANAL CATEGORIEL. L'oeil y lit des changements de
+         NATURE, pas de DEGRE : rien ne dit que le vert vient apres le rouge.
+         Mesure sur sept editions : la clarte valait 0,552 / 0,745 / 0,722 /
+         0,721 / 0,603 / 0,489 / 0,587 de 1973 a 2009 — non monotone, donc
+         l'ordre des annees n'etait pas lisible du tout.
+      2. DES ANNEES INDISCERNABLES. 1985 et 1991 avaient exactement la meme
+         clarte (ecart 0,000) et un ecart OKLab de 8,1 en vision normale
+         (plancher 15). En simulation protanope, 1979 et 1985 tombaient a 2,0
+         — la meme couleur.
+      3. LE VIOLET DE 2003 TENAIT 1,60:1 contre le fond de la page, a la
+         limite du visible.
+
+   La rampe est donc SEQUENTIELLE : la clarte croit strictement avec l'annee
+   (0,576 -> 0,906 en OKLab, ecarts >= 0,066), et c'est elle qui porte l'ordre.
+   La teinte se deplace en meme temps, ce qui garde une grille COLOREE sans que
+   la couleur ait a porter l'ordre toute seule. C'est le principe des rampes
+   type viridis, et non celui d'un arc-en-ciel HSL : la difference tient tout
+   entiere dans la monotonie de la clarte.
+
+   ⚠️ ELLE RESTE DANS LE REGISTRE DU SITE. Elle va du VERT-MER (#16a085,
+      greensea) au BLEU (#3498db, peter river) puis a l'AMETHYSTE (#9b59b6) :
+      trois couleurs de la palette Flat UI du site, dans cet ordre. Aucune
+      teinte chaude — c'est ce qui la separe du jaune reserve (voir plus bas).
+
+   Contraste sur le fond : 2,64:1 pour 1973 (le plus sombre reste visible,
+   c'est le plancher qui compte) jusqu'a 8,21:1 pour 2009.
+
+   ⚠️ AUCUN ENCODAGE SECONDAIRE N'EST REQUIS, ET C'EST CE QUI LA DISTINGUE DES
+      DEUX RAMPES ESSAYEES AVANT ELLE. Son ecart minimal au JAUNE #f1c40f, qui
+      designe la selection partout sur le site, est de 21,0 — au-dessus du
+      plancher de 15. La rampe amethyste -> carotte essayee le meme jour
+      tombait a 13,0 et ne tenait QUE par un carre de selection dessine en
+      retrait ; ce retrait a ete retire avec elle. *Une compensation dont la
+      cause a disparu est une regle que plus personne ne saura expliquer.*
+      L'ecart minimal a l'EMERAUDE (« a une oeuvre au fonds ») est de 19,0.
+
+   ⚠️ ET UNE DETTE, ECRITE PLUTOT QUE TUE : l'ANCRE #7f8c8d (asbestos) n'est
+      qu'a 8,4 de l'echelon 1980 et a 9,8 de l'echelon 1973, sous le plancher
+      de 15. La rampe traverse toute la moitie froide du cercle, ou vivent
+      aussi les gris du site : AUCUN gris de la palette ne s'en ecarte de 15
+      (mesures : #95a5a6 -> 7,9 ; #909497 -> 9,4 ; #5d6d7e -> 10,3 mais 2,07:1
+      de contraste, c'est-a-dire invisible). On garde donc le gris du site et
+      l'on s'appuie sur la POSITION : l'ancre OUVRE la trainee, elle ne se lit
+      jamais isolement. Meme arbitrage qu'au §18.7, a un ecart plus serre.
+
+   ⚠️ Le seul controle ordinal qu'elle ne passe pas est « teinte unique », et
+      c'est par construction — une rampe multi-teintes n'en est pas une. Les
+      trois autres (monotonie, ecarts de clarte >= 0,066, contraste de la
+      borne sombre) passent. Toute reecriture doit les repasser. */
+var VIZ_YEAR = ["#288b77", "#339cb1", "#78a5d8", "#b2afe4", "#d6c1e8", "#edd8f1"];
+
+/* Le carre d'ANCRE de chaque compositeur — celui qui ouvre sa trainee.
+
+   ⚠️ IL PORTE DESORMAIS « A-T-IL UNE OEUVRE AU FONDS », qui etait code par la
+      LUMINOSITE des carres d'edition, c'est-a-dire sur le canal dont la
+      rampe des annees a besoin. Les deux encodages se disputaient le meme
+      mark. Et le reglage retenu donnait ceci :
+
+        carre SANS oeuvre archivee : 8,2 a 9,3:1 de contraste
+        carre AVEC oeuvre archivee : 1,6 a 4,7:1
+
+      c'est-a-dire que la page dessinait ce qui N'EST PAS LA cinq fois plus
+      fort que ce qui y est — l'inverse exact de ce que le reste de
+      l'application dit partout ailleurs.
+
+   L'ancre dit QUI, la trainee dit QUAND. Emeraude et ardoise sont le
+   vocabulaire deja en place (#composers li.active, les deux parts du
+   diagramme en barres) ; ecart entre les deux : 20,7. */
+var VIZ_OV_WORKS   = "#2ecc71";   // a au moins une oeuvre au fonds  (5,23:1)
+var VIZ_OV_NOWORKS = "#7f8c8d";   // candidature seule               (3,16:1)
+
 /* Le JAUNE reste hors de toutes les palettes ci-dessus : il ne designe pas un
    pays, il designe le SURVOL et le point selectionne. Une couleur qui veut
    dire deux choses n'en dit plus aucune. */

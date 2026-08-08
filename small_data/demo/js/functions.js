@@ -1,5 +1,26 @@
 //----------- index and network ----------------//
 
+/* ------------------------------------------------------------------------
+   INTERPOLATION DE COULEUR — hex vers hex.
+
+   Ecrite pour le fondu de survol du line chart, elle vit ici depuis le
+   2026-08-08 : la grille de l'Overview s'en sert aussi (pour attenuer les
+   carres pendant une recherche), et ce fichier est le seul que les deux
+   pages chargent. Utilisee par js/linechart.js, js/matrixchart.js et
+   js/overview.js — tous charges apres celui-ci.
+   ------------------------------------------------------------------------ */
+function hexToRgb(h){
+    h=(''+h).replace('#','');
+    if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return {r:parseInt(h.substr(0,2),16), g:parseInt(h.substr(2,2),16), b:parseInt(h.substr(4,2),16)};
+}
+function lerpHexColor(a, b, t){
+    var ca=hexToRgb(a), cb=hexToRgb(b);
+    return 'rgb(' + Math.round(ca.r+(cb.r-ca.r)*t) + ',' +
+                    Math.round(ca.g+(cb.g-ca.g)*t) + ',' +
+                    Math.round(ca.b+(cb.b-ca.b)*t) + ')';
+}
+
 /* La boite violette (#titles) d'Overview et de Network : un en-tete
    « N archived works », puis la liste des oeuvres, REPLIEE par defaut.
 

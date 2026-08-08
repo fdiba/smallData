@@ -658,18 +658,12 @@ LineChart.prototype.drawLine = function(obj, color, strokeWidth, init){
     //  la geometrie a partir des donnees, ce qui evite une fuite memoire)
 };
 
-//interpolation de couleur (hex -> hex) pour le fondu progressif du survol
-function hexToRgb(h){
-    h=(''+h).replace('#','');
-    if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-    return {r:parseInt(h.substr(0,2),16), g:parseInt(h.substr(2,2),16), b:parseInt(h.substr(4,2),16)};
-}
-function lerpHexColor(a, b, t){
-    var ca=hexToRgb(a), cb=hexToRgb(b);
-    return 'rgb(' + Math.round(ca.r+(cb.r-ca.r)*t) + ',' +
-                    Math.round(ca.g+(cb.g-ca.g)*t) + ',' +
-                    Math.round(ca.b+(cb.b-ca.b)*t) + ')';
-}
+/* hexToRgb() et lerpHexColor() ONT DEMENAGE DANS js/functions.js le
+   2026-08-08 : la grille de l'Overview en a besoin a son tour, et
+   js/functions.js est charge par les sept pages alors que celui-ci ne l'est
+   que par Participation. Une seconde copie la-bas aurait diverge a la
+   premiere correction faite d'un seul cote. Elles restent utilisees ici et
+   dans js/matrixchart.js, tous deux charges apres functions.js. */
 //distance d'un point (px,py) au segment [a,b] — pour detecter la ligne survolee
 function distToSegment(px, py, ax, ay, bx, by){
     var dx=bx-ax, dy=by-ay;

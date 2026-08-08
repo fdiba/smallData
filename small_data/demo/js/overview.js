@@ -11,8 +11,10 @@ var titles=[];
 var xRightOffset;
 
 var nAId;
-var avg_sat, max_sat, min_sat;
-var avg_lum=50, max_lum=90, min_lum=20;
+/* (Les reglages de saturation et de luminosite de l'ancien code couleur HSL
+   ont ete retires le 2026-08-08 : la couleur ne se fabrique plus par
+   manipulation de chaine, elle se deduit de l'etat du carre — voir
+   ovRectColor(). `tNoise` reste, il pilote le scintillement de « anim ».) */
 
 var tNoise;
 
@@ -29,6 +31,122 @@ var pAId;
 
 var h_colors=["#ecf0f1"];//grey clouds
 var colors=[{h:203, s:4, l:77}]; //#bdc3c7 grey silver
+
+/* ========================================================================
+   LA COULEUR D'UN CARRE SE CALCULE, ELLE NE SE STOCKE PLUS — 2026-08-08.
+
+   ⚠️ CHAQUE RECTANGLE PORTAIT UNE CHAINE `hsl(...)`, et six fonctions la
+      DECOUPAIENT A LA MAIN pour en fabriquer une autre — `str.indexOf(",")`,
+      `str.substring(0, pos0)`, `c.replace('50%,', '4%,')`. La couleur etait
+      donc a la fois la donnee et son rendu, et toute la page se trouvait
+      arrimee a HSL par des manipulations de texte.
+
+   Le rectangle porte desormais ce qu'il EST — `{id, x, y, count, anchor,
+   year}` — et la couleur se deduit de cet etat au moment de peindre. Les six
+   decoupages de chaine disparaissent avec.
+
+   Le code couleur lui-meme est dans js/variables.js (VIZ_YEAR,
+   VIZ_OV_WORKS, VIZ_OV_NOWORKS), avec les mesures qui l'ont impose.
+   ======================================================================== */
+var OV_SURFACE = (typeof VIZ_SURFACE !== 'undefined') ? VIZ_SURFACE : '#2c3e50';
+var OV_HILITE  = (typeof VIZ_HILITE  !== 'undefined') ? VIZ_HILITE  : '#f1c40f';
+var OV_YEAR_MIN = 1973, OV_YEAR_MAX = 2009;
+
+/* L'annee, sur la rampe sequentielle. Interpolation lineaire entre les six
+   echelons : la clarte croit avec l'annee, c'est elle qui porte l'ordre. */
+function ovYearColor(year){
+    var ramp = (typeof VIZ_YEAR !== 'undefined') ? VIZ_YEAR
+             : ["#227fbe","#5f8cd9","#959adf","#baace2","#d9bfe7","#efd7f2"];
+    var y = parseInt(year, 10);
+    if(!y) return ramp[0];
+    var t = (y - OV_YEAR_MIN) / (OV_YEAR_MAX - OV_YEAR_MIN);
+    if(t<0) t=0; else if(t>1) t=1;
+    var n = ramp.length-1, p = t*n, i = Math.floor(p);
+    if(i>=n) return ramp[n];
+    return (typeof lerpHexColor === 'function') ? lerpHexColor(ramp[i], ramp[i+1], p-i) : ramp[i];
+}
+/* La couleur d'un carre, selon ce qu'il est et l'etat de la page.
+   `fade` (0..1) attenue vers le fond : il sert au scintillement de « anim »
+   et a l'estompage des carres pendant une recherche. */
+function ovRectColor(r, etat, fade){
+    var c;
+    if(etat === 'hit')      c = OV_HILITE;                       // resultat de recherche
+    else if(etat === 'sel') c = OV_HILITE;                       // compositeur selectionne
+    else if(r.anchor){
+        var AVEC = (typeof VIZ_OV_WORKS   !== 'undefined') ? VIZ_OV_WORKS   : '#2ecc71';
+        var SANS = (typeof VIZ_OV_NOWORKS !== 'undefined') ? VIZ_OV_NOWORKS : '#7f8c8d';
+        /* ⚠️ L'ANCRE NE SE COLORE QUE S'IL Y A QUELQUE CHOSE A DIRE. Depuis le
+           2026-08-07, la vue publique ne montre que les compositeurs ayant au
+           moins une oeuvre archivee : dans cette vue, « a une oeuvre » est vrai
+           de TOUT LE MONDE, et une ancre emeraude partout n'encode rien — elle
+           ajoute seulement neuf cents taches vertes qui couvrent le degrade des
+           annees. Meme regle que la cle du diagramme en barres, qui retire son
+           entree « entrant only » quand aucune barre n'en porte : *une
+           distinction qu'aucune donnee ne porte ne se dessine pas*.
+           `ovAnchorMeans` est calcule a chaque construction de la grille. */
+        c = ovAnchorMeans ? (r.count>0 ? AVEC : SANS) : SANS;
+    }
+    else                    c = ovYearColor(r.year);
+
+    if(fade>0 && typeof lerpHexColor === 'function') c = lerpHexColor(c, OV_SURFACE, fade);
+    return c;
+}
+
+/* ------------------------------------------------------------------------
+   L'ORDRE DES CARRES — 2026-08-08.
+
+   ⚠️ IL N'Y EN AVAIT PAS. Le `case 10` n'avait aucun ORDER BY : la grille
+      sortait dans l'ordre que le moteur produisait pour son GROUP BY, non
+      garanti et susceptible de differer d'un serveur a l'autre. On ne
+      remplace donc pas un ordre, on lui en donne un.
+
+   Trois ordres, trois questions — les memes que la matrice de Participation,
+   et pour la meme raison : *ce ne sont pas trois presentations, ce sont trois
+   questions posees aux memes donnees*.
+
+     - `first` : premiere edition, puis nom. Quand chaque compositeur est-il
+       entre ? Le corpus se lit alors comme un escalier.
+     - `works` : nombre d'oeuvres archivees. Ou est reellement le fonds ?
+     - `az`    : l'ordre du catalogue. Ou est telle personne ?
+
+   ⚠️ `az` NE TRIE RIEN : le serveur rend deja le flux par nom de famille
+      (voir l'ORDER BY du case 10), et le nom n'est PAS dans le flux. C'est
+      ce qui permet a `first` de departager ses ex aequo par le nom sans que
+      le nom ait a voyager — le rang dans le flux EST l'ordre alphabetique.
+   ------------------------------------------------------------------------ */
+var ovSort = 'first';       // first | works | az
+/* L'ancre porte-t-elle une information ? Vrai seulement si la grille montre
+   A LA FOIS des compositeurs avec et sans oeuvre archivee — cf. ovRectColor. */
+var ovAnchorMeans = false;
+var ovCtrl = [];            // zones cliquables de l'en-tete de la grille
+var OV_HDR = 22;            // hauteur de cet en-tete
+
+function ovRecordOrder(){
+    var idx=[];
+    for (var i=0; i<allData.length-5; i+=6) idx.push(i);
+    if(ovSort === 'az') return idx;
+
+    var cle = {};
+    for (var k=0; k<idx.length; k++){
+        var i = idx[k], eds = (allData[i+4]||'').split(",");
+        var premiere = 9999;
+        for (var j=0; j<eds.length; j++){
+            var y = parseInt(eds[j], 10);
+            if(y && y < premiere) premiere = y;
+        }
+        cle[i] = { premiere: premiere, count: parseInt(allData[i+3], 10) || 0, rang: k };
+    }
+    idx.sort(function(a, b){
+        if(ovSort === 'works'){
+            if(cle[b].count !== cle[a].count) return cle[b].count - cle[a].count;
+        } else {
+            if(cle[a].premiere !== cle[b].premiere) return cle[a].premiere - cle[b].premiere;
+        }
+        // a defaut : le rang dans le flux, c'est-a-dire l'ordre alphabetique
+        return cle[a].rang - cle[b].rang;
+    });
+    return idx;
+}
 
 ///------
 var isAnimated;
@@ -121,9 +239,6 @@ window.onload = function() {
 	//------------ navigation ------------//
 
 	isAnimated = false;
-	max_sat = 50;
-	avg_sat = max_sat;
-	min_sat = 0;
 	tNoise = 0;    
 
     canvas = document.getElementById('myCanvas');
@@ -361,6 +476,19 @@ function drawRect(x, y, c){
     context.fillStyle=c;
     context.fillRect(x, y, rWidth, rHeight);
 }
+/* Peindre un rectangle A PARTIR DE CE QU'IL EST. Tout passe par ici :
+   le rendu normal, la selection, le resultat de recherche, l'estompage et le
+   scintillement. C'est ce qui a remplace les six decoupages de chaine
+   `hsl(...)` de l'ancienne version. */
+function paintRect(r, etat, fade){
+    /* ⚠️ PAS DE CADRE, PAS DE RETRAIT. Un carre selectionne est un carre
+       PLEIN, comme les autres : c'est sa couleur qui le designe. Le retrait
+       de deux pixels essaye avec la rampe amethyste -> carotte compensait un
+       ecart au jaune de 13,0, sous le plancher de 15 ; la rampe vert-mer ->
+       amethyste s'en ecarte de 21,0 et n'a plus rien a compenser (voir le
+       commentaire de VIZ_YEAR dans js/variables.js). */
+    drawRect(r.x, r.y, ovRectColor(r, etat, fade || 0));
+}
 /* Le repli de la boite violette (« N archived works », liste depliable) a
    d'abord ete ecrit ici, puis DEPLACE dans js/functions.js : Network porte la
    meme boite, construite par la meme fonction partagee, et une seconde copie
@@ -517,31 +645,91 @@ function clearSelection(txt){
 
    Le 7e champ du flux (php/retrieve_data.php, case 5) est un SOUS-ENSEMBLE du
    4e : on ne peut donc pas marquer une annee absente de la liste affichee. */
-function editionsHtml(eds, festivalSeul){
+/* Les annees de la boite orange, chacune avec CE QUE LA BASE SAIT D'ELLE.
 
-    var marquees = {};
-    var brut = $.trim(festivalSeul || '');
+   Le 7e champ du `case 5` rend « annee=classe » pour chaque annee ; la classe
+   est LUE dans imeb_participation par le serveur (voir l'en-tete de
+   retrieveAllCompositionsFrom02 dans php/retrieve_data.php pour les quatre
+   classes et leurs effectifs). Le navigateur n'en deduit rien.
+
+   QUATRE MARQUEURS, ET DES INFOBULLES QUI NOMMENT LA PIECE. Les quatre
+   classes sont mutuellement exclusives et couvrent tout ; ce sont des FAITS
+   de la base, pas des nuances inventees. En fondre deux effacerait la seule
+   chose qui les separe.
+
+   L'ECRAN PORTE LA STRUCTURE, L'INFOBULLE PORTE LA PREUVE. Le marqueur dit
+   concours / concours+festival / festival seul / releve sans piece ; il ne
+   dit pas PAR QUOI la participation est attestee — constat d'huissier, prix
+   proclame, liste des candidats — parce que cela ferait six codes a l'ecran
+   pour une distinction qui se lit une fois, pas d'un coup d'oeil. C'est le
+   meme partage que le liseré de provenance des trois graphes de
+   Participation : le dessin dit l'autorite, le texte dit le document. */
+function editionsHtml(eds, provenance){
+
+    var cls = {};
+    var brut = $.trim(provenance || '');
     if(brut){
         var l = brut.split(',');
-        for(var k=0; k<l.length; k++) marquees[$.trim(l[k])] = true;
+        for(var k=0; k<l.length; k++){
+            var p = l[k].split('=');
+            if(p.length===2) cls[$.trim(p[0])] = $.trim(p[1]);
+        }
     }
+
+    //  1 concours · 2 concours + festival · 3 festival seul · 4 releve sans piece
+    var MARQUE = {'1':'', '2':'+', '3':'°', '4':'*'};
+    var CLASSE = {'1':'ed-comp', '2':'ed-both', '3':'ed-fest', '4':'ed-loose'};
+
+    /* ⚠️ DEUX MOTS, PAS UNE PHRASE. Ces bulles ont d'abord porte l'etat ET la
+       piece en toutes lettres — « entry to the competition attested, and a
+       work programmed at the Synthese festival that year — a prize was
+       awarded to them that year ». Vingt mots au survol d'une annee de quatre
+       chiffres : on ne les lit pas, on attend qu'elles disparaissent. Le
+       vocabulaire est donc REDUIT A UN MOT PAR NOTION, et c'est la LEGENDE de
+       la page qui l'explique une fois pour toutes — quatre marqueurs, cinq
+       sources. Le survol rappelle, il n'enseigne pas. */
+
+    // la PIECE : c constat · a prix (award) · l liste · o oeuvre · t transcription
+    var PIECE = {
+        'c': "bailiff's record",
+        'a': 'prize awarded',
+        'l': 'IMEB list of entrants',
+        'o': 'festival programme',
+        't': 'transcription only'
+    };
+    var ETAT = {
+        '1': 'competition',
+        '2': 'competition + festival',
+        '3': 'festival only',
+        '4': 'competition, no document'
+    };
 
     var out = [];
     var ans = ('' + (eds || '')).split(',');
     for(var i=0; i<ans.length; i++){
         var a = $.trim(ans[i]);
         if(!a) continue;
-        out.push(marquees[a]
-            ? '<span class="ed-fest" title="present at the Synthese festival that year'
-              + ' — no entry to the competition is attested">' + esc(a) + '°</span>'
-            : esc(a));
+
+        var code = cls[a] || '1l';
+        var c = code.charAt(0), p = code.charAt(1) || 'l';
+        if(!MARQUE.hasOwnProperty(c)) c = '1';
+
+        /* La piece ne s'ajoute QUE si elle apprend quelque chose. Pour la
+           classe 3, la piece EST l'etat (« une oeuvre au festival ») : la
+           coller aurait donne la meme phrase deux fois de suite, ce qui se
+           lit comme une erreur d'affichage plutot que comme une precision. */
+        var redite = (c === '3' && p === 'o') || (c === '4' && p === 't');
+        var titre = ETAT[c] + ((PIECE[p] && !redite) ? ' · ' + PIECE[p] : '');
+
+        out.push('<span class="' + CLASSE[c] + '" title="' + esc(titre) + '">'
+                 + esc(a) + MARQUE[c] + '</span>');
     }
     return out.join(', ');
 }
 function animation1(evt){
 	if(isAnimated){
 		clearInterval(animation2);
-		resetSaturation(avg_sat);
+		repaintAllRects();
 	} else animation2 = setInterval(noise_animation, 1000/10);
 
 	isAnimated = !isAnimated;
@@ -549,37 +737,13 @@ function animation1(evt){
     $("#anim").toggleClass('b_off b_on');
 
 }
-function resetSaturationForAllRects(){
-
-    for(var i=0; i<rectangles.length; i++){
-        drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
-    } 
-
-}
-function resetSaturation(sat){
-
-	for(var i=0; i<rectangles.length; i++){
-		
-		if(!rectangles[i].anchor && rectangles[i].id != nAId){
-
-			var str = rectangles[i].color;
-
-			var pos0 = str.indexOf(",")+1;
-			var pos1 = str.indexOf("%");
-			
-			var c = str.substring(0, pos0);
-
-            var lum;
-            if(rectangles[i].count>0)lum=avg_lum;
-            else lum=max_lum;
-
-			c += sat+'%,'+lum+'%)';
-
-			rectangles[i].color = c;
-
-			drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
-		}
-	} 
+/* Tout remettre a l'etat normal. (Anciennement resetSaturationForAllRects()
+   et resetSaturation() : deux fonctions pour un seul geste, la seconde
+   reconstruisant une chaine `hsl(...)` a coups de indexOf.) */
+function repaintAllRects(){
+    for(var i=0; i<rectangles.length; i++) paintRect(rectangles[i], 'normal', 0);
+    // le compositeur selectionne garde son marquage
+    if(pAId >= 0) processAllRectWhithId(pAId);
 }
 //---------------------------------------//
 
@@ -589,9 +753,18 @@ function calculateMinHeightAndCreateRectangles(step, threshold){
     // hauteur remise a zero pour qu'elle puisse RETRECIR quand il y a moins
     // d'elements (filtre "num of records"), pas seulement grandir.
     resetPositions();
-    minHeight = 0;
+    // la grille commence SOUS son en-tete (« reset all » + le tri)
+    minHeight = OV_HDR;
 
-    for (var i=0; i<allData.length-5; i+=6) {
+    /* L'ORDRE D'AFFICHAGE, et non l'ordre du flux : voir ovRecordOrder(). */
+    var ordre = ovRecordOrder();
+
+    // l'ancre ne code « a une oeuvre » que si les deux cas sont a l'ecran
+    var nAvec = 0, nSans = 0;
+
+    for (var o=0; o<ordre.length; o++) {
+
+        var i = ordre[o];
 
         //---------- get data ----------//
         var id = allData[i];
@@ -600,47 +773,31 @@ function calculateMinHeightAndCreateRectangles(step, threshold){
         // var cId=allData[i+2];
         var count=allData[i+3]; //number of compositions avalaible
 
-        //------- set color luminosity ---------//
-        var lum;
-        if(count>0) lum=colors[0].l;
-        else lum=max_lum;
-
-        var color='hsl('+colors[0].h+','+colors[0].s+'%,'+lum+'%)';
-
         //------- create rectangles ---------//
+        // (plus de couleur calculee ici : le rectangle porte son etat, la
+        //  couleur se deduit au moment de peindre — cf. ovRectColor)
 
-        if(step===0){
-            createNewRectangle(id, color, count, true);
+        if(step===0 || (step===1 && count>=threshold)){
+            if(count>0) nAvec++; else nSans++;
+            createNewRectangle(id, count, true, 0);
             createEditionsRectangles(id, count, editions);
-        } else if(step===1){
-            if(count>=threshold){
-                createNewRectangle(id, color, count, true);
-                createEditionsRectangles(id, count, editions);
-            }
         }
     }
+
+    ovAnchorMeans = (nAvec>0 && nSans>0);
 }
 function createEditionsRectangles(id, count, editions){
 
     if(editions.length>0){
         for(var j=0; j<editions.length; j++){
-            var coef = 310/(2009-1973);
-            var numEdition = editions[j] - 1973;
-            numEdition *= coef; //0=>255 not 360
-
-            var lum;
-            if(count>0) lum=avg_lum;
-            else lum=max_lum;
-
-            var c='hsl('+numEdition+','+avg_sat+'%,'+lum+'%)';
-            createNewRectangle(id, c, count, false);
-            
+            // l'ANNEE est ce qu'on garde ; la couleur s'en deduit (ovYearColor)
+            createNewRectangle(id, count, false, parseInt(editions[j], 10));
         }
     } else {
         console.log("error: no edition");
     }
 } 
-function createNewRectangle(aId, c, count, anchor){
+function createNewRectangle(aId, count, anchor, year){
 
     if( xPos>maxWidth-xRightOffset){
 
@@ -655,42 +812,27 @@ function createNewRectangle(aId, c, count, anchor){
 
     if(yPos+yDist>minHeight) minHeight+=yDist;
 
-    rectangles.push({id:aId, x: xPos, y:yPos, color:c, count:count, anchor:anchor});
+    rectangles.push({id:aId, x: xPos, y:yPos, count:count, anchor:anchor, year:year});
     xPos += xDist;
 
 }
+/* Le compositeur selectionne passe EN JAUNE, ancre comprise.
+
+   ⚠️ L'ANCRE ETAIT EN BLANC PUR, et les carres d'edition prenaient une
+      version saturee de leur propre teinte. Deux problemes : le jaune designe
+      la selection partout ailleurs sur le site, et le blanc n'est plus
+      separable de la borne haute de la rampe des annees — ecart OKLab de 10,3
+      contre un plancher de 15, alors que le jaune s'en ecarte de 21,2. Un
+      compositeur selectionne en 2009 aurait donc eu une ancre indiscernable
+      de ses propres carres. */
 function processAllRectWhithId(artist_id){
-
-    var firstOne = false;
-
     for(var i=0; i<rectangles.length; i++){
-
-        if(rectangles[i].id==artist_id){
-            if(firstOne) {
-
-                var str = rectangles[i].color;
-
-                var pos0 = str.indexOf(",")+1;
-
-                str = str.substring(0, pos0);
-                str += "100%,50%)";
-
-                // console.log(rectangles[i].color, str);
-
-                drawRect(rectangles[i].x, rectangles[i].y, str);
-                
-            } else {
-
-                drawRect(rectangles[i].x, rectangles[i].y, "white");
-                firstOne = true;
-                
-            }
-        }
+        if(rectangles[i].id==artist_id) paintRect(rectangles[i], 'sel', 0);
     }
 }
 function resetAllRectWhithId(artist_id){
     for(var i=0; i<rectangles.length; i++){
-        if(rectangles[i].id==artist_id)drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
+        if(rectangles[i].id==artist_id) paintRect(rectangles[i], 'normal', 0);
     }
 }
 function selectRect(x, y){
@@ -799,6 +941,82 @@ function selectRect(x, y){
         }
     }
 }
+/* L'EN-TETE DE LA GRILLE, dessine dans le canvas et non pose dans la barre
+   de controle.
+
+   ⚠️ LA BARRE NE POUVAIT PAS L'ACCUEILLIR. Sa hauteur est DECLAREE une fois
+      (`--sd-bar-h`, 128px dans main.css) et les sept pages calent leur
+      contenu dessous ; les deux rangees de #tools en occupent deja 118, et
+      une troisieme ferait passer la grille SOUS la barre sans que rien ne le
+      signale (voir la note qui ouvre css/overview.css). Le mettre dans le
+      canvas ne coute aucune hauteur de barre — et c'est la ou la matrice et
+      le diagramme en barres de Participation posent les leurs, donc le meme
+      geste au meme endroit. */
+function drawGridHeader(){
+
+    var ctx = context, y = 11;
+    ovCtrl = { sort: [] };
+
+    ctx.save();
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "left";
+
+    var x = xLeftOffset;
+    ctx.font = '10px "Helvetica Neue", Helvetica, Arial, sans-serif';
+    ctx.fillStyle = "#8fa3b0";
+    ctx.fillText("squares:", x, y);
+    x += 48;
+
+    var opts = [{k:'first', l:'first entry'}, {k:'works', l:'archived works'}, {k:'az', l:'A–Z'}];
+    for (var i=0; i<opts.length; i++){
+        var on = (ovSort === opts[i].k);
+        ctx.font = on ? '600 11px "Helvetica Neue", Helvetica, Arial, sans-serif'
+                      : '10px "Helvetica Neue", Helvetica, Arial, sans-serif';
+        ctx.fillStyle = on ? "#ecf0f1" : "#8fa3b0";
+        var w = ctx.measureText(opts[i].l).width;
+        ctx.fillText(opts[i].l, x, y);
+        if(on) ctx.fillRect(x, y+8, w, 1);
+        ovCtrl.sort.push({k:opts[i].k, x:x-4, y:y-9, w:w+8, h:18});
+        x += w + 14;
+    }
+
+    /* La cle de la rampe, a droite : un degrade de 1973 a 2009. ⚠️ Elle est
+       obligatoire — une couleur qui code une annee ne dit rien d'elle-meme,
+       et l'ancien arc-en-ciel n'en avait aucune. */
+    var kw = 132, sw = 10;
+    var x0 = canvas.width - kw - 6;
+    if(x0 > x + 40){
+        ctx.textAlign = "right";
+        ctx.font = '10px "Helvetica Neue", Helvetica, Arial, sans-serif';
+        ctx.fillStyle = "#8fa3b0";
+        ctx.fillText("1973", x0 - 6, y);
+        for (var s2=0; s2<kw-34; s2+=2){
+            ctx.fillStyle = ovYearColor(OV_YEAR_MIN + (s2/(kw-36))*(OV_YEAR_MAX-OV_YEAR_MIN));
+            ctx.fillRect(x0 + s2, y - sw/2, 2, sw);
+        }
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#8fa3b0";
+        ctx.fillText("2009", x0 + kw - 30, y);
+    }
+    ctx.restore();
+}
+function hitGridHeader(mx, my){
+    if(my > OV_HDR || !ovCtrl.sort) return false;
+    for (var i=0; i<ovCtrl.sort.length; i++){
+        var r = ovCtrl.sort[i];
+        if(mx>=r.x && mx<=r.x+r.w && my>=r.y && my<=r.y+r.h){
+            if(ovSort !== r.k){
+                ovSort = r.k;
+                /* On RECONSTRUIT la grille : les positions dependent de
+                   l'ordre. On repasse donc par le meme chemin que le filtre
+                   « num of records », qui fait deja exactement cela. */
+                processData002(readNumOfRecords());
+            }
+            return true;
+        }
+    }
+    return false;
+}
 function resetCanvasSize(){
     // Le canvas epouse la hauteur reelle du contenu (peut grandir ou retrecir),
     // pour ne pas laisser de zone vide et laisser remonter la legende "How to".
@@ -813,7 +1031,11 @@ function resetCanvasSize(){
         var right = rectangles[i].x + rWidth;
         if(right>contentRight) contentRight = right;
     }
-    canvas.width = contentRight>0 ? contentRight : maxWidth;
+    /* ⚠️ PLANCHER : l'en-tete de la grille (le tri + la cle des annees) doit
+       tenir. Sans lui, un filtre severe — trois compositeurs a l'ecran —
+       retrecissait le canvas a une centaine de pixels et coupait les
+       commandes qui servent justement a en sortir. */
+    canvas.width = Math.max(contentRight>0 ? contentRight : maxWidth, 420);
 
     // La legende "How to read" est calee sur cette meme largeur : les deux blocs
     // ont donc exactement la meme largeur visible.
@@ -825,7 +1047,7 @@ function resetCanvasSize(){
 }
 function resetPositions(){
     xPos = xLeftOffset;
-    yPos = 0;
+    yPos = OV_HDR;      // sous l'en-tete de la grille (cf. drawGridHeader)
 }
 function getInfo(evt) {
 
@@ -836,9 +1058,13 @@ function getInfo(evt) {
 
     if(newResults){
         $("#results").empty();
-        resetSaturationForAllRects();
+        repaintAllRects();
         newResults=false;
     }
+
+    // l'en-tete de la grille (le tri, « reset all ») avant les carres
+    if(hitGridHeader(mouseX, mouseY)) return;
+
     selectRect(mouseX, mouseY);
 
 }
@@ -911,9 +1137,9 @@ function drawRectanglesAndAddInteractivity(){
 
     resetPositions();
 
-    for(var i=0; i<rectangles.length; i++){
-        drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
-    }
+    drawGridHeader();
+
+    for(var i=0; i<rectangles.length; i++) paintRect(rectangles[i], 'normal', 0);
 
     resetPositions();
 
@@ -925,36 +1151,24 @@ function drawRectanglesAndAddInteractivity(){
 // (Le SMA — agents/compositeurs consultes regroupes par pays — vit desormais
 //  dans js/overview_sma.js, moteur auto-contenu. Ne restent ici que la grille
 //  de l'index et son animation de bruit.)
+/* Le scintillement du bouton « anim ».
+
+   ⚠️ IL JOUAIT SUR LA SATURATION, canal qui ne code plus rien depuis que la
+      couleur se deduit de l'annee : il aurait fallu defaire la rampe pour le
+      garder tel quel. Il joue donc sur l'ESTOMPAGE vers le fond, qui ne
+      touche a aucun encodage — la teinte de chaque carre reste celle de son
+      annee, elle respire seulement. */
 function noise_animation(){
 
     for(var i=0; i<rectangles.length; i++){
 
-        if(!rectangles[i].anchor && rectangles[i].id != nAId){
+        var r = rectangles[i];
+        if(r.anchor || r.id == nAId) continue;
 
-            var value = Math.abs(noise.perlin2((rectangles[i].x+tNoise) / 1000, (rectangles[i].y+tNoise) / 1000));
-            value *= 100;
-            value -= 50;
-            // value *= 80;
-            value = Math.round(value);
+        var value = Math.abs(noise.perlin2((r.x+tNoise)/1000, (r.y+tNoise)/1000));
+        if(value>1) value=1;
 
-            var str = rectangles[i].color;
-
-            var pos0 = str.indexOf(",")+1;
-            var pos1 = str.indexOf("%");
-
-            var sat = (avg_sat + value)%101;
-            
-            var c = str.substring(0, pos0);
-
-            var lum=avg_lum;
-
-            c += sat+'%,'+lum+'%)';
-
-            rectangles[i].color = c;
-            // console.log(c);
-
-            drawRect(rectangles[i].x, rectangles[i].y, rectangles[i].color);
-        } 
+        paintRect(r, 'normal', 0.55*value);
     }
 
     tNoise+=15;
@@ -1006,7 +1220,7 @@ function getSearchTerms(){
 
     if(terms==""){
         $("#results").empty();
-        resetSaturation(avg_sat);
+        repaintAllRects();
         newResults=false;
         return;
     }
@@ -1051,11 +1265,7 @@ function getSearchTerms(){
 
                 createComposersListing(numOfElements);
 
-                for (var j=0; j<rectangles.length; j++){
-            
-                    drawRect(rectangles[j].x, rectangles[j].y, rectangles[j].color);
-                    
-                }
+                for (var j=0; j<rectangles.length; j++) paintRect(rectangles[j], 'normal', 0);
 
             }         
 
@@ -1192,16 +1402,17 @@ function showAndHighlightComposer(composerId){
 
     editRectanglesColorBasedOnQueryWithComposerId(composerId);
 }
+/* Le resultat de recherche passe en jaune, tout le reste s'estompe.
+
+   L'estompage etait obtenu en remplacant « 50%, » par « 4%, » dans la chaine
+   `hsl(...)` — donc en desaturant, et seulement les carres dont la chaine
+   contenait cette sous-chaine exacte. Il se fait maintenant par un melange
+   vers le fond, qui vaut pour tous les carres sans exception. */
 function editRectanglesColorBasedOnQueryWithComposerId(composerId){
 
     for (var j=0; j<rectangles.length; j++){
-        if(rectangles[j].id===composerId){
-            drawRect(rectangles[j].x, rectangles[j].y, "yellow");
-        } else {
-            var c = rectangles[j].color;
-            if(c.indexOf('50%,')>0)c=c.replace('50%,', '4%,');
-            drawRect(rectangles[j].x, rectangles[j].y, c);
-        }
+        if(rectangles[j].id===composerId) paintRect(rectangles[j], 'hit', 0);
+        else                              paintRect(rectangles[j], 'normal', 0.72);
     }
 
     newResults=true;

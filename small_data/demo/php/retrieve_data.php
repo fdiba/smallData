@@ -263,6 +263,31 @@
 									 imeb_country.id, imeb_country.c_name_en,
 									 imeb_country.c_name, imeb_country.iso3,
 									 imeb_country.iso2
+
+							/* ⚠️ IL N\'Y AVAIT AUCUN ORDER BY — 2026-08-08.
+							   Le flux sortait dans l\'ordre que le moteur
+							   produisait pour le GROUP BY : non garanti, et
+							   susceptible de differer entre MariaDB et
+							   MySQL 8. La grille de l\'Overview, qui dessine
+							   les carres dans l\'ordre du flux, n\'avait donc
+							   pas d\'ordre — elle en avait un par accident.
+
+							   Le tri porte sur le NOM DE FAMILLE, puis le
+							   prenom : l\'ordre d\'un catalogue. Et il est
+							   fait ICI plutot que dans le navigateur parce
+							   que le nom N\'EST PAS DANS LE FLUX : trier
+							   alphabetiquement cote client aurait demande de
+							   l\'y ajouter, donc un 7e champ, donc le pas de
+							   lecture a corriger dans les CINQ boucles
+							   `i+=6` d\'overview.js, animated_data.js et
+							   network.js. C\'est la manoeuvre qui a deja mal
+							   tourne trois fois dans ce projet (§12.5 du doc
+							   d\'interface). Le serveur rend l\'ordre
+							   alphabetique, le client en derive les autres
+							   (premiere edition, nombre d\'oeuvres) a partir
+							   de champs qu\'il a deja. Le flux ne change pas
+							   d\'un octet. */
+							ORDER BY imeb_artist.name, imeb_artist.firstName
 							');
 
 		$sth->setFetchMode(PDO::FETCH_ASSOC);
@@ -343,33 +368,61 @@
 
 			$str_editions = implode(", ", $editions);
 
-			/* --- Provenance de chaque participation (2026-08-04) -------------
-			   imeb_edition ne dit PAS d'ou vient une coche. Trois origines la
-			   nourrissent, et elles ne valent pas la meme chose :
+			/* --- CE QUE LA BASE SAIT DE CHAQUE ANNEE -------------------------
+			   Ecrit le 2026-08-04, REFAIT LE 2026-08-08.
 
-			     - un PRIX cette annee-la (imeb_music.award_year) : la personne
-			       a forcement concouru — candidature certaine ;
-			     - AUCUNE oeuvre datee de cette annee-la : le nom ne peut venir
-			       que d'un proces-verbal — candidature quasi certaine
-			       (verifie 67/67 sur le PV de 1973) ;
-			     - une PROGRAMMATION au festival Synthese et rien d'autre
-			       (imeb_music.editions, cf. §H du recapitulatif : cette colonne
-			       porte les annees de PROGRAMMATION, pas de concours) : la
-			       personne etait a Bourges, mais rien n'atteste qu'elle ait
-			       candidate. Sur le PV de 1973, 7 des 9 cas de cette classe
-			       avaient bel et bien candidate — et 2 non (Luc Ferrari,
-			       Joran Rudi). La classe est donc AMBIGUE, pas fausse.
+			   ⚠️ LA VERSION PRECEDENTE DISAIT LE CONTRAIRE DE LA BASE, et sur
+			      une grande echelle. Elle deduisait « festival seul » de deux
+			      colonnes de imeb_music — pas de prix cette annee-la, mais une
+			      programmation — parce qu'elle a ete ecrite TROIS JOURS AVANT
+			      que imeb_participation porte `source` et `cite_par_*`. Elle ne
+			      pouvait donc pas voir les constats d'huissier.
 
-			   On ne corrige rien ici : on RENSEIGNE la troisieme classe, pour
-			   que la boite orange cesse de presenter trois faits differents
-			   sous un seul mot. Seuls les proces-verbaux trancheront. */
+			      Mesure sur le dump du 2026-08-08 (9 704 participations) :
+			      elle marquait 2 262 annees « concours non atteste », dont
+			      2 153 — QUATRE-VINGT-QUINZE POUR CENT — sont en fait
+			      attestees, le plus souvent par un constat. Il n'y a que 109
+			      vraies annees « festival seul ».
+
+			   La classe est desormais LUE dans imeb_participation, comme le
+			   liseré de provenance des trois graphes de Participation l'est
+			   depuis le 2026-08-07. Quatre classes :
+
+			     1  CONCOURS ATTESTE — un constat d'huissier porte ce nom
+			        (`source='constat'`), ou la liste recapitulative des
+			        candidats le porte (`source='liste'` ou `cite_par_liste`),
+			        ou un prix lui a ete decerne cette annee-la. 6 736 (69,4 %).
+			     2  CONCOURS ET FESTIVAL — la meme chose, plus une oeuvre
+			        programmee au festival Synthese cette annee-la
+			        (imeb_music.editions : cette colonne porte les annees de
+			        PROGRAMMATION, jamais de concours). 2 660 (27,4 %).
+			     3  FESTIVAL SEUL — la seule trace est cette programmation :
+			        la personne etait a Bourges, rien n'atteste qu'elle ait
+			        candidate. 109 (1,1 %), 91 compositeurs, concentres sur
+			        1990 et 2000. ⚠️ CLASSE AMBIGUE, PAS FAUSSE : sur le PV de
+			        1973, 7 des 9 cas de cette classe avaient bel et bien
+			        candidate, et 2 non (Luc Ferrari, Joran Rudi).
+			     4  RELEVE SANS PIECE RATTACHEE — ni constat, ni liste, ni
+			        oeuvre : le nom vient d'un depouillement de proces-verbal
+			        saisi, dont la piece n'est pas liee. 199 (2,1 %),
+			        EXCLUSIVEMENT de 1989 a 1994, plus un cas isole en 2005
+			        (Philippe Auclair, fiche 1426). C'est la signature decrite
+			        au §3 de Provenance_des_participations, et la distribution
+			        par annee la confirme exactement.
+
+			   Le 7e champ de la reponse rend « annee=classe+piece » pour CHAQUE
+			   annee, et non plus la liste d'un sous-ensemble : le navigateur
+			   n'a plus rien a deduire, il affiche ce que le serveur a lu. La
+			   CLASSE (1 a 4) decide du marqueur, la PIECE (c/a/l/o/t) decide
+			   de l'infobulle — l'ecran porte la structure, l'infobulle porte
+			   la preuve. */
 			$sthP = $dbh->prepare('SELECT award_year, editions FROM imeb_music
 									WHERE id_artist = ?');
 			$sthP->execute(array((int)$aId));
 			$sthP->setFetchMode(PDO::FETCH_ASSOC);
 
 			$aw = array();   // annees de prix
-			$fe = array();   // annees de programmation au festival
+			$fe = array();   // annees de programmation au festival Synthese
 			while($w = $sthP->fetch()){
 				$y = trim((string)$w['award_year']);
 				if(ctype_digit($y)) $aw[$y] = true;
@@ -379,12 +432,59 @@
 				}
 			}
 
-			$festivalSeul = array();
+			/* La provenance de chaque participation, DANS LA BASE et non
+			   deduite. `source` est un enum de cinq valeurs dont trois seules
+			   sont employees (constat 24,8 %, liste 42,6 %, inconnu 32,6 %) :
+			   `depouillement` et `oeuvre` sont a zero, et on ne les teste donc
+			   pas — mais on ne les traite pas non plus comme inconnues, d'ou
+			   le test explicite sur 'inconnu'. */
+			$sthQ = $dbh->prepare('SELECT annee, source, cite_par_liste, cite_par_oeuvre
+									FROM imeb_participation WHERE id_artist = ?');
+			$sthQ->execute(array((int)$aId));
+			$sthQ->setFetchMode(PDO::FETCH_ASSOC);
+
+			$prov = array();
+			while($q = $sthQ->fetch()){
+				$y = (string)$q['annee'];
+
+				$concours = ($q['source'] === 'constat')
+						 || ($q['source'] === 'liste')
+						 || ((int)$q['cite_par_liste'] === 1)
+						 || isset($aw[$y]);
+
+				$festival = isset($fe[$y]);
+
+				if($concours && $festival)      $c = 2;
+				elseif($concours)               $c = 1;
+				elseif($festival)               $c = 3;
+				else                            $c = 4;
+
+				/* LA PIECE, et non seulement la classe. Elle ne change pas le
+				   marqueur — elle change l'infobulle, qui NOMME le document.
+				   C'est ce qui separe « attestee » de « attestee par quoi »,
+				   et c'est la question que cette base pose partout ailleurs.
+				   Ordre de priorite : le constat d'huissier prime (piece de
+				   premiere main), puis le prix (le jury a proclame), puis la
+				   liste (document de seconde main). Repartition mesuree sur
+				   le dump du 2026-08-08 :
+				     constat 2 408 (24,8 %) · prix 440 (4,5 %) ·
+				     liste 6 548 (67,5 %) · oeuvre seule 109 (1,1 %) ·
+				     transcription sans piece 199 (2,1 %). */
+				if($q['source'] === 'constat')                             $p = 'c';
+				elseif(isset($aw[$y]))                                     $p = 'a';
+				elseif($q['source'] === 'liste' || (int)$q['cite_par_liste'] === 1) $p = 'l';
+				elseif($c === 3)                                           $p = 'o';
+				else                                                       $p = 't';
+
+				$prov[$y] = $c . $p;
+			}
+
+			$classes = array();
 			foreach($editions as $y){
 				$y = (string)$y;
-				if(!isset($aw[$y]) && isset($fe[$y])) $festivalSeul[] = $y;
+				$classes[] = $y . '=' . (isset($prov[$y]) ? $prov[$y] : '1l');
 			}
-			$str_festival = implode(", ", $festivalSeul);
+			$str_festival = implode(",", $classes);
 
 			// 3e champ : le code pays affiche dans la boite orange d'Overview.
 			// iso3, a defaut iso2 (l'Ecosse n'a pas d'iso3 : elle affiche GB),

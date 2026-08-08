@@ -257,10 +257,26 @@
 #myCanvas{
 	margin: 0 5px 0 0;
 }
+/* ⚠️ LA LISTE DES RESULTATS EST BORNEE EN HAUTEUR — 2026-08-08.
+
+   Elle n'avait aucune limite. Une recherche sur deux ou trois lettres rend
+   couramment plusieurs centaines de noms, et la boite blanche poussait alors
+   TOUTE la colonne — le petit SMA, les boites d'identite, la fiche ISNI et la
+   liste des oeuvres — plusieurs milliers de pixels plus bas, c'est-a-dire hors
+   de l'ecran. On croyait la colonne vide ; elle etait seulement tres loin.
+
+   Elle defile donc sur place. `box-sizing: border-box` parce que la largeur
+   est declaree plus haut (330px de contenu) et que le defilement ajoute une
+   barre : sans lui, la boite deborderait des autres de la largeur de cette
+   barre, et les bords droits de la colonne cesseraient de coincider. */
 #results{
 	margin: 1px 0;
 	background: white;
 	padding: 0 10px;
+	box-sizing: content-box;
+	max-height: 300px;
+	overflow-y: auto;
+	overscroll-behavior: contain;   /* la page ne defile pas quand la liste est au bout */
 }
 #results p{
 	padding: 0;
@@ -325,10 +341,22 @@
    pointille sous l'annee reprend la convention deja employee par
    .composer-isni pour "il y a quelque chose de plus a savoir ici", et l'infobulle
    porte la phrase complete — la boite orange n'a pas la place de l'ecrire. */
-#selection .ed-fest{
+#selection .ed-fest,
+#selection .ed-both,
+#selection .ed-loose{
 	border-bottom: 1px dotted currentColor;
 	cursor: help;
 }
+/* ⚠️ QUATRE MARQUEURS — 2026-08-08. Le pointille dit « il y a quelque chose
+   de plus a savoir ici » et vaut pour les trois classes qui ne sont pas la
+   participation attestee ordinaire. Le signe distingue : rien = concours,
+   `+` = concours et festival la meme annee, `°` = festival seul,
+   `*` = releve d'un proces-verbal dont la piece n'est pas rattachee.
+
+   `.ed-comp` ne porte que le curseur : la participation attestee est le cas
+   normal, elle s'ecrit en clair — mais son infobulle nomme quand meme la
+   piece, et il faut donc que le curseur l'annonce. */
+#selection .ed-comp{ cursor: help; }
 
 /* =========================================================================
    LA BOITE ORANGE SE REPLIE — 2026-08-05
