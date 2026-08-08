@@ -21,6 +21,10 @@ function LineChart(config){
 
     this.lg_btns=[];
     this.solo_btns=[];
+    /* index du pays -> rang de palette qu'il GARDE tant qu'il est isole.
+       Voir vizTakeSlot() dans js/variables.js : sans lui, isoler un pays
+       repeignait tous ceux qui le suivent dans le tableau des donnees. */
+    this.soloSlot={};
     this.numSolos=0;
     this.bWidth=10;
 
@@ -29,10 +33,30 @@ function LineChart(config){
     this.colors=["#bdc3c7", "#4aa3df", "#2ecc71", "#16a085"];
     //grey: silver, blue: peter river, emerald: green, green sea: dark green
 
-    //couleurs attribuees aux pays surlignes (une par pays)
-    //pas de bleu ici : les lignes de base non surlignees sont deja bleues (this.colors[1])
-    this.soloColors=["#e74c3c", "#2aa42a", "#dc6791", "#c98500",
-                     "#1aa876", "#e06a36", "#9085e9", "#f5b041"];
+    /* UN GRAPHE RETIRE NE DESSINE PLUS — 2026-08-08.
+
+       ⚠️ DEFAUT ANCIEN, TROUVE PAR RELECTURE ADVERSARIALE. startHoverAnim()
+          lance une boucle requestAnimationFrame qui met ~350 ms a s'eteindre.
+          Si, pendant ce fondu, l'utilisateur change de selection — cliquer une
+          annee, basculer « span », commuter de vue —, un NOUVEAU graphe est
+          construit dans le meme canvas pendant que l'ancien continue d'y
+          peindre. Constate au banc : dix-sept redrawLineChart() apres coup.
+          Le line chart n'efface que 1200 x 600 : le diagramme en barres
+          (900 x 500) etait INTEGRALEMENT recouvert, et la matrice
+          transparaissait autour de la zone effacee. Une seconde d'attente
+          avant le clic suffisait a ne rien voir — d'ou un defaut qui ne se
+          reproduit qu'en allant vite.
+
+       Le graphe est donc RETIRE avant qu'un autre prenne sa place
+       (retireCurrentChart(), dans js/animated_data.js), et sa boucle s'arrete
+       a l'image suivante. On ne peut pas se contenter d'annuler le rAF : le
+       fondu peut etre relance par un dernier evenement de souris en vol. */
+    this._retired=false;
+
+    /* (Une troisieme palette, `this.soloColors`, vivait ici : huit couleurs
+       encore differentes de VIZ_CAT et de son repli, referencees NULLE PART.
+       Retiree le 2026-08-08 — une palette morte a cote de deux vivantes finit
+       par etre celle qu'on corrige.) */
 
     this.padding = 10;
     this.tickSize = 10;
@@ -79,6 +103,9 @@ LineChart.prototype.resetCanvas = function(){
     this.context.fillRect(0, 0, this.w, this.h);
 }
 LineChart.prototype.requestData = function(mouseX, mouseY){
+
+    // retire : il ne peint plus, il ne repond plus. Voir retire().
+    if(this._retired) return;
 
     // Ligne ciblee = celle actuellement survolee (en jaune) si elle est visible,
     // sinon la plus proche du curseur.
@@ -129,6 +156,19 @@ LineChart.prototype.requestData = function(mouseX, mouseY){
 LineChart.prototype.retrieveData = function(cId, year, value){
 
     var sl_ctry=this.sl_ctry;
+
+    /* ⚠️ JETON DE GENERATION. La reponse arrive apres coup, et rien ne
+       garantit que la selection qui l'a demandee existe encore. Constate au
+       banc : cliquer une cellule puis changer d'edition cent millisecondes
+       plus tard reinstallait cent vingt compositeurs et reecrivait la barre
+       orange de l'ANCIENNE edition par-dessus la nouvelle vue. La page se
+       remplissait toute seule d'une selection qu'on venait de quitter.
+
+       `dataGen` (js/animated_data.js) est incremente a chaque reconstruction ;
+       une reponse dont le jeton a change n'ecrit plus rien. On n'annule pas la
+       requete — elle est deja partie —, on refuse son resultat, ce qui suffit
+       et ne demande aucun XHR nomme. */
+    var gen = (typeof dataGen !== 'undefined') ? dataGen : null;
     
     $.ajax({                                      
         url: 'php/retrieve_data.php',       
@@ -141,6 +181,8 @@ LineChart.prototype.retrieveData = function(cId, year, value){
         data: { cId: cId, year:year, value:value, case:0,
                 v: (typeof SHOW_ALL_NAMES !== 'undefined' && SHOW_ALL_NAMES) ? 'all' : '' }
     }).done(function(str) {
+
+        if(gen !== null && typeof dataGen !== 'undefined' && gen !== dataGen) return;
 
         var arr=str.split("%");
         composers=[];
@@ -173,6 +215,8 @@ LineChart.prototype.retrieveData = function(cId, year, value){
 }
 LineChart.prototype.editData = function(mouseX, mouseY){
 
+    if(this._retired) return;
+
     var bWidth=this.bWidth;
     var solos=this.solo_btns;
 
@@ -190,6 +234,12 @@ LineChart.prototype.editData = function(mouseX, mouseY){
         if(mouseX>=solos[i].x && mouseX<=solos[i].x+bWidth && mouseY>=solos[i].y && mouseY<=solos[i].y+bWidth){
             solos[i].state = !solos[i].state;
             this.numSolos += solos[i].state ? 1 : -1;
+            // le rang de palette se prend a l'isolement et se rend au relachement
+            if(solos[i].state){
+                this.soloSlot[i] = (typeof vizTakeSlot==='function') ? vizTakeSlot(this.soloSlot) : i;
+            } else {
+                delete this.soloSlot[i];
+            }
             // le rang (donc la couleur) des pays actifs suivants change : on
             // redessine tous les carres du menu pour garder carre <-> ligne coherents
             this.refreshLegendButtons();
@@ -202,20 +252,39 @@ LineChart.prototype.editData = function(mouseX, mouseY){
 LineChart.prototype.isVisible = function(i){
     return this.numSolos>0 ? !!(this.solo_btns[i] && this.solo_btns[i].state) : true;
 };
-// palette categorielle "flat-UI" accordee a l'application (turquoise, bleu,
-// amethyste, carotte, alizarine, emeraude, vert-mer, citrouille, wisteria,
-// bleu-belize, grenade, nephritis). Le JAUNE (#f1c40f) est reserve au survol /
-// point selectionne : on ne le met pas dans la palette pour eviter la confusion.
-LineChart.prototype.soloPalette = ["#1abc9c","#3498db","#9b59b6","#e67e22","#e74c3c",
+/* Palette categorielle "flat-UI" accordee a l'application. Le JAUNE (#f1c40f)
+   en reste exclu : il est reserve au survol et au point selectionne.
+
+   ELLE A DEMENAGE DANS js/variables.js LE 2026-08-08, pour deux raisons.
+
+   1. DEUX VUES dessinent maintenant les memes pays (line chart et matrice).
+      Un pays isole doit garder sa couleur quand on commute, sinon la couleur
+      cesse de designer le pays.
+   2. SON ORDRE ETAIT FAUTIF. Carotte (#e67e22) et alizarine (#e74c3c) y
+      occupaient les slots 4 et 5, donc se retrouvaient VOISINS des que cinq
+      pays etaient isoles : ecart OKLab de 10,8 en vision normale (plancher
+      15), 6,9 en simulation deuteranope (cible 8). Les douze memes valeurs,
+      reordonnees, portent le pire voisinage a 26,8 et 10,8. Aucune couleur
+      ajoutee, aucune retiree — seul l'ordre change, et l'ordre EST le
+      contenu d'une palette categorielle.
+
+   Le repli garde l'ancienne liste : si variables.js venait a manquer, la page
+   dessine encore. */
+LineChart.prototype.soloPalette = (typeof VIZ_CAT !== 'undefined') ? VIZ_CAT :
+                                  ["#1abc9c","#3498db","#9b59b6","#e67e22","#e74c3c",
                                    "#2ecc71","#16a085","#d35400","#8e44ad","#2980b9",
                                    "#c0392b","#27ae60"];
 // couleur attribuee a un pays ACTIVE via le menu (isolement) : couleur stable,
 // selon son rang parmi les pays actifs (ordre des donnees). null hors mode solo.
 LineChart.prototype.soloColor = function(i){
     if(this.numSolos<=0 || !this.solo_btns[i] || !this.solo_btns[i].state) return null;
-    var rank=0;
-    for (var k=0;k<i;k++){ if(this.solo_btns[k] && this.solo_btns[k].state) rank++; }
-    return this.soloPalette[rank % this.soloPalette.length];
+    /* ⚠️ LE RANG EST CELUI QU'ON LUI A DONNE EN L'ISOLANT, ET NON SA POSITION
+       PARMI LES ACTIFS. Compte a la volee (`for k<i`), il changeait des qu'un
+       pays situe plus haut dans le tableau etait isole a son tour : toutes les
+       lignes deja coloriees changeaient de couleur. Voir vizTakeSlot(). */
+    var slot = this.soloSlot[i];
+    if(slot === undefined) slot = 0;
+    return this.soloPalette[slot % this.soloPalette.length];
 };
 // redessine les carres du menu avec la couleur attribuee a chaque pays actif
 // (gris si inactif) -> le carre du menu et sa ligne partagent la meme couleur.
@@ -226,10 +295,13 @@ LineChart.prototype.refreshLegendButtons = function(){
         this.drawRectangle(ctx, this.solo_btns[i], bWidth, col);
     }
 };
-// palette des lignes SELECTIONNEES AU CLIC. Meme famille que la palette du menu
-// mais SANS bleu (les lignes non selectionnees sont deja bleues, this.colors[1]) :
-// une ligne cliquee doit se distinguer du bleu par defaut.
-LineChart.prototype.clickPalette = ["#1abc9c","#9b59b6","#e67e22","#e74c3c","#2ecc71",
+/* Palette des lignes SELECTIONNEES AU CLIC. Meme famille que celle du menu,
+   mais SANS bleu : une ligne non selectionnee est deja bleue (this.colors[1]),
+   une ligne cliquee doit s'en detacher. Meme demenagement et meme
+   reordonnancement que ci-dessus (js/variables.js, VIZ_CLICK) — dix valeurs
+   inchangees, pire voisinage porte de 10,8 a 26,7 en vision normale. */
+LineChart.prototype.clickPalette = (typeof VIZ_CLICK !== 'undefined') ? VIZ_CLICK :
+                                   ["#1abc9c","#9b59b6","#e67e22","#e74c3c","#2ecc71",
                                     "#16a085","#d35400","#8e44ad","#c0392b","#27ae60"];
 LineChart.prototype.clickColor = function(k){ return this.clickPalette[k % this.clickPalette.length]; };
 // rang d'un pays dans les lignes cliquees (ordre des clics), ou -1 si non selectionne
@@ -425,6 +497,7 @@ LineChart.prototype.drawRectangle = function(ctx, btn, bWidth, color){
 //remet tous les pays a l'etat par defaut : tous affiches, aucun surligne (solo)
 LineChart.prototype.resetCountries = function(){
     var ctx=this.context, bWidth=this.bWidth;
+    this.soloSlot={};
     for (var i=0; i<this.solo_btns.length; i++){
         this.solo_btns[i].state=false;
         this.drawRectangle(ctx, this.solo_btns[i], bWidth, this.colors[1]); //inactif -> gris
@@ -618,6 +691,7 @@ LineChart.prototype.distanceToLine = function(i, mouseX, mouseY){
 //denses (nombreuses lignes plates en bas), la ligne survolee sauterait d'une a
 //l'autre a chaque pixel et l'ensemble clignoterait.
 LineChart.prototype.hover = function(mouseX, mouseY){
+    if(this._retired) return;
     if(this.hoverIdx>=0 && this.isVisible(this.hoverIdx)){
         if(this.distanceToLine(this.hoverIdx, mouseX, mouseY) <= 24) return; //on garde la ligne courante
     }
@@ -636,11 +710,25 @@ LineChart.prototype.clearHover = function(){
 //fondu progressif de la surbrillance, image par image : chaque ligne fait evoluer
 //sa valeur hl (0..1) vers sa cible (1 si survolee, 0 sinon). hl pilote a la fois
 //la COULEUR (bleu<->jaune) et l'OPACITE (avant-plan<->arriere-plan) dans redraw.
+/* Retire le graphe : il ne peindra plus, quoi qu'il arrive. Appele par la
+   page juste avant de construire le graphe suivant dans le meme canvas. */
+/* ⚠️ RETIRER, C'EST AUSSI CESSER DE REPONDRE. La premiere version n'engageait
+   que le dessin : un graphe retire ne peignait plus mais acceptait encore les
+   clics et les survols — donc l'ecran restait fige pendant que l'etat interne
+   changeait et que des requetes partaient. Le pire des deux mondes : ni image
+   juste, ni inaction. Les points d'entree testent donc tous `_retired`. */
+LineChart.prototype.retire = function(){
+    this._retired=true;
+    this.hoverIdx=-1;
+};
 LineChart.prototype.startHoverAnim = function(){
+    if(this._retired) return;
     if(this._hoverAnimating) return;
     this._hoverAnimating=true;
     var self=this;
     function step(){
+        // le canvas ne lui appartient plus : on s'arrete sans rien peindre
+        if(self._retired){ self._hoverAnimating=false; return; }
         var settled=self.stepHoverAnim();
         self.redrawLineChart();
         if(settled) self._hoverAnimating=false;

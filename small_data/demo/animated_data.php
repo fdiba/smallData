@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Line Charts | Small Data</title>
+	<title>Participation | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/animated_data.css">
@@ -15,6 +15,12 @@
 	<script src="js/functions.js"></script>
 	<script src="js/barchart.js"></script>
 	<script src="js/linechart.js"></script>
+	<!-- Matrice pays x editions + bandeau de flux cumule. APRES linechart.js,
+	     et non par gout de l'ordre : elle lui emprunte retrieveData() a la
+	     lecture du fichier plutot que d'en tenir une copie (voir le pied de
+	     js/matrixchart.js). Chargee avant, l'emprunt echouerait sans bruit et
+	     le clic sur une cellule ne chargerait plus aucun compositeur. -->
+	<script src="js/matrixchart.js"></script>
 	<script src="js/animated_data.js"></script>
 	<!-- Repli de la legende "How to read", partage par les sept pages qui en portent une : voir l'en-tete de js/legend_toggle.js -->
 	<script src="js/legend_toggle.js"></script>
@@ -23,10 +29,24 @@
 	<div id="content">
 		<div id="ctrl_bar">
 			<div id="info">
-				<h1 id="main">Line Charts</h1>
+				<h1 id="main">Participation</h1>
 				<p></p>
 				<p></p>
 				<p></p>
+			</div>
+			<!-- Commutateur de vue. Meme bloc que sur categories.php, au
+			     caractere pres : deux boutons b_on / b_off dans la barre de
+			     controle. La matrice est la vue par defaut ; le line chart
+			     reste accessible, ce qui est la seule facon de verifier a
+			     tout moment qu'aucune fonction n'a ete perdue. Grise quand
+			     une seule edition est selectionnee (diagramme en barres) :
+			     voir setViewSwitchEnabled() dans js/animated_data.js. -->
+			<div id="view">
+				<label>chart</label>
+				<ul>
+					<li class="b_on" data-view="matrix" role="button" tabindex="0" aria-pressed="true">matrix &middot; countries &times; editions</li>
+					<li class="b_off" data-view="line" role="button" tabindex="0" aria-pressed="false">line chart &middot; one line per country</li>
+				</ul>
 			</div>
 			<?php include_once("./php/menus.php") ?>
 			<ul id="launcher">
@@ -62,16 +82,43 @@
 						<li>within that last group, six editions have minutes that were transcribed but <em>never imported</em> (1996, 1999, 2005&ndash;2008), and eight have <em>no transcription at all</em> (1997, 1998, 2000&ndash;2004, 2009). That difference says what is left to do, not what the count is worth &mdash; so it is written here and not in the strip</li>
 						<li><span class="sq" style="background:#1abc9c"></span> selected edition(s)</li>
 						<li><span class="sq" style="background:#f1c40f"></span> editions inside the selected time span</li>
-						<li><span class="sq" style="background:#e74c3c"></span> <em>span</em> toggle on: pick two years to chart the period between them &middot; <span class="sq" style="background:#ffcccc"></span> off: pick a single year to get a bar chart of that edition</li>
+						<li><span class="sq" style="background:#e74c3c"></span> <em>span</em> toggle on: pick two years to chart the period between them &mdash; with only the first one picked the chart waits and says so &middot; <span class="sq" style="background:#ffcccc"></span> off: pick a single year to get a bar chart of that edition. In both of those cases the <em>chart</em> switch greys out: a single edition has neither a matrix nor a line to show, and a half-made span has nothing at all</li>
 					</ul>
 				</div>
 				<div>
-					<p><strong>Charts</strong></p>
+					<p><strong>Matrix</strong> &mdash; the default chart</p>
 					<ul>
-						<li>each line (or bar) is a country; the vertical axis counts the entrants recorded for that edition &mdash; on the authority the strip above the edition square names</li>
-					<li>the vertical scale is square-root: countries with few participants stay readable next to the biggest ones (gridlines at 1, 2, 5, 10, 20, 50, 100&hellip;)</li>
-						<li>in the chart legend, <em>c/t</em> means: <em>c</em> composers with archived works out of <em>t</em> participants from that country</li>
-						<li>next to each country, the left square shows or hides its line, the right one highlights it</li>
+						<li>one row per country, one column per edition; the colour of a cell counts the entrants recorded for that country in that edition &mdash; on the authority the strip above the column names</li>
+						<li><em>an empty cell is not a zero</em>: that country entered nothing that year. The grid keeps the hole, so a country's first entry, its single-edition appearances and the 1995 gap are read directly &mdash; none of which a line could show</li>
+						<li>the scale is square-root, as it was on the old vertical axis: it now runs through the colour, so one entrant stays visible next to a hundred. The key sits top right</li>
+						<li><em>rows: total &middot; first entry &middot; A&ndash;Z</em> reorders the matrix. Three orders, three questions: how large, how early, where is a given country</li>
+						<li>click a country's name to isolate it: it takes a colour, and its share is stacked inside the band above. <em>The other rows do not disappear</em> &mdash; they fade back but keep their place, so isolating a second and a third country is the same gesture again, and the ones you chose are read <em>among</em> the others rather than instead of them. Eight at most carry a colour; beyond that they stay in the grey mass, because a ninth band is one nobody can read</li>
+						<li>click a cell to list, below, all the composers of that country, and <em>click the same cell again to drop it</em> &mdash; a grid has no empty space to click into, so undoing is the same gesture twice. Clicking a column that is crossed out (1995), or the key, or the band, does nothing. <em>reset all</em> clears everything at once</li>
+					</ul>
+				</div>
+				<div>
+					<p><strong>Band on top</strong> &mdash; entrants per edition</p>
+					<ul>
+						<li>the outline is the total for each edition, every country together &mdash; the one figure sixty lines never allowed anyone to read</li>
+						<li>the scale here is <em>linear</em>, not square-root: an area that is stacked must sum, and &radic;a + &radic;b is not &radic;(a+b). The square-root of this page lives in the colour of the cells, where it sums nothing</li>
+						<li>the right-hand column totals each country <em>over the period on screen</em> — its heading says <em>this period</em> when a span is selected, <em>total</em> when the whole run is. The <em>c/t</em> figure to the left of the grid is a different reckoning: <em>c</em> composers with archived works out of <em>t</em> entrants from that country, <em>across all editions</em>, whatever the period shown</li>
+						<li>1994 joins 1996 directly, in the band as on the lines: there was no 1995 edition, and a fall to zero would read as an empty one</li>
+					</ul>
+				</div>
+				<div>
+					<p><strong>Bar chart</strong> &mdash; one edition on its own</p>
+					<ul>
+						<li>turn <em>span</em> off and pick a single year: one bar per country, and the bar is read in two. Its full height counts the <em>entrants</em> recorded for that country &mdash; the same quantity as a point on a line or the colour of a cell. Its emerald foot counts how many of them have <em>a work in the collection</em></li>
+						<li><em>the gap between the two is the subject of this database.</em> Of the people the index counts, about half left nothing but a candidacy &mdash; a name read off an entry list, with no music attached. The page has said so at the top and in the <em>c/t</em> figure since the start; the bars used to stack both into a single height, so a country with forty entrants of which two are archived and a country with forty entrants all archived drew the same bar</li>
+						<li>hover a column for the exact figures; <em>click it to list that country's composers below</em>, exactly as clicking a line or a cell does &mdash; same orange bar, same list, same works panel. Click it again to clear</li>
+					</ul>
+				</div>
+				<div>
+					<p><strong>Line chart</strong> &mdash; the other view</p>
+					<ul>
+						<li>each line is a country; the vertical axis counts the entrants recorded for that edition, and the scale is square-root (gridlines at 1, 2, 5, 10, 20, 50, 100&hellip;)</li>
+						<li>it is kept because it reads a <em>single</em> trajectory better than any matrix once a handful of countries are isolated &mdash; and because two views answering the same click on the same data is what makes a regression something anyone can check rather than something to be argued about</li>
+						<li>in the chart legend, <em>c/t</em> has the same meaning; the square next to each country shows or hides its line</li>
 						<li>click a point on a line to list, below, all the composers of that country</li>
 					</ul>
 				</div>

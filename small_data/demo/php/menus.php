@@ -18,10 +18,17 @@ function nav_item($href, $label, $isHere) {
 }
 
 echo '<ul id="links">'
-   . nav_item('index.php',         'Overview',    $page === 'index.php')
-   . nav_item('network.php',       'Network',     $page === 'network.php')
-   . nav_item('animated_data.php', 'Line Charts', $page === 'animated_data.php')
-   . nav_item('categories.php',    'Categories',  $page === 'categories.php')
+   . nav_item('index.php',         'Overview',      $page === 'index.php')
+   /* « Participation » et non plus « Line Charts » — 2026-08-08. La page ne
+      porte plus une seule visualisation mais TROIS (matrice, line chart,
+      diagramme en barres) : la nommer d'apres l'une d'elles annoncait au
+      lecteur la forme du dessin plutot que son sujet, et cessait d'etre vrai
+      des qu'on commutait. Elle est aussi remontee AVANT Network : elle
+      compte qui s'est presente au concours, ce dont tout le reste decoule,
+      et le graphe des collaborations se lit apres. */
+   . nav_item('animated_data.php', 'Participation', $page === 'animated_data.php')
+   . nav_item('categories.php',    'Categories',    $page === 'categories.php')
+   . nav_item('network.php',       'Network',       $page === 'network.php')
    . '</ul>'
    . '<ul id="listings">'
    . nav_item('award-winning_works.php', 'Award-Winning Works',          $page === 'award-winning_works.php')

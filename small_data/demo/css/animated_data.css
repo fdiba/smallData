@@ -1,5 +1,5 @@
 /* =========================================================
-   Line Charts — styles propres a la page (animated_data)
+   Participation (ex-« Line Charts ») — styles propres a la page (animated_data)
    ========================================================= */
 
 /* ---------- legende ---------- */
@@ -214,4 +214,25 @@
 #composerBox:empty,
 #titles:empty{
 	display: none;
+}
+
+/* ---------- commutateur de vue (matrice / line chart) ---------- */
+
+/* L'apparence du bloc vient de main.css (#ctrl_bar #view), partagee avec
+   categories.php : meme geste, meme allure, rien de neuf a apprendre. Seul
+   l'etat GRISE est propre a cette page, parce qu'elle est la seule ou le
+   commutateur puisse se retrouver sans objet.
+
+   Il est grise et NON CACHE. Une seule edition selectionnee donne un
+   diagramme en barres : ni matrice ni courbe n'ont alors de sens. Faire
+   disparaitre le bloc ferait sauter toute la barre de controle a chaque
+   selection d'annee, et laisserait croire que la vue choisie a ete perdue —
+   alors qu'elle est seulement en attente, et qu'elle revient telle quelle des
+   qu'une periode est selectionnee. */
+#ctrl_bar #view[data-disabled]{
+	opacity: 0.45;
+}
+#ctrl_bar #view[data-disabled] li{
+	cursor: default;
+	pointer-events: none;    /* le survol ne promet plus une action qui n'arrive pas */
 }

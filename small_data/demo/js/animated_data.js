@@ -17,7 +17,117 @@ var colors=["#ecf0f1", "#2c3e50", "#e74c3c", "#f1c40f", "#bdc3c7", "#3498db", "#
 var bw=15, bh=15;
 var btn01; //red btn
 
+/* LE GRAPHE COURANT — et non « le line chart ».
+
+   La variable garde son nom (une trentaine d'usages, aucun changement de
+   comportement a la clef) mais elle porte desormais SOIT un LineChart SOIT un
+   MatrixChart, selon `chartView`. Les deux objets exposent la meme surface :
+   requestData/handleClick, hover/handleHover, clearHover, isVisible,
+   resetCountries — et la matrice EMPRUNTE retrieveData() au line chart, elle
+   n'en tient pas de copie (voir le pied de js/matrixchart.js). */
 var myLineChart;
+
+/* ------------------------------------------------------------------------
+   DEUX VUES POUR LES MEMES DONNEES — 2026-08-08
+
+   Le line chart tracait une courbe par pays. Depuis le versement de la liste
+   cc4160, une edition en compte jusqu'a une cinquantaine, et la periode
+   complete une soixantaine sur trente-sept editions : passe une vingtaine de
+   courbes, la figure ne montre plus des trajectoires mais une texture.
+
+   La MATRICE (js/matrixchart.js) ne recouvre rien : une cellule par pays et
+   par edition, l'echelle racine carree passant de l'axe Y a la couleur. Elle
+   devient la vue par defaut. Un bandeau de flux cumule, au-dessus, porte le
+   total par edition — ce que soixante courbes n'ont jamais permis de lire.
+
+   LE LINE CHART N'EST PAS SUPPRIME, et ce n'est pas de la prudence : c'est la
+   seule facon d'affirmer qu'aucune fonction n'a ete perdue. Tant que les deux
+   vues repondent au meme clic sur les memes donnees, la comparaison est
+   faisable par n'importe qui, a tout moment, et une regression eventuelle se
+   constate au lieu de se discuter. js/linechart.js n'a recu, lui, que le
+   renvoi de ses deux palettes vers js/variables.js.
+
+   Le mode DIAGRAMME EN BARRES (une seule edition selectionnee) ne depend pas
+   de ce commutateur : une edition unique n'a ni courbe ni matrice a montrer.
+   Le bloc #view est alors grise — voir setViewSwitchEnabled().
+   ------------------------------------------------------------------------ */
+var chartView = 'matrix';        // 'matrix' | 'line'
+var matrixSort = 'total';        // survit aux reconstructions de la matrice
+
+/* LES PAYS ISOLES SURVIVENT A LA COMMUTATION — 2026-08-08.
+
+   ⚠️ Sans cela, le commutateur de vue ne tenait pas la promesse qui justifie
+      son existence : « voir les memes pays autrement ». Isoler cinq pays dans
+      la matrice puis passer au line chart rendait un graphe NEUF, sans
+      selection — il fallait recocher les cinq, dans une legende rangee
+      autrement. On ne comparait donc jamais deux vues de la meme chose ; on
+      comparait une vue de quelque chose a une vue de tout.
+
+   On transporte des IDENTIFIANTS DE PAYS (`cId`) et non des index : les deux
+   graphes recoivent le meme tableau, filtre de la meme facon (`sum > 0`) et
+   dans le meme ordre, donc les index coincident AUJOURD'HUI — raison
+   insuffisante pour s'y fier. Un identifiant, lui, designe le meme pays quoi
+   qu'il arrive au tri.
+
+   Le relais ne vit que le temps d'une commutation : il est rempli par
+   choose(), consomme par la construction qui suit immediatement, puis vide. */
+var pendingSolo = [];
+
+/* JETON DE GENERATION — 2026-08-08, second lot.
+
+   Il est incremente a chaque reconstruction (updateSlData). Les rappels
+   asynchrones qui ecrivent dans la colonne d'information le capturent au
+   depart et refusent d'ecrire si la selection a change entre-temps.
+
+   ⚠️ Sans lui, une reponse en vol repeuplait une selection qu'on venait de
+      quitter : cliquer une cellule puis changer d'edition cent millisecondes
+      plus tard reinstallait cent vingt compositeurs et reecrivait la barre
+      orange de l'ancienne edition PAR-DESSUS la nouvelle vue ; cliquer un
+      compositeur puis changer de periode faisait reapparaitre ses oeuvres
+      sous une boite de nom vide — des oeuvres attribuees a personne.
+
+   On n'annule pas la requete : elle est deja partie, et la nommer pour
+   l'abandonner demanderait de tenir un XHR par appel. On refuse son
+   RESULTAT, ce qui suffit, coute une comparaison, et ne peut pas fuir. */
+var dataGen = 0;
+
+function captureIsolatedCountries(chart){
+    var out=[];
+    if(!chart || !chart.data || !chart.solo_btns) return out;
+    for (var i=0; i<chart.data.length; i++){
+        if(chart.solo_btns[i] && chart.solo_btns[i].state && chart.data[i]){
+            /* Le RANG DE PALETTE voyage avec le pays, pas seulement son
+               identifiant : sans lui, commuter de vue redistribuerait les
+               couleurs dans l'ordre du nouveau tableau, et un pays changerait
+               de couleur en changeant de vue — precisement ce que le rang
+               stable vient d'empecher a l'interieur d'une vue. */
+            out.push({
+                cId : String(chart.data[i].cId),
+                slot: (chart.soloSlot && chart.soloSlot[i] !== undefined) ? chart.soloSlot[i] : i
+            });
+        }
+    }
+    return out;
+}
+/* Repose la selection sur un graphe neuf. Rend `true` si elle a mordu — c'est
+   a l'appelant de redessiner, les deux graphes ne se redessinant pas de la
+   meme facon. */
+function applyIsolatedCountries(chart, sel){
+    if(!chart || !chart.data || !chart.solo_btns || !sel || !sel.length) return false;
+    var n=0;
+    if(chart.soloSlot) chart.soloSlot = {};
+    for (var i=0; i<chart.data.length; i++){
+        var cid = String(chart.data[i].cId), trouve = null;
+        for (var k=0; k<sel.length; k++){ if(sel[k].cId === cid){ trouve = sel[k]; break; } }
+        if(chart.solo_btns[i]) chart.solo_btns[i].state = !!trouve;
+        if(trouve){
+            n++;
+            if(chart.soloSlot) chart.soloSlot[i] = trouve.slot;
+        }
+    }
+    chart.numSolos = n;
+    return n>0;
+}
 
 var composers=[], titles=[];
 // nom, ISNI et pays du compositeur affiche dans le panneau de droite
@@ -131,6 +241,8 @@ window.onload = function() {
 	// canvas.width = $(document).width()-25; //context left pad = 10;
     setCanvasWidthAndHeight();
 
+    bindViewSwitch();
+
     // les boites d'info (orange #selection + liste #composers) prennent EXACTEMENT
     // la largeur de la legende "How to read".
     syncInfoBoxWidths();
@@ -232,11 +344,16 @@ function getNumComposersInCapsulesAndTitles(cId, year, composers){
 }
 function retrieveAllTitleFrom(aId){
 
+    var gen = dataGen;     // cf. l'en-tete de `dataGen` : une reponse en vol
+                           // ne doit pas repeindre une selection abandonnee
+
     $.ajax({                                      
         url: 'php/retrieve_data.php',       
         type: "POST",
         data: { aId: aId, case:1 } 
     }).done(function(str) {
+
+        if(gen !== dataGen) return;
 
         var arr=str.split("%");
         titles=[];
@@ -488,9 +605,82 @@ function displayCpInfos(){
     matchComposersHeight();
 }
 //---------------------------------------------//
+/* ⚠️ RETIRER LE GRAPHE COURANT AVANT D'EN CONSTRUIRE UN AUTRE — 2026-08-08.
+
+   Les trois graphes de cette page partagent UN SEUL canvas. Le line chart
+   entretient une boucle requestAnimationFrame pour le fondu de survol, qui met
+   ~350 ms a s'eteindre : construire le graphe suivant pendant ce fondu laissait
+   l'ancien peindre PAR-DESSUS le nouveau. Le line chart n'efface que
+   1200 x 600 px, si bien que le diagramme en barres (900 x 500) etait
+   integralement recouvert et que la matrice transparaissait autour de la zone
+   effacee. Defaut ANCIEN — il ne demandait que d'aller vite : survoler une
+   ligne, puis cliquer aussitot une annee. Une seconde d'attente suffisait a ne
+   rien voir, d'ou une panne qui ne se reproduit pas quand on la cherche.
+
+   Le retrait est pose ICI, au seul endroit par ou passent les trois
+   constructions, plutot que devant chacune : c'est ce qui garantit qu'un
+   quatrieme graphe, un jour, ne l'oubliera pas. */
+function retireCurrentChart(){
+    if(myLineChart && typeof myLineChart.retire === 'function') myLineChart.retire();
+}
+/* ⚠️ LE PANNEAU DE DROITE SUIT LA SELECTION, IL NE LUI SURVIT PAS — 2026-08-08.
+
+   Signale a l'usage : commuter du line chart vers la matrice laissait en place
+   la petite boite orange (le NOM du compositeur), sa fiche ISNI et la boite
+   violette (ses oeuvres). La liste des compositeurs, elle, etait bien videe.
+   Le panneau nommait donc quelqu'un que plus rien a l'ecran ne selectionnait —
+   exactement la desynchronisation corrigee partout ailleurs le 2026-08-05
+   (§13.4, §14.2) : une notice d'identite sous une selection qui ne la designe
+   plus, et qu'on lit comme si elle la designait encore.
+
+   Le meme oubli valait pour TOUT changement de selection d'annees, pas
+   seulement pour la commutation de vue : choisir une autre periode, ou passer
+   au diagramme en barres, laissait le panneau tel quel. C'est pourquoi le
+   nettoyage est pose ICI, dans le seul chemin par ou passent les trois
+   constructions, et non dans chacune des trois — et a cote de
+   retireCurrentChart(), qui repond au meme besoin pour le canvas.
+
+   Les quatre variables partent avec les boites : `lastComposerSelected` et ses
+   trois compagnes sont ce que displayComposerBox() relit. Les laisser
+   remplies sous des boites vides remettrait le nom en place au premier
+   redessin, sans qu'on ait rien selectionne. */
+function clearWorkPanel(){
+    lastComposerSelected = '';
+    lastComposerIsni     = '';
+    lastComposerCtry     = '';
+    lastComposerOrigin   = '';
+    titles = [];
+
+    /* ⚠️ ET LA LISTE DES COMPOSITEURS AVEC. Le vidage de `#composers` vivait
+       dans generateLineGraph() et generateBarChart() ; quand aucune des deux
+       ne s'execute — une seule annee choisie et « span » allume —, il ne se
+       produisait pas, et la liste survivait a la selection qui l'avait
+       produite. C'est exactement la desynchronisation que cette fonction est
+       censee supprimer, laissee a moitie. */
+    $('#composers').empty();
+
+    $('#titles').empty();
+    /* Sans nom, displayComposerBox() vide la boite ET retire la fiche ISNI —
+       les deux ensemble, ce qui est tout l'objet de cette fonction. Les regles
+       `#composerBox:empty` et `#titles:empty` (css/animated_data.css) font
+       alors disparaitre les boites au lieu d'en laisser deux barres vides. */
+    displayComposerBox();
+}
 function updateSlData(){
 
 	var tmpY = sl_years.concat(inBtwYears);
+
+    retireCurrentChart();
+    clearWorkPanel();
+    dataGen++;                      // toute reponse en vol devient perimee
+
+    /* Le commutateur ne vaut que pour les vues MULTI-EDITIONS. Il etait grise
+       sur le seul diagramme en barres — donc encore actif dans l'etat « une
+       annee choisie, span allume », ou aucun graphe n'est construit : cliquer
+       « line chart » y basculait `chartView` pour de bon, sous une matrice
+       restee peinte a l'ecran. Un commutateur qui annonce une vue qui n'est
+       pas la est pire qu'un commutateur inerte. */
+    setViewSwitchEnabled(sl_years.length===2 || sl_years.length<1);
 
     if(sl_years.length==1 && !btn01.state){ //bar chart --> display only one year
 
@@ -504,10 +694,18 @@ function updateSlData(){
             for (var j=0; j<arr.length; j++) {
                 if(tmpY.includes(parseInt(arr[j]))){
 
+                    /* `works` — CE CANDIDAT A-T-IL UNE OEUVRE AU FONDS ?
+                       C'est le 4e champ du `case 10`, celui-la meme qui ecrit
+                       « 1259 / 2550 » en tete de page et le `c/t` de la
+                       legende. Il ne coute rien a transporter ici, et c'est
+                       lui qui permet a une barre de dire deux choses au lieu
+                       d'une (voir generateBarChart et js/barchart.js). */
+                    var auFonds = parseInt(count, 10) > 0;
+
                     if(takeCountIntoAccount){
-                        if(count>0)f_data.push({id: allData[i], ctry: allData[i+1], cId: allData[i+2], edition: allData[i+4]});
+                        if(count>0)f_data.push({id: allData[i], ctry: allData[i+1], cId: allData[i+2], edition: allData[i+4], works: auFonds});
                     } else {
-                        f_data.push({id: allData[i], ctry: allData[i+1], cId: allData[i+2], edition: allData[i+4]});
+                        f_data.push({id: allData[i], ctry: allData[i+1], cId: allData[i+2], edition: allData[i+4], works: auFonds});
                     }
 
                     break;
@@ -634,7 +832,49 @@ function updateSlData(){
         });
 
         generateLineGraph(f_data, minY, maxY);
+
+    } else {
+
+        /* UNE SEULE ANNEE CHOISIE, « SPAN » ALLUME : on attend la seconde.
+
+           ⚠️ CET ETAT NE CONSTRUISAIT RIEN, ET NE DISAIT RIEN. Le graphe
+              precedent restait donc PEINT a l'ecran — fige, puisqu'il venait
+              d'etre retire, mais toujours a l'ecran. Depuis que la matrice
+              repond au clic sans passer par le garde « multi-editions », elle
+              y repondait encore : on isolait un pays, on selectionnait une
+              cellule, une requete partait, la barre orange se reecrivait, et
+              l'image ne bougeait pas d'un pixel. Ni image juste, ni inaction —
+              et un seul clic depuis l'etat par defaut suffisait a y entrer.
+
+           On efface donc, et on dit ce qu'on attend. Une toile vide avec une
+           phrase vaut mieux qu'un dessin qui n'est plus vrai. */
+        myLineChart = null;
+
+        setCanvasWidthAndHeight(true);
+        drawAwaitingSecondYear();
+
+        $("#info p:eq(1)").text('');
+        updateDataQualityInfo();
+
+        $("#selection").empty();
+        $("#selection").append($('<p>').text(
+            sl_years[0] + " selected — pick a second year to chart the period between them"));
+        $("#selection").append($('<p>').text(
+            "or turn the span toggle off to get a bar chart of that single edition"));
     }
+}
+/* La toile d'attente. Ecrite au centre du canvas, dans le gris des axes : ce
+   n'est pas une donnee, ça ne doit pas en avoir l'air. */
+function drawAwaitingSecondYear(){
+    if(!context) return;
+    context.save();
+    context.font = '13px "Helvetica Neue", Helvetica, Arial, sans-serif';
+    context.fillStyle = "#8fa3b0";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText("pick a second year on the strip above to chart the period between them",
+                     canvas.width/2, canvas.height/2);
+    context.restore();
 }
 function getEditionsAsArrOfInts(str){
     return str.split(",").map(Number);
@@ -642,6 +882,18 @@ function getEditionsAsArrOfInts(str){
 function generateLineGraph(data, minYear, maxYear){ //display several years TODO
 
     $("#composers").empty();
+
+    /* L'AIGUILLAGE EST ICI, ET NON CHEZ L'APPELANT. updateSlData() a deja
+       fait le travail couteux — regrouper 2 500 compositeurs par pays et par
+       edition — et les deux vues consomment EXACTEMENT le meme tableau. Faire
+       brancher l'appelant aurait duplique ce calcul ou, pire, laisse deux
+       chemins de preparation des donnees derriver l'un de l'autre : les deux
+       vues cesseraient alors de montrer la meme chose, ce qui est precisement
+       ce qu'on veut pouvoir affirmer. */
+    if(chartView === 'matrix' && typeof MatrixChart === 'function'){
+        generateMatrixChart(data, minYear, maxYear);
+        return;
+    }
 
     setCanvasWidthAndHeight(true);
 
@@ -670,15 +922,18 @@ function generateLineGraph(data, minYear, maxYear){ //display several years TODO
         if(sum>0)myLineChart.drawLine(data[i], colors[5], 1, true);
     }
 
-    var inf2="";
-    var maxY=Math.max(sl_years[0], sl_years[1]);
-    var minY=Math.min(sl_years[0], sl_years[1]);
-    if(maxY<1996)inf2 = minY.toString() + "-" + maxY.toString() + ": complete data";
-    else if(sl_years.length===2)inf2 = minY.toString() + "-" + maxY.toString() + ": incomplete data";
-    else inf2 = "1973-2009: incomplete data";
-    $("#info p:eq(2)").text(inf2);
+    updateDataQualityInfo();
 
     myLineChart.drawLegend();
+
+    /* Les pays isoles dans l'autre vue, reposes ici. APRES drawLegend() :
+       c'est elle qui cree `solo_btns`, un par pays — avant, il n'y a rien a
+       cocher. */
+    if(applyIsolatedCountries(myLineChart, pendingSolo)){
+        myLineChart.refreshLegendButtons();
+        myLineChart.redrawLineChart();
+    }
+    pendingSolo = [];
 
     var txt='<p>'+myLineChart.data.length.toString()+ " countries</p>";
     $("#selection").empty();
@@ -688,32 +943,171 @@ function generateLineGraph(data, minYear, maxYear){ //display several years TODO
 function add(a, b) {
     return a + b;
 }
+/* La ligne « 1973-2009 : incomplete data » sous le titre. Elle etait ecrite
+   DANS generateLineGraph() ; elle en sort parce que la matrice la porte
+   aussi, et qu'une phrase sur la qualite des donnees ecrite a deux endroits
+   se separe a la premiere correction faite d'un seul cote — c'est exactement
+   ce qui est arrive au liseré de provenance, qui etait code en dur et avait
+   cesse de dire vrai (voir l'en-tete de drawPvStrip). */
+function updateDataQualityInfo(){
+    var inf2="";
+    var maxY=Math.max(sl_years[0], sl_years[1]);
+    var minY=Math.min(sl_years[0], sl_years[1]);
+    if(maxY<1996)inf2 = minY.toString() + "-" + maxY.toString() + ": complete data";
+    else if(sl_years.length===2)inf2 = minY.toString() + "-" + maxY.toString() + ": incomplete data";
+    else inf2 = "1973-2009: incomplete data";
+    $("#info p:eq(2)").text(inf2);
+}
+/* LA MATRICE — vue par defaut des periodes de plusieurs editions.
+   Elle recoit le MEME tableau que le line chart : meme regroupement, meme
+   ordre de champs, meme comptage. Ce qui change est le rendu, rien d'autre. */
+function generateMatrixChart(data, minYear, maxYear){
+
+    /* On ecarte les pays sans aucune participation dans la periode — meme
+       regle que le line chart, qui ne trace une ligne que si sa somme est non
+       nulle (`if(sum>0)`). Une ligne entierement vide ne dit rien et coute une
+       ligne de matrice a tous les autres. */
+    var rows=[];
+    for (var i=0; i<data.length; i++) {
+        if(data[i].arr.reduce(add, 0) > 0) rows.push(data[i]);
+    }
+
+    /* Largeur pleine, comme le line chart. La HAUTEUR, elle, est fixee par la
+       matrice elle-meme : elle depend du nombre de pays a montrer, qui depend
+       de la periode choisie et des pays isoles. Une hauteur figee obligerait
+       a ecraser les lignes quand ils sont nombreux ou a laisser du vide quand
+       ils sont rares. */
+    setCanvasWidthAndHeight(true);
+
+    myLineChart = new MatrixChart({
+        canvasId: "myCanvas",
+        data: rows,
+        minYear: minYear,
+        maxYear: maxYear,
+        sortMode: matrixSort,
+        /* L'ordre des lignes SURVIT aux reconstructions : changer de periode
+           ne doit pas defaire le tri qu'on venait de choisir. La matrice ne
+           connait pas la page, elle previent ; c'est la page qui retient. */
+        onSort: function(mode){ matrixSort = mode; }
+    });
+    matrixSort = myLineChart.sortMode;
+
+    // les pays isoles dans l'autre vue, reposes ici (la matrice cree ses
+    // `solo_btns` dans son constructeur, il n'y a donc rien a attendre)
+    if(applyIsolatedCountries(myLineChart, pendingSolo)) myLineChart.draw();
+    pendingSolo = [];
+
+    updateDataQualityInfo();
+
+    $("#selection").empty();
+    $("#selection").append('<p>' + rows.length +
+        " countries · click a cell to list the composers of that country</p>");
+}
+/* Le commutateur de vue (#view dans animated_data.php). Meme tournure que sur
+   categories.php — memes boutons b_on / b_off de la barre de controle, meme
+   gestion du clavier : il n'y a rien de neuf a apprendre pour s'en servir.
+   Rien ne se produit si le bloc est absent : la page s'affiche alors dans sa
+   vue par defaut. */
+function bindViewSwitch(){
+
+    var box = document.getElementById('view');
+    if(!box) return;
+
+    var items = box.getElementsByTagName('li');
+
+    function paint(){
+        for (var p=0; p<items.length; p++) {
+            var on = items[p].getAttribute('data-view') === chartView;
+            items[p].className = on ? 'b_on' : 'b_off';
+            items[p].setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+    }
+
+    function choose(el){
+        /* ⚠️ LE TEST D'ETAT EST ICI, ET NON DANS LA CSS SEULE.
+           `pointer-events: none` ne barre que la SOURIS : le bloc grise
+           restait atteignable a la tabulation, et Entree y commutait la vue
+           pour de bon — les boutons basculaient sous une opacite de 0,45, la
+           liste des compositeurs se vidait, et la periode suivante s'affichait
+           dans une vue qu'on n'avait pas voulue. Un etat qui n'existe que dans
+           la feuille de style n'existe que pour qui se sert d'une souris. */
+        if(box.hasAttribute('data-disabled')) return;
+
+        var m = el.getAttribute('data-view');
+        if(!m || m === chartView) return;
+
+        // ce qui est isole doit se retrouver dans l'autre vue (cf. pendingSolo)
+        pendingSolo = init ? captureIsolatedCountries(myLineChart) : [];
+
+        chartView = m;
+        paint();
+        hideLineTooltip();
+        /* On repasse par updateSlData() et non par un simple redessin : la
+           selection d'annees, le mode « span » et le filtrage des donnees
+           sont les memes pour les deux vues, et c'est la seule facon d'etre
+           sur que l'on commute la VUE sans commuter aussi, par inadvertance,
+           ce qui est montre. */
+        if(init) updateSlData();
+    }
+
+    for (var i=0; i<items.length; i++) {
+        (function(el){
+            el.onclick = function(){ choose(el); };
+            el.onkeydown = function(evt){
+                var k = evt.keyCode || evt.which;
+                if(k === 13 || k === 32){          // entree, espace
+                    if(evt.preventDefault) evt.preventDefault();
+                    choose(el);
+                }
+            };
+        })(items[i]);
+    }
+
+    paint();
+}
+/* Une seule edition selectionnee : ni courbe ni matrice n'ont de sens, c'est
+   un diagramme en barres qui s'affiche. Le commutateur ne commute alors rien.
+   On le grise plutot que de le cacher : un bloc qui disparait et reapparait
+   fait sauter la barre de controle, et laisse croire que la vue choisie a ete
+   perdue alors qu'elle est seulement en attente. */
+function setViewSwitchEnabled(on){
+    var box = document.getElementById('view');
+    if(!box) return;
+    if(on) box.removeAttribute('data-disabled');
+    else   box.setAttribute('data-disabled', '1');
+}
 function generateBarChart(data){ //display only one year TODO
 
     $("#composers").empty();
 
-	var arr=[];
+	/* AGREGATION PAR IDENTIFIANT DE PAYS, ET NON PAR LIBELLE — 2026-08-08.
+	   Elle se faisait en comparant les NOMS, ce qui marchait, mais qui
+	   n'emportait pas le `cId` : la barre ne savait donc pas de quel pays
+	   elle parlait, et c'est ce qui l'empechait d'etre cliquable. On garde
+	   l'identifiant, qui est ce que php/retrieve_data.php attend au clic.
+
+	   Chaque pays compte desormais DEUX choses : ses candidats (la hauteur
+	   de la barre, la meme grandeur que le point du line chart et la couleur
+	   de la cellule de la matrice) et, parmi eux, ceux qui ont une oeuvre au
+	   fonds. L'ecart entre les deux est le sujet de cette base ; il etait
+	   ecrit en tete de page et dans la legende, jamais dans le diagramme. */
+	/* `Object.create(null)` et non `{}` : la cle vient d'un flux, et un objet
+	   ordinaire porte deja `constructor`, `toString`, `__proto__`… Un `cId`
+	   qui vaudrait l'un de ces noms rendrait `parCId[k]` vrai d'entree — le
+	   pays n'entrerait jamais dans `arr` — et l'increment ecrirait sur
+	   Object.prototype, donc sur tous les objets de la page. Les identifiants
+	   du `case 10` sont numeriques, c'est donc un durcissement et non un
+	   correctif ; mais il coute un mot. */
+	var arr=[], parCId=Object.create(null), totEntrants=data.length, totWorks=0;
 
 	for (var i=0; i<data.length; i++) {
-
-		var ctry = data[i].ctry;
-
-		if(arr.length<1) {
-			arr.push({label: ctry, value: 1});
-		} else {
-
-			for (var j=0; j<arr.length; j++) {
-
-				var added=false;
-
-				if(ctry == arr[j].label){
-					arr[j].value += 1;
-					added=true;
-					break; 
-				}
-			}
-			if(!added)arr.push({label: ctry, value: 1});
+		var k = String(data[i].cId);
+		if(!parCId[k]){
+			parCId[k] = {label: data[i].ctry, cId: data[i].cId, value: 0, withWorks: 0};
+			arr.push(parCId[k]);
 		}
+		parCId[k].value += 1;
+		if(data[i].works){ parCId[k].withWorks += 1; totWorks++; }
 	}
 
 	//pays par ordre alphabetique (barres et recapitulatif)
@@ -727,15 +1121,23 @@ function generateBarChart(data){ //display only one year TODO
 	$("#info p:eq(2)").text(inf2);
 
 	var max=0;
+	for (var k=0; k<arr.length; k++) max = Math.max(max, arr[k].value);
+
+	/* ⚠️ LA BARRE ORANGE N'ENUMERE PLUS LES PAYS. Elle ecrivait
+	   « 23 countries: Argentina 3 - Australia 1 - … », ce qui etait la seule
+	   facon de lire les chiffres quand le diagramme ne se survolait pas et ne
+	   se cliquait pas. A cinquante pays c'etait un paragraphe, et il disait
+	   exactement ce que le dessin dit — en moins bien, puisqu'il ne se
+	   compare pas. Le survol donne maintenant le compte exact d'un pays, et
+	   le clic donne ses compositeurs. Reste ici ce que le dessin NE dit pas :
+	   l'ecart global entre candidats et compositeurs au fonds, et ce qu'on
+	   peut faire de la souris. */
     $("#selection").empty();
-    $("#selection").append('<p>');
-    $("#selection p").append(arr.length+ " countries: ");
-	for (var k=0; k<arr.length; k++) {
-		max = Math.max(max, arr[k].value);
-        var txt=arr[k].label+" "+arr[k].value;
-        if(k<arr.length-1)txt+=' - ';
-        $("#selection p").append(txt);
-	}
+    $("#selection").append($('<p>').text(
+        arr.length + " countries · " + totWorks + " / " + totEntrants +
+        " composers with archived works"));
+    $("#selection").append($('<p>').text(
+        "click a bar to list the composers of that country"));
     
 
     var increment = Math.round(max/10);
@@ -761,17 +1163,46 @@ function generateBarChart(data){ //display only one year TODO
 
     setCanvasWidthAndHeight(false, chartWidth);
 
-	new BarChart({canvasId: "myCanvas", data: arr, width: chartWidth, height: 500,
-	              minValue: 0, maxValue: max, gridLineIncrement: increment});
+	/* AFFECTE A `myLineChart`, comme les deux autres vues. La variable porte
+	   le graphe COURANT quel qu'il soit ; c'est ce qui permet a editData() et
+	   hoverData() de lui demander s'il sait traiter un clic, sans avoir a
+	   deduire de l'etat des menus lequel des trois est a l'ecran. */
+	myLineChart = new BarChart({canvasId: "myCanvas", data: arr, width: chartWidth, height: 500,
+	              minValue: 0, maxValue: max, gridLineIncrement: increment,
+	              year: sl_years[0]});
 }
 //---------------------------------------//
 function editData(evt){
+
+    /* ⚠️ LE GARDE MANQUAIT ICI ALORS QU'IL EXISTAIT DANS hoverData(). Tant que
+       l'aiguillage vivait sous le test `sl_years.length===2 || menu[0].state`,
+       il protegeait par ricochet — au chargement, avant la premiere reponse du
+       serveur, aucune des deux conditions n'est vraie. En le sortant de ce
+       test pour rendre le diagramme en barres cliquable, on a retire cette
+       protection sans la remplacer : un clic sur le canvas pendant le
+       chargement levait « Cannot read properties of undefined ». */
+    if(!myLineChart) return;
 
     var cv = canvas.getBoundingClientRect();
     var mouseX = evt.clientX - cv.left;
     var mouseY = evt.clientY - cv.top;
 
-    //linechart
+    /* AIGUILLAGE CAPACITAIRE, ET HORS DU GARDE « multi-editions ».
+
+       La matrice et le diagramme en barres exposent UN SEUL point d'entree :
+       leur legende n'est pas a droite du graphe (elle est a gauche pour la
+       premiere, sous les barres pour le second), donc la regle du line chart
+       — « a gauche de `w` les donnees, a droite la legende » — n'y a pas de
+       sens. On demande a l'objet s'il sait traiter un clic plutot que de
+       deduire de l'etat des menus lequel des trois graphes est a l'ecran :
+       ⚠️ c'est ce garde-la qui interdisait tout clic sur le diagramme en
+       barres, puisqu'il ne s'ouvrait qu'aux vues multi-editions. */
+    if(typeof myLineChart.handleClick === 'function'){
+        myLineChart.handleClick(mouseX, mouseY);
+        return;
+    }
+
+    //le line chart, seul a ne pas en avoir, garde son aiguillage d'origine
     if(sl_years.length===2 || menu[0].state){
         if(mouseX<myLineChart.w)myLineChart.requestData(mouseX, mouseY);
         else myLineChart.editData(mouseX, mouseY);
@@ -782,10 +1213,25 @@ function editData(evt){
 //et affiche le nom du pays survole a cote du curseur
 function hoverData(evt){
     if(!myLineChart){ hideLineTooltip(); return; }
-    if(!(sl_years.length===2 || menu[0].state)){ hideLineTooltip(); return; }   //uniquement en mode line chart
     var cv = canvas.getBoundingClientRect();
     var mouseX = evt.clientX - cv.left;
     var mouseY = evt.clientY - cv.top;
+
+    /* La matrice et le diagramme en barres savent ce qu'il y a sous le
+       curseur — pays, edition, effectif, part archivee — et rendent le texte
+       a afficher. Le line chart ne peut dire que le nom du pays : c'est tout
+       ce qu'une ligne designe. Le graphe compose donc l'infobulle, la page la
+       pose. (Le test d'etat des menus est descendu sous ce bloc : il ne vaut
+       que pour le line chart, et il empechait le survol des barres.) */
+    if(typeof myLineChart.handleHover === 'function'){
+        var lbl = myLineChart.handleHover(mouseX, mouseY);
+        if(lbl) showLineTooltip(lbl, evt.clientX, evt.clientY);
+        else    hideLineTooltip();
+        return;
+    }
+
+    if(!(sl_years.length===2 || menu[0].state)){ hideLineTooltip(); return; }   //uniquement en mode line chart
+
     if(mouseX < myLineChart.w){
         myLineChart.hover(mouseX, mouseY);
         if(myLineChart.hoverIdx>=0 && myLineChart.data[myLineChart.hoverIdx]){
@@ -808,20 +1254,58 @@ function getLineTooltip(){
     if(!t){
         t = document.createElement('div');
         t.id = 'lineTooltip';
+        /* ⚠️ `white-space: nowrap` A SAUTE — 2026-08-08. Les infobulles se
+           sont allongees (pays + edition + effectif + part archivee + ce que
+           fait le clic) : sur une seule ligne, elles sortaient de la fenetre
+           par la droite et se retrouvaient tronquees, c'est-a-dire illisibles
+           la ou elles disent le plus. Elles se replient donc, avec une
+           largeur de lecture bornee. Le placement, lui, est ramene dans la
+           fenetre par showLineTooltip(). */
         t.style.cssText = 'position:fixed;pointer-events:none;z-index:1000;display:none;'
-            + 'background:rgba(44,62,80,.95);color:#f1c40f;font-weight:600;'
+            + 'background:rgba(44,62,80,.97);color:#f1c40f;font-weight:600;'
             + 'font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:12px;'
-            + 'padding:3px 7px;border-radius:3px;border:1px solid #f1c40f;white-space:nowrap;';
+            + 'padding:4px 8px;border-radius:3px;border:1px solid #f1c40f;'
+            + 'white-space:normal;max-width:320px;line-height:1.35;';
         document.body.appendChild(t);
     }
     return t;
 }
+/* L'infobulle suit la souris MAIS RESTE DANS LA FENETRE. Posee en aveugle a
+   `curseur + 14`, elle passait sous le bord droit ou sous le bord bas des que
+   le curseur en approchait — et une infobulle a moitie dehors ne se lit pas
+   mieux qu'une infobulle absente. On la mesure une fois affichee (elle se
+   replie maintenant sur plusieurs lignes, sa hauteur n'est plus previsible),
+   puis on la bascule de l'autre cote du curseur si la place manque. */
 function showLineTooltip(txt, clientX, clientY){
     var t = getLineTooltip();
     t.textContent = txt;
-    t.style.left = (clientX + 14) + 'px';
-    t.style.top  = (clientY + 14) + 'px';
     t.style.display = 'block';
+    t.style.left = '0px';
+    t.style.top  = '0px';
+
+    var r = t.getBoundingClientRect();
+    var marge = 8, dx = 14;
+    var x = clientX + dx, y = clientY + dx;
+
+    // d'abord on bascule de l'autre cote du curseur : mieux vaut passer a
+    // gauche ou au-dessus que recouvrir ce qu'on est en train de designer
+    if(x + r.width  > window.innerWidth  - marge) x = clientX - r.width  - dx;
+    if(y + r.height > window.innerHeight - marge) y = clientY - r.height - dx;
+
+    /* ⚠️ PUIS ON BORNE POUR DE BON. La bascule ne suffit pas : elle suppose
+       que le curseur, lui, est dans la fenetre. Le canvas de la matrice fait
+       un millier de pixels de haut et debordait de la fenetre a la
+       verticale — pres du bas, la bascule renvoyait l'infobulle a une
+       position encore hors champ. Les deux bornes dures ferment le cas. */
+    var maxX = window.innerWidth  - r.width  - marge;
+    var maxY = window.innerHeight - r.height - marge;
+    if(x > maxX) x = maxX;
+    if(y > maxY) y = maxY;
+    if(x < marge) x = marge;
+    if(y < marge) y = marge;
+
+    t.style.left = Math.round(x) + 'px';
+    t.style.top  = Math.round(y) + 'px';
 }
 function hideLineTooltip(){
     var t = document.getElementById('lineTooltip');
@@ -1103,6 +1587,24 @@ function loadPvProvenance(){
         }
         pvLoaded = true;
         drawPvStrip(menu);
+
+        /* ⚠️ ET LE GRAPHE, S'IL PORTE LUI AUSSI UN LISERE. Les deux requetes
+           partent ensemble au chargement ; rien ne garantit laquelle repond la
+           premiere. Quand le `case 12` arrivait APRES le `case 10`, la matrice
+           etait deja dessinee et son liseré restait entierement gris —
+           « provenance inconnue » — pendant que la bande de navigation, elle,
+           affichait la bonne. Deux liserés cote a cote qui se contredisent, et
+           un gris qui ne figure meme pas dans la legende. Le defaut
+           s'effacait au premier survol (qui redessine), donc il disparaissait
+           des qu'on allait le verifier.
+
+           Seule la matrice est concernee — le line chart ne porte pas de
+           liseré —, d'ou le test sur la methode plutot que sur la vue : la
+           page n'a pas a savoir quel graphe elle tient. */
+        if(myLineChart && typeof myLineChart.drawProvenanceStrip === 'function'
+                       && typeof myLineChart.draw === 'function'){
+            myLineChart.draw();
+        }
     });
 }
 function drawMenu(menu){
@@ -1183,7 +1685,7 @@ function getData(){
 
         }
 
-    	var txt = "no selection — click a point on a line to list the composers of a country";
+    	var txt = "no selection — click the chart to list the composers of a country";
         $("#selection").empty().append('<p>');
         $("#selection p").append(txt);
 
