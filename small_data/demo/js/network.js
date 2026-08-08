@@ -538,8 +538,25 @@ function getDataV2(){
 
         var txt = "";
 
+        /* 2026-08-08 — LA MEME LIGNE QUE SUR OVERVIEW ET LINE CHARTS.
+           Elle affichait « allData: 4315 » : le nom d'une variable du script
+           et un nombre sans unite — un reste de mise au point, pas une
+           information. Les trois pages lisent pourtant le MEME flux (case 10,
+           six champs par compositeur, le 4e etant le nombre d'oeuvres
+           archivees) et les deux autres en tirent deja « n / N composers with
+           archived works ». Meme calcul, meme phrase, meme place.
+
+           ⚠️ Le rapport n'est pas decoratif SUR CETTE PAGE : hors ?v=all,
+           « compute all » ne peuple le systeme qu'avec le numerateur (§16.6
+           de Interface_et_fonctionnalites.md). La ligne dit donc combien de
+           compositeurs le SMA va prendre, et sur combien la base en compte. */
+        var numComposersInCapsules = 0;
+        for (var i=0; i<allData.length-5; i+=6) {
+            if(allData[i+3] > 0) numComposersInCapsules++;
+        }
+
         var num = allData.length / 6;
-        var txt2 = "allData: " + num;
+        var txt2 = numComposersInCapsules + " / " + num + " composers with archived works";
 
         $("#selection").empty();
         $("#selection").append(txt);

@@ -168,13 +168,17 @@ function syncInfoBoxWidths(){
         if(e){ e.style.boxSizing = 'border-box'; e.style.width = w + 'px'; e.style.maxWidth = w + 'px'; }
     }
 }
-function setCanvasWidthAndHeight(displaySeveralYears){
+/* `width` n'est lu que par le diagramme en barres (une seule edition), qui
+   demande la largeur dont il a besoin pour ses pays — voir generateBarChart().
+   Absent, on retombe sur les 900 px d'origine. Le line chart, lui, occupe
+   toujours toute la largeur. */
+function setCanvasWidthAndHeight(displaySeveralYears, width){
     if(displaySeveralYears){
         canvas.width=maxChartWidth;
         canvas.height = 600;
     }
     else{
-        canvas.width=900;
+        canvas.width= width || 900;
         canvas.height = 500;
     }
 
@@ -688,8 +692,6 @@ function generateBarChart(data){ //display only one year TODO
 
     $("#composers").empty();
 
-    setCanvasWidthAndHeight(false);
-
 	var arr=[];
 
 	for (var i=0; i<data.length; i++) {
@@ -739,10 +741,28 @@ function generateBarChart(data){ //display only one year TODO
     var increment = Math.round(max/10);
     // if(increment%2)console.log(increment-=1);
     if(max<20)increment=2; //1995
+    if(increment<1)increment=1;
 
-    var bWidth = map(arr.length, 30, 10, 20, 40)
+    /* LARGEUR DU DIAGRAMME — 2026-08-08.
+       Elle etait figee a 900 px, pour une trentaine de pays. Depuis le
+       versement de la liste cc4160 une edition en compte jusqu'a une
+       CINQUANTAINE (2005 : 49, 2009 : 47) : les noms de pays se
+       chevauchaient et les barres, dont la largeur venait d'un
+       map(30 pays -> 20 px, 10 pays -> 40 px), tombaient a 1 px — et
+       seraient passees sous zero au-dela de 50 pays.
 
-	new BarChart({canvasId: "myCanvas", data: arr, barWidth: bWidth, minValue: 0, maxValue: max+1, gridLineIncrement: increment});
+       On demande donc la place necessaire : environ 26 px par pays, ce
+       qu'il faut pour que deux etiquettes inclinees a 45° ne se touchent
+       pas, plus la gouttiere de l'axe. Jamais moins que les 900 px
+       d'origine (les petites editions gardent leur allure), jamais plus
+       que la largeur du line chart. Au-dela, barchart.js retrecit la
+       police plutot que de superposer les noms. */
+    var chartWidth = Math.max(900, Math.min(maxChartWidth, 70 + arr.length * 26));
+
+    setCanvasWidthAndHeight(false, chartWidth);
+
+	new BarChart({canvasId: "myCanvas", data: arr, width: chartWidth, height: 500,
+	              minValue: 0, maxValue: max, gridLineIncrement: increment});
 }
 //---------------------------------------//
 function editData(evt){
