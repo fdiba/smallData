@@ -267,11 +267,19 @@ function retrieveData(cat, numOfElements, country){
                 $("#loading").remove();
                 // si tout tient dans la colonne de gauche, on masque la seconde
                 if(table2 && splitIndex >= works.length){ table2.classList.add('is-empty'); }
-                if(cat != null){
-                    $("#info").append("<p>" + total + " (provisionnal count)</p>");
-                } else {
-                    $("#info").append("<p>" + total + "</p>");
-                }
+                /* ⚠️ « (provisionnal count) » RETIRE LE 2026-08-08, et le
+                   nombre porte desormais son unite. Deux raisons :
+
+                     - la mention ne paraissait que sur la branche
+                       `cat != null`, c'est-a-dire TOUJOURS : catalog.php ne
+                       s'ouvre qu'avec un id de phonotheque, 1 ou 2, et
+                       l'autre branche n'a jamais servi. Une reserve affichee
+                       dans tous les cas ne distingue plus rien ;
+                     - un nombre nu ne dit pas de quoi il est le nombre.
+                       js/aww.js ecrit deja « N works » (§23.13) ; c'est
+                       cette forme qui est reprise ici et sur euphonies.js,
+                       pour que les quatre pages comptent de la meme facon. */
+                $("#info").append("<p>" + total + " works</p>");
             }
         }
 

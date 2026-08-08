@@ -2,9 +2,9 @@
 
 	/* Donnees du diagramme de flux (page Categories) generees depuis la base
 	   au lieu du fichier data/smallData.csv.
-	   Renvoie, pour chaque oeuvre primee, l'enregistrement de DIX champs
+	   Renvoie, pour chaque oeuvre primee, l'enregistrement de ONZE champs
 	       annee % categorie % nom % prenom % isni % id_artist % editions
-	             % cat_debut % cat_fin % sous_categorie
+	             % cat_debut % cat_fin % sous_categorie % award_price
 	   separe par des %, dans l'ordre chronologique (plus ancien d'abord).
 
 	   Les quatre derniers champs ont ete ajoutes EN FIN d'enregistrement pour
@@ -59,7 +59,28 @@
 	                        concours n'en a eu qu'a partir de 2000, et sur
 	                        cinq categories seulement.
 
-	   ATTENTION : la longueur d'enregistrement (10) est ecrite en dur dans la
+	   Le onzieme a ete ajoute le 2026-08-08, EN FIN d'enregistrement comme
+	   tous les precedents :
+	     - award_price   : le CODE de la distinction, pas son libelle.
+
+	   ⚠️ IL SERT A UNE SEULE CHOSE, ET C'EST LA MEME QU'EN §24.15 : deux
+	      valeurs de `imeb_music.award_cat` ne sont PAS des categories.
+	      « Magistere » (code 500) et « Residence » (code 600) sont des
+	      DISTINCTIONS, decernees a travers les categories — le Magistere
+	      couronne l'edition entiere, la Residence est un sejour et non une
+	      recompense de rang. Le Repertoire general les inscrit pourtant dans
+	      la colonne de categorie, et `imeb_categorie` leur donne meme une
+	      ligne (8 et 9, bornes 1988-2008 et 1988-2009). 146 oeuvres sur 727
+	      sont concernees, sur vingt et une editions.
+
+	   ⚠️ ET LE TEST PORTE SUR LE CODE, JAMAIS SUR LE LIBELLE — c'est la regle
+	      posee pour js/aww.js le 2026-08-08 : le code est stable, `award_cat`
+	      est une chaine que quelqu'un corrigera un jour. UNE oeuvre de 2005
+	      porte un Magistere avec `award_cat = 'Trivium A'`, c'est-a-dire une
+	      VRAIE categorie : elle doit la garder. Le marquage n'a donc lieu que
+	      si le libelle REPETE la distinction.
+
+	   ATTENTION : la longueur d'enregistrement (11) est ecrite en dur dans la
 	   boucle de lecture de js/categories.js ; les deux doivent bouger
 	   ensemble. Aucun champ ne contient de %, le separateur reste sur. */
 
@@ -80,6 +101,7 @@
 							imeb_artist.id AS id_artist,
 							imeb_music.editions,
 							imeb_music.award_cat_2,
+							imeb_music.award_price,
 							imeb_categorie.annee_debut AS cat_debut,
 							imeb_categorie.annee_fin AS cat_fin
 							FROM imeb_music
@@ -124,7 +146,11 @@
 			//doive vivre.
 			$sousCat   = libelle_sous_categorie($row['award_cat_2']);
 
-			array_push($arr, $year, $category, $name, $firstName, $isni, $row['id_artist'], $editions, $catDebut, $catFin, $sousCat);
+			//code de la distinction. Chaine vide plutot que NULL, comme les
+			//autres : le champ garde sa place dans l'enregistrement.
+			$prix      = $row['award_price'] !== null ? $row['award_price'] : '';
+
+			array_push($arr, $year, $category, $name, $firstName, $isni, $row['id_artist'], $editions, $catDebut, $catFin, $sousCat, $prix);
 		}
 
 		echo implode('%', $arr);

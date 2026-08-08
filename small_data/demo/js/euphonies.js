@@ -110,7 +110,14 @@ function retrieveEuphonies(cat, numOfElements){
             });
         }
 
-        $("#info").append("<p>" + arr.length/numOfElements + "</p>");
+        /* ⚠️ « works » AJOUTE LE 2026-08-08 — un nombre nu ne dit pas de quoi
+           il est le nombre. Meme forme que js/aww.js et js/catalog.js, de
+           sorte que les quatre pages comptent de la meme facon.
+
+           `arr.length / numOfElements` est le nombre d'ENREGISTREMENTS : le
+           flux est plat et repete `numOfElements` champs par oeuvre. La
+           division est donc exacte par construction — pas un arrondi. */
+        $("#info").append("<p>" + (arr.length / numOfElements) + " works</p>");
 
     });
 

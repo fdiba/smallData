@@ -86,19 +86,55 @@ var catPeriode = {};
       mesure.* */
 var subPeriode = {};
 
+/* ⚠️ « MAGISTERE » ET « RESIDENCE » NE SONT PAS DES CATEGORIES — 2026-08-08
+   Releve par Florent sur cette page apres le versement de 1988, et c'est le
+   MEME defaut que js/aww.js a corrige le meme jour (§24.15) : le Repertoire
+   general inscrit deux DISTINCTIONS dans la colonne de categorie.
+
+     - le MAGISTERE (code 500) couronne l'edition entiere. Le constat de 1988
+       le dit en toutes lettres : « 1er MAGISTERIUM DU 16eme CONCOURS », trois
+       bandes, aucune categorie, aucun rang (§24.8) ;
+     - la RESIDENCE (code 600) est un SEJOUR offert, pas une recompense de
+       rang. Le constat de 1988 la place avant le palmares, en « DEGRE 1 ».
+
+   146 oeuvres sur 727, de 1988 a 2009, et `imeb_categorie` leur donne meme
+   une ligne — 8 et 9, bornes 1988-2008 et 1988-2009. La donnee n'est pas
+   fausse : elle transcrit fidelement ce que le catalogue imprime. C'est
+   L'AXE DU DIAGRAMME qui l'est, en les alignant sur Live, Mixte ou
+   Programme, qui sont des categories musicales.
+
+   ⚠️ ON NE LES RETIRE PAS. Les masquer perdrait 146 prix, soit un cinquieme
+      du palmares ; le diagramme dirait alors moins que le document. On les
+      MARQUE : le noeud porte `distinction: true`, son libelle est suivi d'un
+      ✦, et son infobulle commence par ce qu'il est.
+
+   ⚠️ ET LE TEST PORTE SUR LE CODE, JAMAIS SUR LE LIBELLE — meme regle qu'en
+      §24.15. `award_cat` est une chaine que quelqu'un corrigera un jour ; le
+      code, lui, est stable. Et le marquage n'a lieu QUE si le libelle repete
+      la distinction : une oeuvre de 2005 porte un Magistere avec
+      `award_cat = 'Trivium A'`, une VRAIE categorie, et elle la garde.
+
+   ⚠️ LE TYPE DU NOEUD RESTE 'category', ET C'EST DELIBERE. columnStats()
+      groupe par `type` pour deduire la hauteur du diagramme : un type de plus
+      creerait une colonne de plus dans ce calcul, pour un noeud qui reste
+      dans la meme colonne a l'ecran. Le marquage est un DRAPEAU, pas un
+      type. */
+var DISTINCTIONS_HORS_AXE = {500: 'Magistère', 600: 'Résidence'};
+
 // Donnees generees depuis la base (php/retrieve_categories.php) au lieu
-// du fichier data/smallData.csv. Reponse : dix champs repetes, annee%
-// categorie%nom%prenom%isni%id_artist%editions%cat_debut%cat_fin%sous_cat.
+// du fichier data/smallData.csv. Reponse : onze champs repetes, annee%
+// categorie%nom%prenom%isni%id_artist%editions%cat_debut%cat_fin%sous_cat%
+// award_price.
 d3.text("php/retrieve_categories.php", function(error, text){
 
   if(error || !text){ console.log('categories: aucune donnee'); return; }
 
   var raw = text.split("%");
   var data = [];
-  // 10 = longueur d'enregistrement, ecrite en dur des deux cotes : si un
+  // 11 = longueur d'enregistrement, ecrite en dur des deux cotes : si un
   // champ est ajoute a php/retrieve_categories.php, ce pas doit bouger avec
-  // lui. 7 -> 9 le 2026-08-06 (cat_debut, cat_fin), puis 9 -> 10 le soir
-  // meme (sous_categorie).
+  // lui. 7 -> 9 le 2026-08-06 (cat_debut, cat_fin), 9 -> 10 le soir meme
+  // (sous_categorie), 10 -> 11 le 2026-08-08 (award_price).
   // editions = annees de participation au festival, separees par des virgules
   // (a ne pas confondre avec year, l'annee du prix) ; vide pour 236 des 727
   // oeuvres primees.
@@ -106,11 +142,11 @@ d3.text("php/retrieve_categories.php", function(error, text){
   // qui n'en ont pas.
   // subCat = le LIBELLE de la sous-categorie, deja traduit par le serveur
   // (php/sous_categories.php) ; vide pour 575 des 727 oeuvres primees.
-  for(var i=0; i+9 < raw.length; i+=10){
+  for(var i=0; i+10 < raw.length; i+=11){
     data.push({ year: raw[i], category: raw[i+1], name: raw[i+2],
                 firstName: raw[i+3], isni: raw[i+4], artistId: raw[i+5],
                 editions: raw[i+6], catDebut: raw[i+7], catFin: raw[i+8],
-                subCat: raw[i+9] });
+                subCat: raw[i+9], awardPrice: raw[i+10] });
   }
 
   data.reverse();
@@ -502,6 +538,17 @@ function nodeTitle(d){
 
   if(d.type === 'year'){
     out += " in " + plural(to, "category");
+  } else if(d.type === 'category' && d.distinction){
+    /* ⚠️ CE NOEUD N'EST PAS UNE CATEGORIE, et l'infobulle le dit AVANT de
+       compter. Les nombres eux-memes sont justes et se lisent comme ceux
+       d'une categorie — c'est leur PLACE sur l'axe qui est un artefact du
+       catalogue, pas leur valeur. La periode vient de imeb_categorie, qui
+       porte une ligne pour chacune des deux (8 et 9). */
+    var dcomp = catComposers.hasOwnProperty(d.name) ? catComposers[d.name] : to;
+    out = "✦ a DISTINCTION, not a category — awarded across categories · "
+        + out + " to " + plural(dcomp, "composer")
+        + ", across " + plural(from, "edition");
+    if(catPeriode[d.name]){ out = catPeriode[d.name] + " — " + out; }
   } else if(d.type === 'category'){
     /* Le nombre de compositeurs est lu dans catComposers et non dans
        sourceLinks.length : la vue allegee n'a pas de colonne compositeur, et
@@ -602,7 +649,17 @@ function setSankeyNodes(data, key){
   //---- add categories --------//
   var category = d.category;
   if(category=='')category='None';
-  var catId = addNode('c' + category, {name: category, type: 'category'});
+  /* ⚠️ LE MARQUAGE N'A LIEU QUE SI LE LIBELLE REPETE LA DISTINCTION — voir la
+     note en tete de fichier. Une oeuvre de 2005 porte un Magistere avec
+     `award_cat = 'Trivium A'` : elle garde sa categorie, et le noeud
+     « Trivium A » n'est pas marque.
+     `addNode` rend l'index existant sans rien ecraser : le drapeau est donc
+     pose par la PREMIERE oeuvre qui cree le noeud. C'est sans consequence,
+     puisqu'un libelle marque ne peut venir que du code qui le porte. */
+  var estDistinction = (DISTINCTIONS_HORS_AXE[+d.awardPrice] === category);
+  var catId = addNode('c' + category,
+                      {name: category, type: 'category',
+                       distinction: estDistinction});
 
   //------- setup link between year and category -----------//
   // Les deux premieres colonnes sont identiques dans les deux vues : une
@@ -917,7 +974,10 @@ function sankeyStuff(){
       transform: null
     })
     .text(function (d) {
-      return d.name;
+      /* ✦ : le noeud est une DISTINCTION posee sur l'axe des categories par
+         le catalogue — Magistere, Residence. Le signe est le seul endroit ou
+         cela se voit sans survoler, et il ne coute pas une colonne. */
+      return d.distinction ? (d.name + ' ✦') : d.name;
     });
 
   /* Nom cliquable — seulement pour les compositeurs porteurs d'un ISNI, soit
