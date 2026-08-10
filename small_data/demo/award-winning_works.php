@@ -66,8 +66,18 @@
 				    <ul id="titles"></ul>
 			    </div>
 		    </div>
-			<div id="legend">
-				<button type="button" id="lg_toggle" class="lg-title" aria-expanded="true" aria-controls="lg_body">
+			<!-- Legende REPLIEE a l'arrivee, comme categories.php. L'etat de
+			     depart s'ecrit ICI et nulle part ailleurs : js/legend_toggle.js
+			     ne fait que basculer la classe, il ne la pose jamais (voir son
+			     en-tete). Une page sans JavaScript garde donc la legende dans
+			     l'etat ou le serveur l'a envoyee, et aucune page ne s'ouvre sur
+			     un panneau qui se refermerait sous les yeux.
+			     ⚠️ LES DEUX MARQUES VONT ENSEMBLE : `is-collapsed` sur #legend
+			        fait le repli visuel, `aria-expanded="false"` sur le bouton le
+			        dit aux lecteurs d'ecran. N'en changer qu'une laisse la page
+			        annoncer le contraire de ce qu'elle montre. -->
+			<div id="legend" class="is-collapsed">
+				<button type="button" id="lg_toggle" class="lg-title" aria-expanded="false" aria-controls="lg_body">
 					How to read this page<span class="lg-caret" aria-hidden="true"></span>
 				</button>
 				<div id="lg_body">

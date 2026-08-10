@@ -10,9 +10,47 @@
 var SMA_MIN_WORKS = 20;
 var allWorks = [];          // toutes les oeuvres primees chargees (objets)
 
+/* --- HAUTEUR DU CANVAS : PLEINE POUR « ALL WORKS », MOITIE POUR UNE EDITION
+   ---------------------------------------------------------------------------
+   « All works » pose des centaines d'oeuvres sur le canvas ; une edition en
+   pose quelques dizaines. La meme surface les laisse flotter loin les unes des
+   autres, et le regroupement — qui est ce que la page donne a voir — se lit
+   mal. La hauteur passe donc a la MOITIE des qu'une annee est choisie, et
+   revient a la pleine hauteur sur « All works ».
+
+   ⚠️ ECRIRE `canvas.height` REMET LE CONTEXTE 2D A ZERO. Ce n'est pas un
+      redimensionnement : le navigateur jette le bitmap, et `fillStyle`,
+      `strokeStyle`, les transformations reviennent a leur valeur par defaut.
+      D'ou le fond repeint juste apres — sans quoi la premiere image du SMA
+      s'affiche sur un canvas transparent.
+
+   ⚠️ ET ELLE SE POSE AVANT `resetAll()`, PAS APRES. Les particules naissent a
+      `Math.random()*canvas.height` (js/sma_core.js) : creees pendant que le
+      canvas fait encore 800, la moitie d'entre elles naitrait sous le bord du
+      nouveau. La grille spatiale, elle, se refait toute seule — `ensureGrid`
+      compare ses dimensions a celles du canvas a chaque tour.
+
+   ⚠️ AUCUNE HAUTEUR N'EST ECRITE EN CSS pour `#myCanvas` : c'est l'attribut
+      qui fait la taille affichee. Si une regle CSS lui en donne une un jour,
+      cette fonction changera la resolution du bitmap SANS changer la mise en
+      page, et les clics tomberont a cote (`getBoundingClientRect` dans
+      js/sma_core.js). */
+var SMA_H_FULL = 800;
+var SMA_H_YEAR = SMA_H_FULL / 2;
+
+function setCanvasHeight(h){
+    var cv = document.getElementById('myCanvas');
+    if(!cv) return;
+    if(cv.height === h * scale) return;   //deja a cette taille : ne pas effacer pour rien
+    cv.height = h * scale;
+    context.fillStyle = COLORS[0];
+    context.fillRect(0, 0, cv.width, cv.height);
+    context.stroke();
+}
+
 window.onload = function() {
 
-    initSMA(1064, 800);
+    initSMA(1064, SMA_H_FULL);
     startSMA();             // boucle SMA lancee UNE seule fois
 
     $("#info p:eq(0)").text('loading…');
@@ -297,11 +335,13 @@ function highlightYearMenu(sel){
 
 function showAllWorks(){
     highlightYearMenu($("#years ul li.all-works"));
+    setCanvasHeight(SMA_H_FULL);        // avant renderSelection : voir le commentaire en tete
     renderSelection(allWorks);
 }
 
 function selectYear(year){
     highlightYearMenu($("#years ul li").filter(function(){ return $(this).attr('data-year') === String(year); }));
+    setCanvasHeight(SMA_H_YEAR);        // une edition : moitie de hauteur
     var subset = allWorks.filter(function(w){ return String(w.year) === String(year); });
     renderSelection(subset);
 }
