@@ -70,9 +70,16 @@ th{
 	width: 1064px;             /* meme largeur que le canvas SMA et le tableau */
 	max-width: 100%;
 }
-/* le menu Year degage deja la barre fixe : le canvas suit directement,
-   sans re-appliquer la marge haute (sinon double ecart) */
-#middle > #years + #main_container{
+/* le menu Year degage deja la barre fixe : ce qui suit vient directement,
+   sans re-appliquer la marge haute (sinon double ecart).
+   ⚠️ #main_container n'est plus le voisin de #years — il est descendu dans
+      #left_col le 2026-08-10 — et css/main.css lui pose une marge haute de la
+      hauteur de la barre. Sans la ligne ci-dessous il rouvrait ce blanc-la au
+      milieu de la page. */
+#middle > #years + #page_cols{
+	margin-top: 0;
+}
+#left_col > #main_container{
 	margin-top: 0;
 }
 #years > p{
@@ -242,3 +249,59 @@ th{
    une troisieme copie. Ici le nom occupe deux cellules (prenom et patronyme) :
    les deux portent la classe, c'est le seul point propre a cette page, et il
    se joue dans js/aww.js, pas dans la CSS. */
+
+/* --- DEUX COLONNES POUR TOUTE LA PAGE — 2026-08-10
+   ---------------------------------------------------------------------------
+   La colonne d'information vivait DANS #main_container, a cote du seul canvas.
+   #main_container etant un flex, sa hauteur valait celle du plus grand de ses
+   enfants : des que la fiche ISNI depassait la hauteur du canvas, c'est la
+   colonne qui commandait, et « How to read » comme le tableau descendaient
+   d'autant. **La page bougeait au moment meme ou l'on cliquait un
+   compositeur** — le geste faisait fuir ce qu'on regardait.
+
+   La reponse n'est pas de faire defiler la colonne : deux ascenseurs sur une
+   page, c'est deux endroits ou chercher ce qu'on ne voit plus. Ce sont les
+   COLONNES qui changent. Le canvas, la legende et le tableau sont empiles dans
+   #left_col ; #infos est a cote de CETTE PILE, et non du canvas seul. Les
+   boites ont donc toute la hauteur de la page devant elles : elles grandissent
+   sans rien pousser, et sans defilement interieur.
+
+   ⚠️ #infos N'EST PLUS UN ENFANT DE #main_container. Les regles
+      `#main_container > #infos` de css/main.css — largeur, marge, cesure — ne
+      s'appliquent donc plus a cette page, et sont reprises ci-dessous. Celles
+      qui visent `#isniColumn` par ce meme chemin non plus : elles sont reprises
+      aussi. ⚠️ Les trois autres pages a SMA gardent l'ancienne structure ;
+      css/main.css ne bouge pas.
+
+   ⚠️ LARGEUR FIXE A 1064 px sur la colonne gauche : c'est celle du canvas, du
+      menu Year, de la legende et du tableau, qui alignent deja leurs bords
+      droits. La poser sur le conteneur evite que le tableau, plus large qu'a
+      l'ordinaire sur une selection qui montre les neuf colonnes, elargisse la
+      colonne et pousse #infos hors de l'ecran. */
+#middle > #page_cols{
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: flex-start;
+}
+#page_cols > #left_col{
+	flex: 0 0 1064px;
+	width: 1064px;
+	max-width: 1064px;
+	min-width: 0;
+}
+#page_cols > #infos{
+	flex: 0 0 300px;
+	width: 300px;
+	max-width: none;
+	float: none;
+	margin-left: 2px;
+	word-wrap: break-word;
+}
+/* Reprises de css/main.css, ou elles passaient par `#main_container > #infos`. */
+#page_cols > #infos > #isniColumn{
+	box-sizing: border-box;
+	width: 100%;
+}
+#page_cols > #infos > #isniColumn .isni-box.open{
+	margin-bottom: 10px;
+}

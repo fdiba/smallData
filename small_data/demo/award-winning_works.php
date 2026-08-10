@@ -50,22 +50,27 @@
 				<p>Year</p>
 				<ul></ul>
 			</div>
+			<!-- DEUX COLONNES POUR TOUTE LA PAGE — 2026-08-10.
+			     La colonne d'information etait DANS #main_container, a cote du
+			     seul canvas : sa hauteur entrait donc dans celle du conteneur,
+			     et une fiche ISNI un peu longue poussait « How to read » et le
+			     tableau vers le bas. La page bougeait au moment meme ou l'on
+			     cliquait un compositeur.
+			     Le canvas, la legende et le tableau sont maintenant empiles
+			     dans #left_col, et #infos est a cote de CETTE PILE, pas du
+			     canvas seul. Les boites peuvent donc grandir autant qu'elles
+			     veulent : elles ont toute la hauteur de la page devant elles et
+			     ne deplacent plus rien. Aucun defilement interieur.
+			     ⚠️ #infos n'est plus un enfant de #main_container : les regles
+			        `#main_container > #infos` de css/main.css ne s'appliquent
+			        plus, et css/aww.css les reprend pour la nouvelle place. -->
+			<div id="page_cols">
+			<div id="left_col">
 			<div id="main_container">
 				<div id="sma_note"></div>
 				<canvas id="myCanvas" width="500" height="500">Votre navigateur ne supporte pas les canvas.</canvas>
-				<div id="infos">
-					<div id="cookies"></div>
-				    <div id="selection"></div>
-				    <!-- Fiche ISNI de l'agent selectionne dans le SMA. Elle se pose
-				         ICI, entre la boite orange et la boite violette : en flux,
-				         elle ne recouvre rien (js/isni_box.js,
-				         enableIsniInflowFiche). C'est une AUTRE fiche que celle du
-				         tableau, qui reste ce qu'elle etait. Vide tant qu'aucun
-				         agent portant un ISNI n'a ete clique. -->
-				    <div id="isniColumn"></div>
-				    <ul id="titles"></ul>
-			    </div>
-		    </div>
+			</div>
+
 			<!-- Legende REPLIEE a l'arrivee, comme categories.php. L'etat de
 			     depart s'ecrit ICI et nulle part ailleurs : js/legend_toggle.js
 			     ne fait que basculer la classe, il ne la pose jamais (voir son
@@ -153,6 +158,21 @@
 				</table>
 			</div>
 			<div id="listing"></div>
+			</div><!-- /#left_col -->
+
+			<div id="infos">
+				<div id="cookies"></div>
+				<div id="selection"></div>
+				<!-- Fiche ISNI de l'agent selectionne dans le SMA. Elle se pose
+				     ICI, entre la boite orange et la boite violette : en flux,
+				     elle ne recouvre rien (js/isni_box.js,
+				     enableIsniInflowFiche). C'est une AUTRE fiche que celle du
+				     tableau, qui reste ce qu'elle etait. Vide tant qu'aucun
+				     agent portant un ISNI n'a ete clique. -->
+				<div id="isniColumn"></div>
+				<ul id="titles"></ul>
+			</div>
+			</div><!-- /#page_cols -->
 		</div>
  	</div>
 </body>

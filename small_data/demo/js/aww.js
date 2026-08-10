@@ -34,15 +34,21 @@ var allWorks = [];          // toutes les oeuvres primees chargees (objets)
       qui fait la taille affichee. Si une regle CSS lui en donne une un jour,
       cette fonction changera la resolution du bitmap SANS changer la mise en
       page, et les clics tomberont a cote (`getBoundingClientRect` dans
-      js/sma_core.js). */
+      js/sma_core.js).
+
+   ⚠️ ET RIEN D'AUTRE NE DEPEND DE CETTE HAUTEUR. La colonne d'information est
+      depuis le 2026-08-10 a cote de TOUTE la pile (canvas + legende +
+      tableau) et non du canvas seul : elle ne se cale plus dessus, et le
+      canvas peut passer de 800 a 400 sans deplacer quoi que ce soit. */
 var SMA_H_FULL = 800;
 var SMA_H_YEAR = SMA_H_FULL / 2;
 
 function setCanvasHeight(h){
     var cv = document.getElementById('myCanvas');
     if(!cv) return;
-    if(cv.height === h * scale) return;   //deja a cette taille : ne pas effacer pour rien
-    cv.height = h * scale;
+    var px = h * scale;
+    if(cv.height === px) return;          //deja a cette taille : ne pas effacer pour rien
+    cv.height = px;
     context.fillStyle = COLORS[0];
     context.fillRect(0, 0, cv.width, cv.height);
     context.stroke();
