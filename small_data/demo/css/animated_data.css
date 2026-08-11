@@ -4,7 +4,13 @@
 
 /* ---------- legende ---------- */
 
-/* demos de la liste des compositeurs, memes codes que plus bas */
+/* Demos de la liste des compositeurs, MEMES CODES QUE PLUS BAS — et c'est une
+   contrainte, pas une intention : ce sont les seules regles du site dont le
+   role est de RESSEMBLER a d'autres. Toute modification de `#composers
+   li.active` ou `li.selected` doit etre repercutee ici dans le meme
+   mouvement, sans quoi la legende enseigne une apparence que la page n'a plus.
+   ⚠️ Le gras y est tombe le 2026-08-11 avec celui de `#composers li.active` —
+   voir la raison la-bas. */
 #legend .demo{
 	display: inline-block;
 	padding: 0 6px;
@@ -13,7 +19,6 @@
 }
 #legend .demo-active{
 	color: #fff;
-	font-weight: 600;
 	border-left-color: var(--sd-emerald);
 }
 #legend .demo-selected{
@@ -92,10 +97,34 @@
 #composers li:not(.masked):hover{
 	background: rgba(255, 255, 255, 0.14);
 }
-/* possede des oeuvres archivees dans les capsules */
+/* ---- Possede des oeuvres archivees dans les capsules ----------------------
+
+   ⚠️ LE GRAS EST PARTI — 2026-08-11, et ce n'est pas une question de gout.
+
+   Cette regle disait UNE chose — « cette personne a une oeuvre au fonds » — et
+   la disait TROIS fois : en blanc contre le gris #95a5a6 de la liste, en gras
+   600, et par un filet emeraude a gauche. Trois signaux pour un fait binaire.
+   Ca tenait tant que les deux populations etaient melangees : le gras se lisait
+   contre la masse des noms retenus, qui sont gris et sans filet.
+
+   ⚠️⚠️ LE COMMUTATEUR « only those with a work » A DEFAIT CETTE CONDITION le
+   meme jour. Depuis qu'il filtre aussi la liste du bas, la population y devient
+   HOMOGENE : toutes les lignes sont `.active`, donc toutes blanches, toutes en
+   gras, toutes barrees d'emeraude. *Un signal qui est toujours allume ne
+   signale plus rien* — il devient la graisse du bloc, et cinq colonnes de noms
+   entierement en gras se lisent moins bien qu'une seule.
+
+   On garde les deux signaux qui gardent un sens dans les deux etats : le BLANC,
+   qui s'oppose au gris des noms retenus quand ils sont la, et le FILET
+   EMERAUDE, qui est le vert « atteste » du reste de la page. Le gras, lui,
+   n'ajoutait rien quand les deux populations coexistaient et masquait tout
+   quand elles ne coexistent plus.
+
+   ⚠️ Il reste un troisieme etat, orthogonal a celui-ci : `.selected` (fond
+   turquoise, « a participe a l'edition selectionnee »). Le gras lui faisait
+   concurrence sur les lignes qui portent les deux. */
 #composers li.active{
 	color: #fff;
-	font-weight: 600;
 	text-decoration: none;
 	border-left-color: var(--sd-emerald);
 }

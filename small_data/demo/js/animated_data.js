@@ -601,6 +601,31 @@ function displayCpInfos(){
         var obj=liste[j];
         var count=numTitlesByArtist[obj.id];
 
+        /* ⚠️ « ONLY THOSE WITH A WORK » VAUT AUSSI POUR CETTE LISTE — 2026-08-11.
+
+           Le commutateur agit depuis toujours sur les trois graphes ET sur les
+           comptes de la barre orange ; la liste du bas, elle, continuait
+           d'enumerer TOUT LE MONDE. On lisait donc, sous une courbe qui ne
+           comptait plus que les compositeurs a oeuvre, une liste ou la moitie
+           des noms etaient masques — c'est-a-dire les gens que le graphe venait
+           precisement d'ecarter. *Deux reponses differentes a la meme question,
+           a dix centimetres l'une de l'autre.*
+
+           Le filtre est pose ICI et non dans `composers` : ce tableau est aussi
+           lu par getNumComposersInCapsulesAndTitles(), qui ecrit le « c / t » de
+           la barre orange — et ce couple doit continuer de dire combien de
+           compositeurs a oeuvre sur combien de candidats. Le filtrer a la source
+           aurait fait dire « 12 / 12 » a une barre dont tout l'interet est
+           l'ecart entre les deux nombres.
+
+           ⚠️ CONSEQUENCE A CONNAITRE : commutateur allume, plus AUCUN nom n'est
+              masque, puisque le masque ne vise que les fiches sans oeuvre
+              (voir appendComposerLi). La liste devient donc entierement
+              cliquable — ce n'est pas un effet de bord, c'est la meme regle
+              enoncee deux fois : un nom publie avec une oeuvre est un nom
+              publie. */
+        if(takeCountIntoAccount && !(count>0)) continue;
+
         if(obj.y>0)             appendComposerLi(obj, count, true);   //selected year
         else if(!yearSelection) appendComposerLi(obj, count, false);
     }

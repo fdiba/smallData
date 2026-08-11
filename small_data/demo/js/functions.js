@@ -56,12 +56,45 @@ function displayTitlesInfosGN(arr){
     bindTitlesFold();
     box.empty();
 
+    /* ⚠️ `t-boxed` — LA BOITE VIOLETTE EST UNE BOITE DE COLONNE, ET ELLE SE
+       BORNE COMME LA FICHE ISNI (2026-08-11).
+
+       Elle n'avait aucune hauteur maximale : un compositeur tres documente —
+       Dhomont en porte douze, d'autres davantage — poussait tout ce qui la
+       suit hors de l'ecran, sur les TROIS pages qui l'affichent. C'est mot
+       pour mot le defaut deja corrige deux fois ailleurs : sur `#results`
+       d'Overview le 2026-08-08 (« on croyait la colonne vide ; elle etait
+       seulement tres loin »), et sur la fiche ISNI en flux le 2026-08-05,
+       dont la borne a du etre ramenee de 60vh a 36vh precisement parce
+       qu'elle repoussait CETTE boite-ci sous le pli.
+
+       LA CLASSE EST POSEE ICI, PAS DANS LE HTML DES PAGES, et c'est le point :
+       cette fonction est le seul constructeur de la boite a en-tete repliable
+       — Overview, Network et Participation passent par elle. La classe suit
+       donc exactement les pages qui ont cette boite-la, sans qu'aucune ait a
+       le declarer. ⚠️ Le catalogue et les œuvres primees remplissent `#titles`
+       autrement, sans passer par ici : ils ne recoivent pas la classe, et leur
+       boite — qui EST le contenu de la page, pas une boite de colonne — garde
+       sa hauteur libre. Une regle posee sur `#titles` tout court les aurait
+       bornes eux aussi.
+
+       Ni `is-folded` ni `.t-hd` ne pouvaient servir de crochet : la premiere
+       disparait au depli, la seconde n'existe pas quand il n'y a aucune
+       oeuvre. `t-boxed` dit ce qu'est la boite, pas l'etat ou elle se trouve.
+
+       La regle est dans css/main.css, aupres de `#titles`. */
+    box.addClass('t-boxed');
+
     if(arr.length>0){
 
         // "work" au singulier si une seule oeuvre, sans parentheses
         var label = arr.length + ' archived work' + (arr.length>1 ? 's' : '');
 
-        box.addClass('is-folded').append(
+        /* `t-hd-on` accompagne `is-folded` mais ne la suit pas : elle dit
+           « cette boite a un en-tete », etat qui ne change pas au depli,
+           quand `is-folded` disparait. La regle de css/main.css qui retire le
+           padding haut et rend l'en-tete collant s'y accroche. */
+        box.addClass('is-folded t-hd-on').append(
             '<li class="t-hd"><button type="button" class="t-toggle" aria-expanded="false">'
             + label + '<span class="t-caret" aria-hidden="true"></span></button></li>');
 
@@ -114,7 +147,7 @@ function displayTitlesInfosGN(arr){
         /* Aucune oeuvre : il n'y a rien a replier, et surtout il faut RETIRER
            le pli laisse par le compositeur precedent — sinon la regle qui
            masque les <li> hors en-tete masquerait aussi cette phrase. */
-        box.removeClass('is-folded').append('<li>no archived work for this composer</li>');
+        box.removeClass('is-folded t-hd-on').append('<li>no archived work for this composer</li>');
     }
 
 }

@@ -386,6 +386,86 @@ ul{
 	margin: 0;
 }
 
+/* =========================================================================
+   ⚠️ LA BOITE VIOLETTE EST BORNEE EN HAUTEUR — 2026-08-11
+
+   Meme dispositif que la fiche ISNI, et meme borne : 36vh, celle de
+   `.isni-inflow .isni-box` (css/isni.css). Les deux boites vivent dans la
+   MEME colonne sur Overview et sur Participation ; leur donner deux bornes
+   differentes aurait fait qu'en depliant l'une on repousse l'autre — ce qui
+   est exactement le defaut que la borne de la fiche ISNI a du corriger le
+   2026-08-05, quand elle est passee de 60vh a 36vh « parce qu'elle repoussait
+   la boite violette sous le pli de l'ecran ». La reciproque n'avait jamais
+   ete posee : la boite violette, elle, n'etait bornee par rien.
+
+   L'EN-TETE RESTE VISIBLE PENDANT LE DEFILEMENT (`position: sticky`) —
+   c'est ce que fait la fiche ISNI par sa structure (`.isni-hd` en
+   `flex: 0 0 auto`, `.isni-bd` seul defile). Ici la boite est un <ul> et son
+   en-tete un <li> : le meme resultat s'obtient par `sticky` plutot qu'en
+   ajoutant un niveau de balise a une structure que trois pages produisent.
+   ⚠️ Le detail qui a coute un aller-retour est juste en dessous : l'en-tete
+   ne peut affleurer le haut du cadre que si sa position NATURELLE y est deja.
+   Voir le bloc suivant.
+
+   `overscroll-behavior: contain` : arrive au bout de la liste, la molette
+   n'emporte pas la page — meme reglage que `#results` sur Overview.
+
+   ⚠️ LA REGLE PORTE SUR `.t-boxed` ET NON SUR `#titles`. La classe est posee
+   par displayTitlesInfosGN() (js/functions.js), donc uniquement sur les trois
+   pages qui affichent la boite en colonne. Le catalogue et les œuvres primees
+   remplissent le meme identifiant autrement : chez eux la liste des œuvres
+   EST la page, et la borner l'aurait cassee.
+   ========================================================================= */
+#titles.t-boxed{
+	max-height: 36vh;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+/* ⚠️⚠️ ET L'EN-TETE DESCENDAIT DE CINQ PIXELS A L'OUVERTURE — corrige le
+   2026-08-11, meme jour que la borne, signale a l'usage.
+
+   PREMIERE ECRITURE, FAUSSE : `position: sticky; top: 0` en laissant
+   l'en-tete avec son `margin-top: -5px`, au motif que cette marge negative
+   « annule deja le padding-top de #titles, il affleure donc le haut du cadre
+   de defilement ». Le raisonnement portait sur la BOITE DE BORDURE ; les
+   decalages de `sticky` se mesurent sur la BOITE DE MARGE. Marge haute
+   negative : la boite de marge commence 5 px PLUS BAS que la boite de
+   bordure. `top: 0` exige donc que ce bord-la soit a 0, et pousse l'element
+   de 5 px vers le bas des l'instant ou la boite devient un cadre de
+   defilement — c'est-a-dire a l'ouverture.
+
+   *Une justification ecrite en meme temps que la regle ne la verifie pas :
+   elle la rend seulement plus difficile a soupconner.* Le commentaire d'a
+   cote annoncait « top: 0 et non -5px » avec un motif — et c'est ce motif
+   qui etait faux.
+
+   LA CORRECTION NE DEPLACE PLUS RIEN AU LIEU DE COMPENSER UN DEPLACEMENT.
+   On aurait pu ecrire `top: -5px` ; il aurait fallu que cette valeur suive
+   toute modification du padding de #titles, exactement comme les marges
+   negatives de `.t-hd` doivent deja le suivre — une troisieme valeur liee aux
+   deux autres sans que rien ne le dise. On retire donc la cause : la boite
+   perd son padding haut, l'en-tete perd sa marge negative, et sa position
+   naturelle dans le cadre de defilement EST zero. `sticky` n'a plus rien a
+   corriger, donc plus rien a decaler.
+
+   Les marges laterales de -10px restent : elles compensent le padding
+   horizontal, que rien ne retire.
+
+   ⚠️ `t-hd-on` — POSEE PAR displayTitlesInfosGN() QUAND ELLE ECRIT L'EN-TETE,
+   et retiree quand elle ecrit « no archived work ». Sans elle, le
+   `padding-top: 0` s'appliquerait aussi a la boite SANS en-tete, dont
+   l'unique ligne viendrait alors toucher le bord haut. */
+#titles.t-boxed.t-hd-on{
+	padding-top: 0;
+}
+#titles.t-boxed.t-hd-on li.t-hd{
+	position: sticky;
+	top: 0;
+	margin-top: 0;
+	z-index: 1;
+}
+
 /* --- La ligne de pays des boites d'identite (network, participation) ---
    Produite par countryLineHtml() dans js/functions.js : le pays courant, et
    devant lui le pays d'origine quand la base en porte un — « Argentina /
@@ -576,9 +656,35 @@ ul{
 	color: #bdc3c7;
 	text-align: justify;
 }
+/* ⚠️ L'EMPHASE DES PUCES N'ETAIT PAS DECIDEE, ELLE ETAIT HERITEE — 2026-08-11.
+
+   Cette regle posait `color` et `font-style` et TAISAIT `font-weight` : les
+   <em> des listes prenaient donc le gras de la regle globale `em{font-weight:
+   bold; font-style: italic}` (en tete de cette feuille), sans que personne
+   l'ait choisi. La note en prose, elle, declare son emphase en toutes lettres
+   — `font-weight: 600` trente lignes plus haut.
+
+   D'ou deux graisses pour un meme role sur la meme page, et la plus LOURDE
+   dans les puces : exactement l'inverse de ce qu'il faudrait, une puce etant
+   deja courte et deja contrastee — texte en #bdc3c7, emphase en blanc. *Le
+   passage au blanc suffit a emphaser ; le gras par-dessus ne fait que crier.*
+
+   Mesure du 2026-08-11 sur la legende de Participation : 10 % des caracteres
+   des puces sont en <em>, et SIX puces en portent trois ou plus — l'une en
+   porte SEPT en 333 caracteres. A cette densite, le gras cesse de distinguer
+   quoi que ce soit : il devient la couleur du fond.
+
+   ⚠️ RESERVE, ecrite pour ne pas etre reperdue : `<em>` fait ici au moins
+   trois metiers differents — nommer une commande de l'interface (`span`,
+   `chart`, `c/t`, `this period`), citer un chiffre (`62`, `4 276`), et
+   appuyer une affirmation (`an empty cell is not a zero`). Les trois recoivent
+   le meme signal. Les separer demande une classe a part pour les libelles de
+   commande, et une relecture de toutes les puces : c'est une decision
+   d'ecriture, pas de feuille de style, et elle n'est pas prise ici. */
 #legend li em{
 	color: #fff;
 	font-style: normal;
+	font-weight: normal;
 }
 #legend .sq{
 	display: inline-block;

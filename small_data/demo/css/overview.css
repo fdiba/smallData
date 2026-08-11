@@ -310,9 +310,19 @@
 	margin: 0 0 1px 0;
 }
 
-/* La liste des oeuvres (zone violette) s'adapte a son contenu : pas de
-   hauteur bornee. La legende "How to read" reste maitrisee cote canvas
-   (largeur calee sur le canvas, hauteur du canvas ajustee au contenu). */
+/* ⚠️ CE COMMENTAIRE DISAIT LE CONTRAIRE JUSQU'AU 2026-08-11 : « la liste des
+   oeuvres (zone violette) s'adapte a son contenu : pas de hauteur bornee ».
+   Elle l'est desormais — 36vh, la borne de la fiche ISNI en flux, posee dans
+   css/main.css sur `#titles.t-boxed` parce que TROIS pages portent cette
+   boite. Un compositeur tres documente poussait sans cela tout ce qui la suit
+   hors de l'ecran.
+
+   `height: auto` reste : il n'a jamais dit « sans limite », il dit « pas de
+   hauteur imposee », et c'est toujours vrai — la boite prend la hauteur de son
+   contenu jusqu'a la borne, et defile au-dela.
+
+   La legende "How to read" reste maitrisee cote canvas (largeur calee sur le
+   canvas, hauteur du canvas ajustee au contenu). */
 #titles{
 	height: auto;
 }

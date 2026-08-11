@@ -545,7 +545,79 @@ LineChart.prototype.drawLegend = function(){
 
     var arr = this.data;
     var ctx = this.context;
+
+    /* ⚠️⚠️ LA LEGENDE DEBORDAIT DE LA TOILE, ET SIX PAYS ETAIENT PEINTS DEHORS.
+       ------------------------------------------------------------------------
+       Mesure du 2026-08-11, sur la selection « all » : le graphe trace
+       QUATRE-VINGT-UNE lignes, et la legende n'en montrait que SOIXANTE-QUINZE.
+
+       L'ancienne disposition etait ecrite en dur : depart a x = 1255, colonne
+       suivante a +205, retour a la ligne tous les 15 pixels tant que
+       y <= this.h - 15. Cela donne 37 lignes dans la premiere colonne (42 a
+       582) et 38 dans la seconde (20 a 575), soit 75 ; la 76e ouvrait une
+       TROISIEME colonne a x = 1665, sur une toile large de 1640. Elle etait
+       donc dessinee hors du cadre : invisible, et son carre d'isolement
+       inatteignable au clic, puisque le test de survol porte sur les memes
+       coordonnees.
+
+       LES SIX PERDUS ETAIENT LES SIX DERNIERS DE L'ALPHABET — le tri est
+       alphabetique (animated_data.js, `f_data.sort`) : Unknown, Uruguay,
+       Venezuela, Vietnam, YUGOSLAVIA et Zimbabwe, 58 fiches en tout.
+       ⚠️ Yougoslavie en faisait partie, et c'est le seul Etat disparu que le
+       fonds porte encore sur des fiches d'artistes.
+
+       *Rien ne signalait la perte* : `canvas` n'a pas de bord qui proteste, il
+       peint dans le vide. Un compte affiche quelque part — « 81 pays » — l'eut
+       montre ; il n'y en avait pas. C'est le meme genre de defaut que le §21.17
+       du chantier : *une donnee qu'on n'affiche jamais n'est jamais relue*, et
+       ici c'est une donnee qu'on affiche AILLEURS QUE SUR L'ECRAN.
+
+       LA DISPOSITION SE CALCULE DONC, ET ELLE SE CALCULE SUR LA TOILE.
+       Le nombre de colonnes est deduit de la largeur reelle du canvas, le
+       nombre de lignes par colonne du nombre de pays a placer, et le pas
+       vertical de la place disponible. Tant que tout tient a 15 pixels, RIEN NE
+       CHANGE A L'ECRAN — la disposition d'avant est un cas particulier de
+       celle-ci.
+
+       ⚠️⚠️ ET LA BORNE SE MESURE, ELLE NE SE CALCULE PAS DE TETE. La premiere
+       ecriture de ce commentaire annoncait 116 — 58 lignes par colonne, deux
+       colonnes. La simulation de la boucle rend **114** : la premiere colonne
+       part de y = 42 et non de 20, elle porte donc 56 lignes et non 58. *Une
+       borne posee a la main dans un commentaire est exactement le genre
+       d'affirmation que ce correctif existe pour empecher.*
+       114 pour 88 lignes dans `imeb_country` : la legende peut nommer tous les
+       pays que la table peut nommer. Et si elle ne le pouvait plus, le garde
+       ci-dessous l'arreterait au bord et la console le dirait. */
     var xPos = 1255, yPos = 42;   // decale pour laisser la place a l'option "reset" en haut
+
+    var COL_W = 205,              // pas horizontal d'une colonne a l'autre
+        TXT_W = 158,              // largeur maximale du libelle (voir plus bas)
+        Y_TOP = 20,               // premiere ligne des colonnes suivantes
+        Y_MAX = this.h - 6,       // derniere ordonnee utilisable
+        PAS_MAX = 15, PAS_MIN = 10;
+
+    var toile = (ctx.canvas && ctx.canvas.width) ? ctx.canvas.width : this.w;
+
+    //  Combien de colonnes tiennent SANS depasser le bord droit : la derniere
+    //  abscisse utilisable est celle dont le libelle finit encore sur la toile.
+    var nbCols = Math.floor((toile - TXT_W - xPos) / COL_W) + 1;
+    if(nbCols < 1) nbCols = 1;
+
+    //  Combien de lignes il faut par colonne, et quel pas les y fait tenir.
+    var parCol = Math.ceil(arr.length / nbCols);
+    var haut1  = Y_MAX - yPos;            // hauteur utile de la 1re colonne
+    var hautN  = Y_MAX - Y_TOP;           // hauteur utile des suivantes
+    var pas    = PAS_MAX;
+    if(parCol > 1){
+        pas = Math.min(PAS_MAX, Math.floor(Math.min(haut1, hautN) / (parCol - 1)));
+        if(pas < PAS_MIN) pas = PAS_MIN;  // plancher : voir la borne ci-dessus
+    }
+    //  Nombre de lignes que le pas retenu permet reellement, colonne par
+    //  colonne. On repart de la, plutot que de `parCol`, pour que le retour a
+    //  la ligne suive exactement ce qui sera dessine.
+    var maxCol1 = Math.floor(haut1 / pas) + 1;
+    var maxColN = Math.floor(hautN / pas) + 1;
+    var placees = 0, dansCol = 0, maxCol = maxCol1;
 
     ctx.font = this.font;
     ctx.textAlign = "left";
@@ -561,6 +633,13 @@ LineChart.prototype.drawLegend = function(){
     var bWidth=this.bWidth;
 
     for (var i=0; i<arr.length; i++) {
+
+        /*  ⚠️ LE GARDE DU BORD. Il ne devrait jamais servir — 114 places pour
+            88 pays possibles —, et c'est precisement pour cela qu'il est ecrit :
+            le defaut corrige ici consistait a peindre dans le vide sans que rien
+            ne l'arrete ni ne le dise. On s'arrete au bord, et le compte final
+            en rend raison. */
+        if(xPos + TXT_W > toile) break;
 
         // un seul carre par pays : le bouton d'isolement (toujours bleu)
         this.solo_btns.push({x:xPos-22, y:yPos-6, state:false});
@@ -585,12 +664,24 @@ LineChart.prototype.drawLegend = function(){
         }
 
         ctx.fillText(str, xPos, yPos);
-        
-        yPos+=15;
-        if(yPos>this.h-15){
-            yPos = 20;
-            xPos += 205;
+
+        placees++; dansCol++;
+        yPos += pas;
+        if(dansCol >= maxCol){
+            dansCol = 0;
+            maxCol  = maxColN;
+            yPos    = Y_TOP;
+            xPos   += COL_W;
         }
+    }
+
+    /*  ⚠️ LE CONTROLE QUI MANQUAIT. Il ne corrige rien — il DIT, une fois, que
+        des pays ont ete tracés sans etre nommes. Sans lui, la perte etait
+        muette pendant des mois. */
+    if(placees < arr.length && typeof console !== 'undefined' && console.warn){
+        console.warn('[linechart] legende : ' + placees + ' pays nommes sur ' +
+                     arr.length + ' traces — ' + (arr.length - placees) +
+                     ' hors de la toile (' + toile + ' px, ' + nbCols + ' colonnes).');
     }
 }
 LineChart.prototype.drawLine = function(obj, color, strokeWidth, init){
