@@ -18,13 +18,29 @@ window.onload = function() {
 	_catId = parseInt(cat, 10) || 0;
 
     if(cat==1 || cat==2){
-        // Les deux phonotheques ont le menu "Country" + le bouton "All works".
-        // Difference de DEFAUT :
-        //  - Phono A (id=1) : trop d'oeuvres (~4380) pour un seul SMA (SMA.md §11)
-        //    -> "All works" = tableau complet SANS SMA ; le SMA n'apparait qu'en
-        //    choisissant un pays (et si >= SMA_MIN_WORKS oeuvres).
-        //  - Phono B (id=2) : petit fonds (~470) -> "All works" affiche le SMA sur
-        //    TOUT par defaut ; un pays filtre. Le SMA n'est jamais masque.
+        // Les deux phonotheques ont le menu "Country" + le bouton "All works",
+        // ET DEPUIS LE 2026-08-11 ELLES SE COMPORTENT PAREIL : "All works"
+        // affiche le SMA dans les deux, un pays le filtre, il n'est jamais
+        // masque. En dessous de SMA_MIN_WORKS oeuvres, une portion-pays reste
+        // sans SMA — trop peu d'agents pour un regroupement parlant.
+        //
+        // ⚠️ CE QUI ETAIT ECRIT ICI, ET POURQUOI CE N'ETAIT PAS UN OBSTACLE :
+        //    « Phono A : trop d'oeuvres (~4380) pour un seul SMA (SMA.md §11)
+        //      -> All works = tableau complet SANS SMA ». La crainte etait un
+        //    nuage d'agents ingerable. Or LE NOMBRE D'AGENTS A L'ECRAN EST
+        //    DEJA BORNE, et depuis toujours : sma_animation() n'ajoute une
+        //    particule que tant que `particles.length < numberOfNodesOnDisplayMax`
+        //    (js/sma_core.js), valeur que cette page-ci porte a 400 des sa
+        //    quatrieme ligne. Les 4 380 oeuvres ne font donc pas 4 380 agents :
+        //    elles se repartissent sur QUATRE CENTS, chacun portant plusieurs
+        //    enregistrements qu'il defile (`particles[i].records.pop()`).
+        //    *La borne existait ; c'est la regle qui l'ignorait.*
+        //
+        // ⚠️ CE QUE CA COUTE QUAND MEME, et qui reste vrai : la reponse AJAX
+        //    porte les 4 380 oeuvres, le tableau les insere par lots de 200, et
+        //    le regroupement par propriete travaille sur cette masse. La page
+        //    est plus lente a s'etablir en Phono A "All works" qu'en Phono B.
+        //    C'est un cout de CONSTRUCTION, pas d'animation.
         initSMA(1210, 800);   // largeur = 2 tableaux (600) + gap (10) -> bord droit aligne
         startSMA();               // boucle lancee UNE seule fois
         buildCountryMenu();       // remplit le menu "Country" (pays de la bonne phono)
@@ -43,7 +59,10 @@ var _catLoadSeq = 0;
 
 function retrieveData(cat, numOfElements, country){
 
-    var doSMA  = (cat == 2) || (cat == 1 && (+country) > 0);
+    //  ⚠️ 2026-08-11 : les deux phonotheques construisent le SMA, y compris
+    //     Phono A en "All works" (voir le commentaire de window.onload).
+    //     Auparavant : `(cat == 2) || (cat == 1 && (+country) > 0)`.
+    var doSMA  = (cat == 1 || cat == 2);
     var myLoad = ++_catLoadSeq;
 
     var CHUNK = 200;   // nombre de lignes inserees par lot
@@ -87,14 +106,14 @@ function retrieveData(cat, numOfElements, country){
 
         // Visibilite du SMA + du canvas.
         var showSMA = doSMA;
-        if(cat == 1 && (+country) === 0){
-            // Phono A "All works" : trop d'oeuvres (~4380) pour un seul SMA
-            // (SMA.md §11) -> jamais de SMA, tableau seul.
-            showSMA = false;
-            $("#myCanvas").hide();
-            $("#infos").hide();
-            $("#sma_note").hide();
-        } else if(cat == 1 || cat == 2){
+        //  ⚠️ LA BRANCHE QUI MASQUAIT LE CANVAS EN PHONO A "All works" EST
+        //     RETIREE — 2026-08-11. Les deux phonotheques passent desormais par
+        //     la meme regle : le SMA s'affiche des que la portion compte au
+        //     moins SMA_MIN_WORKS oeuvres, et "All works" en compte toujours
+        //     assez. Le nombre d'agents a l'ecran reste borne par
+        //     numberOfNodesOnDisplayMax (400), qui est ce qui rendait la
+        //     precaution inutile.
+        if(cat == 1 || cat == 2){
             // Portion (un pays, ou "tout" en Phono B) : SMA seulement si assez
             // d'oeuvres. MEME SEUIL SMA_MIN_WORKS pour les deux phonotheques.
             showSMA = (total >= SMA_MIN_WORKS);

@@ -6,30 +6,34 @@
 <head>
 	<title><?php echo $title ?> | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<link rel="stylesheet" type="text/css" href="css/main.css">
-	<link rel="stylesheet" type="text/css" href="css/euphonies.css">
-	<link rel="stylesheet" type="text/css" href="css/isni.css">
+	<?php include_once("./php/asset.php") ?>
+	<!-- ⚠️ Feuilles et scripts horodates par asset() : sans cela, une correction
+	     deployee reste invisible tant que le lecteur n'a pas vide son cache —
+	     verifie le 2026-08-11 sur une regle de main.css. Voir php/asset.php. -->
+	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/main.css') ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/euphonies.css') ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/isni.css') ?>">
 	<?php include_once($_SERVER["DOCUMENT_ROOT"] . "/analyticstracking.php") ?>
-	<script src="lib/jquery-3.1.1.min.js"></script>
+	<script src="<?php echo asset('lib/jquery-3.1.1.min.js') ?>"></script>
 	<!-- Fiche ISNI : code partage par les quatre pages qui affichent un ISNI
 	     (voir l'en-tete de js/isni_box.js). Depend de jQuery, donc charge
 	     apres lui ; les points d'entree, eux, restent dans les scripts de la
 	     page — ici deux : la colonne ISNI du tableau (js/euphonies.js) et la
 	     boite violette du SMA (js/particles_euphonies.js). -->
-	<script src="js/isni_box.js"></script>
-	<script src="lib/perlin.js"></script>
-	<script src="js/variables.js"></script>
-	<script src="js/functions.js"></script>
-	<script src="js/sma_core.js"></script>
-	<script src="js/childs_euphonies.js"></script>
-	<script src="js/particles_euphonies.js"></script>
+	<script src="<?php echo asset('js/isni_box.js') ?>"></script>
+	<script src="<?php echo asset('lib/perlin.js') ?>"></script>
+	<script src="<?php echo asset('js/variables.js') ?>"></script>
+	<script src="<?php echo asset('js/functions.js') ?>"></script>
+	<script src="<?php echo asset('js/sma_core.js') ?>"></script>
+	<script src="<?php echo asset('js/childs_euphonies.js') ?>"></script>
+	<script src="<?php echo asset('js/particles_euphonies.js') ?>"></script>
 	<!-- Tri du tableau par clic sur ses en-tetes : module partage, sans
 	     dependance (voir l'en-tete de js/table_sort.js). Il est appele depuis
 	     js/euphonies.js, une fois les lignes construites. -->
-	<script src="js/table_sort.js"></script>
-	<script src="js/euphonies.js"></script>
+	<script src="<?php echo asset('js/table_sort.js') ?>"></script>
+	<script src="<?php echo asset('js/euphonies.js') ?>"></script>
 	<!-- Repli de la legende "How to read", partage par les sept pages qui en portent une : voir l'en-tete de js/legend_toggle.js -->
-	<script src="js/legend_toggle.js"></script>
+	<script src="<?php echo asset('js/legend_toggle.js') ?>"></script>
 </head>
 <body>
 	<div id="content">
@@ -69,8 +73,14 @@
 				    <ul id="titles"></ul>
 			    </div>
 		    </div>
-			<div id="legend">
-				<button type="button" id="lg_toggle" class="lg-title" aria-expanded="true" aria-controls="lg_body">
+			<!-- La legende arrive REPLIEE depuis le 2026-08-11, comme les cinq autres pages
+			     qui en portent une : ouverte, elle occupe plus de hauteur que le contenu, et
+			     le contenu est ce qu'on vient voir. L'etat d'arrivee s'ecrit ICI et non dans
+			     js/legend_toggle.js — voir l'en-tete de ce fichier : une page sans
+			     JavaScript garde la legende dans l'etat ou le serveur l'a envoyee, et aucune
+			     page ne s'ouvre sur un panneau qui se refermerait sous les yeux. -->
+			<div id="legend" class="is-collapsed">
+				<button type="button" id="lg_toggle" class="lg-title" aria-expanded="false" aria-controls="lg_body">
 					How to read this page<span class="lg-caret" aria-hidden="true"></span>
 				</button>
 				<div id="lg_body">

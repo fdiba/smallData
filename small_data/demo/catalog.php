@@ -29,25 +29,29 @@
 <head>
 	<title><?php echo $title ?> | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<link rel="stylesheet" type="text/css" href="css/main.css">
-	<link rel="stylesheet" type="text/css" href="css/catalog.css">
-	<link rel="stylesheet" type="text/css" href="css/isni.css">
+	<?php include_once("./php/asset.php") ?>
+	<!-- ⚠️ Feuilles et scripts horodates par asset() : sans cela, une correction
+	     deployee reste invisible tant que le lecteur n'a pas vide son cache —
+	     verifie le 2026-08-11 sur une regle de main.css. Voir php/asset.php. -->
+	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/main.css') ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/catalog.css') ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/isni.css') ?>">
 	<?php include_once($_SERVER["DOCUMENT_ROOT"] . "/analyticstracking.php") ?>
-	<script src="lib/jquery-3.1.1.min.js"></script>
+	<script src="<?php echo asset('lib/jquery-3.1.1.min.js') ?>"></script>
 	<!-- Fiche ISNI : code partage par les quatre pages qui affichent un ISNI
 	     (voir l'en-tete de js/isni_box.js). Depend de jQuery, donc charge
 	     apres lui ; les points d'entree, eux, restent dans les scripts de la
 	     page — ici js/particles_catalog.js pour la boite violette du SMA. -->
-	<script src="js/isni_box.js"></script>
-	<script src="lib/perlin.js"></script>
-	<script src="js/variables.js"></script>
-	<script src="js/functions.js"></script>
-	<script src="js/sma_core.js"></script>
-	<script src="js/childs_catalog.js"></script>
-	<script src="js/particles_catalog.js"></script>
-	<script src="js/catalog.js"></script>
+	<script src="<?php echo asset('js/isni_box.js') ?>"></script>
+	<script src="<?php echo asset('lib/perlin.js') ?>"></script>
+	<script src="<?php echo asset('js/variables.js') ?>"></script>
+	<script src="<?php echo asset('js/functions.js') ?>"></script>
+	<script src="<?php echo asset('js/sma_core.js') ?>"></script>
+	<script src="<?php echo asset('js/childs_catalog.js') ?>"></script>
+	<script src="<?php echo asset('js/particles_catalog.js') ?>"></script>
+	<script src="<?php echo asset('js/catalog.js') ?>"></script>
 	<!-- Repli de la legende "How to read", partage par les sept pages qui en portent une : voir l'en-tete de js/legend_toggle.js -->
-	<script src="js/legend_toggle.js"></script>
+	<script src="<?php echo asset('js/legend_toggle.js') ?>"></script>
 </head>
 <body>
 	<div id="content">
@@ -96,8 +100,14 @@
 			    </div>
 		    </div>
 <?php if($id==1 || $id==2){ ?>
-			<div id="legend">
-				<button type="button" id="lg_toggle" class="lg-title" aria-expanded="true" aria-controls="lg_body">
+			<!-- La legende arrive REPLIEE depuis le 2026-08-11, comme les cinq autres pages
+			     qui en portent une : ouverte, elle occupe plus de hauteur que le contenu, et
+			     le contenu est ce qu'on vient voir. L'etat d'arrivee s'ecrit ICI et non dans
+			     js/legend_toggle.js — voir l'en-tete de ce fichier : une page sans
+			     JavaScript garde la legende dans l'etat ou le serveur l'a envoyee, et aucune
+			     page ne s'ouvre sur un panneau qui se refermerait sous les yeux. -->
+			<div id="legend" class="is-collapsed">
+				<button type="button" id="lg_toggle" class="lg-title" aria-expanded="false" aria-controls="lg_body">
 					How to read this page<span class="lg-caret" aria-hidden="true"></span>
 				</button>
 				<div id="lg_body">
@@ -113,7 +123,7 @@
 							<li>the <em>visualization</em> has an ISNI record of its own, and it does not behave like the one above: click an agent whose composer has an ISNI and a box appears in the information column, between the orange box and the purple one, headed by that identifier &mdash; click the header to unfold the record. It sits in the column instead of over it, so nothing is hidden, and nothing is requested until you unfold it</li>
 							<li><em>edition(s)</em> gives the year or years in which the work was programmed at Bourges, between 1973 and 2009; the cell is left empty where the <em>Répertoire général</em> does not record it, and a work played again in a later edition carries several years</li>
 							<li>a <span class="work-award">&#9733;</span> after a title marks a work distinguished at the competition, held within the festival; the award year is not carried into <em>edition(s)</em>, and a number of awarded works carry no programming year at all &mdash; the full prize list is on the <a href="award-winning_works.php">Award-winning works</a> page</li>
-<?php if($id==1){ ?>							<li>Phonothèque A is large, so it is explored <strong>one country at a time</strong>: pick a <em>country</em> in the Country menu to filter the table and build the visualization for that country's composers; pick another country to switch, or <em>All works</em> to show the full table again</li>
+<?php if($id==1){ ?>							<li>by default <em>All works</em> shows the whole collection on the canvas; you can also pick a <em>country</em> in the Country menu to filter the table and the visualization to that country's composers, pick another to switch, or come back to <em>All works</em>. ⚠️ This collection is the large one &mdash; some 4&thinsp;380 works &mdash; so <em>All works</em> takes a moment to build; the number of agents on screen is capped either way, and each one carries several works in turn rather than standing for a single one</li>
 <?php } ?>
 <?php if($id==2){ ?>							<li>by default <em>All works</em> shows the whole collection on the canvas; you can also pick a <em>country</em> in the Country menu to filter the table and the visualization to that country's composers</li>
 <?php } ?>
