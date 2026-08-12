@@ -437,11 +437,17 @@ function buildCountryMenu(){
         ul.append(allLi);
 
         if(!str) return;
+        /* ⚠️ PAS DE QUATRE DEPUIS LE 2026-08-12 — php/retrieve_countries.php
+           transporte desormais `iso3` en quatrieme champ, pour `?ctry=FRA`.
+           Un pas reste a trois decalerait la lecture des le deuxieme pays,
+           silencieusement. C'est le defaut du `case 0` de retrieve_data.php,
+           dont le pas est passe de 4 a 5 puis a 6. */
         var arr = str.split("%");
-        for(var k = 0; k + 2 < arr.length; k += 3){
-            var cid = arr[k], cname = arr[k+1], cnt = arr[k+2];
+        for(var k = 0; k + 3 < arr.length; k += 4){
+            var cid = arr[k], cname = arr[k+1], cnt = arr[k+2], ciso = arr[k+3];
             var li = $('<li></li>')
                        .attr("data-cid", cid)
+                       .attr("data-iso", (ciso || '').toUpperCase())
                        .text(cname + " (" + cnt + ")")
                        .css("text-decoration", "underline");
             (function(id, nm, el){
@@ -449,6 +455,9 @@ function buildCountryMenu(){
             })(cid, cname, li);
             ul.append(li);
         }
+        /* Le menu existe : l'adresse peut etre appliquee. Pas avant — la
+           liste blanche est le menu lui-meme. */
+        appliquerPaysDeLUrl();
      })
      .fail(function(){
         $("#countries ul").empty().append('<li>countries: loading failed</li>');
@@ -465,7 +474,72 @@ function selectCountry(cid, name, liEl){
     if(liEl) liEl.css("font-weight", "bold");
     $("#cookies").empty().append('<p>country: ' + name + '</p>');
     retrieveData(_catId, 11, cid); // filtre la table + (selon la phono) alimente le SMA
+    ecrirePaysDansLUrl(liEl ? liEl.attr('data-iso') : isoDuCid(cid));
 }
+
+//------------------------------------------------------------------
+// LE PAYS DANS L'ADRESSE — `?ctry=FRA`
+//------------------------------------------------------------------
+/* ⚠️⚠️ LE CODE DE L'URL N'ATTEINT JAMAIS LA BASE. `?ctry=` est cherche dans
+   le MENU deja construit, et ce qui part vers php/retrieve_data.php est
+   l'IDENTIFIANT NUMERIQUE du pays trouve la — jamais la chaine de l'adresse.
+   Il n'y a donc rien a echapper : la valeur etrangere s'arrete au menu.
+   *La donnee la mieux protegee d'une injection est celle qui n'atteint pas le
+   SQL.*
+
+   ⚠️ Deux barrieres quand meme :
+        1. la FORME — exactement trois lettres, `^[A-Za-z]{3}$` ;
+        2. la LISTE BLANCHE — le code doit etre l'`iso3` d'un pays du menu,
+           donc de la phonotheque courante. `?ctry=XXX`, `?ctry=<script>` et
+           `?ctry=FRA` sur une phono ou la France n'a rien tombent pareil : sur
+           « All works ».
+      ⚠️ Deux pays du referentiel n'ont pas d'iso3 : ils ne sont pas
+         adressables, et l'URL ne s'ecrit pas pour eux plutot que d'inventer un
+         code.
+
+   ⚠️⚠️ ET `?id=` EST PRESERVE. catalog.php porte deja la phonotheque dans son
+      adresse ; ecrire `?ctry=` en l'ecrasant renverrait le lecteur sur l'autre
+      catalogue au premier rechargement. Les deux parametres cohabitent.
+
+   ⚠️ `replaceState` et non `pushState` : choisir un pays est un filtre, pas
+      une navigation (meme raison que sur award-winning_works.php). */
+function isoDuCid(cid){
+    var el = $("#countries ul li[data-cid='" + String(cid).replace(/'/g, "") + "']");
+    return el.length ? el.attr('data-iso') : '';
+}
+function paysDemande(){
+    var m = /[?&]ctry=([^&#]*)/.exec(window.location.search || '');
+    if(!m) return null;
+    var brut;
+    try{ brut = decodeURIComponent(m[1]); }catch(e){ return null; }
+    if(!/^[A-Za-z]{3}$/.test(brut)) return null;          // barriere 1 : la forme
+    var iso = brut.toUpperCase(), trouve = null;
+    $("#countries ul li[data-iso]").each(function(){       // barriere 2 : le menu
+        if(!trouve && $(this).attr('data-iso') === iso) trouve = $(this);
+    });
+    return trouve;
+}
+function ecrirePaysDansLUrl(iso){
+    if(!window.history || !window.history.replaceState) return;   // vieux moteur : on ne casse rien
+    var q = [];
+    var mid = /[?&]id=(\d+)/.exec(window.location.search || '');
+    if(mid) q.push('id=' + mid[1]);                                // la phonotheque d'abord
+    if(iso) q.push('ctry=' + encodeURIComponent(String(iso).toUpperCase()));
+    var url = window.location.pathname + (q.length ? '?' + q.join('&') : '');
+    if(url === window.location.pathname + window.location.search) return;
+    try{ window.history.replaceState({ctry: iso || null}, '', url); }catch(e){}
+}
+function appliquerPaysDeLUrl(){
+    var li = paysDemande();
+    if(!li) return;                    // rien a faire : la page est deja sur "All works"
+    selectCountry(li.attr('data-cid'), li.text().replace(/\s*\(\d+\)\s*$/, ''), li);
+}
+window.onpopstate = function(){
+    if($("#countries ul li[data-iso]").length){
+        var li = paysDemande();
+        if(li) appliquerPaysDeLUrl(); else showFullTable();
+    }
+};
 
 // Bouton "All works" : tableau complet. Phono A -> canvas masque (retrieveData) ;
 // Phono B -> SMA sur tout (retrieveData montre le canvas).
@@ -475,4 +549,5 @@ function showFullTable(){
     $("#countries ul li").css("font-weight", "normal");
     $("#countries ul li.all-works").css("font-weight", "bold");
     retrieveData(_catId, 11, 0);  // country=0 -> Phono A: pas de SMA ; Phono B: SMA sur tout
+    ecrirePaysDansLUrl(null);
 }
