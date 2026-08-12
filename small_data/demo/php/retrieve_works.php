@@ -99,6 +99,19 @@
 		// jury », et le prochain mot du prochain constat. Le type classifie,
 		// le libelle cite la source : c'est le type qu'on interroge.
 		//
+		// ⚠️⚠️ ET `finaliste` REJOINT `selection` LE 2026-08-12, AVEC LE 2e PUY.
+		// Le constat de 1994 decerne UN « 1er Prix » par discipline, puis des
+		// « 1er / 2e / 3e finaliste ». Arbitrage de Florent : ce n'est ni un
+		// prix ni une mention, le rang est saisi dans la base, et la page ne
+		// l'affiche pas. La valeur d'enum est posee par
+		// DB/alter_distinction_finaliste.sql.
+		//   ⚠️ LE `<>` DEVIENT UN `NOT IN`, ET CE N'EST PAS UN DETAIL : une
+		//   valeur d'enum ajoutee sans toucher a ce filtre S'AFFICHE. Un
+		//   `<> 'selection'` laisse passer tout ce qui n'est pas 'selection',
+		//   y compris ce qui n'existait pas quand on l'a ecrit.
+		//   *Un filtre qui nomme ce qu'il exclut se perime a chaque valeur
+		//    nouvelle ; il faut donc le relire quand on en ajoute une.*
+		//
 		// LE DEUXIEME CHAMP SUIT LE MEME CODE-BOOK QUE LE CATALOGUE — corrige
 		// le 2026-08-04. Il valait « 100 + rang » pour une mention, la ou
 		// imeb_music.award_price ecrit 100 tout court quel que soit le rang.
@@ -236,7 +249,7 @@
 								WHERE ba3.rang > 1
 								GROUP BY ba3.id_bande
 							) cod ON cod.b_id = b.id
-							WHERE d.type <> \'selection\'
+							WHERE d.type NOT IN (\'selection\', \'finaliste\')
 							AND NOT EXISTS (
 								SELECT 1 FROM imeb_bande_artiste ba4
 								INNER JOIN imeb_music m ON m.id_artist = ba4.id_artist
