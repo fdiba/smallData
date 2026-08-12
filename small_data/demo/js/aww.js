@@ -88,7 +88,14 @@ function parseWorks(str){
     // 16 -> 17 le 2026-08-07 : LE NUMERO DE LA MENTION (arr[i+16]),
     // imeb_music.award_ordre. Onze oeuvres du fonds en portent un et aucune
     // ne l'affichait — voir le bloc `rank` ci-dessous.
-    var numOfElements = 17;
+    //
+    // 17 -> 18 le 2026-08-12 : L'EVENEMENT (arr[i+17]), imeb_categorie.evenement.
+    // ⚠️ 1993 est la premiere edition du fonds a en porter DEUX : le constat du
+    //    8 juin 1993 couvre le 21e Concours International ET le 1er PUY de
+    //    Musique electroacoustique. Une seule piece, une seule annee, deux
+    //    series de numeros — C et P — et deux palmares. Sans ce champ, les sept
+    //    prix du Puy s'affichent melanges aux prix du Concours.
+    var numOfElements = 18;
     var objects = [];
 
     for (var i = 0; i < arr.length-(numOfElements-1); i+=numOfElements) {
@@ -193,6 +200,42 @@ function parseWorks(str){
         var cat = arr[i+8];
         var catRang = CAT_HORS_AXE[parseInt(arr[i+1], 10)] || 0;
         if(catRang && (cat === 'Magistère' || cat === 'Résidence')) cat = '';
+
+        /* ⚠️⚠️ LE PUY N'EST PAS UN DEGRE DU CONCOURS, C'EST UN AUTRE CONCOURS
+           — 2026-08-12.
+
+           Le constat du 8 juin 1993 en couvre DEUX, et il le dit lui-meme en
+           page 1 : « il a ete decide pour differencier les participants
+           d'inscrire sur les bulletins la lettre C pour le concours et la
+           lettre P pour le Puy a cote du numero attribue a la bande ». 433
+           numeros C, 159 numeros P, un seul huissier, une seule date — et
+           donc, pour cette page, une seule annee.
+
+           Ses quatre disciplines — Humour, Circonstance, Jeunesse, Danse — ne
+           sont pas des categories musicales du Concours, et son echelle n'est
+           pas la meme : QUATRE rangs, 1er a 4e Prix, la ou le Quadrivium a
+           deux prix et des mentions. Melanges, un « 2e Prix » du Puy et un
+           « 2e Prix » de Studio se lisent comme deux recompenses de meme
+           nature. Ils n'en sont pas.
+
+           ON NE TRADUIT RIEN ET ON NE CORRIGE PAS LA BASE : on dit seulement
+           OU CES LIGNES SE PLACENT — apres toutes les autres de leur annee —,
+           ce qui est de l'affichage. C'est exactement le correctif du
+           2026-08-08 sur le Magistere et la Residence, et il emprunte le meme
+           chemin : `cat_rang`, qui passe AVANT `cat` dans sortAndRender.
+
+               -1  Magistere    couronne l'edition entiere
+                0  les vraies categories du Concours
+               +1  Residence    un sejour, pas une recompense de rang
+               +2  le PUY       un autre concours
+
+           ⚠️ ET LE TEST PORTE SUR L'EVENEMENT, PAS SUR LE LIBELLE NI SUR
+              L'IDENTIFIANT. Quatre identifiants en dur — 23, 24, 25, 26 —
+              seraient le code-book que php/retrieve_works.php s'est deja
+              interdit, et il se perimerait des le 2e Puy de 1994 : celui-la
+              reconduit « et Humour » et « et Danse » et abandonne « de
+              Circonstance » et « pour la Jeunesse ». */
+        if(arr[i+17] === 'puy') catRang = 2;
 
         /* rank_num : le RANG SEUL, en plus du libelle compose. Il ne
            s'affiche nulle part — il sert uniquement au tri, ou rank_code ne

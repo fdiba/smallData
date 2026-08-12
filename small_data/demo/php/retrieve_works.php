@@ -128,16 +128,60 @@
 		// plusieurs milliers aujourd'hui — et c'est justement pourquoi ses
 		// colonnes se verifient mal. Chaque champ qu'on ajoute a la premiere
 		// source doit etre relu ici.
+		//
+		// ⚠️⚠️ LE LIBELLE DE CATEGORIE EST DESORMAIS LE CANONIQUE, PAS CELUI
+		//    DU CATALOGUE — 2026-08-12, et c'est un DEFAUT qui a ete mesure,
+		//    pas un confort.
+		//
+		//    Les lignes 6 et 12 de `imeb_categorie` ont ete fusionnees ce
+		//    jour-la : « Electroacoustique » (1985-1991) et « Studio »
+		//    (1993-1998) sont une seule categorie, que les constats de 1990 et
+		//    de 1993 appellent du meme nom complet. Une seule ligne survit,
+		//    `libelle` = « Studio », et l'autre graphie vit dans `libelle_alt`.
+		//
+		//    ⚠️ CETTE PAGE EN A ALORS AFFICHE DEUX NOMS LA MEME ANNEE. Mesure
+		//    le 2026-08-12 sur les 71 recompenses de la categorie :
+		//
+		//        1986   6 lignes « Electroacoustique »  ET 1 ligne « Studio »
+		//        1989   5 lignes « Electroacoustique »  ET 1 ligne « Studio »
+		//
+		//    Les deux intruses viennent de la SECONDE branche, qui joint
+		//    `imeb_categorie` PAR L'ID et servait donc deja le libelle
+		//    fusionne ; la premiere servait `imeb_music.award_cat`, la chaine
+		//    du Repertoire general. **Une meme page, une meme annee, une meme
+		//    categorie, deux noms.** Ce n'est pas « la page affiche l'ancien
+		//    nom » : c'est qu'elle affichait les deux.
+		//
+		//    ⚠️ CE QUE CELA COUTE, ET IL FAUT L'ASSUMER : les 44 recompenses de
+		//    1985-1991 s'affichent maintenant sous « Studio », un mot que SIX
+		//    constats sur sept n'ecrivent pas ces annees-la — ils ecrivent
+		//    « PRIX DE LA MUSIQUE ELECTROACOUSTIQUE », sans « de Studio ».
+		//    C'est le §21.7, *l'annee decide du nom que le document employait*,
+		//    et il plaide en sens inverse. On tranche pour la COHERENCE : la
+		//    page `categories.php` annonce deja « Studio, 1985-1998 » et sa
+		//    legende explique les deux noms. Deux pages qui se contredisent
+		//    coutent plus qu'un nom anachronique explique en legende.
+		//
+		//    ⚠️ ET `imeb_music`.`award_cat` N'EST PAS TOUCHE (§4, principe 2) :
+		//    le Repertoire general garde ses deux mots, et une sous-requete —
+		//    non une jointure, qui pourrait multiplier les lignes — traduit a
+		//    l'affichage. `libelle_alt` reste la source de la graphie
+		//    historique pour qui la voudra.
 		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price,
 							imeb_music.award_label, imeb_music.award_rank,
 							imeb_music.award_label_2,
-							imeb_music.award_cat, imeb_music.award_cat_2, imeb_music.euphonies,
+							COALESCE((SELECT c9.libelle FROM imeb_categorie c9
+										WHERE c9.libelle = imeb_music.award_cat
+										   OR c9.libelle_alt = imeb_music.award_cat
+										LIMIT 1), imeb_music.award_cat) AS award_cat,
+							imeb_music.award_cat_2, imeb_music.euphonies,
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
 							imeb_artist.isni AS isni,
 							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry,
 							co.coauteurs AS coauteurs,
-							imeb_music.award_ordre AS award_ordre
+							imeb_music.award_ordre AS award_ordre,
+							\'concours\' AS evenement
 							FROM imeb_music
 							INNER JOIN imeb_artist
 							ON imeb_music.id_artist = imeb_artist.id
@@ -171,7 +215,8 @@
 							a.isni,
 							COALESCE(NULLIF(pays.c_name_en, \'\'), pays.c_name),
 							cod.coauteurs,
-							NULL
+							NULL,
+							COALESCE(catd.evenement, \'concours\')
 							FROM imeb_distinction d
 							INNER JOIN imeb_bande b ON b.id = d.id_bande
 							INNER JOIN imeb_pv p ON p.id = b.id_pv
@@ -210,7 +255,8 @@
 							NULL,
 							NULL,
 							NULL,
-							NULL
+							NULL,
+							COALESCE(cat.evenement, \'concours\')
 							FROM imeb_non_attribution n
 							INNER JOIN imeb_pv p2 ON p2.id = n.id_pv
 							INNER JOIN imeb_concours c ON c.id = p2.id_concours
@@ -349,11 +395,40 @@
 			//    numero, et il ne le dit que pour onze oeuvres.
 			$award_ordre = $row['award_ordre'] !== null ? $row['award_ordre'] : '';
 
+			// 18e champ : L'EVENEMENT — ajoute le 2026-08-12, EN FIN
+			// d'enregistrement comme tous les precedents.
+			//
+			// ⚠️ 1993 EST LA PREMIERE EDITION A EN PORTER DEUX. Le constat du
+			//    8 juin 1993 couvre le 21e Concours International ET le 1er PUY
+			//    de Musique electroacoustique — deux evenements, deux series de
+			//    numeros (C et P), une seule piece et une seule annee. Sans ce
+			//    champ, les sept prix du Puy s'affichent melanges aux prix du
+			//    Concours, et rien ne dit au lecteur que ce ne sont pas les
+			//    memes recompenses.
+			//
+			// ⚠️ IL VIENT DE LA BASE, PAS D'UNE LISTE D'IDENTIFIANTS. La
+			//    solution courte — « si la categorie est 23, 24, 25 ou 26 » —
+			//    est le code-book que cette page s'est deja interdit plus haut,
+			//    en ecartant un filtre par libelle : *le type classifie, le
+			//    libelle cite la source.* Et il se perimerait des le 2e Puy de
+			//    1994, qui reconduit deux disciplines et en abandonne deux.
+			//    D'ou `imeb_categorie`.`evenement`, ajoutee le meme jour par
+			//    DB/alter_categorie_evenement.sql.
+			//
+			// ⚠️ LA PREMIERE BRANCHE SERT 'concours' EN DUR, ET C'EST MESURE :
+			//    `imeb_music` ne porte AUCUNE des sept recompenses du Puy de
+			//    1993 — le catalogue les ignore toutes (§29.5). Le controle est
+			//    ecrit dans DB/alter_categorie_evenement.sql et rend zero.
+			//
+			// ATTENTION : numOfElements passe de 17 a 18 dans js/aww.js, seul
+			// consommateur de ce flux. Les deux doivent bouger ensemble.
+			$evenement = $row['evenement'] !== null ? $row['evenement'] : 'concours';
+
 			if($award_year!=null){
 
 				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat,
 							$award_cat2, $ctry, $isni, $award_label, $award_rank, $award_label2,
-							$coauteurs, $award_ordre);
+							$coauteurs, $award_ordre, $evenement);
 
 				/*if($euphonies>0){
 

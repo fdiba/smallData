@@ -47,6 +47,41 @@
 	      plus, ses deux champs sortiront vides et la periode ne s'affichera
 	      pas : la page perd une information, elle n'en invente pas.
 
+	   ⚠️⚠️ REPRISE DU 2026-08-12 — DEUX LIBELLES DU CATALOGUE NOMMENT UNE
+	      SEULE CATEGORIE, ET LA JOINTURE DOIT LE SAVOIR.
+
+	      Le constat de 1993 ecrit, en tete de son Degre 2, « 1°) PRIX DE LA
+	      MUSIQUE ELECTROACOUSTIQUE DE STUDIO » — exactement ce que le
+	      constat de 1990 ecrit page 1 pour DEFINIR sa categorie 1. Mesure :
+	      les laureats de la categorie 1 de 1990 portent `award_cat =
+	      Electroacoustique`, ceux de 1993 portent `award_cat = Studio`.
+	      **Le catalogue separe en deux ce que les deux constats appellent du
+	      meme nom.** Les lignes 6 et 12 de `imeb_categorie` ont donc ete
+	      fusionnees le 2026-08-12 (DB/fusion_categorie_studio.sql) : une
+	      seule ligne, `libelle` = « Studio », `annee_debut` 1985,
+	      `annee_fin` 1998, et le libelle du catalogue conserve dans la
+	      colonne neuve `libelle_alt`.
+
+	      DEUX CHOSES CHANGENT ICI, ET UNE TROISIEME NON :
+	        - la jointure porte sur `libelle` OU `libelle_alt`, sans quoi les
+	          44 oeuvres de 1985-1991 ne tomberaient plus sur aucune ligne et
+	          PERDRAIENT LEUR PERIODE en silence (mesure : 44) ;
+	        - le champ `categorie` emis est desormais LE LIBELLE CANONIQUE de
+	          `imeb_categorie` — c'est lui qui fait le nœud du diagramme, et
+	          c'est la seule facon d'en avoir UN au lieu de deux ;
+	        - `imeb_music.award_cat` N'EST PAS TOUCHE. Le §4 principe 2 du
+	          chantier tient : *la table du chantier sert a comparer, pas a
+	          remplacer.* Reecrire 44 lignes du catalogue aurait efface ce
+	          qu'il ecrit pour y mettre ce que nous en concluons.
+
+	      ⚠️ La longueur d'enregistrement ne bouge pas : c'est la VALEUR du
+	         troisieme champ qui change, pas le nombre de champs. js/categories.js
+	         n'a rien a reprendre.
+
+	      ⚠️ ET LE REPLI RESTE ECRIT : si la jointure ne trouve rien — un
+	         libelle neuf au catalogue —, on emet `award_cat` tel quel, comme
+	         avant. La page perd une periode, elle n'invente pas un nœud.
+
 	   Le dixieme a ete ajoute le 2026-08-06 au soir, EN FIN d'enregistrement
 	   comme tous les precedents :
 	     - sous_categorie : le LIBELLE, pas le code. `imeb_music.award_cat_2`
@@ -102,6 +137,7 @@
 							imeb_music.editions,
 							imeb_music.award_cat_2,
 							imeb_music.award_price,
+							imeb_categorie.libelle AS cat_canon,
 							imeb_categorie.annee_debut AS cat_debut,
 							imeb_categorie.annee_fin AS cat_fin
 							FROM imeb_music
@@ -109,6 +145,7 @@
 							ON imeb_music.id_artist = imeb_artist.id
 							LEFT JOIN imeb_categorie
 							ON imeb_categorie.libelle = imeb_music.award_cat
+							OR imeb_categorie.libelle_alt = imeb_music.award_cat
 							WHERE imeb_music.award_year IS NOT NULL
 							ORDER BY imeb_music.award_year ASC,
 							imeb_music.award_price ASC,
@@ -120,7 +157,17 @@
 
 			$year = $row['award_year'];
 
-			$category = $row['award_cat'];
+			//⚠️ LE NŒUD DU DIAGRAMME EST LE LIBELLE CANONIQUE, PAS CELUI DU
+			//   CATALOGUE. Deux libelles du Repertoire general — « Electro-
+			//   acoustique » (1985-1991) et « Studio » (1993-1998) — nomment
+			//   une seule categorie : les deux constats qui la definissent,
+			//   1990 et 1993, l'appellent « Prix de la Musique Electro-
+			//   acoustique de Studio ». Emis tels quels, ils feraient DEUX
+			//   nœuds la ou il n'y a qu'une categorie.
+			//   Repli inchange quand la jointure ne trouve rien : on garde ce
+			//   que le catalogue ecrit.
+			$category = $row['cat_canon'];
+			if($category === null || $category === '') $category = $row['award_cat'];
 			if($category === null || $category === '') $category = 'None';
 
 			$name = $row['name'];

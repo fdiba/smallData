@@ -113,41 +113,46 @@
 				<div id="lg_body">
 				<p class="lg-intro">The IMEB's holdings form the <em>Fonds MISAME</em>, whose <em>Répertoire général</em> &mdash; compiled by Christian Clozier &mdash; brings together 1&thinsp;946 composers, 6&thinsp;612 works and 63 countries, split into two phonothèques: the <em>International Sound Archives</em> (Phonothèque A, &laquo;&nbsp;Extérieure&nbsp;&raquo;) and the <em>IMEB Sound Archives</em> (Phonothèque B). <?php echo $coll_desc ?></p>
 				<p class="lg-note"><?php echo $cov_note ?></p>
-				<div class="lg-cols">
-					<div>
-						<p><strong>Table<?php if($id==1 || $id==2) echo ' &amp; agents'; ?></strong></p>
-						<ul>
-							<li><?php echo $table_desc ?></li>
-							<li>the composer cell is shared across all of their works; the background alternates to separate composers and, within a composer, their pieces</li>
-							<li>a composer whose name is <span class="composer-isni">underlined with dots</span> has an ISNI: click the name to open their international identity record in the panel on the right &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. The panel stays open while you scroll the table; close it with the cross or the <em>Esc</em> key. Clicking an agent closes it, since it sits over the information boxes &mdash; but the loading counter alone leaves it open</li>
-							<li>the <em>visualization</em> has an ISNI record of its own, and it does not behave like the one above: click an agent whose composer has an ISNI and a box appears in the information column, between the orange box and the purple one, headed by that identifier &mdash; click the header to unfold the record. It sits in the column instead of over it, so nothing is hidden, and nothing is requested until you unfold it</li>
-							<li><em>edition(s)</em> gives the year or years in which the work was programmed at Bourges, between 1973 and 2009; the cell is left empty where the <em>Répertoire général</em> does not record it, and a work played again in a later edition carries several years</li>
-							<li>a <span class="work-award">&#9733;</span> after a title marks a work distinguished at the competition, held within the festival; the award year is not carried into <em>edition(s)</em>, and a number of awarded works carry no programming year at all &mdash; the full prize list is on the <a href="award-winning_works.php">Award-winning works</a> page</li>
-<?php if($id==1){ ?>							<li>by default <em>All works</em> shows the whole collection on the canvas; you can also pick a <em>country</em> in the Country menu to filter the table and the visualization to that country's composers, pick another to switch, or come back to <em>All works</em>. ⚠️ This collection is the large one &mdash; some 4&thinsp;380 works &mdash; so <em>All works</em> takes a moment to build; the number of agents on screen is capped either way, and each one carries several works in turn rather than standing for a single one</li>
-<?php } ?>
-<?php if($id==2){ ?>							<li>by default <em>All works</em> shows the whole collection on the canvas; you can also pick a <em>country</em> in the Country menu to filter the table and the visualization to that country's composers</li>
-<?php } ?>
-<?php if($id==1 || $id==2){ ?>							<li>on the canvas, each moving ellipse is an agent carrying one archived work</li>
-<?php } ?>						</ul>
-					</div>
+								<div class="lg-cols">
+				<div>
+					<p><strong>The table</strong></p>
+					<ul>
+						<li><?php echo $table_desc ?></li>
+						<li>the composer cell is shared across all of their works; the background alternates to separate composers and, within a composer, their pieces</li>
+						<li><em>edition(s)</em> gives the year or years in which the work was programmed at Bourges, between 1973 and 2009; the cell is left empty where the <em>Répertoire général</em> does not record it, and a work played again in a later edition carries several years</li>
+						<li>a <span class="work-award">&#9733;</span> after a title marks a work distinguished at the competition, held within the festival; the award year is not carried into <em>edition(s)</em>, and a number of awarded works carry no programming year at all &mdash; the full prize list is on the <a href="award-winning_works.php">Award-winning works</a> page</li>
+					</ul>
+				</div>
+				<div>
+					<p><strong>Composers &amp; works</strong></p>
+					<ul>
+						<li>a composer whose name is <span class="composer-isni">underlined with dots</span> has an ISNI: click the name to open their international identity record in the panel on the right &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. The panel stays open while you scroll the table; close it with the cross or the <em>Esc</em> key. Clicking an agent closes it, since it sits over the information boxes &mdash; but the loading counter alone leaves it open</li>
+						<li>the <em>visualization</em> has an ISNI record of its own, and it does not behave like the one above: click an agent whose composer has an ISNI and a box appears in the information column, between the orange box and the purple one, headed by that identifier &mdash; click the header to unfold the record. It sits in the column instead of over it, so nothing is hidden, and nothing is requested until you unfold it</li>
+					<?php if($id==1){ ?>
+						<li>by default <em>All works</em> shows the whole collection on the canvas; you can also pick a <em>country</em> in the Country menu to filter the table and the visualization to that country's composers, pick another to switch, or come back to <em>All works</em>. This collection is the large one &mdash; some 4&thinsp;380 works &mdash; so <em>All works</em> takes a moment to build; the number of agents on screen is capped either way, and each one carries several works in turn rather than standing for a single one</li>
+					<?php } ?>
+					<?php if($id==2){ ?>
+						<li>by default <em>All works</em> shows the whole collection on the canvas; you can also pick a <em>country</em> in the Country menu to filter the table and the visualization to that country's composers</li>
+					<?php } ?>
+					</ul>
+				</div>
 <?php if($id==1 || $id==2){ ?>
-					<div>
-						<p><strong>Agents</strong></p>
-						<ul>
-							<li><span class="sq" style="background:#bdc3c7"></span> an agent, still looking for others sharing a common property</li>
-							<li><span class="sq" style="background:#2ecc71"></span> a grouping &mdash; click it to open it</li>
-							<li><span class="sq" style="background:#f1c40f"></span> an opened grouping, showing its members &mdash; double-click it to close it</li>
-							<li><span class="sq" style="background:#3498db"></span> a single work inside an opened grouping &mdash; click it to display its details in the information column: the <em>orange</em> box names the composer and their country, the <em>purple</em> one describes the work, and a <em>blue</em> box appears between them when that composer has an ISNI</li>
-						</ul>
-					</div>
-					<div>
-						<p><strong>Grouping</strong></p>
-						<ul>
-							<li>agents compare their properties as they move; candidate properties and their exchange counts appear in the white panel of the top bar, and a property (such as <em>ln</em> (last name)) becomes clickable once exchanged often enough</li>
-							<li>click that property name to let the agents regroup around it</li>
-							<li><em>reset</em> restarts the system, <em>pause</em> freezes it (the <em>p</em> key toggles the agents' drift)</li>
-						</ul>
-					</div>
+				<div>
+					<p><strong>Agents</strong></p>
+					<ul>
+						<li>on the canvas, each moving ellipse is an agent carrying one archived work</li>
+						<li><span class="sq" style="background:#bdc3c7"></span> an agent, still looking for others sharing a common property</li>
+						<li><span class="sq" style="background:#2ecc71"></span> a grouping &mdash; click it to open it</li>
+						<li><span class="sq" style="background:#f1c40f"></span> an opened grouping, showing its members &mdash; double-click it to close it</li>
+						<li><span class="sq" style="background:#3498db"></span> a single work inside an opened grouping &mdash; click it to display its details in the information column: the <em>orange</em> box names the composer and their country, the <em>purple</em> one describes the work, and a <em>blue</em> box appears between them when that composer has an ISNI</li>
+					</ul>
+					<p><strong>Grouping</strong></p>
+					<ul>
+						<li>agents compare their properties as they move; candidate properties and their exchange counts appear in the white panel of the top bar, and a property (such as <em>ln</em> (last name)) becomes clickable once exchanged often enough</li>
+						<li>click that property name to let the agents regroup around it</li>
+						<li><em>reset</em> restarts the system, <em>pause</em> freezes it (the <em>p</em> key toggles the agents' drift)</li>
+					</ul>
+				</div>
 <?php } ?>
 				</div>
 				</div>
