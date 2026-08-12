@@ -64,7 +64,11 @@ window.onload = function() {
     $.ajax({ url: 'php/retrieve_works.php', type: "POST" }).done(function(str) {
         allWorks = parseWorks(str);
         buildYearMenu();
-        showAllWorks();     // etat initial : tout (comme catalog id=2)
+        /* ⚠️ L'ETAT INITIAL VIENT DE L'URL, PAS D'UNE CONVENTION — 2026-08-12.
+           `?y=1994` ouvre la page sur cette edition. Sans `y`, ou avec un `y`
+           que le fonds ne porte pas, on retombe sur « All works » : une adresse
+           fausse ne doit pas rendre une page vide, elle doit rendre la page. */
+        appliquerAnneeDeLUrl();
     });
 };
 
@@ -386,6 +390,7 @@ function showAllWorks(){
     highlightYearMenu($("#years ul li.all-works"));
     setCanvasHeight(SMA_H_FULL);        // avant renderSelection : voir le commentaire en tete
     renderSelection(allWorks);
+    ecrireAnneeDansLUrl(null);
 }
 
 function selectYear(year){
@@ -393,7 +398,66 @@ function selectYear(year){
     setCanvasHeight(SMA_H_YEAR);        // une edition : moitie de hauteur
     var subset = allWorks.filter(function(w){ return String(w.year) === String(year); });
     renderSelection(subset);
+    ecrireAnneeDansLUrl(year);
 }
+
+//------------------------------------------------------------------
+// L'ANNEE DANS L'ADRESSE — `?y=1994`
+//------------------------------------------------------------------
+/* ⚠️⚠️ RIEN DE CE PARAMETRE N'ATTEINT LA BASE, ET C'EST LA REPONSE A LA
+   QUESTION DE L'INJECTION. Le flux `php/retrieve_works.php` est appele SANS
+   parametre : il rend TOUTES les œuvres primees, une fois, et `y` ne fait que
+   filtrer un tableau deja en memoire (`allWorks`). Il n'y a donc ni requete
+   parametree a ecrire ni echappement a poser — il n'y a pas de requete.
+   *La donnee la mieux protegee d'une injection est celle qui n'atteint pas le
+   SQL.*
+
+   ⚠️ DEUX BARRIERES QUAND MEME, parce qu'une valeur d'URL est une valeur
+      etrangere meme quand elle ne va nulle part :
+        1. la FORME — exactement quatre chiffres, `^\d{4}$` ;
+        2. la LISTE BLANCHE — l'annee doit exister dans le menu, donc dans le
+           fonds. `?y=1795` et `?y=<script>` tombent pareil : sur « All works ».
+      La valeur n'est jamais injectee dans le DOM : elle sert de cle de
+      comparaison (`String(w.year) === String(year)`) et rien d'autre.
+
+   ⚠️ `replaceState` ET NON `pushState` : choisir une edition dans le menu
+      n'est pas une navigation, c'est un filtre. `pushState` empilerait une
+      entree d'historique par clic, et le bouton « precedent » deviendrait un
+      « annuler mon dernier clic » que personne n'a demande. L'adresse suit la
+      selection ; l'historique n'en garde qu'une trace, celle par laquelle on
+      est arrive.
+
+   ⚠️ ET LA PAGE NE SE RECHARGE PAS : tout est deja charge. C'est le meme
+      tableau `allWorks` qui est refiltre, exactement comme au clic. */
+function anneesDuFonds(){
+    var out = {};
+    for(var i=0; i<allWorks.length; i++) out[String(allWorks[i].year)] = true;
+    return out;
+}
+function anneeDemandee(){
+    var m = /[?&]y=([^&#]*)/.exec(window.location.search || '');
+    if(!m) return null;
+    var brut;
+    try{ brut = decodeURIComponent(m[1]); }catch(e){ return null; }
+    if(!/^\d{4}$/.test(brut)) return null;          // barriere 1 : la forme
+    if(!anneesDuFonds()[brut]) return null;         // barriere 2 : le fonds
+    return brut;
+}
+function ecrireAnneeDansLUrl(year){
+    if(!window.history || !window.history.replaceState) return;   // vieux moteur : on ne casse rien
+    var base = window.location.pathname;
+    var url  = year ? (base + '?y=' + encodeURIComponent(String(year))) : base;
+    if(url === window.location.pathname + window.location.search) return;  // rien a ecrire
+    try{ window.history.replaceState({y: year || null}, '', url); }catch(e){}
+}
+function appliquerAnneeDeLUrl(){
+    var y = anneeDemandee();
+    if(y) selectYear(y);
+    else  showAllWorks();
+}
+/* Le bouton « precedent » ramene a l'adresse par laquelle on est arrive : on
+   la relit plutot que de supposer l'etat. */
+window.onpopstate = function(){ if(allWorks.length) appliquerAnneeDeLUrl(); };
 
 //------------------------------------------------------------------
 // Construit tableau + SMA pour une selection (tout / une annee)
