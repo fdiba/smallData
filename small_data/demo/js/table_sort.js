@@ -50,7 +50,20 @@
 	   pas le balisage qui l'entoure. */
 	function cellValue(td){
 
-		var s = (td && (td.textContent || td.innerText) || '');
+		/* ⚠️ `data-sort` L'EMPORTE SUR LE TEXTE AFFICHE — 2026-08-12.
+		   Une cellule peut montrer une chose et se trier sur une autre : la
+		   colonne « composer » d'euphonies.php affiche « Marie DUPONT » et se
+		   trie sur « dupont marie ». Sans ce crochet, il fallait choisir entre
+		   un affichage lisible et un tri juste, et la page avait choisi de
+		   couper la colonne en deux pour ne pas choisir.
+		   ⚠️ L'attribut est une CLE, pas un libelle : il n'est jamais affiche,
+		      et c'est a celui qui le pose de le normaliser (accents, casse).
+		   Le repli sur textContent est integral : une table qui ne pose pas
+		   l'attribut se trie exactement comme avant. */
+		var k = td && td.getAttribute && td.getAttribute('data-sort');
+		var s = (k !== null && k !== undefined && k !== '')
+		      ? k
+		      : (td && (td.textContent || td.innerText) || '');
 		s = s.replace(/\s+/g, ' ').replace(/^ | $/g, '');
 
 		if(s === '') return {empty: true};

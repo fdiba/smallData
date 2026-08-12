@@ -89,7 +89,7 @@
 					<div>
 						<p><strong>Table &amp; agents</strong></p>
 						<ul>
-							<li>the table lists the Euphonies d'Or, sorted on arrival by edition then last name; <em>click any column header</em> to sort on that column, and again to reverse the order &mdash; sorting <em>edition</em> twice thus restores the order the page opened with. Empty cells always come last, in either direction: a blank is a missing piece of information, not a small value</li>
+							<li>the table lists the Euphonies d'Or, sorted on arrival by edition then last name; the <em>composer</em> column shows &laquo;&nbsp;first name last name&nbsp;&raquo; but sorts on the <em>last</em> name, the first one only breaking ties; <em>click any column header</em> to sort on that column, and again to reverse the order &mdash; sorting <em>edition</em> twice thus restores the order the page opened with. Empty cells always come last, in either direction: a blank is a missing piece of information, not a small value</li>
 							<li>click a row and the composer's records held by data.bnf.fr unfold right underneath it, or click the ISNI itself for a summary of the composer's international identity record and the external resources it points to</li>
 							<li>on the canvas, each moving ellipse is an agent carrying one Euphonie d'Or</li>
 						</ul>
@@ -123,8 +123,7 @@
 						<th>category</th>
 						<th>sub category</th>
 						<th>price</th>
-						<th>first name</th>
-						<th>last name</th>
+						<th>composer</th>
 						<th>country</th>
 						<th>title</th>
 						<th>duration</th>

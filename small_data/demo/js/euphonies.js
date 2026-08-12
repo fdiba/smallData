@@ -44,15 +44,34 @@ function retrieveEuphonies(cat, numOfElements){
             //---------
 
             // ordre des colonnes : edition, year, category, sub category, price,
-            // first name, last name, country, title, duration, isni
+            // composer (prenom + nom FUSIONNES), country, title, duration, isni
             // (le champ 8 = temp id n'est pas affiche ; le champ 3 = imeb id,
             // c-a-d le MISAM, n'est plus affiche non plus mais reste transporte
             // et sert toujours de propriete imeb_id aux agents du SMA)
-            var colOrder = [0, 1, 9, 10, 2, 4, 5, 12, 6, 7, 11];
+            /* ⚠️⚠️ « first name » ET « last name » N'EN FONT PLUS QU'UNE —
+               2026-08-12. Deux colonnes pour une identite, c'etait deux
+               colonnes a lire pour un nom, et surtout : la seule facon de
+               trier par patronyme etait de cliquer la SECONDE. La colonne
+               s'appelle « composer », affiche « Prenom NOM », et se trie sur
+               le NOM grace a `data-sort` (js/table_sort.js).
+               ⚠️ La cle de tri est normalisee ici et pas ailleurs : accents
+                  retires et minuscules, sans quoi « Écoute » se range apres
+                  « Zephyr » — un ordre d'octets n'est pas un ordre
+                  alphabetique. Elle porte AUSSI le prenom, en second, pour
+                  departager deux homonymes de patronyme. */
+            var colOrder = [0, 1, 9, 10, 2, 4, 12, 6, 7, 11];
             for (var j = 0; j < colOrder.length; j++) {
 
                 var idx = colOrder[j];
                 var value = arr[i+idx];
+
+                if(idx == 4){
+                    var pre = $.trim(arr[i+4] || ''), nom = $.trim(arr[i+5] || '');
+                    var cle = clePatronyme(nom, pre);
+                    tr.append('<td data-sort="' + cle.replace(/"/g, '&quot;') + '">'
+                              + $.trim(pre + ' ' + nom) + '</td>');
+                    continue;
+                }
 
                 // L'ISNI n'est plus un simple lien sortant : le clic ouvre une
                 // fiche recapitulative (voir openIsniBox). Le lien reste un vrai
@@ -155,6 +174,16 @@ function retrieveEuphonies(cat, numOfElements){
    deplie instantanement dans le SMA, et reciproquement.
    ========================================================================= */
 
+/* Cle de tri d'une identite : le PATRONYME d'abord, le prenom ensuite pour
+   departager, accents retires et tout en minuscules. Elle n'est jamais
+   affichee — elle ne sert qu'a `data-sort` (js/table_sort.js).
+   ⚠️ Un tri sur les codes de caracteres range « Étienne » APRES « Zeus » :
+      ce n'est pas un ordre alphabetique, c'est un ordre d'octets. */
+function clePatronyme(nom, pre){
+    var s = (String(nom || '') + ' ' + String(pre || '')).replace(/^\s+|\s+$/g, '');
+    if(s.normalize) s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return s.toLowerCase().replace(/\s+/g, ' ');
+}
 $(function(){
     if(typeof enableIsniInflowFiche === 'function'){
         enableIsniInflowFiche({ into: 'isniColumn' });
