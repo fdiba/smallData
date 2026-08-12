@@ -265,3 +265,21 @@
 	cursor: default;
 	pointer-events: none;    /* le survol ne promet plus une action qui n'arrive pas */
 }
+
+/* ---------- "How to read" : TROIS colonnes, et pas un nombre variable ----------
+   La regle partagee de main.css est `flex: 1 1 300px` : le nombre de colonnes
+   depend alors de la largeur de la fenetre, et la legende passe de deux a
+   quatre sans qu'on l'ait decide. Sur cette page-ci elle en tient TROIS, et
+   c'est une decision : les HUIT blocs se lisent en trois rangees — 3, 3, 2 —
+   et le dernier, « Composers list », finit la troisieme sans la remplir.
+   Le calcul retire les deux gouttieres de 24px avant de diviser — sans quoi
+   la troisieme colonne passe a la ligne et on en obtient deux. */
+#legend .lg-cols > div{
+	flex: 0 1 calc((100% - 48px) / 3);
+	min-width: 0;
+}
+@media (max-width: 1100px){
+	/* en dessous, trois colonnes de moins de 350px ne se lisent plus : on
+	   retombe sur le comportement partage plutot que d'ecraser le texte. */
+	#legend .lg-cols > div{ flex: 1 1 300px; }
+}

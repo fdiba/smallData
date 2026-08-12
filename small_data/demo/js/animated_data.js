@@ -1149,7 +1149,28 @@ function bindCountSwitch(){
         takeCountIntoAccount = v;
         paint();
         hideLineTooltip();
-        if(init) updateSlData();
+        if(init){
+            /* ⚠️ LA LISTE OUVERTE SURVIT A LA BASCULE — 2026-08-12.
+               updateSlData() reconstruit les trois vues et vide `#composers` ;
+               la liste ouverte disparaissait, et il fallait re-cliquer le pays
+               pour la retrouver. Or le commutateur ne change ni le pays ni
+               l'edition : il change QUI on y compte. La reponse a la meme
+               question doit rester a l'ecran, mise a jour.
+               `lastComposerQuery` est pose par LineChart.prototype.retrieveData
+               (js/linechart.js), qui est le seul chemin par lequel la liste se
+               remplit — matrice, courbe et barres passent tous par lui.
+               ⚠️ On ne la rouvre QUE si elle etait ouverte : `#composers` vide
+               veut dire qu'aucune selection n'etait faite, et rouvrir alors
+               ferait apparaitre une liste que personne n'a demandee. */
+            var etaitOuverte = $('#composers').children().length > 0;
+            var q = window.lastComposerQuery;
+            updateSlData();
+            if(etaitOuverte && q && myLineChart &&
+               typeof myLineChart.retrieveData === 'function'){
+                myLineChart.sl_ctry = q.ctry;
+                myLineChart.retrieveData(q.cId, q.year, q.value);
+            }
+        }
     }
 
     for (var i=0; i<items.length; i++) {

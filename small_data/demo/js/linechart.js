@@ -161,6 +161,19 @@ LineChart.prototype.retrieveData = function(cId, year, value){
 
     var sl_ctry=this.sl_ctry;
 
+    /* ⚠️ ON RETIENT CE QUI A OUVERT LA LISTE — 2026-08-12.
+       Le commutateur « all entrants / only those with a work » reconstruit les
+       trois vues, et cette reconstruction vide `#composers`. La liste ouverte
+       disparaissait donc a chaque bascule, alors que la question posee ne
+       change ni le pays ni l'edition : elle change QUI on y compte. C'est
+       exactement le cas ou la selection doit survivre a la vue.
+       On garde les quatre arguments de l'appel — et `value`, qui est le
+       compte de l'edition, sera RECALCULE par le rappel, pas repris : c'est
+       lui que le commutateur fait bouger. */
+    if(typeof window !== 'undefined'){
+        window.lastComposerQuery = {cId: cId, year: year, value: value, ctry: sl_ctry};
+    }
+
     /* ⚠️ JETON DE GENERATION. La reponse arrive apres coup, et rien ne
        garantit que la selection qui l'a demandee existe encore. Constate au
        banc : cliquer une cellule puis changer d'edition cent millisecondes
