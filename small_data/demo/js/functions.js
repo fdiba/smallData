@@ -49,9 +49,44 @@ function lerpHexColor(a, b, t){
 
    Le pli est refait a chaque compositeur : on ne garde pas ouvert l'etat
    demande pour la fiche precedente, qui portait un autre nombre d'oeuvres. */
+/* ⚠️ L'ORDRE DES ŒUVRES DANS LA BOITE VIOLETTE — 2026-08-12.
+
+   Les trois flux qui alimentent cette boite (le `case 1` d'Overview et de
+   Participation, le `case 11` de Network) rendent les œuvres dans l'ordre ou
+   la base les sort, c'est-a-dire par identifiant : l'ordre de SAISIE. Une
+   boite de dix ou douze titres se lisait donc dans un ordre qui n'en est pas
+   un — on ne peut ni y chercher un titre, ni dire d'un coup d'œil si une
+   œuvre y est.
+
+   ⚠️ LE TRI SE FAIT SUR UNE COPIE. `titles` est aussi lu ailleurs — c'est le
+      tableau que displayComposerBox() et les compteurs relisent —, et il vient
+      du flux : il garde l'ordre du flux. C'est la meme regle que
+      displayCpInfos() dans js/animated_data.js, et pour la meme raison.
+
+   ⚠️ `localeCompare` AVEC 'fr' ET `sensitivity: 'base'` : les titres du fonds
+      portent des accents (« Eclats », « Écoute »), des apostrophes et des
+      chiffres romains. Un tri sur les codes de caracteres range « Écoute »
+      APRES « Zéphyr », ce qui n'est pas un ordre alphabetique — c'est un ordre
+      d'octets. `numeric: true` range en outre « Etude II » avant « Etude X ».
+      Le comparateur est pose une fois ici : les trois pages passent par cette
+      fonction, et une quatrieme copie ne survivrait pas a la premiere
+      correction faite ailleurs. */
+function compareTitres(a, b){
+    var ta = (a && a.t != null) ? String(a.t) : '';
+    var tb = (b && b.t != null) ? String(b.t) : '';
+    if(''.localeCompare){
+        try{
+            return ta.localeCompare(tb, 'fr', {sensitivity:'base', numeric:true});
+        }catch(e){ /* moteur sans arguments de locale : on retombe plus bas */ }
+    }
+    return ta < tb ? -1 : (ta > tb ? 1 : 0);
+}
 function displayTitlesInfosGN(arr){
 
     var box = $("#titles");
+
+    /* ⚠️ LA COPIE, PUIS LE TRI — jamais l'inverse, et jamais en place. */
+    arr = (arr || []).slice().sort(compareTitres);
 
     bindTitlesFold();
     box.empty();
