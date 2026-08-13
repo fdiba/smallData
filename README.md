@@ -93,7 +93,7 @@ Bundled third-party libraries (jQuery, D3.js, and others under `lib/`, as well a
 
 ## Acknowledgments
 
-Thanks to Françoise Barrière and Christian Clozier for their lifework and for the documents and insights they shared; to the Audiovisual Department of the *Bibliothèque nationale de France* (Audrey Viault, Pascal Cordereix) and the Conservation service of the Music Department (Catherine Vallet-Collot); and to Geneviève Mathon and Azadeh Nilchiani for their support. The project was financially supported by the Labex Arts-H2H.
+Thanks to Françoise Barrière and Christian Clozier for their lifework and for the documents and insights they shared; to the Audiovisual Department of the *Bibliothèque nationale de France* (Audrey Viault, Pascal Cordereix) and the Conservation service of the Music Department (Catherine Vallet-Collot).
 
 ---
 

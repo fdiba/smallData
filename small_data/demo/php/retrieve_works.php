@@ -99,6 +99,11 @@
 		// jury », et le prochain mot du prochain constat. Le type classifie,
 		// le libelle cite la source : c'est le type qu'on interroge.
 		//
+		// ⚠️⚠️ CE QUI SUIT A ETE ECRIT LE 2026-08-12 ET CORRIGE LE 2026-08-13.
+		// IL EST GARDE TEL QUEL, PARCE QU'UNE DECISION RENVERSEE S'ECRIT DEUX
+		// FOIS : *une erreur effacee ne s'apprend pas.* La correction est plus
+		// bas, sous « 2026-08-13 ».
+		//
 		// ⚠️⚠️ ET `finaliste` REJOINT `selection` LE 2026-08-12, AVEC LE 2e PUY.
 		// Le constat de 1994 decerne UN « 1er Prix » par discipline, puis des
 		// « 1er / 2e / 3e finaliste ». Arbitrage de Florent : ce n'est ni un
@@ -111,6 +116,62 @@
 		//   y compris ce qui n'existait pas quand on l'a ecrit.
 		//   *Un filtre qui nomme ce qu'il exclut se perime a chaque valeur
 		//    nouvelle ; il faut donc le relire quand on en ajoute une.*
+		//
+		// -----------------------------------------------------------------
+		// 2026-08-13 — LA CORRECTION, ET CE QUI L'A PROVOQUEE
+		// -----------------------------------------------------------------
+		// ⚠️⚠️ D'ABORD : LA REGLE ECRITE CI-DESSUS S'APPLIQUAIT A LA
+		// CORRECTION ELLE-MEME. Le `NOT IN ('selection','finaliste')` nommait
+		// ce qu'il excluait ; `nomine`, ouvert pour 1996 le lendemain,
+		// PASSAIT. Mesure sur temoin fabrique (DB/test_nomine_aww.sql) :
+		//     <> 'selection'                       424 -> 425   laisse passer
+		//     NOT IN ('selection','finaliste')     419 -> 420   laisse passer
+		//     IN ('prix','mention',…)              419 -> 419   exclut
+		// Le filtre est donc INVERSE : il nomme ce qu'il GARDE. Une huitieme
+		// valeur d'enum n'apparaitra plus d'elle-meme, et DB/controle_enum_aww.sql
+		// la nomme a voix haute au lieu de la laisser muette.
+		//
+		// ⚠️⚠️ ENSUITE : L'ARBITRAGE DE 2026-08-12 EST RENVERSE PAR FLORENT.
+		// « on affiche les finalistes + les nomines pour cette edition et les
+		// precedentes ». `finaliste` et `nomine` sont donc DANS la liste, et
+		// `selection` reste seule dehors. Mesure de l'effet, requete jouee
+		// telle quelle sur le dump du 2026-08-13 08:20 :
+		//     avant  6 738 lignes      apres  6 743 lignes
+		// Les cinq lignes sont les cinq finalistes du 2e PUY de 1994, et
+		// AUCUNE de 1996 : les onze nomines de 1996 ont deja une oeuvre au
+		// catalogue cette annee-la, donc le `NOT EXISTS` plus bas les sort de
+		// cette branche. ⚠️ ILS S'AFFICHENT DEJA, par la branche du catalogue,
+		// sous le mot du CATALOGUE — `Finaliste`, code 198 — et non sous celui
+		// de la piece, qui ecrit NOMINES. C'est une dette de imeb_music, pas
+		// de cette page.
+		//
+		// ⚠️⚠️ ET LE QUATRIEME CHAMP TESTAIT LE LIBELLE — corrige le 2026-08-13,
+		// sur un defaut vu par Florent : « le 1er finaliste Matt Ingalls
+		// apparait en dessous du second Henri Demilecamps ».
+		// Il s'ecrivait
+		//     CASE WHEN d.libelle IN ('Prix','Mention') THEN d.rang ELSE NULL END
+		// — UN TEST SUR LE LIBELLE, ce que ce fichier s'interdit vingt lignes
+		// plus haut. `1er finaliste` n'etant ni `Prix` ni `Mention`, le rang
+		// tombait a NULL, les deux lignes sortaient avec le meme rank_code
+		// (198) et un rang vide, et la chaine de tri de js/aww.js retombait
+		// sur le PATRONYME : DEMILECAMPS avant INGALLS.
+		// Il s'ecrit maintenant `d.rang`, sans condition. Mesure : `rang` est
+		// NULL sur TOUTE la table sauf 139 prix et 5 finalistes, et aucun prix
+		// hors libelle `Prix` n'en porte — le CASE ne servait donc a rien
+		// d'autre qu'a exclure les finalistes.
+		//   ⚠️ ET IL FAUT QUE DB/rang_finaliste_1994.sql SOIT JOUE AVEC :
+		//   le libelle de ces cinq lignes portait DEJA l'ordinal (« 1er
+		//   finaliste »), et js/aww.js compose « libelle + numero ». Sans ce
+		//   fichier, la page afficherait « 1er finaliste 1 ». Le rang etait
+		//   ecrit deux fois ; il ne l'est plus qu'une.
+		//
+		// ⚠️ ET AFFICHER N'EST PAS AFFICHER JUSTE. Le second champ rendait 100
+		// pour tout ce qui n'est pas un prix — 100 est le code de la MENTION.
+		// Les cinq finalistes se seraient donc ranges parmi les mentions. Le
+		// code-book de js/aww.js porte 197 « Nomine » et 198 « Finaliste »
+		// depuis le catalogue (13 lignes en 1999, 26 en 1996-1998) : le CASE
+		// les rend maintenant, et les deux familles restent SOUS les mentions,
+		// ce que ce code-book dit deja.
 		//
 		// LE DEUXIEME CHAMP SUIT LE MEME CODE-BOOK QUE LE CATALOGUE — corrige
 		// le 2026-08-04. Il valait « 100 + rang » pour une mention, la ou
@@ -217,10 +278,12 @@
 							UNION ALL
 
 							SELECT c.annee,
-							CASE WHEN d.type = \'prix\' THEN d.rang
-								ELSE 100 END,
+							CASE WHEN d.type = \'prix\'      THEN d.rang
+								 WHEN d.type = \'finaliste\' THEN 198
+								 WHEN d.type = \'nomine\'    THEN 197
+								 ELSE 100 END,
 							d.libelle,
-							CASE WHEN d.libelle IN (\'Prix\', \'Mention\') THEN d.rang ELSE NULL END,
+							d.rang,
 							NULL,
 							catd.libelle, NULL, 0,
 							b.titre_declare, NULL, NULL,
@@ -249,7 +312,8 @@
 								WHERE ba3.rang > 1
 								GROUP BY ba3.id_bande
 							) cod ON cod.b_id = b.id
-							WHERE d.type NOT IN (\'selection\', \'finaliste\')
+							WHERE d.type IN (\'prix\', \'mention\', \'magisterium\',
+											 \'residence\', \'finaliste\', \'nomine\')
 							AND NOT EXISTS (
 								SELECT 1 FROM imeb_bande_artiste ba4
 								INNER JOIN imeb_music m ON m.id_artist = ba4.id_artist
