@@ -86,14 +86,14 @@
 					How to read this page<span class="lg-caret" aria-hidden="true"></span>
 				</button>
 				<div id="lg_body">
-				<p class="lg-intro">The Bourges International Competition of Electroacoustic Music, founded by the GMEB (later <em>IMEB</em>) in <em>1973</em>, was held almost every year until <em>2009</em> &mdash; 36 editions in all, with none in <em>1995</em>. It drew works from composers across dozens of countries: until <em>1977</em> entries shared a single ranking, after which they were split into categories and sub&nbsp;categories. Over the decades its distinctions took many forms &mdash; from the early numbered <em>Prix</em> to the <em>Grand&nbsp;Prix</em>, the <em>Magistère</em>, the <em>Résidence</em>, the <em>Prix&nbsp;CIME</em> and the retrospective <em>Euphonies&nbsp;d'Or</em>. This table gathers the award-winning works of those editions, grouped by edition, category, sub category and prize. <strong>From 1993 on, one edition holds two competitions</strong>: the bailiff's record of 8 June 1993 covers both the <em>21st International Competition</em> and the <em>1st Puy of Electroacoustic Music</em> &mdash; one document, one year, two series of tape numbers, <em>C</em> and <em>P</em>, and two prize lists. The Puy's awards are shown <strong>after</strong> those of the competition, edition by edition.</p>
+				<p class="lg-intro">The Bourges International Competition of Electroacoustic Music, founded by the GMEB (later <em>IMEB</em>) in <em>1973</em>, was held almost every year until <em>2009</em> &mdash; 36 editions in all, with none in <em>1995</em>. It drew works from composers across dozens of countries: until <em>1977</em> entries shared a single ranking, after which they were split into <em>categories</em>. Over the decades its distinctions took many forms &mdash; from the early numbered <em>Prix</em> to the <em>Grand&nbsp;Prix</em>, the <em>Magistère</em>, the <em>Résidence</em>, the <em>Prix&nbsp;CIME</em> and the retrospective <em>Euphonies&nbsp;d'Or</em>. This table gathers the award-winning works of those editions, grouped by edition, category and prize. <strong>From 1993 on, one edition holds two competitions</strong>: the bailiff's record of 8 June 1993 covers both the <em>21st International Competition</em> and the <em>1st Puy of Electroacoustic Music</em> &mdash; one document, one year, two series of tape numbers, <em>C</em> and <em>P</em>, and two prize lists. The Puy's awards are shown <strong>after</strong> those of the competition, edition by edition.</p>
 								<div class="lg-cols">
 					<div>
 						<p><strong>The table</strong></p>
 						<ul>
-							<li>the table lists the award-winning works of the Bourges competitions, sorted by edition, category, sub category, price and last name</li>
-							<li>pick an edition in the <em>year</em> menu and <strong>columns that hold nothing for it are hidden</strong> &mdash; from 1973 to 1976 the competition had neither <em>category</em> nor <em>sub category</em>, and most later editions have no sub category either. Nothing is lost: the column comes back as soon as the selection changes, and <em>All works</em> shows all nine</li>
-							<li><em>duration</em> is the length recorded for the work in the <em>Répertoire général</em>, in minutes and seconds. It is blank in <em>73 of the 790 rows</em>: 11 award-winning works for which the catalogue gives no duration, the 10 distinctions whose work is not held at the fonds, and the 52 <em>not awarded</em> rows, which carry no work at all. A blank cell means the duration is unknown, not that it is zero</li>
+							<li>the table lists the award-winning works of the Bourges competitions, sorted by edition, category, price and last name</li>
+							<li>pick an edition in the <em>year</em> menu and <strong>columns that hold nothing for it are hidden</strong> &mdash; from 1973 to 1976 the competition had no <em>category</em> at all. Nothing is lost: the column comes back as soon as the selection changes, and <em>All works</em> shows all nine</li>
+							<li><em>duration</em> is the length recorded for the work in the <em>Répertoire général</em>, in minutes and seconds. It is blank in <em>82 of the 799 rows</em>: 12 award-winning works for which the catalogue gives no duration, the 17 distinctions whose work is not held at the fonds, and the 53 <em>not awarded</em> rows, which carry no work at all. A blank cell means the duration is unknown, not that it is zero</li>
 							<li>a composer whose name is <span class="composer-isni">underlined with dots</span> has an ISNI: click either part of the name to open their international identity record in the panel on the right &mdash; name forms, dates, external links (VIAF, Wikidata, MusicBrainz&hellip;) and contributing databases. The panel stays open while you scroll the table; close it with the cross or the <em>Esc</em> key. Clicking an agent closes it, since it sits over the information boxes &mdash; but the loading counter alone leaves it open</li>
 						</ul>
 					</div>
@@ -135,8 +135,18 @@
 					     plaint dans la console s'il diverge. -->
 					<tr>
 						<th class="c-year">edition</th>
+					<!-- LA COLONNE « sub category » A DISPARU LE 2026-08-13, et la
+						     colonne « degree » qui l'avait remplacee a ete retiree le
+						     JOUR MEME. Ce que la page appelait « sous-categorie » EST
+						     la categorie — le concours a des DEGRES et des CATEGORIES,
+						     et le constat de 1990 l'ecrit, une lettre pour le degre et
+						     un chiffre pour la categorie.
+						     LE DEGRE N'A QUE TROIS VALEURS, dont une porte 373 des 519
+						     lignes qui en ont une : une colonne qui repete la meme
+						     lettre sur sept lignes sur dix n'apprend rien a qui lit le
+						     tableau. Il reste dans le flux (dernier champ) et dans le
+						     menu « Group by » du SMA, ou il ne coute pas de place. -->
 						<th class="c-cat">category</th>
-						<th class="c-cat2">sub category</th>
 						<th class="c-price">price</th>
 						<!-- « first name » et « last name » n'en font plus qu'une
 						     depuis le 2026-08-07 : le nom s'ecrivait en deux

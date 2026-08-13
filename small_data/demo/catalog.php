@@ -148,7 +148,7 @@
 					</ul>
 					<p><strong>Grouping</strong></p>
 					<ul>
-						<li>agents compare their properties as they move; candidate properties and their exchange counts appear in the white panel of the top bar, and a property (such as <em>ln</em> (last name)) becomes clickable once exchanged often enough</li>
+						<li>agents compare their properties as they move; candidate properties and their exchange counts appear in the white panel of the top bar, and a property (such as <em>name</em> or <em>minutes</em>, the duration rounded to the nearest minute) becomes clickable once exchanged often enough</li>
 						<li>click that property name to let the agents regroup around it</li>
 						<li><em>reset</em> restarts the system, <em>pause</em> freezes it (the <em>p</em> key toggles the agents' drift)</li>
 					</ul>

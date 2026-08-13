@@ -17,11 +17,15 @@ function Child(config){
 	this.price = config.price;
 	this.imeb_id = config.imeb_id;
 	this.fn = config.fn;
-	this.ln = config.ln;
+	//voir la note en tete de particles_award.js
+	this.name = config.name;
 	this.title = config.title;
 	this.duration = config.duration;
-	this.cat = config.cat;
-	this.sub_cat = config.sub_cat;
+	//voir la note en tete du particles_*.js correspondant
+	this.minutes = config.minutes;
+	//voir la note en tete de particles_award.js / particles_euphonies.js
+	this.degree = config.degree;
+	this.category = config.category;
 	this.isni = config.isni;
 	this.ctry = config.ctry;
 

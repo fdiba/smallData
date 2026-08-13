@@ -70,10 +70,25 @@ function Particle(config){
 	// this.price = config.price;
 	this.imeb_id = config.imeb_id;
 	this.fn = config.fn;
-	this.ln = config.ln;
+	/* `ln` S'APPELLE `name` — 2026-08-13, meme raison que `cat` et `sub_cat`
+	   la veille : LE MENU « Group by » AFFICHE LE NOM DE LA PROPRIETE tel quel
+	   (checkAttributes, js/sma_core.js). Il proposait de regrouper par « ln »,
+	   deux lettres qui ne disent rien a qui n'a pas lu le code — la legende de
+	   catalog.php devait meme les traduire entre parentheses, « ln (last
+	   name) », ce qui est l'aveu du probleme et non sa solution.
+	   `fn` NE CHANGE PAS : il n'est dans aucun `attrOfInterest`, donc jamais
+	   affiche par le menu, et le renommer ne servirait rien. */
+	this.name = config.name;
 	this.ctry = config.ctry;
 	this.title = config.title;
 	this.duration = config.duration;
+	/* `minutes` REGROUPE, `duration` AFFICHE — 2026-08-13. Le menu proposait
+	   `duration`, un « mm:ss » a 1 319 valeurs distinctes sur le fonds : il ne
+	   regroupait rien. Il propose maintenant `minutes`, la meme duree arrondie
+	   a la minute — 66 valeurs. Le calcul est dans minutesGN(), js/functions.js,
+	   ecrit UNE fois pour les trois pages. `duration` reste servi tel quel : la
+	   boite violette l'affiche a cote du titre. */
+	this.minutes = config.minutes;
 	// annee(s) de programmation a Bourges (imeb_music.editions), affichees
 	// dans la boite violette sous le titre. A ne pas confondre avec
 	// this.edition (singulier), reste inutilise de la page euphonies.
@@ -89,9 +104,9 @@ function Particle(config){
 	// d'ici est perdue pour tout le SMA (boite violette comprise), meme si
 	// js/catalog.js l'a bien poussee dans records.
 	this.records = [{edition:this.edition, year:this.year, price:this.price,
-					imeb_id:this.imeb_id, fn:this.fn, ln:this.ln, ctry:this.ctry,
+					imeb_id:this.imeb_id, fn:this.fn, name:this.name, ctry:this.ctry,
 					title:this.title,
-					duration:this.duration, editions:this.editions,
+					duration:this.duration, minutes:this.minutes, editions:this.editions,
 					cat:this.cat, sub_cat:this.sub_cat,
 					isni:this.isni, id:this.id}];
 
@@ -121,8 +136,8 @@ function Particle(config){
 	this.childs=[];
 
 	//SMA ----------
-	// this.attrOfInterest = ['edition', 'year', 'price', 'ln', 'duration', 'cat', 'sub_cat', 'isni'];
-	this.attrOfInterest = ['ln', 'duration', 'title'];
+	// this.attrOfInterest = ['edition', 'year', 'price', 'name', 'minutes', 'degree', 'category', 'isni'];
+	this.attrOfInterest = ['name', 'minutes', 'title'];
 	this.targetedAttr="";
 	this.on = false;
 
@@ -202,10 +217,11 @@ Particle.prototype.createNewChild=function(obj){
         price: obj.price,
         imeb_id: obj.imeb_id,
         fn: obj.fn,
-        ln: obj.ln,
+        name: obj.name,
         ctry: obj.ctry,
         title: obj.title,
         duration: obj.duration,
+        minutes: obj.minutes,
         editions: obj.editions,
         cat: obj.cat,
         sub_cat: obj.sub_cat,

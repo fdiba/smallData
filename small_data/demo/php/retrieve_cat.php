@@ -16,78 +16,23 @@
 
 	//-------------------------------- functions --------------------------------------//
 
-	// Libelles des sous-categories (imeb_music.award_cat_2, code entier 1-12).
-	// Les libelles sont ecrits en toutes lettres, tels que l'IMEB les a
-	// formules lors de la restructuration de 2005 (Trivium / Quadrivium) :
-	// la base ne stocke que le code, aucune modification de la bdd n'est
-	// necessaire pour changer un libelle.
-	// ATTENTION : la meme table existe cote client dans js/aww.js (page
-	// award-winning_works.php, ou retrieve_works.php sert award_cat_2 brut).
-	// Les deux doivent rester identiques.
-	function set_sub_cat($sub_cat){
+	// LE CODE-BOOK DES SOUS-CATEGORIES A ETE SUPPRIME LE 2026-08-13.
+	//
+	// `set_sub_cat()` traduisait `imeb_music.award_cat_2`, un code entier de 1 a
+	// 12 sans table, par un tableau ecrit ici. CE TABLEAU EXISTAIT EN TROIS
+	// EXEMPLAIRES — ici, dans php/sous_categories.php et dans js/aww.js —, et
+	// les trois portaient deja la note « les deux doivent rester identiques »,
+	// qui est l'aveu du probleme et non sa solution.
+	//
+	// IL N'Y A PAS DE SOUS-CATEGORIE DANS LE CONCOURS : il y a des DEGRES et des
+	// CATEGORIES. Le constat de 1990 l'ecrit en toutes lettres — une LETTRE pour
+	// le degre, un CHIFFRE pour la categorie. `award_cat_2` EST la categorie, et
+	// depuis le 2026-08-13 elle est une ligne de `imeb_categorie`, pointee par
+	// `imeb_music`.`id_categorie`. La colonne `award_cat_2` sera supprimee.
+	//
+	// LE FLUX ENVOYE A js/euphonies.js EST INCHANGE, ET C'EST MESURE : le
+	// libelle servi est le meme, enregistrement par enregistrement.
 
-		switch ($sub_cat) {
-			case 1:
-				return "Avec dispositifs et/ou instruments";
-				break;
-			case 2:
-				return "Esthétique formelle";
-				break;
-			case 3:
-				return "Esthétique à programme";
-				break;
-			case 4:
-				return "Danse ou théâtre";
-				break;
-			case 5:
-				return "Installation ou environnement sonore et musical";
-				break;
-			case 6:
-				return "Multimédia";
-				break;
-			case 7:
-				return "Art sonore électroacoustique";
-				break;
-			case 8:
-				return "Avec instruments";
-				break;
-			case 9:
-				return "Sans instruments";
-				break;
-			case 10:
-				return "tendance netart";
-				break;
-			case 11:
-				return "tendance création";
-				break;
-			case 12:
-				return "tendance performance";
-				break;
-			default:
-				return $sub_cat;
-				break;
-		}
-
-		
-	}
-
-	/* La distinction, composee a partir de ce que la base dit en clair.
-
-	   AVANT : cette fonction traduisait un entier code — mais SEULEMENT trois
-	   valeurs sur vingt-trois (199, 300, 302), les vingt autres etant
-	   commentees. La page Euphonies affichait donc « 100 » ou « 600 » la ou
-	   award-winning_works.php affichait « Mention » ou « Residence », parce
-	   que js/aww.js portait, lui, la table complete. Deux copies du meme
-	   code-book, dont une perimee.
-
-	   DEPUIS le 2026-08-04, le code-book est dans la DONNEE
-	   (imeb_music.award_label / award_rank / award_label_2) et plus personne
-	   ne le recopie. Cette fonction ne decode plus : elle assemble.
-
-	   Le repli sur `award_price` n'est pas decoratif : tant que le decodage
-	   n'a pas ete joue sur le serveur, la colonne award_label est vide et la
-	   page afficherait des cases blanches. On montre alors le code brut,
-	   comme avant. */
 	function set_price($price, $label = null, $rank = null, $label2 = null){
 
 		$label  = $label  !== null ? trim($label)  : '';
@@ -119,17 +64,25 @@
 		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price,
 							imeb_music.award_label, imeb_music.award_rank,
 							imeb_music.award_label_2,
-							imeb_music.award_cat, imeb_music.award_cat_2, imeb_music.euphonies,
+							imeb_music.award_cat, imeb_music.euphonies,
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
 							imeb_artist.isni AS isni,
-							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry
+							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry,
+							cat.libelle AS sous_cat,
+							CASE
+								WHEN imeb_music.award_cat = \'Résidence\' THEN \'I\'
+								WHEN imeb_music.award_cat = \'Magistère\' THEN \'III\'
+								WHEN imeb_music.award_year >= 1988        THEN \'II\'
+								ELSE NULL END AS degre
 
 							FROM imeb_music
 							INNER JOIN imeb_artist
 							ON imeb_music.id_artist = imeb_artist.id
 							LEFT JOIN imeb_country
-							ON imeb_artist.id_country = imeb_country.id');
+							ON imeb_artist.id_country = imeb_country.id
+							LEFT JOIN imeb_categorie AS cat
+							ON cat.id = imeb_music.id_categorie');
 
 		$arr= array();
 		$rows= array();
@@ -165,7 +118,36 @@
 									   $row['award_rank'], $row['award_label_2']);
 
 				$award_cat=$row['award_cat'];
-				$award_sub_cat=set_sub_cat($row['award_cat_2']);
+				// LA CATEGORIE, DEPUIS LA TABLE — 2026-08-13. Elle venait de
+				// set_sub_cat($row['award_cat_2']), supprimee en tete de
+				// fichier. La condition `deg.id <> cat.id` de la jointure rend
+				// exactement ce que le code-book rendait, SANS ecrire d'annee :
+				// de 1977 a 1999 `award_cat` EST la categorie, et ce champ
+				// repeterait alors le precedent. *La categorie ne se repete pas
+				// quand elle est deja dite.*
+				$award_sub_cat=$row['sous_cat'] !== null ? $row['sous_cat'] : '';
+
+				/* LE DEGRE, QUATORZIEME ET DERNIER CHAMP — 2026-08-13.
+
+				   « I », « II » ou « III », vide avant 1988 : les degres
+				   naissent cette annee-la. Il prend, dans le tableau, la place
+				   que tenait « category » (`award_cat`), et la CATEGORIE prend
+				   celle de « sub category ». Le concours a des DEGRES et des
+				   CATEGORIES ; il n'a pas de sous-categorie.
+
+				   ET LA CONDITION `deg.id <> cat.id` A DISPARU AVEC LA
+				      JOINTURE QUI LA PORTAIT. Elle taisait la categorie de
+				      1977 a 1999, ou `award_cat` la disait deja — mais
+				      `award_cat` ne s'affiche plus, et la taire laisserait la
+				      colonne vide sur vingt-trois editions. La jointure avait
+				      de plus un defaut propre : deux lignes de
+				      `imeb_categorie` portent le libelle « Multimedia », et
+				      les oeuvres de 1999 qui le portent tombaient sur les
+				      deux — un enregistrement DEDOUBLE, en silence.
+
+				   ATTENTION : numOfElements passe de 13 a 14 dans
+				      js/euphonies.js, seul consommateur de ce flux. */
+				$degre = $row['degre'] !== null ? $row['degre'] : '';
 
 				$misam=$row['misam'];
 				// if(!$misam)$misam=000000;
@@ -192,7 +174,7 @@
 
 		
 
-				array_push($rows, array($year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni, $ctry));
+				array_push($rows, array($year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni, $ctry, $degre));
 
 			}
 
@@ -264,6 +246,27 @@
 		// imeb_music.award_year ne sert ici qu'a marquer les oeuvres primees
 		// d'un signe a cote du titre : le detail du palmares reste l'affaire de
 		// award-winning_works.php.
+		// `cat.libelle AS sous_cat` A ETE AJOUTE ICI PAR ERREUR LE 2026-08-13,
+		// ET RETIRE LE MEME JOUR.
+		//
+		// CETTE REQUETE N'A PAS DE TABLE `cat`. La colonne a ete posee en meme
+		// temps que dans retrieve_euphonies() ci-dessus, ou la jointure
+		// `LEFT JOIN imeb_categorie AS cat` existe ; ici elle n'a jamais
+		// existe. MySQL rendait donc ERROR 1054, Unknown column
+		// 'cat.libelle in field list'. La requete echouait ENTIEREMENT :
+		// $dbh->query rendait false, la page ne recevait aucun enregistrement,
+		// et le SMA du catalogue restait vide. Signale par Florent.
+		//
+		// ET LA COLONNE NE SERVAIT A RIEN : cette branche pousse ONZE champs —
+		// misam, prenom, nom, id_artist, titre, duree, id, pays, isni,
+		// editions, annee de prix — et `sous_cat` n'etait dans aucun. La page
+		// Catalogue n'affiche ni categorie ni degre, et son attrOfInterest est
+		// ['name', 'duration', 'title'].
+		//
+		// *Une colonne ajoutee dans une requete qui ne la sert pas ne dort pas :
+		// elle casse la requete.* La lecon est celle du banc — le SQL se joue
+		// avant d'etre livre, et CETTE requete-la ne l'avait pas ete, parce que
+		// je n'avais mesure que la branche que je croyais toucher.
 		$sth = $dbh->query('SELECT imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
 							imeb_artist.id AS id_artist,

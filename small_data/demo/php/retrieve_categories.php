@@ -84,15 +84,12 @@
 
 	   Le dixieme a ete ajoute le 2026-08-06 au soir, EN FIN d'enregistrement
 	   comme tous les precedents :
-	     - sous_categorie : le LIBELLE, pas le code. `imeb_music.award_cat_2`
-	                        est un entier de 1 a 12 dont le vocabulaire
-	                        n'existe que dans le code (voir
-	                        php/sous_categories.php) ; le traduire ICI evite
-	                        d'en poser une TROISIEME copie dans
-	                        js/categories.js. Chaine vide pour les 575 oeuvres
-	                        primees qui n'ont pas de sous-categorie — le
-	                        concours n'en a eu qu'a partir de 2000, et sur
-	                        cinq categories seulement.
+	     - sous_categorie : le LIBELLE de la CATEGORIE, lu sur `imeb_categorie`
+	                        par `imeb_music`.`id_categorie` — 2026-08-13. Il
+	                        venait de `award_cat_2`, un code entier traduit par
+	                        un tableau de php/sous_categories.php, et ce tableau
+	                        existait en TROIS exemplaires. La table le remplace,
+	                        et `award_cat_2` sera supprimee.
 
 	   Le onzieme a ete ajoute le 2026-08-08, EN FIN d'enregistrement comme
 	   tous les precedents :
@@ -119,8 +116,6 @@
 	   boucle de lecture de js/categories.js ; les deux doivent bouger
 	   ensemble. Aucun champ ne contient de %, le separateur reste sur. */
 
-	require_once(__DIR__ . '/sous_categories.php');
-
 	retrieve_categories();
 
 	function retrieve_categories(){
@@ -135,17 +130,28 @@
 							imeb_artist.isni,
 							imeb_artist.id AS id_artist,
 							imeb_music.editions,
-							imeb_music.award_cat_2,
 							imeb_music.award_price,
-							imeb_categorie.libelle AS cat_canon,
-							imeb_categorie.annee_debut AS cat_debut,
-							imeb_categorie.annee_fin AS cat_fin
+							CASE
+								WHEN imeb_music.award_cat = \'Résidence\'  THEN \'Degré I - Résidence\'
+								WHEN imeb_music.award_cat = \'Magistère\'  THEN \'Degré III - Magistère\'
+								WHEN imeb_music.award_year >= 1988         THEN \'Degré II\'
+								ELSE NULL END AS cat_canon,
+							COALESCE(cat.annee_debut,
+								(SELECT d.annee_debut FROM imeb_categorie AS d
+								 WHERE d.libelle = imeb_music.award_cat
+								   AND imeb_music.award_price IN (500,600)
+								 ORDER BY d.id ASC LIMIT 1)) AS cat_debut,
+							COALESCE(cat.annee_fin,
+								(SELECT d.annee_fin FROM imeb_categorie AS d
+								 WHERE d.libelle = imeb_music.award_cat
+								   AND imeb_music.award_price IN (500,600)
+								 ORDER BY d.id ASC LIMIT 1)) AS cat_fin,
+							cat.libelle AS sous_cat
 							FROM imeb_music
 							INNER JOIN imeb_artist
 							ON imeb_music.id_artist = imeb_artist.id
-							LEFT JOIN imeb_categorie
-							ON imeb_categorie.libelle = imeb_music.award_cat
-							OR imeb_categorie.libelle_alt = imeb_music.award_cat
+							LEFT JOIN imeb_categorie AS cat
+							ON cat.id = imeb_music.id_categorie
 							WHERE imeb_music.award_year IS NOT NULL
 							ORDER BY imeb_music.award_year ASC,
 							imeb_music.award_price ASC,
@@ -166,9 +172,27 @@
 			//   nœuds la ou il n'y a qu'une categorie.
 			//   Repli inchange quand la jointure ne trouve rien : on garde ce
 			//   que le catalogue ecrit.
+			//LE CHAMP 1 EST LE DEGRE — 2026-08-13. Il portait la CATEGORIE
+			//   avant 2000 et le DEGRE apres, parce que `imeb_music.award_cat`
+			//   change de sens en 2000 et que ce champ le servait tel quel.
+			//   Il porte maintenant le DEGRE, et lui seul ; la CATEGORIE est
+			//   au champ 9, pour toutes les annees.
+			//   LES DEGRES NAISSENT EN 1988, et c'est mesure par quatre
+			//   chaines independantes — le mot dans le constat, le 1er
+			//   MAGISTERIUM DU 16eme CONCOURS qu'il ecrit lui-meme,
+			//   imeb_distinction.type et imeb_music.award_cat. Voir le §33.13
+			//   de docs/Chantier_pv_addendum_2005.md.
+			//   AVANT 1988 IL N'Y A PAS DE DEGRE, et ce champ est vide : le
+			//   flux saute la colonne, exactement comme les 575 oeuvres sans
+			//   sous-categorie la sautaient avant ce jour.
+			//   L'ANNEE 1988 EST ECRITE ICI, ET C'EST PROVISOIRE : le nom du
+			//   degre 2 change d'une edition a l'autre — PRIX en 1988-1989,
+			//   QUADRIVIUM en 1991-1994, QUINTIVIUM en 1996, TRIVIUM et
+			//   QUADRIVIUM en 2005 — et il n'est nulle part en base. C'est la
+			//   table `imeb_section` qui le portera, et elle attend les
+			//   versements de 2006, 2007 et 2008.
 			$category = $row['cat_canon'];
-			if($category === null || $category === '') $category = $row['award_cat'];
-			if($category === null || $category === '') $category = 'None';
+			if($category === null || $category === '') $category = '';
 
 			$name = $row['name'];
 
@@ -182,16 +206,77 @@
 			//fait cote client, ou l'infobulle est composee.
 			$editions  = $row['editions'] ? $row['editions'] : '';
 
-			//bornes de la categorie. LEFT JOIN : elles sont NULL pour les
-			//oeuvres sans categorie, et la chaine vide garde leur place dans
-			//l'enregistrement — js/categories.js n'affiche alors pas de periode.
+			//bornes de la CATEGORIE — 2026-08-13. Elles venaient de la ligne
+			//   de `imeb_categorie` qui repondait a `award_cat`, c'est-a-dire
+			//   du DEGRE pour 2000-2009. Elles viennent maintenant de la ligne
+			//   pointee par `id_categorie` : ce sont les bornes du nœud que
+			//   les deux vues montrent — la categorie.
+			//   LE COALESCE A ETE POSE LE MEME JOUR, ET IL REPARE UN DEFAUT
+			//   QUE LA PREMIERE ECRITURE AVAIT INTRODUIT. `cat.annee_debut`
+			//   seul rendait NULL pour les 146 « Residence » et « Magistere » :
+			//   ils n'ont pas de categorie — `id_categorie` est NULL — et leur
+			//   periode venait justement de la jointure sur le libelle, celle
+			//   qui porte maintenant le degre. Ils ont pourtant une ligne dans
+			//   `imeb_categorie` (8 et 9, bornes 1988-2008 et 1988-2009), et
+			//   ils tiennent un nœud dans les deux vues : la perdre effacait
+			//   une periode qui s'affichait la veille. MESURE : 146 sur 729.
+			//   L'ORDRE DES DEUX SOURCES EST CELUI DU NŒUD : la categorie
+			//   d'abord, le libelle du catalogue a defaut — exactement ce que
+			//   fait `libelleCategorie()` dans js/categories.js. Les 38 œuvres
+			//   d'avant 1977 n'ont ni l'une ni l'autre et sortent vides,
+			//   comme avant.
+			//   ET LE REPLI EST UNE SOUS-REQUETE, PAS UNE JOINTURE — 2026-08-13,
+			//   corrige le jour meme ou la jointure avait ete ecrite. Ecrit
+			//   `LEFT JOIN imeb_categorie AS deg ON deg.libelle = award_cat OR
+			//   deg.libelle_alt = award_cat`, il RENDAIT 732 ENREGISTREMENTS AU
+			//   LIEU DE 729 : deux lignes de `imeb_categorie` portent le libelle
+			//   « Multimedia » — la 15 (1999) et la 32 (2000-2009) —, et les
+			//   TROIS œuvres de 1999 qui le portent tombaient sur les deux. Une
+			//   jointure qui apparie deux lignes DEDOUBLE l'enregistrement, et
+			//   le diagramme comptait alors trois prix de trop sans que rien ne
+			//   le dise. *Une valeur qu'on ne lit qu'a defaut ne se joint pas :
+			//   elle se sous-interroge.* `ORDER BY d.id ASC LIMIT 1` rend le
+			//   choix deterministe, et les deux sous-requetes lisent donc
+			//   forcement la MEME ligne.
+			//   CE DEFAUT NE TIENT PAS A LA FUSION DES DEUX « Multimedia » :
+			//   `DB/fusion_multimedia.sql` supprime bien la ligne 32, et il
+			//   n'est pas joue sur le dump du 2026-08-13 15h36. Mais un dump
+			//   n'est pas une garantie — le jour ou deux categories porteront a
+			//   nouveau le meme libelle, la sous-requete rendra un
+			//   enregistrement par œuvre, et la jointure en rendait deux.
+			//   LE DEGRE N'A PAS DE PERIODE DECLAREE, et n'en affiche donc
+			//   pas : le nom du degre 2 change d'une edition a l'autre, et
+			//   c'est la table `imeb_section` qui le portera.
+			//LEFT JOIN : elles sont NULL pour les oeuvres sans categorie, et
+			//la chaine vide garde leur place dans l'enregistrement.
 			$catDebut  = $row['cat_debut'] !== null ? $row['cat_debut'] : '';
 			$catFin    = $row['cat_fin']   !== null ? $row['cat_fin']   : '';
 
-			//sous-categorie : le libelle, ou la chaine vide. La table est dans
-			//php/sous_categories.php, seul endroit du projet ou ce vocabulaire
-			//doive vivre.
-			$sousCat   = libelle_sous_categorie($row['award_cat_2']);
+			//LA CATEGORIE, DEPUIS LA TABLE — 2026-08-13.
+			//   Elle venait de libelle_sous_categorie($row['award_cat_2']),
+			//   c'est-a-dire d'un tableau ecrit dans php/sous_categories.php.
+			//   Ce tableau existait en TROIS exemplaires — ici, dans
+			//   php/retrieve_cat.php (set_sub_cat) et dans js/aww.js — et
+			//   sous_categories.php disait lui-meme que la solution etait une
+			//   table. La table existe depuis le versement de 2005, et
+			//   imeb_music.id_categorie pointe dessus.
+			//   LA SORTIE EST INCHANGEE, ET C'EST MESURE : les douze libelles
+			//   de la table sont ceux du code-book, mot pour mot, et les 727
+			//   enregistrements sont identiques avant et apres.
+			//   LA CONDITION `deg.id <> cat.id` A ETE RETIREE LE 2026-08-13 :
+			//   elle empechait ce champ de porter la categorie des editions
+			//   1977-1999, parce que le champ 1 la portait deja. Le champ 1
+			//   porte maintenant le DEGRE, et la categorie est donc servie
+			//   POUR TOUTES LES ANNEES. C'est ce qui fait des deux
+			//   « Multimedia » du diagramme — celui de 1999, qui etait une
+			//   categorie du champ 1, et celui de 2000-2009, qui etait une
+			//   sous-categorie du champ 9 — UN SEUL nœud.
+			//   LE NOM DU CHAMP RESTE `sousCat` cote client tant que
+			//   js/categories.js n'a pas ete repris : *un bloc qu'on recompose
+			//   se recompte*, et le renommage est un geste separe. Ce que ce
+			//   champ porte est bien la CATEGORIE ; ce que porte $category est
+			//   le DEGRE, pour les editions 2000-2009.
+			$sousCat   = $row['sous_cat'] !== null ? $row['sous_cat'] : '';
 
 			//code de la distinction. Chaine vide plutot que NULL, comme les
 			//autres : le champ garde sa place dans l'enregistrement.

@@ -211,7 +211,7 @@ function enableIsniPanel(opt){
        On ignore donc la mutation quand DEUX conditions sont reunies : elle ne
        touche que #cookies, et le texte qui en resulte a la forme du compteur.
        Toutes les autres ecritures de la boite verte ont une autre forme et
-       referment bien la fiche — « property: ln », « country: France », ou le
+       referment bien la fiche — « property: name », « country: France », ou le
        « 400 nodes » sans pourcentage de la fermeture d'un groupe, qui sont,
        elles, des reponses a un geste. */
     if(watch && window.MutationObserver){

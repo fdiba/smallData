@@ -17,10 +17,13 @@ function Child(config){
 	// this.price = config.price;
 	this.imeb_id = config.imeb_id;
 	this.fn = config.fn;
-	this.ln = config.ln;
+	//voir la note en tete de particles_catalog.js
+	this.name = config.name;
 	this.ctry = config.ctry;
 	this.title = config.title;
 	this.duration = config.duration;
+	//voir la note en tete du particles_*.js correspondant
+	this.minutes = config.minutes;
 	this.editions = config.editions;
 	// this.cat = config.cat;
 	// this.sub_cat = config.sub_cat;

@@ -368,12 +368,53 @@ function syncIsniFicheGN(isni, label){
    AVANT d'appeler getInfoFrom : cette fonction passe donc apres et gagne. Le
    compte reste affiche pour un GROUPE dont aucun membre n'est vise, ce qui
    est juste — un groupe n'est pas un compositeur. */
+/* LA DUREE ARRONDIE A LA MINUTE, POUR LE REGROUPEMENT DU SMA — 2026-08-13.
+
+   `imeb_music.duration` est un « mm:ss », et le menu « Group by » proposait
+   de regrouper dessus : MESURE SUR LE FONDS ENTIER — 1 319 valeurs distinctes
+   pour 6 537 oeuvres, et le plus gros paquet en compte 143. Un attribut a
+   1 319 valeurs ne regroupe rien ; il fabrique autant de nœuds que d'oeuvres.
+   Arrondi a la minute : **66 valeurs**, et les paquets deviennent lisibles —
+   706 oeuvres a 10 min, 582 a 8 min, 512 a 12 min.
+
+   ARRONDI ET NON TRONQUE : 11:55 vaut 12 minutes et non 11. C'est ce qui a
+      ete demande, et c'est aussi ce qu'un lecteur attend d'une duree.
+
+   DEUX VALEURS NE SONT PAS DES NOMBRES, et elles sont rendues TELLES QUELLES
+      plutot que vidées : `20env` (« 20 environ », oeuvre 5634) et `illim`
+      (« illimite », oeuvre 6723, une installation). Les traduire serait
+      interpreter le catalogue ; les vider perdrait deux oeuvres. Elles font
+      chacune leur propre paquet, ce qui est exactement ce qu'elles sont.
+
+   DEUX OEUVRES ARRONDISSENT A ZERO — les seules sous trente secondes, la plus
+      courte a 00:13. Leur paquet s'appelle « < 1 min » et non « 0 min » :
+      *arrondir n'autorise pas a ecrire qu'une piece dure zero.*
+
+   LA DUREE EXACTE N'EST PAS TOUCHEE. `duration` reste dans l'enregistrement,
+      et c'est elle que la boite violette affiche a cote du titre, et le
+      tableau dans sa colonne. Ce champ-ci ne sert qu'a regrouper. */
+function minutesGN(duration){
+
+    var d = (duration == null ? '' : String(duration)).trim();
+    if(!d) return '';
+
+    var m = /^(\d{1,3}):(\d{2})$/.exec(d);
+    if(!m) return d;                       // « 20env », « illim » : tel quel
+
+    var sec = parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+    var min = Math.round(sec / 60);
+    return min < 1 ? '< 1 min' : min + ' min';
+}
+
 function displaySmaIdentityGN(target){
 
     if(!target) return;
 
     var t   = function(v){ return $.trim(v == null ? '' : String(v)); };
-    var who = $.trim(t(target.fn) + ' ' + t(target.ln));
+    // `ln` s'appelle `name` depuis le 2026-08-13 — voir la note en tete de
+    // js/particles_award.js. Les TROIS pages qui appellent cette fonction ont
+    // ete reprises ensemble ; overview_sma.js ne l'appelle pas et garde `ln`.
+    var who = $.trim(t(target.fn) + ' ' + t(target.name));
 
     $("#selection").empty().append('<p>');
     $("#selection p").text(who);

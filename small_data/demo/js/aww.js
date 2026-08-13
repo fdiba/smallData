@@ -99,7 +99,14 @@ function parseWorks(str){
     //    Musique electroacoustique. Une seule piece, une seule annee, deux
     //    series de numeros — C et P — et deux palmares. Sans ce champ, les sept
     //    prix du Puy s'affichent melanges aux prix du Concours.
-    var numOfElements = 18;
+    // 18 -> 19 le 2026-08-13 : LE DEGRE (arr[i+18]). « I », « II » ou
+    //    « III », vide avant 1988 — les degres naissent cette annee-la.
+    //    Il prend la place que tenait la colonne « sub category », qui
+    //    n'existe plus : le concours a des DEGRES et des CATEGORIES, et le
+    //    constat de 1990 l'ecrit, une lettre pour le degre et un chiffre
+    //    pour la categorie. Ce que la page appelait « sous-categorie » EST
+    //    la categorie, et elle tient maintenant la colonne « category ».
+    var numOfElements = 19;
     var objects = [];
 
     for (var i = 0; i < arr.length-(numOfElements-1); i+=numOfElements) {
@@ -149,24 +156,25 @@ function parseWorks(str){
             rank = arr[i+1];          // base non migree : on montre le code brut
         }
 
-        // Libelles des sous-categories (imeb_music.award_cat_2, code entier
-        // 1-12), en toutes lettres. Table identique a set_sub_cat() dans
-        // php/retrieve_cat.php, qui sert la page euphonies : ici le code
-        // arrive brut (retrieve_works.php ligne 28) et est traduit cote
-        // client. Les deux tables doivent rester synchronisees.
+        // LA CATEGORIE ARRIVE EN CLAIR — 2026-08-13.
+        //
+        // Ce champ portait `imeb_music.award_cat_2`, un code entier de 1 a 12,
+        // et il etait traduit ICI par une table qui existait en TROIS
+        // exemplaires — ici, dans php/retrieve_cat.php (set_sub_cat) et dans
+        // php/sous_categories.php. Les trois portaient la note « les deux
+        // doivent rester synchronisees », qui est l'aveu du probleme et non sa
+        // solution.
+        //
+        // IL N'Y A PAS DE SOUS-CATEGORIE DANS LE CONCOURS : il y a des DEGRES
+        // et des CATEGORIES — le constat de 1990 l'ecrit, une LETTRE pour le
+        // degre, un CHIFFRE pour la categorie. `award_cat_2` EST la categorie,
+        // et depuis le 2026-08-13 c'est une ligne de `imeb_categorie` pointee
+        // par `imeb_music`.`id_categorie`. php/retrieve_works.php sert
+        // desormais le LIBELLE.
+        //
+        // C'EST LE §16.5 ET LE §20.13 UNE FOIS DE PLUS : une traduction de
+        // valeurs qui appartient a la DONNEE ne vit pas dans le code.
         var cat2 = arr[i+9];
-        if(cat2==1)cat2="Avec dispositifs et/ou instruments";
-        else if(cat2==2)cat2="Esthétique formelle";
-        else if(cat2==3)cat2="Esthétique à programme";
-        else if(cat2==4)cat2="Danse ou théâtre";
-        else if(cat2==5)cat2="Installation ou environnement sonore et musical";
-        else if(cat2==6)cat2="Multimédia";
-        else if(cat2==7)cat2="Art sonore électroacoustique";
-        else if(cat2==8)cat2="Avec instruments";
-        else if(cat2==9)cat2="Sans instruments";
-        else if(cat2==10)cat2="tendance netart";
-        else if(cat2==11)cat2="tendance création";
-        else if(cat2==12)cat2="tendance performance";
 
         /* DEUX « CATEGORIES » QUI N'EN SONT PAS — 2026-08-08.
 
@@ -201,9 +209,16 @@ function parseWorks(str){
               VRAIE categorie — le catalogue sait le faire, il donne
               « Mixte » aux trois prix hors categorie de 1987 —, elle
               resterait affichee et seul le rang de tri jouerait. */
-        var cat = arr[i+8];
+        /* `award_cat` NE S'AFFICHE PLUS, ET N'EST PLUS LU — 2026-08-13.
+
+           Il servait la colonne « category » et le tri. Le tableau porte
+           maintenant « degree » puis « category », toutes deux servies par
+           le serveur, et ce champ ne sert plus qu'a une chose : reperer les
+           lignes hors axe, ce que fait `CAT_HORS_AXE` SUR LE CODE et non
+           sur lui. Le vidage de la cellule qui suivait n'a donc plus d'objet
+           — la cellule affiche `cat2`, qui est vide sur ces 146 lignes
+           puisqu'un Magistere et une Residence n'ont pas de categorie. */
         var catRang = CAT_HORS_AXE[parseInt(arr[i+1], 10)] || 0;
-        if(catRang && (cat === 'Magistère' || cat === 'Résidence')) cat = '';
 
         /* LE PUY N'EST PAS UN DEGRE DU CONCOURS, C'EST UN AUTRE CONCOURS
            — 2026-08-12.
@@ -246,8 +261,8 @@ function parseWorks(str){
            suffit plus (voir sortAndRender). */
         objects.push({ year:arr[i], rank:rank, rank_code:arr[i+1], rank_num:num,
                        misam:arr[i+2], cat_rang:catRang,
-                       fn:arr[i+3], name:arr[i+4], title:arr[i+5], cat:cat, cat2:cat2,
-                       cat2_code:arr[i+9], duration:arr[i+6], id:arr[i+7],
+                       fn:arr[i+3], name:arr[i+4], title:arr[i+5], cat2:cat2,
+                       degre:arr[i+18], duration:arr[i+6], id:arr[i+7],
                        ctry:arr[i+10], isni:arr[i+11],
                        coauth:parseCoauteurs(arr[i+15]) });
     }
@@ -527,8 +542,7 @@ function renderSelection(works){
     objects.sort(function(a, b){
         return cmpValues(b.year, a.year)
             || cmpValues(a.cat_rang || 0, b.cat_rang || 0)
-            || cmpValues(a.cat, b.cat)
-            || cmpValues(a.cat2_code, b.cat2_code)
+            || cmpValues(a.cat2, b.cat2)
             || cmpValues(ordreDistinction(a.rank_code), ordreDistinction(b.rank_code))
             || cmpValues(numeroDeTri(a.rank_num), numeroDeTri(b.rank_num))
             || cmpValues(a.name, b.name);
@@ -547,9 +561,18 @@ function renderSelection(works){
             // propriete au SMA se declare a QUATRE endroits — ici, puis dans
             // js/particles_award.js (champ du constructeur, litteral
             // this.records, et createNewChild) et dans js/childs_award.js.
-            records.push({ edition:o.year, cat:o.cat, sub_cat:o.cat2, price:o.rank,
-                           imeb_id:o.misam, fn:o.fn, ln:o.name, title:o.title,
-                           duration:o.duration, ctry:o.ctry, isni:o.isni, id:o.id });
+            /* LES DEUX LIBELLES DU SMA ONT CHANGE DE SENS — 2026-08-13.
+               `cat` portait `award_cat` et `sub_cat` la categorie. Le menu
+               « Group by » affichait donc « cat » et « sub_cat », deux mots
+               dont le second nomme un niveau qui n'existe pas. Ils sont
+               maintenant `degree` et `category`, et ce sont les noms que le
+               menu montre : *l'etiquette du menu EST le nom de la propriete*
+               (checkAttributes, js/sma_core.js). */
+            records.push({ edition:o.year, degree:o.degre, category:o.cat2,
+                           price:o.rank,
+                           imeb_id:o.misam, fn:o.fn, name:o.name, title:o.title,
+                           duration:o.duration, minutes:minutesGN(o.duration),
+                           ctry:o.ctry, isni:o.isni, id:o.id });
         }
         $("#myCanvas").show();
         $("#infos").show();      // boites verte (#cookies) / orange (#selection) / violette (#titles)
@@ -741,8 +764,38 @@ function cmpValues(a, b){
       seul cote — la colonne « duration » a ete ajoutee le matin meme. */
 var COLONNES = [
     {cls: 'c-year',  lire: function(o){ return o.year; }},
-    {cls: 'c-cat',   lire: function(o){ return o.cat; }},
-    {cls: 'c-cat2',  lire: function(o){ return o.cat2; }},
+    /* LA COLONNE « sub category » A DISPARU, ET CELLE DU DEGRE AVEC ELLE
+       — 2026-08-13, le meme jour toutes les deux.
+
+       Le tableau portait « category » puis « sub category », c'est-a-dire
+       `imeb_music.award_cat` puis la categorie. Il ne porte plus qu'une
+       colonne, « category », et elle porte LA CATEGORIE — ce que la page
+       appelait « sous-categorie » EST la categorie : le concours a des
+       DEGRES et des CATEGORIES, et le constat de 1990 l'ecrit, une lettre
+       pour le degre et un chiffre pour la categorie.
+
+       `award_cat` NE S'AFFICHE PLUS, parce qu'il ne dit pas la meme chose
+          selon l'annee : de 1977 a 1999 c'est la CATEGORIE, de 2000 a 2009
+          c'est la SECTION du degre II — Trivium, Trivium A, Trivium B,
+          Quadrivium. Une colonne qui change de sens en cours de tableau ne
+          se trie pas et ne se lit pas. Il reste dans le flux.
+
+       LE DEGRE A EU SA COLONNE PENDANT UNE HEURE, et elle est retiree pour
+          la meme raison qu'en §16.1 : il n'a que TROIS valeurs, et 373 des
+          519 lignes qui en portent une portent « II ». Une colonne qui
+          repete la meme lettre sur sept lignes sur dix n'apprend rien.
+          CE N'EST PAS UN DEFAUT DE CALCUL, et c'est mesure : sur 2005, le
+          catalogue (`award_cat`) et le constat (`imeb_distinction.type`)
+          rendent le MEME compte par deux chemins independants — 6 au degre
+          I, 17 au II, 1 au III —, et le document ecrit lui-meme ses trois
+          titres, « RESIDENCE - DEGRE 1 », « TRIVIUM / QUADRIVIUM - DEGRE
+          Il », « MAGISTERIUM - DEGRE Ill ». Le degre II EST le concours ;
+          les degres I et III sont les deux distinctions qui l'encadrent.
+          *Une valeur qui est vraie sept fois sur dix decrit la regle, pas
+          la ligne.*
+          Il reste dans le flux (dernier champ) et dans le menu « Group by »
+          du SMA, ou un attribut ne coute aucune place. */
+    {cls: 'c-cat',   lire: function(o){ return o.cat2; }},
     {cls: 'c-price', lire: function(o){ return o.rank; }},
     /* LE COMPOSITEUR EN UNE SEULE COLONNE — 2026-08-07.
 
@@ -828,7 +881,13 @@ function buildTableRows(objects){
     // on vide les lignes existantes SAUF l'en-tete (1re ligne)
     $('#works_table tr:gt(0)').remove();
 
-    function groupKey(o){ return o.year + '|' + o.cat + '|' + o.cat2 + '|' + o.rank; }
+    // LES TROIS PREMIERES COLONNES SONT FUSIONNEES QUAND ELLES SE REPETENT,
+    //   et cette cle doit donc nommer exactement ces trois-la : edition,
+    //   categorie, distinction — TROIS depuis le retrait de la colonne du
+    //   degre, quatre avant lui. Une cle qui ne suit pas les colonnes
+    //   fusionne des lignes qui n'affichent pas la meme chose, ou refuse de
+    //   fusionner des lignes identiques.
+    function groupKey(o){ return o.year + '|' + o.cat2 + '|' + o.rank; }
 
     var html = '';
     var groupIndex = -1;
@@ -845,11 +904,13 @@ function buildTableRows(objects){
         html += isNewGroup ? '<tr class="group-start">' : '<tr>';
 
         if(isNewGroup){
-            // taille du groupe (edition/category/sub category/price) -> rowspan
+            // taille du groupe (edition/category/price) -> rowspan
             var span = 1;
             for(var k=j+1; k<objects.length && groupKey(objects[k])===groupKey(objects[j]); k++) span++;
-            // les quatre cellules fusionnees, dans l'ordre de COLONNES
-            for(var g = 0; g < 4; g++){
+            // LES TROIS cellules fusionnees, dans l'ordre de COLONNES. Elles
+            // etaient QUATRE tant que « sub category » puis « degree »
+            // tenaient la troisieme place ; ce nombre doit suivre groupKey().
+            for(var g = 0; g < 3; g++){
                 html += '<td class="grp-cell '+grpParity+' '+COLONNES[g].cls
                       + '" rowspan="'+span+'">'
                       + COLONNES[g].lire(objects[j]) + '</td>';

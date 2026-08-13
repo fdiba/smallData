@@ -59,11 +59,40 @@ function Particle(config){
 	this.price = config.price;
 	this.imeb_id = config.imeb_id;
 	this.fn = config.fn;
-	this.ln = config.ln;
+	/* `ln` S'APPELLE `name` — 2026-08-13, meme raison que `cat` et `sub_cat`
+	   la veille : LE MENU « Group by » AFFICHE LE NOM DE LA PROPRIETE tel quel
+	   (checkAttributes, js/sma_core.js). Il proposait de regrouper par « ln »,
+	   deux lettres qui ne disent rien a qui n'a pas lu le code — la legende de
+	   catalog.php devait meme les traduire entre parentheses, « ln (last
+	   name) », ce qui est l'aveu du probleme et non sa solution.
+	   `fn` NE CHANGE PAS : il n'est dans aucun `attrOfInterest`, donc jamais
+	   affiche par le menu, et le renommer ne servirait rien. */
+	this.name = config.name;
 	this.title = config.title;
 	this.duration = config.duration;
-	this.cat = config.cat;
-	this.sub_cat = config.sub_cat;
+	/* `minutes` REGROUPE, `duration` AFFICHE — 2026-08-13. Le menu proposait
+	   `duration`, un « mm:ss » a 1 319 valeurs distinctes sur le fonds : il ne
+	   regroupait rien. Il propose maintenant `minutes`, la meme duree arrondie
+	   a la minute — 66 valeurs. Le calcul est dans minutesGN(), js/functions.js,
+	   ecrit UNE fois pour les trois pages. `duration` reste servi tel quel : la
+	   boite violette l'affiche a cote du titre. */
+	this.minutes = config.minutes;
+	/* LES DEUX PROPRIETES ONT CHANGE DE SENS ET DE NOM — 2026-08-13.
+
+	   `cat` portait `imeb_music.award_cat` et `sub_cat` la categorie. LE MENU
+	   « Group by » AFFICHE LE NOM DE LA PROPRIETE tel quel (checkAttributes,
+	   js/sma_core.js) : il proposait donc de regrouper par « cat » et par
+	   « sub_cat », c'est-a-dire par un mot qui change de sens en 2000 et par
+	   un niveau qui n'existe pas. Le concours a des DEGRES et des CATEGORIES,
+	   et le constat de 1990 l'ecrit — une lettre pour le degre, un chiffre
+	   pour la categorie.
+
+	   `degree` vaut « I », « II » ou « III » ; `category` porte le libelle de
+	   `imeb_categorie`. *L'etiquette du menu etant le nom de la propriete, on
+	   renomme la propriete plutot que d'ajouter une table de traduction —
+	   c'est un code-book de plus, et cette page vient d'en supprimer trois.* */
+	this.degree = config.degree;
+	this.category = config.category;
 	this.isni = config.isni;
 	this.ctry = config.ctry;
 
@@ -75,8 +104,8 @@ function Particle(config){
 	// membres d'un groupe ouvert sont fabriques a partir de records
 	// (createNewChild). Ajouter une propriete = la declarer aux trois endroits.
 	this.records = [{edition:this.edition, year:this.year, price:this.price,
-					imeb_id:this.imeb_id, fn:this.fn, ln:this.ln, title:this.title,
-					duration:this.duration, cat:this.cat, sub_cat:this.sub_cat,
+					imeb_id:this.imeb_id, fn:this.fn, name:this.name, title:this.title,
+					duration:this.duration, minutes:this.minutes, degree:this.degree, category:this.category,
 					isni:this.isni, ctry:this.ctry, id:this.id}];
 
 	//midnight blue, green emerald, yellow sun flower, blue peter river
@@ -104,7 +133,7 @@ function Particle(config){
 	this.open=false;
 	this.childs=[];
 
-	this.attrOfInterest = ['edition', 'year', 'price', 'ln', 'duration', 'cat', 'sub_cat', 'isni'];
+	this.attrOfInterest = ['edition', 'year', 'price', 'name', 'minutes', 'degree', 'category', 'isni'];
 	this.targetedAttr="";
 	this.on = false;
 
@@ -184,11 +213,12 @@ Particle.prototype.createNewChild=function(obj){
         price: obj.price,
         imeb_id: obj.imeb_id,
         fn: obj.fn,
-        ln: obj.ln,
+        name: obj.name,
         title: obj.title,
         duration: obj.duration,
-        cat: obj.cat,
-        sub_cat: obj.sub_cat,
+        minutes: obj.minutes,
+        degree: obj.degree,
+        category: obj.category,
         isni: obj.isni,
         ctry: obj.ctry,
 
@@ -266,7 +296,8 @@ Particle.prototype.getInfoFrom=function(target){
 	blocks.push([work]);
 
 	//--- 3. palmares
-	blocks.push([val(target.price), val(target.cat), val(target.sub_cat)]);
+	blocks.push([val(target.price), val(target.degree) ?
+	             'Degré ' + val(target.degree) : '', val(target.category)]);
 
 	//--- 4. dates : les deux sont libellees, seule entorse a la regle du
 	//    "sans libelle" — la page en porte deux et deux nombres nus cote a

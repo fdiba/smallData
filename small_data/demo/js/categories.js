@@ -45,11 +45,6 @@ var records = null;         // reponse analysee, gardee pour les reconstructions
    flux sortants de la categorie. */
 var catComposers = {};
 
-/* Le meme compte, par SOUS-categorie, et pour la meme raison : la vue
-   allegee n'a pas de colonne compositeur, donc pas de flux sortant, mais
-   l'effectif reste vrai et l'infobulle le dit dans les deux vues. */
-var subComposers = {};
-
 /* Periode couverte par chaque categorie : { libelle: "1977-1998" }, ou
    "1985" quand les deux bornes sont egales. Elle vient de imeb_categorie —
    annee_debut et annee_fin, servies en fin d'enregistrement par
@@ -68,23 +63,17 @@ var subComposers = {};
       les deux. */
 var catPeriode = {};
 
-/* Periode de chaque SOUS-categorie, et elle n'est pas de la meme nature que
-   celle des categories.
+/* IL N'Y A PLUS DE SOUS-CATEGORIE, ET IL N'Y EN A JAMAIS EU — 2026-08-13.
+   `subComposers` et `subPeriode` ont ete retires ici. Ils comptaient les
+   compositeurs et relevaient la periode d'un niveau qui n'existe pas : le
+   concours a des DEGRES et des CATEGORIES, et le constat de 1990 l'ecrit —
+   une LETTRE pour le degre, un CHIFFRE pour la categorie. Ce que la page
+   appelait « sous-categorie » etait la categorie elle-meme, servie par un
+   second champ parce que `imeb_music.award_cat` changeait de sens en 2000.
 
-   CELLE-CI EST OBSERVEE, PAS DECLAREE. `imeb_categorie` donne des bornes
-      aux categories ; il n'existe AUCUNE table des sous-categories — leur
-      vocabulaire lui-meme ne vit que dans php/sous_categories.php. La seule
-      periode disponible est donc celle des oeuvres qui la portent, min et
-      max de leurs annees de prix.
-
-      Elle est stable en pratique — les sous-categories ne concernent que
-      2000-2009, editions versees et closes depuis longtemps, quand le
-      chantier des proces-verbaux en est a 1985 — mais elle bougerait si ces
-      annees-la etaient un jour reprises. La legende de la page le dit.
-
-      *Ce qu'on ne peut pas declarer, on le mesure — et on dit qu'on l'a
-      mesure.* */
-var subPeriode = {};
+   LA PERIODE DE CES DOUZE LIBELLES N'EST DONC PLUS OBSERVEE MAIS DECLAREE :
+      ils ont maintenant une ligne dans `imeb_categorie`, avec `annee_debut`
+      et `annee_fin`, et `catPeriode` les sert comme les autres. */
 
 /* « MAGISTERE » ET « RESIDENCE » NE SONT PAS DES CATEGORIES — 2026-08-08
    Releve par Florent sur cette page apres le versement de 1988, et c'est le
@@ -140,8 +129,12 @@ d3.text("php/retrieve_categories.php", function(error, text){
   // oeuvres primees.
   // catDebut / catFin = les bornes de la categorie, vides pour les oeuvres
   // qui n'en ont pas.
-  // subCat = le LIBELLE de la sous-categorie, deja traduit par le serveur
-  // (php/sous_categories.php) ; vide pour 575 des 727 oeuvres primees.
+  // subCat = LA CATEGORIE, lue sur `imeb_categorie` par `id_categorie` —
+  // 2026-08-13. Le nom du champ garde la trace de ce qu'il portait avant, une
+  // « sous-categorie » traduite d'un code entier par php/sous_categories.php,
+  // fichier supprime le meme jour. C'EST LUI QUI FAIT LE NŒUD DU MILIEU dans
+  // les deux vues ; `category`, qui porte le degre, n'est plus dessine.
+  // Vide pour les 146 Residence et Magistere, qui n'ont pas de categorie.
   for(var i=0; i+10 < raw.length; i+=11){
     data.push({ year: raw[i], category: raw[i+1], name: raw[i+2],
                 firstName: raw[i+3], isni: raw[i+4], artistId: raw[i+5],
@@ -153,9 +146,7 @@ d3.text("php/retrieve_categories.php", function(error, text){
 
   records = data;
   countComposersByCategory();
-  countComposersBySubCategory();
   collectCategoryPeriods();
-  collectSubCategoryPeriods();
   bindViewSwitch();
   build();
 });
@@ -195,6 +186,38 @@ function build(){
   });
 }
 
+/* LE LIBELLE DU NŒUD DU MILIEU, ET IL N'EST ECRIT QU'ICI — 2026-08-13.
+
+   Trois endroits en ont besoin : setSankeyNodes(), qui cree le nœud,
+   countComposersByCategory(), qui compte ses compositeurs, et
+   collectCategoryPeriods(), qui lui donne sa periode. Les deux derniers
+   retrouvent le nœud PAR SON NOM dans l'infobulle : si l'un des trois
+   calculait le libelle autrement, le compte et la periode tomberaient a cote
+   et l'infobulle afficherait un repli sans que rien ne signale l'erreur.
+   *Une cle qui sert a se retrouver ne se calcule qu'a un seul endroit.*
+
+   LA CATEGORIE D'ABORD, ET C'EST LE CAS GENERAL : `subCat` porte le libelle
+      de la ligne de `imeb_categorie` pointee par `id_categorie`.
+
+   A DEFAUT, LE DEGRE PRIVE DE SON PREFIXE — « Residence », « Magistere ».
+      Ces 146 œuvres n'ont pas de categorie : elles SONT un degre, et le
+      catalogue les inscrit pourtant dans la colonne de categorie. Retirer
+      « Degre I - » n'est pas traduire une valeur, c'est retirer un prefixe.
+
+   « None » EN DERNIER RECOURS : les 38 œuvres d'avant 1977, quand le
+      concours n'avait qu'un seul classement. */
+function libelleCategorie(d){
+
+  if(d.subCat) return d.subCat;
+
+  if(d.category){
+    var m = /^Degré [IVX]+ - (.+)$/.exec(d.category);
+    if(m) return m[1];
+  }
+
+  return 'None';
+}
+
 /* Compte des compositeurs distincts par categorie. Une paire
    categorie + id_artist n'est comptee qu'une fois : un compositeur prime deux
    fois dans la meme categorie reste un compositeur. */
@@ -206,30 +229,11 @@ function countComposersByCategory(){
 
   for(k = 0; k < records.length; k++){
     d = records[k];
-    cat = (d.category === '') ? 'None' : d.category;
+    cat = libelleCategorie(d);
     pair = cat + '' + d.artistId;
     if(seen[pair]) continue;
     seen[pair] = true;
     catComposers[cat] = (catComposers[cat] || 0) + 1;
-  }
-}
-
-/* Compte des compositeurs distincts par sous-categorie, sur le meme
-   principe que countComposersByCategory : une paire sous-categorie +
-   id_artist n'est comptee qu'une fois. */
-function countComposersBySubCategory(){
-
-  var seen = {}, k, d, pair;
-
-  subComposers = {};
-
-  for(k = 0; k < records.length; k++){
-    d = records[k];
-    if(!d.subCat) continue;
-    pair = d.subCat + '' + d.artistId;
-    if(seen[pair]) continue;
-    seen[pair] = true;
-    subComposers[d.subCat] = (subComposers[d.subCat] || 0) + 1;
   }
 }
 
@@ -248,39 +252,19 @@ function collectCategoryPeriods(){
 
   for(k = 0; k < records.length; k++){
     d = records[k];
-    cat = (d.category === '') ? 'None' : d.category;
+    //  LA PERIODE EST CELLE DE LA CATEGORIE — 2026-08-13. Elle etait relevee
+    //  sur d.category, qui porte maintenant le DEGRE ; les bornes servies par
+    //  le serveur sont celles de la ligne de imeb_categorie pointee par
+    //  id_categorie, c'est-a-dire de la CATEGORIE. La cle suit.
+    //  LE DEGRE N'A PAS DE PERIODE DECLAREE et n'en affiche donc pas : le nom
+    //  du degre 2 change d'une edition a l'autre — PRIX, QUADRIVIUM,
+    //  QUINTIVIUM, TRIVIUM/QUADRIVIUM — et c'est la table imeb_section qui le
+    //  portera.
+    cat = libelleCategorie(d);
     if(catPeriode.hasOwnProperty(cat)) continue;
     if(!d.catDebut || !d.catFin) continue;
     catPeriode[cat] = (d.catDebut === d.catFin) ? d.catDebut
                                                 : d.catDebut + '-' + d.catFin;
-  }
-}
-
-/* Periode observee de chaque sous-categorie : la plus petite et la plus
-   grande annee de prix parmi les oeuvres qui la portent. Meme forme que
-   catPeriode — « 2000-2009 », ou une seule annee quand les deux bornes se
-   confondent. */
-function collectSubCategoryPeriods(){
-
-  var bornes = {}, k, d, an;
-
-  subPeriode = {};
-
-  for(k = 0; k < records.length; k++){
-    d = records[k];
-    if(!d.subCat) continue;
-    an = parseInt(d.year, 10);
-    if(isNaN(an)) continue;
-    if(!bornes[d.subCat]){ bornes[d.subCat] = [an, an]; continue; }
-    if(an < bornes[d.subCat][0]) bornes[d.subCat][0] = an;
-    if(an > bornes[d.subCat][1]) bornes[d.subCat][1] = an;
-  }
-
-  for(var lib in bornes){
-    if(!bornes.hasOwnProperty(lib)) continue;
-    subPeriode[lib] = (bornes[lib][0] === bornes[lib][1])
-                    ? String(bornes[lib][0])
-                    : bornes[lib][0] + '-' + bornes[lib][1];
   }
 }
 
@@ -561,40 +545,6 @@ function nodeTitle(d){
     out += " to " + plural(comp, "composer") +
            ", across " + plural(from, "edition");
     if(catPeriode[d.name]){ out = catPeriode[d.name] + " — " + out; }
-  } else if(d.type === 'subcat'){
-    /* Une sous-categorie ne recoit pas des ANNEES mais des CATEGORIES : ses
-       flux entrants ne comptent donc pas des editions.
-       Sa periode est OBSERVEE et non declaree — voir subPeriode. Elle se
-       presente comme celle des categories parce que le lecteur y cherche la
-       meme chose, et la legende de la page dit d'ou viennent les deux.
-
-       ET ELLE NOMME SES CATEGORIES. Une sous-categorie appartient a une,
-          deux ou trois d'entre elles — « Art sonore électroacoustique » est
-          sous Quadrivium, Trivium A ET Trivium B —, et le diagramme le
-          montre par des flux qu'on ne suit pas a l'oeil quand ils se
-          croisent. Trois noms au plus : les ecrire coute une ligne et evite
-          de remonter le flux du regard.
-
-          LES NOMS VIENNENT DE targetLinks, c'est-a-dire de LA MEME SOURCE
-          que le compte qui les precede : les deux ne peuvent pas diverger.
-          Ordre alphabetique, pour qu'une meme sous-categorie se lise
-          toujours pareil. */
-    var scomp = subComposers.hasOwnProperty(d.name) ? subComposers[d.name] : to;
-    out += " to " + plural(scomp, "composer") +
-           ", in " + plural(from, "category");
-
-    var meres = [];
-    for(var m = 0; m < (d.targetLinks ? d.targetLinks.length : 0); m++){
-      if(d.targetLinks[m].source) meres.push(d.targetLinks[m].source.name);
-    }
-    if(meres.length){
-      meres.sort(function(a, b){
-        return String(a).localeCompare(String(b), 'fr', {sensitivity: 'base'});
-      });
-      out += " : " + meres.join(", ");
-    }
-
-    if(subPeriode[d.name]){ out = subPeriode[d.name] + " — " + out; }
   } else {
     out += " in " + plural(from, "category");
   }
@@ -643,12 +593,44 @@ function setSankeyNodes(data, key){
 
   var d = data[key];
 
+  /* ============ LE DEGRE EST RETIRE DU DIAGRAMME — 2026-08-13 ============
+
+     LE CHAMP 1 PORTE LE DEGRE, LE CHAMP 9 LA CATEGORIE. Ils portaient avant
+     « la categorie ou le degre selon l'annee » et « la sous-categorie », parce
+     que `imeb_music.award_cat` changeait de sens en 2000. Il n'y a pas de
+     sous-categorie dans le concours : il y a des DEGRES et des CATEGORIES, et
+     le constat de 1990 l'ecrit — une LETTRE pour le degre, un CHIFFRE pour la
+     categorie.
+
+     LE DEGRE A ETE ESSAYE COMME COLONNE DU MILIEU LE 2026-08-13, ET RETIRE LE
+     JOUR MEME. Il n'a que TROIS valeurs — Degre I, Degre II, Degre III — et
+     337 des 729 œuvres tombent dans la seule deuxieme : toutes les annees
+     entraient dans trois nœuds et en ressortaient vers vingt-six, et le
+     diagramme n'etait plus lisible. *Un niveau qui n'a que trois valeurs
+     n'est pas un niveau de flux : c'est une legende.*
+
+     LES DEUX VUES PORTENT DONC LA CATEGORIE AU MILIEU :
+        vue allegee  : annee -> CATEGORIE
+        vue complete : annee -> CATEGORIE -> compositeur
+
+     ET LA TROISIEME COLONNE DE LA VUE ALLEGEE DISPARAIT AVEC LE DEGRE. Elle
+     portait la « sous-categorie », qui EST la categorie : la garder ferait un
+     nœud sous lui-meme. *Le niveau qu'elle montrait n'a jamais existe ; c'est
+     la donnee qui etait mal etagee, pas le diagramme qui manquait d'une
+     colonne.*
+
+     LES DEUX « Multimedia » NE FONT PLUS QU'UN. Celui de 1999 arrivait par le
+     champ 1 et celui de 2000-2009 par le champ 9 : deux nœuds pour une seule
+     categorie, que la base a fusionnee le 2026-08-13.
+
+     LES 146 RESIDENCE ET MAGISTERE n'ont pas de categorie — ils SONT un degre.
+     Ils gardent le libelle que le catalogue leur donne et leur ✦, qui dit
+     precisement cela. */
   //--------- add years ------------//
   var yearId = addNode('y' + d.year, {name: d.year, type: 'year'});
 
-  //---- add categories --------//
-  var category = d.category;
-  if(category=='')category='None';
+  //---- la colonne du milieu : LA CATEGORIE, dans les deux vues -----------
+  var category = libelleCategorie(d);
   /* LE MARQUAGE N'A LIEU QUE SI LE LIBELLE REPETE LA DISTINCTION — voir la
      note en tete de fichier. Une oeuvre de 2005 porte un Magistere avec
      `award_cat = 'Trivium A'` : elle garde sa categorie, et le noeud
@@ -656,51 +638,27 @@ function setSankeyNodes(data, key){
      `addNode` rend l'index existant sans rien ecraser : le drapeau est donc
      pose par la PREMIERE oeuvre qui cree le noeud. C'est sans consequence,
      puisqu'un libelle marque ne peut venir que du code qui le porte. */
+  //  LE ✦ RESTE, DANS LES DEUX VUES : il dit que « Magistere » et
+  //  « Residence » ne sont pas des categories mais des distinctions, et ils
+  //  tiennent la colonne des categories faute d'en avoir une.
   var estDistinction = (DISTINCTIONS_HORS_AXE[+d.awardPrice] === category);
   var catId = addNode('c' + category,
                       {name: category, type: 'category',
                        distinction: estDistinction});
 
   //------- setup link between year and category -----------//
-  // Les deux premieres colonnes sont identiques dans les deux vues : une
-  // categorie redistribue exactement ce qu'elle recoit des annees, donc
-  // retirer la colonne de droite ne change rien a celle de gauche.
+  // Les deux vues ont les memes deux premieres colonnes : une categorie
+  // redistribue exactement ce qu'elle recoit des annees, donc retirer la
+  // colonne de droite ne change rien a celle de gauche.
   createLinkBetween(yearId, catId);
 
-  /* ---- la sous-categorie, TROISIEME COLONNE depuis le 2026-08-06 ----
-     Le concours n'a sous-divise ses categories qu'a partir de 2000, et sur
-     cinq d'entre elles : Trivium, Trivium A, Trivium B, Quadrivium et Arts
-     Electroniques. 152 oeuvres primees sur 727 en portent une.
-
-     LES 575 AUTRES SAUTENT LA COLONNE. Leur flux va directement de la
-        categorie au compositeur, et traverse donc la colonne des
-        sous-categories sans s'y arreter. C'est ce que le document dit :
-        ces editions n'avaient pas de sous-categorie, et un noeud « None »
-        qui en porterait 575 ecraserait les douze vraies.
-
-     EN VUE ALLEGEE, une categorie sans sous-categorie n'a donc aucun
-        flux sortant : d3.sankey la pousse a la derniere colonne, a cote
-        des sous-categories. C'est VOULU — voir la note sinksRight de
-        sankeyStuff(), et ce qu'elle a coute avant d'etre voulue. */
-  /* ---- la sous-categorie : VUE ALLEGEE SEULEMENT ----
-     Le concours n'a sous-divise ses categories qu'a partir de 2000, et sur
-     cinq d'entre elles : Trivium, Trivium A, Trivium B, Quadrivium et Arts
-     Electroniques. 152 oeuvres primees sur 727 en portent une.
-
-     ELLE A ETE ESSAYEE DANS LES DEUX VUES LE 2026-08-06, ET RETIREE DE
-        LA VUE COMPLETE LE JOUR MEME. Avec 507 compositeurs a droite, la
-        colonne supplementaire allongeait encore un diagramme qui fait deja
-        plus de dix mille pixels de haut, et les flux qui la traversaient
-        sans s'y arreter — 575 sur 727 — la rendaient illisible. La vue
-        complete revient donc a annee -> categorie -> compositeur.
-
-     Elle reste dans la VUE ALLEGEE, ou elle a exactement la place qu'il
-     faut : 71 noeuds, trois colonnes, une fenetre. */
-  if(mode !== VIEW_FULL && d.subCat){
-    var subId = addNode('s' + d.subCat, {name: d.subCat, type: 'subcat'});
-    createLinkBetween(catId, subId);
-  }
-
+  /* ---- LA TROISIEME COLONNE DE LA VUE ALLEGEE A ETE RETIREE — 2026-08-13.
+     Elle portait la « sous-categorie » depuis le 2026-08-06. Ce niveau n'a
+     jamais existe : ce qu'elle montrait EST la categorie, et la garder ferait
+     un nœud sous lui-meme. *C'etait la donnee qui etait mal etagee, pas le
+     diagramme qui manquait d'une colonne.*
+     La vue allegee est donc annee -> categorie, deux colonnes ; la vue
+     complete, annee -> categorie -> compositeur. */
   if(mode !== VIEW_FULL) return;
 
   //---- add names --------//
@@ -806,14 +764,17 @@ function sankeyStuff(){
   // Some setup stuff edit it to make a bigger image !!
   var margin = {top: 20, right: 1, bottom: 20, left: 41};
   /* Les 760 px supplementaires ne servent qu'a loger la colonne des
-     compositeurs et ses patronymes. La vue allegee s'arrete aux
-     sous-categories, dont les libelles sont plus longs que ceux des
-     categories — « Installation ou environnement sonore et musical » fait
-     47 caracteres —, d'ou 280 px de plus qu'avant pour elle.
+     compositeurs et ses patronymes. La vue allegee s'arrete aux CATEGORIES,
+     dont les libelles sont longs depuis que les douze de 2000-2009 en sont —
+     « Installation ou environnement sonore et musical » fait 47 caracteres —,
+     d'ou 280 px de plus qu'avant pour elle.
      240 px ne suffisaient pas : ce libelle-la depassait le bord droit du
         SVG de 9 px, mesure dans le navigateur. Le nombre est cale sur LE
-        PLUS LONG des douze, et il est a reverifier si un treizieme entre —
-        php/sous_categories.php porte la liste. */
+        PLUS LONG, et il est a reverifier si un plus long entre — la liste
+        est maintenant la table `imeb_categorie`, et non plus un fichier.
+     LA COLONNE EST LA MEME DEPUIS LE 2026-08-13 : la vue allegee s'arretait
+        aux « sous-categories », qui SONT les categories. Elle s'arrete donc
+        au meme endroit, avec une colonne de moins. */
   svgWidth = 960 - margin.left - margin.right
            + (mode === VIEW_FULL ? 760 : 280);
   var color = d3.scale.category20();

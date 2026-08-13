@@ -90,7 +90,7 @@ function retrieveData(cat, numOfElements, country){
         // par les appelants et doit rester synchronise avec le PHP.
         var works = [];
         for (var k = 0; k + numOfElements - 1 < arr.length; k += numOfElements) {
-            works.push({misam: arr[k], fn: arr[k+1], ln: arr[k+2],
+            works.push({misam: arr[k], fn: arr[k+1], name: arr[k+2],
                         id_artist: arr[k+3], title: arr[k+4],
                         duration: arr[k+5], id: arr[k+6], ctry: arr[k+7],
                         isni: arr[k+8], editions: arr[k+9], award: arr[k+10]});
@@ -195,9 +195,10 @@ function retrieveData(cat, numOfElements, country){
                     // ici, puis dans js/particles_catalog.js (champ du
                     // constructeur, litteral this.records, et createNewChild)
                     // et dans js/childs_catalog.js.
-                    records.push({imeb_id: w.misam, fn: w.fn, ln: w.ln,
+                    records.push({imeb_id: w.misam, fn: w.fn, name: w.name,
                                   id: w.id,
                                   title: w.title, duration: w.duration,
+                                  minutes: minutesGN(w.duration),
                                   ctry: w.ctry, isni: w.isni,
                                   editions: w.editions});
                 }
@@ -230,7 +231,7 @@ function retrieveData(cat, numOfElements, country){
                     // L'attribut porte sur un <span> et non sur la cellule :
                     // celle-ci contient aussi la ligne de pays, qui n'a pas a
                     // etre soulignee ni cliquable.
-                    var fullName = w.fn + ' ' + w.ln;
+                    var fullName = w.fn + ' ' + w.name;
                     var composer = w.isni
                         ? '<span class="composer-isni" role="button" tabindex="0" data-isni="'
                           + esc(w.isni) + '" data-label="' + esc(fullName) + '">'

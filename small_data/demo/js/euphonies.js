@@ -6,7 +6,9 @@ window.onload = function() {
     initSMA(800, 600);
 
     // 13 champs depuis l'ajout du pays en fin d'enregistrement (retrieve_cat.php)
-    retrieveEuphonies(3, 13);
+    // 13 -> 14 le 2026-08-13 : LE DEGRE, en fin d'enregistrement comme tous
+    //    les champs ajoutes ici. « I », « II » ou « III », vide avant 1988.
+    retrieveEuphonies(3, 14);
 
 };
 function retrieveEuphonies(cat, numOfElements){
@@ -28,10 +30,17 @@ function retrieveEuphonies(cat, numOfElements){
             var tr_class = (i / numOfElements % 2 === 0) ? "even" : "odd";
 
             //--------- SMA
+            /* LES DEUX LIBELLES DU SMA ONT CHANGE DE SENS ET DE NOM —
+               2026-08-13. `cat` portait `award_cat` et `sub_cat` la
+               categorie ; ce sont maintenant `degree` et `category`, et le
+               menu « Group by » montre ces noms-la, puisque *l'etiquette du
+               menu EST le nom de la propriete* (checkAttributes,
+               js/sma_core.js). `award_cat` (arr[i+9]) reste dans le flux et
+               ne s'affiche plus nulle part. */
             var obj = {edition: arr[i], year:arr[i+1], price:arr[i+2], imeb_id:arr[i+3],
-                        fn:arr[i+4], ln:arr[i+5], title:arr[i+6], duration:arr[i+7],
-                        id:arr[i+8],
-                        cat:arr[i+9], sub_cat:arr[i+10], isni:arr[i+11],
+                        fn:arr[i+4], name:arr[i+5], title:arr[i+6], duration:arr[i+7],
+                        minutes:minutesGN(arr[i+7]), id:arr[i+8],
+                        degree:arr[i+13], category:arr[i+10], isni:arr[i+11],
                         ctry:arr[i+12]};
 
             records.push(obj);
@@ -43,7 +52,7 @@ function retrieveEuphonies(cat, numOfElements){
             tr.attr('class', tr_class);
             //---------
 
-            // ordre des colonnes : edition, year, category, sub category, price,
+            // ordre des colonnes : edition, year, category, price,
             // composer (prenom + nom FUSIONNES), country, title, duration, isni
             // (le champ 8 = temp id n'est pas affiche ; le champ 3 = imeb id,
             // c-a-d le MISAM, n'est plus affiche non plus mais reste transporte
@@ -59,7 +68,17 @@ function retrieveEuphonies(cat, numOfElements){
                   « Zephyr » — un ordre d'octets n'est pas un ordre
                   alphabetique. Elle porte AUSSI le prenom, en second, pour
                   departager deux homonymes de patronyme. */
-            var colOrder = [0, 1, 9, 10, 2, 4, 12, 6, 7, 11];
+            /* LA CATEGORIE (10) PREND LA PLACE DE `award_cat` (9), ET LA
+               COLONNE « sub category » DISPARAIT — 2026-08-13. Le degre (13)
+               y a eu une colonne pendant une heure : trois valeurs, dont une
+               sur sept lignes sur dix. Il reste dans le flux et dans le menu
+               « Group by » du SMA.
+               `award_cat` ne dit pas la meme chose selon l'annee : de 1977 a
+               1999 c'est la CATEGORIE, de 2000 a 2009 c'est la SECTION du
+               degre II — Trivium, Quadrivium. Une colonne qui change de sens
+               en cours de tableau ne se lit pas. Les champs 9 et 13 restent
+               dans le flux et ne sont plus affiches. */
+            var colOrder = [0, 1, 10, 2, 4, 12, 6, 7, 11];
             for (var j = 0; j < colOrder.length; j++) {
 
                 var idx = colOrder[j];

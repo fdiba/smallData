@@ -107,7 +107,7 @@
 					<div>
 						<p><strong>Grouping</strong></p>
 						<ul>
-							<li>agents compare their properties as they move; candidate properties and their exchange counts appear in the white panel of the top bar, and a property (such as <em>edition</em> or <em>cat</em>) becomes clickable once exchanged often enough</li>
+							<li>agents compare their properties as they move; candidate properties and their exchange counts appear in the white panel of the top bar, and a property (such as <em>edition</em>, <em>category</em> or <em>minutes</em> &mdash; the duration rounded to the nearest minute) becomes clickable once exchanged often enough</li>
 							<li>click that property name to let the agents regroup around it</li>
 							<li><em>reset</em> restarts the system, <em>pause</em> freezes it (the <em>p</em> key toggles the agents' drift)</li>
 						</ul>
@@ -120,8 +120,12 @@
 					<tr>
 						<th>edition</th>
 						<th>year</th>
+						<!-- LA COLONNE « sub category » A DISPARU LE 2026-08-13, et
+						     la colonne « degree » qui l'avait remplacee a ete retiree
+						     le JOUR MEME : trois valeurs seulement, et une seule sur
+						     sept lignes sur dix. Ce que la page appelait
+						     « sous-categorie » EST la categorie. -->
 						<th>category</th>
-						<th>sub category</th>
 						<th>price</th>
 						<th>composer</th>
 						<th>country</th>
