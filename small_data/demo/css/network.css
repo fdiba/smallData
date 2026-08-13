@@ -26,7 +26,7 @@
    laisse Overview, dont la colonne vit dans #right_col, exactement ou elle
    etait. Ne restent ici que les valeurs propres a Network.
 
-   ⚠️ CE QUE LE PARTAGE NE DIT PAS, ET QUI VAUT POUR CETTE PAGE. Sur Overview,
+   CE QUE LE PARTAGE NE DIT PAS, ET QUI VAUT POUR CETTE PAGE. Sur Overview,
    la grille se re-repartit a la nouvelle largeur et il n'y a jamais de
    debordement horizontal. Ici c'est impossible : le canvas de Network fait
    1200x800 EN DUR (js/network.js), et les agents du SMA vivent dans ces

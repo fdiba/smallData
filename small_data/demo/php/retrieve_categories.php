@@ -31,14 +31,14 @@
 	                     regroupe sous « None » — celles d'avant 1977, quand le
 	                     concours n'avait qu'un seul classement.
 
-	   ⚠️ LA MEME VALEUR EST REPETEE A CHAQUE ENREGISTREMENT. C'est le prix du
+	   LA MEME VALEUR EST REPETEE A CHAQUE ENREGISTREMENT. C'est le prix du
 	      format : le flux est un tableau plat, il repete deja la categorie, le
 	      nom et l'ISNI. Vingt-trois valeurs distinctes recopiees 728 fois font
 	      environ 7 Ko sur une reponse qui en pese cent — l'autre solution, un
 	      second appel ou un en-tete a part, coutait un protocole de plus pour
 	      economiser cela.
 
-	   ⚠️ LA JOINTURE SE FAIT SUR LE LIBELLE, faute d'une cle etrangere :
+	   LA JOINTURE SE FAIT SUR LE LIBELLE, faute d'une cle etrangere :
 	      imeb_music.award_cat est une CHAINE, pas un id. Verifie le
 	      2026-08-06 sur les 728 oeuvres primees — les vingt-trois libelles du
 	      catalogue tombent tous sur une ligne de imeb_categorie, et les
@@ -47,7 +47,7 @@
 	      plus, ses deux champs sortiront vides et la periode ne s'affichera
 	      pas : la page perd une information, elle n'en invente pas.
 
-	   ⚠️⚠️ REPRISE DU 2026-08-12 — DEUX LIBELLES DU CATALOGUE NOMMENT UNE
+	   REPRISE DU 2026-08-12 — DEUX LIBELLES DU CATALOGUE NOMMENT UNE
 	      SEULE CATEGORIE, ET LA JOINTURE DOIT LE SAVOIR.
 
 	      Le constat de 1993 ecrit, en tete de son Degre 2, « 1°) PRIX DE LA
@@ -74,11 +74,11 @@
 	          remplacer.* Reecrire 44 lignes du catalogue aurait efface ce
 	          qu'il ecrit pour y mettre ce que nous en concluons.
 
-	      ⚠️ La longueur d'enregistrement ne bouge pas : c'est la VALEUR du
+	      La longueur d'enregistrement ne bouge pas : c'est la VALEUR du
 	         troisieme champ qui change, pas le nombre de champs. js/categories.js
 	         n'a rien a reprendre.
 
-	      ⚠️ ET LE REPLI RESTE ECRIT : si la jointure ne trouve rien — un
+	      ET LE REPLI RESTE ECRIT : si la jointure ne trouve rien — un
 	         libelle neuf au catalogue —, on emet `award_cat` tel quel, comme
 	         avant. La page perd une periode, elle n'invente pas un nœud.
 
@@ -98,7 +98,7 @@
 	   tous les precedents :
 	     - award_price   : le CODE de la distinction, pas son libelle.
 
-	   ⚠️ IL SERT A UNE SEULE CHOSE, ET C'EST LA MEME QU'EN §24.15 : deux
+	   IL SERT A UNE SEULE CHOSE, ET C'EST LA MEME QU'EN §24.15 : deux
 	      valeurs de `imeb_music.award_cat` ne sont PAS des categories.
 	      « Magistere » (code 500) et « Residence » (code 600) sont des
 	      DISTINCTIONS, decernees a travers les categories — le Magistere
@@ -108,7 +108,7 @@
 	      ligne (8 et 9, bornes 1988-2008 et 1988-2009). 146 oeuvres sur 727
 	      sont concernees, sur vingt et une editions.
 
-	   ⚠️ ET LE TEST PORTE SUR LE CODE, JAMAIS SUR LE LIBELLE — c'est la regle
+	   ET LE TEST PORTE SUR LE CODE, JAMAIS SUR LE LIBELLE — c'est la regle
 	      posee pour js/aww.js le 2026-08-08 : le code est stable, `award_cat`
 	      est une chaine que quelqu'un corrigera un jour. UNE oeuvre de 2005
 	      porte un Magistere avec `award_cat = 'Trivium A'`, c'est-a-dire une
@@ -157,7 +157,7 @@
 
 			$year = $row['award_year'];
 
-			//⚠️ LE NŒUD DU DIAGRAMME EST LE LIBELLE CANONIQUE, PAS CELUI DU
+			//LE NŒUD DU DIAGRAMME EST LE LIBELLE CANONIQUE, PAS CELUI DU
 			//   CATALOGUE. Deux libelles du Repertoire general — « Electro-
 			//   acoustique » (1985-1991) et « Studio » (1993-1998) — nomment
 			//   une seule categorie : les deux constats qui la definissent,

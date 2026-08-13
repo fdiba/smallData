@@ -15,7 +15,7 @@ var COLORS=["#ecf0f1", "#2c3e50", "#1abc9c", "#16a085"];
    couleurs VOISINES qui se retrouvent cote a cote a l'ecran, et ce sont
    elles qui doivent se distinguer.
 
-   ⚠️ L'ORDRE PRECEDENT ETAIT FAUTIF, et d'un defaut mesurable. Il ouvrait
+   L'ORDRE PRECEDENT ETAIT FAUTIF, et d'un defaut mesurable. Il ouvrait
       par turquoise, bleu, amethyste, carotte, ALIZARINE — c'est-a-dire
       carotte (#e67e22) et alizarine (#e74c3c) en slots 4 et 5, donc
       systematiquement voisins des que cinq pays etaient isoles. Ecart
@@ -30,7 +30,7 @@ var COLORS=["#ecf0f1", "#2c3e50", "#1abc9c", "#16a085"];
       (six controles calcules, dont la simulation Machado-Oliveira-Fernandes
       2009), sur le fond sombre de la page (#2c3e50), et non a l'oeil.
 
-   ⚠️ DEUX CONTROLES NE PASSENT TOUJOURS PAS, ET C'EST ASSUME. Trois teintes
+   DEUX CONTROLES NE PASSENT TOUJOURS PAS, ET C'EST ASSUME. Trois teintes
       (turquoise, emeraude, carotte) sortent par le haut de la bande de clarte
       recommandee, et six descendent sous 3:1 contre le fond. Ce sont les
       couleurs Flat UI du site, presentes sur les sept pages depuis l'origine :
@@ -98,7 +98,7 @@ var VIZ_ENTRANTS = "#3498db";   // la part qui n'a qu'une candidature
 /* ------------------------------------------------------------------------
    UNE COULEUR SUIT LE PAYS, PAS SON RANG — 2026-08-08, second lot.
 
-   ⚠️ SIGNALE A L'USAGE : « c'est normal que la couleur des pays deja
+   SIGNALE A L'USAGE : « c'est normal que la couleur des pays deja
       selectionnes change quand j'en selectionne un autre ? » Non. C'etait le
       defaut, et il etait dans les deux vues depuis l'origine du menu
       d'isolement.
@@ -129,7 +129,7 @@ function vizTakeSlot(slots){
 /* ------------------------------------------------------------------------
    LA RAMPE DES ANNEES (grille de l'Overview) — 2026-08-08.
 
-   ⚠️ ELLE REMPLACE UN ARC-EN-CIEL, et l'arc-en-ciel etait faux de trois
+   ELLE REMPLACE UN ARC-EN-CIEL, et l'arc-en-ciel etait faux de trois
       facons, mesurees et non jugees a l'oeil. L'annee etait codee par la
       TEINTE : `hue = (annee-1973) x 310/36`, de 0° a 310°.
 
@@ -152,7 +152,7 @@ function vizTakeSlot(slots){
    type viridis, et non celui d'un arc-en-ciel HSL : la difference tient tout
    entiere dans la monotonie de la clarte.
 
-   ⚠️ ELLE RESTE DANS LE REGISTRE DU SITE. Elle va du VERT-MER (#16a085,
+   ELLE RESTE DANS LE REGISTRE DU SITE. Elle va du VERT-MER (#16a085,
       greensea) au BLEU (#3498db, peter river) puis a l'AMETHYSTE (#9b59b6) :
       trois couleurs de la palette Flat UI du site, dans cet ordre. Aucune
       teinte chaude — c'est ce qui la separe du jaune reserve (voir plus bas).
@@ -160,7 +160,7 @@ function vizTakeSlot(slots){
    Contraste sur le fond : 2,64:1 pour 1973 (le plus sombre reste visible,
    c'est le plancher qui compte) jusqu'a 8,21:1 pour 2009.
 
-   ⚠️ AUCUN ENCODAGE SECONDAIRE N'EST REQUIS, ET C'EST CE QUI LA DISTINGUE DES
+   AUCUN ENCODAGE SECONDAIRE N'EST REQUIS, ET C'EST CE QUI LA DISTINGUE DES
       DEUX RAMPES ESSAYEES AVANT ELLE. Son ecart minimal au JAUNE #f1c40f, qui
       designe la selection partout sur le site, est de 21,0 — au-dessus du
       plancher de 15. La rampe amethyste -> carotte essayee le meme jour
@@ -169,7 +169,7 @@ function vizTakeSlot(slots){
       cause a disparu est une regle que plus personne ne saura expliquer.*
       L'ecart minimal a l'EMERAUDE (« a une oeuvre au fonds ») est de 19,0.
 
-   ⚠️ ET UNE DETTE, ECRITE PLUTOT QUE TUE : l'ANCRE #7f8c8d (asbestos) n'est
+   ET UNE DETTE, ECRITE PLUTOT QUE TUE : l'ANCRE #7f8c8d (asbestos) n'est
       qu'a 8,4 de l'echelon 1980 et a 9,8 de l'echelon 1973, sous le plancher
       de 15. La rampe traverse toute la moitie froide du cercle, ou vivent
       aussi les gris du site : AUCUN gris de la palette ne s'en ecarte de 15
@@ -178,7 +178,7 @@ function vizTakeSlot(slots){
       l'on s'appuie sur la POSITION : l'ancre OUVRE la trainee, elle ne se lit
       jamais isolement. Meme arbitrage qu'au §18.7, a un ecart plus serre.
 
-   ⚠️ Le seul controle ordinal qu'elle ne passe pas est « teinte unique », et
+   Le seul controle ordinal qu'elle ne passe pas est « teinte unique », et
       c'est par construction — une rampe multi-teintes n'en est pas une. Les
       trois autres (monotonie, ecarts de clarte >= 0,066, contraste de la
       borne sombre) passent. Toute reecriture doit les repasser. */
@@ -186,7 +186,7 @@ var VIZ_YEAR = ["#288b77", "#339cb1", "#78a5d8", "#b2afe4", "#d6c1e8", "#edd8f1"
 
 /* Le carre d'ANCRE de chaque compositeur — celui qui ouvre sa trainee.
 
-   ⚠️ IL PORTE DESORMAIS « A-T-IL UNE OEUVRE AU FONDS », qui etait code par la
+   IL PORTE DESORMAIS « A-T-IL UNE OEUVRE AU FONDS », qui etait code par la
       LUMINOSITE des carres d'edition, c'est-a-dire sur le canal dont la
       rampe des annees a besoin. Les deux encodages se disputaient le meme
       mark. Et le reglage retenu donnait ceci :

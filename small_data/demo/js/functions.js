@@ -49,7 +49,7 @@ function lerpHexColor(a, b, t){
 
    Le pli est refait a chaque compositeur : on ne garde pas ouvert l'etat
    demande pour la fiche precedente, qui portait un autre nombre d'oeuvres. */
-/* ⚠️ L'ORDRE DES ŒUVRES DANS LA BOITE VIOLETTE — 2026-08-12.
+/* L'ORDRE DES ŒUVRES DANS LA BOITE VIOLETTE — 2026-08-12.
 
    Les trois flux qui alimentent cette boite (le `case 1` d'Overview et de
    Participation, le `case 11` de Network) rendent les œuvres dans l'ordre ou
@@ -58,12 +58,12 @@ function lerpHexColor(a, b, t){
    un — on ne peut ni y chercher un titre, ni dire d'un coup d'œil si une
    œuvre y est.
 
-   ⚠️ LE TRI SE FAIT SUR UNE COPIE. `titles` est aussi lu ailleurs — c'est le
+   LE TRI SE FAIT SUR UNE COPIE. `titles` est aussi lu ailleurs — c'est le
       tableau que displayComposerBox() et les compteurs relisent —, et il vient
       du flux : il garde l'ordre du flux. C'est la meme regle que
       displayCpInfos() dans js/animated_data.js, et pour la meme raison.
 
-   ⚠️ `localeCompare` AVEC 'fr' ET `sensitivity: 'base'` : les titres du fonds
+   `localeCompare` AVEC 'fr' ET `sensitivity: 'base'` : les titres du fonds
       portent des accents (« Eclats », « Écoute »), des apostrophes et des
       chiffres romains. Un tri sur les codes de caracteres range « Écoute »
       APRES « Zéphyr », ce qui n'est pas un ordre alphabetique — c'est un ordre
@@ -85,13 +85,13 @@ function displayTitlesInfosGN(arr){
 
     var box = $("#titles");
 
-    /* ⚠️ LA COPIE, PUIS LE TRI — jamais l'inverse, et jamais en place. */
+    /* LA COPIE, PUIS LE TRI — jamais l'inverse, et jamais en place. */
     arr = (arr || []).slice().sort(compareTitres);
 
     bindTitlesFold();
     box.empty();
 
-    /* ⚠️ `t-boxed` — LA BOITE VIOLETTE EST UNE BOITE DE COLONNE, ET ELLE SE
+    /* `t-boxed` — LA BOITE VIOLETTE EST UNE BOITE DE COLONNE, ET ELLE SE
        BORNE COMME LA FICHE ISNI (2026-08-11).
 
        Elle n'avait aucune hauteur maximale : un compositeur tres documente —
@@ -107,7 +107,7 @@ function displayTitlesInfosGN(arr){
        cette fonction est le seul constructeur de la boite a en-tete repliable
        — Overview, Network et Participation passent par elle. La classe suit
        donc exactement les pages qui ont cette boite-la, sans qu'aucune ait a
-       le declarer. ⚠️ Le catalogue et les œuvres primees remplissent `#titles`
+       le declarer. Le catalogue et les œuvres primees remplissent `#titles`
        autrement, sans passer par ici : ils ne recoivent pas la classe, et leur
        boite — qui EST le contenu de la page, pas une boite de colonne — garde
        sa hauteur libre. Une regle posee sur `#titles` tout court les aurait
@@ -144,7 +144,7 @@ function displayTitlesInfosGN(arr){
                Participation, le `case 11` de Network. Il etait donc lu et
                jete par les trois pages depuis toujours.
 
-               ⚠️ C'est un NUMERO D'INVENTAIRE, et c'est ce qui le rend utile a
+               C'est un NUMERO D'INVENTAIRE, et c'est ce qui le rend utile a
                   cet endroit : un titre se recopie mal — sous-titre coupe,
                   apostrophe, chiffre romain, points de suspension : six
                   natures d'ecart relevees sur dix-neuf paires au chantier des
@@ -364,7 +364,7 @@ function syncIsniFicheGN(isni, label){
    SMA ne portent pas de pays d'origine (colonne id_country_origin), d'ou le
    premier argument vide — la fonction rend alors le seul pays courant.
 
-   ⚠️ ORDRE D'APPEL. sma_core.js ecrit « N elements » dans la boite orange
+   ORDRE D'APPEL. sma_core.js ecrit « N elements » dans la boite orange
    AVANT d'appeler getInfoFrom : cette fonction passe donc apres et gagne. Le
    compte reste affiche pour un GROUPE dont aucun membre n'est vise, ce qui
    est juste — un groupe n'est pas un compositeur. */
@@ -401,7 +401,7 @@ function hideIsniAllGN(){
 /* Ecrire une ligne unique dans la boite d'identite — « 12 composers »,
    « 340 elements ».
 
-   ⚠️ POURQUOI CE DETOUR PLUTOT QU'UN `$("#selection p").text(txt)`.
+   POURQUOI CE DETOUR PLUTOT QU'UN `$("#selection p").text(txt)`.
    Depuis que la boite porte une LIGNE DE PAYS sous le nom, elle contient DEUX
    <p>. Un selecteur « #selection p » les designe tous les deux, et .text() les
    ecrit tous les deux : le nombre de compositeurs s'affichait donc DEUX FOIS
@@ -474,14 +474,14 @@ function countryLineHtml(origin, ctry){
    `?v=all` dans l'adresse leve les deux a la fois : c'est la vue qui sert a
    relire le depouillement.
 
-   ⚠️ UNE SEULE DEFINITION, ICI, ET NON UNE PAR PAGE. Deux copies d'une
+   UNE SEULE DEFINITION, ICI, ET NON UNE PAR PAGE. Deux copies d'une
       regle de discretion se separent a la premiere correction faite d'un
       seul cote — et se separent SILENCIEUSEMENT : la page restee en
       arriere continue de fonctionner, elle montre seulement ce que l'autre
       cache. js/functions.js est charge par les deux pages, avant leur
       script propre.
 
-   ⚠️ ET C'EST UN AFFICHAGE, PAS UNE PROTECTION. php/retrieve_data.php
+   ET C'EST UN AFFICHAGE, PAS UNE PROTECTION. php/retrieve_data.php
       continue de livrer les noms complets au navigateur : les cas 0 et 28
       ne sont pas filtres. Ce qui est gagne, c'est qu'un nom releve au
       proces-verbal ne se lise plus par-dessus l'epaule de qui regarde la

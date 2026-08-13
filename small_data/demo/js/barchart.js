@@ -29,7 +29,7 @@
       matrice. Le pied de la barre porte, en emeraude, la part de ces
       candidats qui a une oeuvre AU FONDS.
 
-      ⚠️ C'est l'ecart entre les deux qui est le sujet de cette base. Sur les
+      C'est l'ecart entre les deux qui est le sujet de cette base. Sur les
          2 550 personnes que l'index compte, la moitie n'a laisse qu'une
          CANDIDATURE. Le diagramme empilait les deux dans une seule hauteur
          bleue : un pays a quarante candidats dont deux archives et un pays a
@@ -61,7 +61,7 @@
      - le LISERE DE PROVENANCE de l'edition, ecrit en toutes lettres : une
        edition unique n'a qu'une autorite documentaire, autant la nommer.
 
-   ⚠️ L'ORDRE D'AFFICHAGE VIT DANS `this.order`, PAS DANS `this.data`. Trier
+   L'ORDRE D'AFFICHAGE VIT DANS `this.order`, PAS DANS `this.data`. Trier
       le tableau lui-meme invaliderait tout ce qui l'indexe — `solo_btns`,
       `soloSlot`, `selected`. C'est la solution deja retenue par la matrice,
       et c'est la seule qui permette de changer de tri sans rien reconstruire.
@@ -204,7 +204,7 @@ BarChart.prototype.draw = function(){
 };
 BarChart.prototype.repaint = function(){ this.draw(); };
 
-/* ⚠️ RETIRER, C'EST AUSSI CESSER DE REPONDRE — meme note que dans
+/* RETIRER, C'EST AUSSI CESSER DE REPONDRE — meme note que dans
    linechart.js et matrixchart.js : un graphe qui ne peint plus mais accepte
    encore les clics laisse l'ecran fige pendant que l'etat change et que des
    requetes partent. */
@@ -249,7 +249,7 @@ BarChart.prototype.barSpacing = function(){
 /* Opacite d'un pays : pleine s'il est isole, s'il est SELECTIONNE, ou si
    aucun pays n'est isole.
 
-   ⚠️ LA SELECTION COMPTE AUTANT QUE L'ISOLEMENT. Sans elle, une barre qu'on
+   LA SELECTION COMPTE AUTANT QUE L'ISOLEMENT. Sans elle, une barre qu'on
       venait de choisir au clic restait attenuee parce qu'un AUTRE pays etait
       isole — le geste le plus explicite de la page produisait une barre
       effacee, et son disque de selection avec elle. Deux facons de designer
@@ -306,7 +306,7 @@ BarChart.prototype.drawControls = function(){
 	ctx.restore();
 };
 
-/* La cle des deux parts. ⚠️ ELLE EST OBLIGATOIRE, pas decorative : deux
+/* La cle des deux parts. ELLE EST OBLIGATOIRE, pas decorative : deux
    couleurs empilees dans une barre ne disent rien d'elles-memes, et la
    distinction qu'elles portent — candidature contre oeuvre archivee — est
    precisement ce que cette base a de moins evident.
@@ -348,7 +348,7 @@ BarChart.prototype.drawKey = function(){
 };
 
 /* ------------------------------------ provenance + mesure (2e ligne)
-   ⚠️ UNE EDITION UNIQUE N'A QU'UNE AUTORITE DOCUMENTAIRE : autant l'ecrire
+   UNE EDITION UNIQUE N'A QU'UNE AUTORITE DOCUMENTAIRE : autant l'ecrire
    en toutes lettres plutot que de laisser le lecteur la chercher dans le
    liseré de la bande de navigation, qui est a un autre pas horizontal. Meme
    source que partout ailleurs — pvState(), qui lit la base (case 12), jamais
@@ -425,7 +425,7 @@ BarChart.prototype.drawYValues = function(){
    emeraude et bleu se touchent et la frontiere se lit comme un degrade. Il
    n'est pose que si les deux parts font au moins 2 px.
 
-   ⚠️ L'ECHELLE RESTE LINEAIRE, ET C'EST VOULU. Les deux autres vues sont en
+   L'ECHELLE RESTE LINEAIRE, ET C'EST VOULU. Les deux autres vues sont en
       racine carree ; une barre, elle, se lit par sa LONGUEUR, donc elle doit
       etre proportionnelle. Une barre en √ ment sur les rapports — c'est un
       anti-patron reconnu. La divergence est ecrite dans la legende plutot que
@@ -479,7 +479,7 @@ BarChart.prototype.drawBars = function(){
 
 			/* Contour du pays SELECTIONNE, dans SA couleur de clic — comme la
 			   ligne cliquee du line chart et la cellule cerclee de la matrice.
-			   ⚠️ Ce contour etait JAUNE, et le jaune designe le survol partout
+			   Ce contour etait JAUNE, et le jaune designe le survol partout
 			      ailleurs sur le site : une barre selectionnee avait donc
 			      l'air d'etre survolee, et deux gestes differents portaient la
 			      meme couleur. Le double trait — fond puis couleur — tient sur
@@ -496,7 +496,7 @@ BarChart.prototype.drawBars = function(){
 				ctx.strokeRect(x0-1.5, base-hTot-1.5, this.barWidth+3, hTot+3);
 				ctx.lineWidth = 1;
 
-				/* ⚠️ ET UN DISQUE AU SOMMET, CERCLE DE CLAIR — le meme repere
+				/* ET UN DISQUE AU SOMMET, CERCLE DE CLAIR — le meme repere
 				   que le point colorie d'une ligne selectionnee dans le line
 				   chart, et que l'anneau d'une cellule dans la matrice.
 
@@ -624,7 +624,7 @@ BarChart.prototype.handleClick = function(mx, my){
 		return;
 	}
 
-	/* ⚠️ ON NE SELECTIONNE PAS CE QU'ON NE SAURA PAS CHARGER. Sans identifiant
+	/* ON NE SELECTIONNE PAS CE QU'ON NE SAURA PAS CHARGER. Sans identifiant
 	   de pays lisible, le contour se posait quand meme et l'infobulle
 	   promettait « click to list them » — puis l'appel etait avale en silence. */
 	var cId = parseInt(this.data[i].cId, 10);
@@ -685,7 +685,7 @@ BarChart.prototype.clearHover = function(){
 
 function _barInRect(mx,my,r){ return r && mx>=r.x && mx<=r.x+r.w && my>=r.y && my<=r.y+r.h; }
 
-/* ⚠️ DELEGATION TARDIVE, ET NON EMPRUNT DE PROTOTYPE. La matrice ecrit
+/* DELEGATION TARDIVE, ET NON EMPRUNT DE PROTOTYPE. La matrice ecrit
    `MatrixChart.prototype.retrieveData = LineChart.prototype.retrieveData` a
    la lecture de son fichier, parce qu'elle est chargee APRES linechart.js.
    Ce fichier-ci est charge AVANT : `LineChart` n'existe pas encore ici, et

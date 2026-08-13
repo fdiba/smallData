@@ -56,7 +56,7 @@ var subComposers = {};
    php/retrieve_categories.php — et NON du minimum et du maximum des oeuvres
    presentes.
 
-   ⚠️ LA DIFFERENCE EST UNE QUESTION DE NATURE, pas de precision. Les bornes
+   LA DIFFERENCE EST UNE QUESTION DE NATURE, pas de precision. Les bornes
       declarent CE QUE LA CATEGORIE EST : « Art Visuel, 1982-1984 » reste vrai
       meme si aucune oeuvre de 1983 n'etait au fonds. Un minimum-maximum
       calcule sur les oeuvres decrirait le contenu de la page, qui change a
@@ -71,7 +71,7 @@ var catPeriode = {};
 /* Periode de chaque SOUS-categorie, et elle n'est pas de la meme nature que
    celle des categories.
 
-   ⚠️ CELLE-CI EST OBSERVEE, PAS DECLAREE. `imeb_categorie` donne des bornes
+   CELLE-CI EST OBSERVEE, PAS DECLAREE. `imeb_categorie` donne des bornes
       aux categories ; il n'existe AUCUNE table des sous-categories — leur
       vocabulaire lui-meme ne vit que dans php/sous_categories.php. La seule
       periode disponible est donc celle des oeuvres qui la portent, min et
@@ -86,7 +86,7 @@ var catPeriode = {};
       mesure.* */
 var subPeriode = {};
 
-/* ⚠️ « MAGISTERE » ET « RESIDENCE » NE SONT PAS DES CATEGORIES — 2026-08-08
+/* « MAGISTERE » ET « RESIDENCE » NE SONT PAS DES CATEGORIES — 2026-08-08
    Releve par Florent sur cette page apres le versement de 1988, et c'est le
    MEME defaut que js/aww.js a corrige le meme jour (§24.15) : le Repertoire
    general inscrit deux DISTINCTIONS dans la colonne de categorie.
@@ -103,18 +103,18 @@ var subPeriode = {};
    L'AXE DU DIAGRAMME qui l'est, en les alignant sur Live, Mixte ou
    Programme, qui sont des categories musicales.
 
-   ⚠️ ON NE LES RETIRE PAS. Les masquer perdrait 146 prix, soit un cinquieme
+   ON NE LES RETIRE PAS. Les masquer perdrait 146 prix, soit un cinquieme
       du palmares ; le diagramme dirait alors moins que le document. On les
       MARQUE : le noeud porte `distinction: true`, son libelle est suivi d'un
       ✦, et son infobulle commence par ce qu'il est.
 
-   ⚠️ ET LE TEST PORTE SUR LE CODE, JAMAIS SUR LE LIBELLE — meme regle qu'en
+   ET LE TEST PORTE SUR LE CODE, JAMAIS SUR LE LIBELLE — meme regle qu'en
       §24.15. `award_cat` est une chaine que quelqu'un corrigera un jour ; le
       code, lui, est stable. Et le marquage n'a lieu QUE si le libelle repete
       la distinction : une oeuvre de 2005 porte un Magistere avec
       `award_cat = 'Trivium A'`, une VRAIE categorie, et elle la garde.
 
-   ⚠️ LE TYPE DU NOEUD RESTE 'category', ET C'EST DELIBERE. columnStats()
+   LE TYPE DU NOEUD RESTE 'category', ET C'EST DELIBERE. columnStats()
       groupe par `type` pour deduire la hauteur du diagramme : un type de plus
       creerait une colonne de plus dans ce calcul, pour un noeud qui reste
       dans la meme colonne a l'ecran. Le marquage est un DRAPEAU, pas un
@@ -511,7 +511,7 @@ function linkTitle(d){
                       Quadrivium, Trivium B
      compositeur      5 awards in 3 categories
 
-   ⚠️ LA PERIODE N'EST PAS L'EFFECTIF D'EDITIONS, et les deux se lisent
+   LA PERIODE N'EST PAS L'EFFECTIF D'EDITIONS, et les deux se lisent
       ensemble. « 1977-1998 » est la periode que la categorie COUVRE, telle
       que imeb_categorie la declare — vingt-deux annees ; « across 20
       editions » compte les annees ou elle a EFFECTIVEMENT distingue quelque
@@ -539,7 +539,7 @@ function nodeTitle(d){
   if(d.type === 'year'){
     out += " in " + plural(to, "category");
   } else if(d.type === 'category' && d.distinction){
-    /* ⚠️ CE NOEUD N'EST PAS UNE CATEGORIE, et l'infobulle le dit AVANT de
+    /* CE NOEUD N'EST PAS UNE CATEGORIE, et l'infobulle le dit AVANT de
        compter. Les nombres eux-memes sont justes et se lisent comme ceux
        d'une categorie — c'est leur PLACE sur l'axe qui est un artefact du
        catalogue, pas leur valeur. La periode vient de imeb_categorie, qui
@@ -568,7 +568,7 @@ function nodeTitle(d){
        presente comme celle des categories parce que le lecteur y cherche la
        meme chose, et la legende de la page dit d'ou viennent les deux.
 
-       ⚠️ ET ELLE NOMME SES CATEGORIES. Une sous-categorie appartient a une,
+       ET ELLE NOMME SES CATEGORIES. Une sous-categorie appartient a une,
           deux ou trois d'entre elles — « Art sonore électroacoustique » est
           sous Quadrivium, Trivium A ET Trivium B —, et le diagramme le
           montre par des flux qu'on ne suit pas a l'oeil quand ils se
@@ -649,7 +649,7 @@ function setSankeyNodes(data, key){
   //---- add categories --------//
   var category = d.category;
   if(category=='')category='None';
-  /* ⚠️ LE MARQUAGE N'A LIEU QUE SI LE LIBELLE REPETE LA DISTINCTION — voir la
+  /* LE MARQUAGE N'A LIEU QUE SI LE LIBELLE REPETE LA DISTINCTION — voir la
      note en tete de fichier. Une oeuvre de 2005 porte un Magistere avec
      `award_cat = 'Trivium A'` : elle garde sa categorie, et le noeud
      « Trivium A » n'est pas marque.
@@ -672,13 +672,13 @@ function setSankeyNodes(data, key){
      cinq d'entre elles : Trivium, Trivium A, Trivium B, Quadrivium et Arts
      Electroniques. 152 oeuvres primees sur 727 en portent une.
 
-     ⚠️ LES 575 AUTRES SAUTENT LA COLONNE. Leur flux va directement de la
+     LES 575 AUTRES SAUTENT LA COLONNE. Leur flux va directement de la
         categorie au compositeur, et traverse donc la colonne des
         sous-categories sans s'y arreter. C'est ce que le document dit :
         ces editions n'avaient pas de sous-categorie, et un noeud « None »
         qui en porterait 575 ecraserait les douze vraies.
 
-     ⚠️ EN VUE ALLEGEE, une categorie sans sous-categorie n'a donc aucun
+     EN VUE ALLEGEE, une categorie sans sous-categorie n'a donc aucun
         flux sortant : d3.sankey la pousse a la derniere colonne, a cote
         des sous-categories. C'est VOULU — voir la note sinksRight de
         sankeyStuff(), et ce qu'elle a coute avant d'etre voulue. */
@@ -687,7 +687,7 @@ function setSankeyNodes(data, key){
      cinq d'entre elles : Trivium, Trivium A, Trivium B, Quadrivium et Arts
      Electroniques. 152 oeuvres primees sur 727 en portent une.
 
-     ⚠️ ELLE A ETE ESSAYEE DANS LES DEUX VUES LE 2026-08-06, ET RETIREE DE
+     ELLE A ETE ESSAYEE DANS LES DEUX VUES LE 2026-08-06, ET RETIREE DE
         LA VUE COMPLETE LE JOUR MEME. Avec 507 compositeurs a droite, la
         colonne supplementaire allongeait encore un diagramme qui fait deja
         plus de dix mille pixels de haut, et les flux qui la traversaient
@@ -810,7 +810,7 @@ function sankeyStuff(){
      sous-categories, dont les libelles sont plus longs que ceux des
      categories — « Installation ou environnement sonore et musical » fait
      47 caracteres —, d'ou 280 px de plus qu'avant pour elle.
-     ⚠️ 240 px ne suffisaient pas : ce libelle-la depassait le bord droit du
+     240 px ne suffisaient pas : ce libelle-la depassait le bord droit du
         SVG de 9 px, mesure dans le navigateur. Le nombre est cale sur LE
         PLUS LONG des douze, et il est a reverifier si un treizieme entre —
         php/sous_categories.php porte la liste. */
@@ -837,7 +837,7 @@ function sankeyStuff(){
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   // Set up Sankey object.
-  /* ⚠️ sinksRight : LA DERNIERE COLONNE EST CELLE OU LE CLASSEMENT S'ARRETE.
+  /* sinksRight : LA DERNIERE COLONNE EST CELLE OU LE CLASSEMENT S'ARRETE.
 
      d3.sankey pousse a la derniere colonne tout noeud sans flux sortant.
      En VUE COMPLETE c'est evident : les compositeurs sont les seuls puits
@@ -851,7 +851,7 @@ function sankeyStuff(){
      chaque noeud a la profondeur que le parcours lui donne, et
      « Programme » ne va pas s'asseoir a cote de « Multimédia ».
 
-     ⚠️ ET CE N'ETAIT PAS LISIBLE. Dix-huit rectangles s'arretaient au
+     ET CE N'ETAIT PAS LISIBLE. Dix-huit rectangles s'arretaient au
         milieu de la toile, leurs libelles flottant dans le vide, avec un
         bord droit en dents de scie : le diagramme paraissait inacheve
         plutot que differencie. Corrige le jour meme, sur retour d'usage.
@@ -872,7 +872,7 @@ function sankeyStuff(){
        ils ne suffisent pas pour « Installation ou environnement sonore et
        musical », le plus long des douze libelles de sous-categorie, qui
        depassait le bord du SVG de 9 px — mesure dans le navigateur.
-       ⚠️ ELARGIR LE SVG NE SUFFIT PAS : d3.sankey etale ses colonnes sur
+       ELARGIR LE SVG NE SUFFIT PAS : d3.sankey etale ses colonnes sur
           toute la largeur qu'on lui donne, donc la derniere suit le bord et
           le libelle deborde toujours d'autant. C'est LA RESERVE qu'il faut
           augmenter, pas la toile. */

@@ -9,7 +9,7 @@
    role est de RESSEMBLER a d'autres. Toute modification de `#composers
    li.active` ou `li.selected` doit etre repercutee ici dans le meme
    mouvement, sans quoi la legende enseigne une apparence que la page n'a plus.
-   ⚠️ Le gras y est tombe le 2026-08-11 avec celui de `#composers li.active` —
+   Le gras y est tombe le 2026-08-11 avec celui de `#composers li.active` —
    voir la raison la-bas. */
 #legend .demo{
 	display: inline-block;
@@ -84,7 +84,7 @@
 	-webkit-column-break-inside: avoid;
 	break-inside: avoid;
 }
-/* ⚠️ `:not(.masked)` ET NON UNE REGLE DE PLUS SUR .masked — 2026-08-07.
+/* `:not(.masked)` ET NON UNE REGLE DE PLUS SUR .masked — 2026-08-07.
    Le survol repond a un clic possible ; une ligne masquee n'en accepte pas,
    elle ne doit donc pas s'allumer. Mais la neutraliser en ecrivant
    `#composers li.masked:hover{ background: none }` effacait AUSSI le fond
@@ -99,7 +99,7 @@
 }
 /* ---- Possede des oeuvres archivees dans les capsules ----------------------
 
-   ⚠️ LE GRAS EST PARTI — 2026-08-11, et ce n'est pas une question de gout.
+   LE GRAS EST PARTI — 2026-08-11, et ce n'est pas une question de gout.
 
    Cette regle disait UNE chose — « cette personne a une oeuvre au fonds » — et
    la disait TROIS fois : en blanc contre le gris #95a5a6 de la liste, en gras
@@ -107,7 +107,7 @@
    Ca tenait tant que les deux populations etaient melangees : le gras se lisait
    contre la masse des noms retenus, qui sont gris et sans filet.
 
-   ⚠️⚠️ LE COMMUTATEUR « only those with a work » A DEFAIT CETTE CONDITION le
+   LE COMMUTATEUR « only those with a work » A DEFAIT CETTE CONDITION le
    meme jour. Depuis qu'il filtre aussi la liste du bas, la population y devient
    HOMOGENE : toutes les lignes sont `.active`, donc toutes blanches, toutes en
    gras, toutes barrees d'emeraude. *Un signal qui est toujours allume ne
@@ -120,7 +120,7 @@
    n'ajoutait rien quand les deux populations coexistaient et masquait tout
    quand elles ne coexistent plus.
 
-   ⚠️ Il reste un troisieme etat, orthogonal a celui-ci : `.selected` (fond
+   Il reste un troisieme etat, orthogonal a celui-ci : `.selected` (fond
    turquoise, « a participe a l'edition selectionnee »). Le gras lui faisait
    concurrence sur les lignes qui portent les deux. */
 #composers li.active{

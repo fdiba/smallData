@@ -6,7 +6,7 @@
 	   table dans la base — pas d'`imeb_sous_categorie` a cote d'`imeb_categorie`
 	   —, et son vocabulaire n'a donc jamais existe qu'en clair dans le code.
 
-	   ⚠️ IL Y EXISTAIT DEUX FOIS quand ce fichier a ete ecrit, le 2026-08-06 :
+	   IL Y EXISTAIT DEUX FOIS quand ce fichier a ete ecrit, le 2026-08-06 :
 	      dans `php/retrieve_cat.php` (fonction set_sub_cat, qui sert les pages
 	      Catalogue et Euphonies) et dans `js/aww.js` (traduction cote client,
 	      qui sert la page des oeuvres primees). Les deux portaient deja la
@@ -16,7 +16,7 @@
 	      La page Categories en avait besoin d'une TROISIEME. Elle prend
 	      celle-ci a la place, et les deux autres sont a y verser (§19).
 
-	   ⚠️ CE N'EST PAS UN CODE-BOOK QUI REVIENT. Le §16.5 et le §20.13 ont
+	   CE N'EST PAS UN CODE-BOOK QUI REVIENT. Le §16.5 et le §20.13 ont
 	      chasse du code les traductions de valeurs qui appartenaient a la
 	      DONNEE — `award_label`, `award_rank`. Ici la donnee n'existe nulle
 	      part ailleurs : le code EST la seule source. Le mettre a un seul

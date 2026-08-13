@@ -353,7 +353,7 @@ Particle.prototype.update = function(index, particles){
 			   apres le geste qui l'avait produite. Vu de l'ecran, la fiche se
 			   refermait toute seule tant que les fusions n'etaient pas finies.
 
-			   ⚠️ ICI LE DELAI EST DOUBLE. getTitlesFrom() est ASYNCHRONE : la
+			   ICI LE DELAI EST DOUBLE. getTitlesFrom() est ASYNCHRONE : la
 			   boite d'identite et la fiche ne sont ecrites qu'au retour de
 			   retrieve_data.php. Selon que l'ouverture se termine avant ou
 			   apres cette reponse, le compte passait devant ou derriere —
@@ -685,7 +685,7 @@ Particle.prototype.display = function(){
 	    	}
 
 	    	/* « 12/58 composers » disait : douze de ces cinquante-huit ont une
-	    	   oeuvre archivee. ⚠️ HORS VUE DE TRAVAIL, LE RAPPORT N'APPREND
+	    	   oeuvre archivee. HORS VUE DE TRAVAIL, LE RAPPORT N'APPREND
 	    	   PLUS RIEN — `compute all` n'admet plus que les compositeurs ayant
 	    	   au moins une oeuvre (voir computeAll dans js/network.js), donc il
 	    	   vaut toujours « 58/58 ». Un rapport dont le numerateur egale
@@ -698,7 +698,7 @@ Particle.prototype.display = function(){
 	    	   l'ecrire la. On compte donc l'ecart, et on ne l'affiche que
 	    	   lorsqu'il existe.
 
-	    	   ⚠️ `compute traces` N'EST PAS FILTRE (meme renvoi) : une trace de
+	    	   `compute traces` N'EST PAS FILTRE (meme renvoi) : une trace de
 	    	      navigation peut contenir des compositeurs sans oeuvre, meme
 	    	      hors `?v=all`. Le rapport y aurait un sens ; il est tu quand
 	    	      meme, parce que la regle demandee porte sur la VUE et non sur

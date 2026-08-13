@@ -7,7 +7,7 @@
 	<title><?php echo $title ?> | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<?php include_once("./php/asset.php") ?>
-	<!-- ⚠️ Feuilles et scripts horodates par asset() : sans cela, une correction
+	<!-- Feuilles et scripts horodates par asset() : sans cela, une correction
 	     deployee reste invisible tant que le lecteur n'a pas vide son cache —
 	     verifie le 2026-08-11 sur une regle de main.css. Voir php/asset.php. -->
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/main.css') ?>">

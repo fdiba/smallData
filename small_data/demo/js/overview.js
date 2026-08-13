@@ -35,7 +35,7 @@ var colors=[{h:203, s:4, l:77}]; //#bdc3c7 grey silver
 /* ========================================================================
    LA COULEUR D'UN CARRE SE CALCULE, ELLE NE SE STOCKE PLUS — 2026-08-08.
 
-   ⚠️ CHAQUE RECTANGLE PORTAIT UNE CHAINE `hsl(...)`, et six fonctions la
+   CHAQUE RECTANGLE PORTAIT UNE CHAINE `hsl(...)`, et six fonctions la
       DECOUPAIENT A LA MAIN pour en fabriquer une autre — `str.indexOf(",")`,
       `str.substring(0, pos0)`, `c.replace('50%,', '4%,')`. La couleur etait
       donc a la fois la donnee et son rendu, et toute la page se trouvait
@@ -75,7 +75,7 @@ function ovRectColor(r, etat, fade){
     else if(r.anchor){
         var AVEC = (typeof VIZ_OV_WORKS   !== 'undefined') ? VIZ_OV_WORKS   : '#2ecc71';
         var SANS = (typeof VIZ_OV_NOWORKS !== 'undefined') ? VIZ_OV_NOWORKS : '#7f8c8d';
-        /* ⚠️ L'ANCRE NE SE COLORE QUE S'IL Y A QUELQUE CHOSE A DIRE. Depuis le
+        /* L'ANCRE NE SE COLORE QUE S'IL Y A QUELQUE CHOSE A DIRE. Depuis le
            2026-08-07, la vue publique ne montre que les compositeurs ayant au
            moins une oeuvre archivee : dans cette vue, « a une oeuvre » est vrai
            de TOUT LE MONDE, et une ancre emeraude partout n'encode rien — elle
@@ -95,7 +95,7 @@ function ovRectColor(r, etat, fade){
 /* ------------------------------------------------------------------------
    L'ORDRE DES CARRES — 2026-08-08.
 
-   ⚠️ IL N'Y EN AVAIT PAS. Le `case 10` n'avait aucun ORDER BY : la grille
+   IL N'Y EN AVAIT PAS. Le `case 10` n'avait aucun ORDER BY : la grille
       sortait dans l'ordre que le moteur produisait pour son GROUP BY, non
       garanti et susceptible de differer d'un serveur a l'autre. On ne
       remplace donc pas un ordre, on lui en donne un.
@@ -109,7 +109,7 @@ function ovRectColor(r, etat, fade){
      - `works` : nombre d'oeuvres archivees. Ou est reellement le fonds ?
      - `az`    : l'ordre du catalogue. Ou est telle personne ?
 
-   ⚠️ `az` NE TRIE RIEN : le serveur rend deja le flux par nom de famille
+   `az` NE TRIE RIEN : le serveur rend deja le flux par nom de famille
       (voir l'ORDER BY du case 10), et le nom n'est PAS dans le flux. C'est
       ce qui permet a `first` de departager ses ex aequo par le nom sans que
       le nom ait a voyager — le rang dans le flux EST l'ordre alphabetique.
@@ -170,7 +170,7 @@ var newResults=false;
    sous 1, et la recherche par nom ne rend que les fiches ayant au moins
    une oeuvre archivee.
 
-   ⚠️ CE QUE CE FILTRE CACHE, ET CE QU'IL NE DOIT PAS CACHER. La liste de
+   CE QUE CE FILTRE CACHE, ET CE QU'IL NE DOIT PAS CACHER. La liste de
       resultats porte trois etats, et ils ne se valent pas :
 
         `12` — dans l'index, douze oeuvres archivees   -> montre
@@ -187,7 +187,7 @@ var newResults=false;
       pages plus loin. C'est exactement l'enonce faux que le §6 du meme
       document avait refuse le 2026-08-03.
 
-   ⚠️ ET CETTE EXACTITUDE EST MESUREE, PAS GARANTIE. Rien dans le schema
+   ET CETTE EXACTITUDE EST MESUREE, PAS GARANTIE. Rien dans le schema
       n'interdit une fiche sans participation ET sans oeuvre : elle
       s'afficherait alors comme « not in this index » alors qu'elle n'a
       rien d'archive. Le flux de la recherche (case 28) ne porte que
@@ -459,7 +459,7 @@ function reflowGrid(){
 
     maxWidth = w;
 
-    /* ⚠️ readNumOfRecords() ET NON parseInt() : ce chemin-ci est declenche
+    /* readNumOfRecords() ET NON parseInt() : ce chemin-ci est declenche
        par un REDIMENSIONNEMENT de la fenetre. Lu brut, un champ vide ou a 0
        aurait reconstruit la grille entiere — filtre leve — sans qu'aucun
        geste ne l'ait demande. Le plancher doit tenir surtout la ou personne
@@ -481,7 +481,7 @@ function drawRect(x, y, c){
    scintillement. C'est ce qui a remplace les six decoupages de chaine
    `hsl(...)` de l'ancienne version. */
 function paintRect(r, etat, fade){
-    /* ⚠️ PAS DE CADRE, PAS DE RETRAIT. Un carre selectionne est un carre
+    /* PAS DE CADRE, PAS DE RETRAIT. Un carre selectionne est un carre
        PLEIN, comme les autres : c'est sa couleur qui le designe. Le retrait
        de deux pixels essaye avec la rampe amethyste -> carotte compensait un
        ecart au jaune de 13,0, sous le plancher de 15 ; la rampe vert-mer ->
@@ -680,7 +680,7 @@ function editionsHtml(eds, provenance){
     var MARQUE = {'1':'', '2':'+', '3':'°', '4':'*'};
     var CLASSE = {'1':'ed-comp', '2':'ed-both', '3':'ed-fest', '4':'ed-loose'};
 
-    /* ⚠️ DEUX MOTS, PAS UNE PHRASE. Ces bulles ont d'abord porte l'etat ET la
+    /* DEUX MOTS, PAS UNE PHRASE. Ces bulles ont d'abord porte l'etat ET la
        piece en toutes lettres — « entry to the competition attested, and a
        work programmed at the Synthese festival that year — a prize was
        awarded to them that year ». Vingt mots au survol d'une annee de quatre
@@ -818,7 +818,7 @@ function createNewRectangle(aId, count, anchor, year){
 }
 /* Le compositeur selectionne passe EN JAUNE, ancre comprise.
 
-   ⚠️ L'ANCRE ETAIT EN BLANC PUR, et les carres d'edition prenaient une
+   L'ANCRE ETAIT EN BLANC PUR, et les carres d'edition prenaient une
       version saturee de leur propre teinte. Deux problemes : le jaune designe
       la selection partout ailleurs sur le site, et le blanc n'est plus
       separable de la borne haute de la rampe des annees — ecart OKLab de 10,3
@@ -944,7 +944,7 @@ function selectRect(x, y){
 /* L'EN-TETE DE LA GRILLE, dessine dans le canvas et non pose dans la barre
    de controle.
 
-   ⚠️ LA BARRE NE POUVAIT PAS L'ACCUEILLIR. Sa hauteur est DECLAREE une fois
+   LA BARRE NE POUVAIT PAS L'ACCUEILLIR. Sa hauteur est DECLAREE une fois
       (`--sd-bar-h`, 128px dans main.css) et les sept pages calent leur
       contenu dessous ; les deux rangees de #tools en occupent deja 118, et
       une troisieme ferait passer la grille SOUS la barre sans que rien ne le
@@ -980,7 +980,7 @@ function drawGridHeader(){
         x += w + 14;
     }
 
-    /* La cle de la rampe, a droite : un degrade de 1973 a 2009. ⚠️ Elle est
+    /* La cle de la rampe, a droite : un degrade de 1973 a 2009. Elle est
        obligatoire — une couleur qui code une annee ne dit rien d'elle-meme,
        et l'ancien arc-en-ciel n'en avait aucune. */
     var kw = 132, sw = 10;
@@ -1031,7 +1031,7 @@ function resetCanvasSize(){
         var right = rectangles[i].x + rWidth;
         if(right>contentRight) contentRight = right;
     }
-    /* ⚠️ PLANCHER : l'en-tete de la grille (le tri + la cle des annees) doit
+    /* PLANCHER : l'en-tete de la grille (le tri + la cle des annees) doit
        tenir. Sans lui, un filtre severe — trois compositeurs a l'ecran —
        retrecissait le canvas a une centaine de pixels et coupait les
        commandes qui servent justement a en sortir. */
@@ -1153,7 +1153,7 @@ function drawRectanglesAndAddInteractivity(){
 //  de l'index et son animation de bruit.)
 /* Le scintillement du bouton « anim ».
 
-   ⚠️ IL JOUAIT SUR LA SATURATION, canal qui ne code plus rien depuis que la
+   IL JOUAIT SUR LA SATURATION, canal qui ne code plus rien depuis que la
       couleur se deduit de l'annee : il aurait fallu defaire la rampe pour le
       garder tel quel. Il joue donc sur l'ESTOMPAGE vers le fond, qui ne
       touche a aucun encodage — la teinte de chaque carre reste celle de son
@@ -1351,7 +1351,7 @@ function createComposersListing(num){
         $("#results").append(arr[l][1]);
     }
 
-    /* ⚠️ AUCUNE DES REPONSES N'EST AFFICHABLE — la recherche a trouve,
+    /* AUCUNE DES REPONSES N'EST AFFICHABLE — la recherche a trouve,
        mais tout ce qu'elle a trouve est un candidat sans oeuvre archivee. Ecrire « no result » serait faux — la recherche a trouvee
        — et laisser la liste vide serait pire, puisque rien ne
        distinguerait alors ce cas d'une panne. On dit donc COMBIEN sans

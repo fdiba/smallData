@@ -57,7 +57,7 @@ var barSort    = 'value';        // idem pour le diagramme en barres
 
 /* LES PAYS ISOLES SURVIVENT A LA COMMUTATION — 2026-08-08.
 
-   ⚠️ Sans cela, le commutateur de vue ne tenait pas la promesse qui justifie
+   Sans cela, le commutateur de vue ne tenait pas la promesse qui justifie
       son existence : « voir les memes pays autrement ». Isoler cinq pays dans
       la matrice puis passer au line chart rendait un graphe NEUF, sans
       selection — il fallait recocher les cinq, dans une legende rangee
@@ -80,7 +80,7 @@ var pendingSolo = [];
    asynchrones qui ecrivent dans la colonne d'information le capturent au
    depart et refusent d'ecrire si la selection a change entre-temps.
 
-   ⚠️ Sans lui, une reponse en vol repeuplait une selection qu'on venait de
+   Sans lui, une reponse en vol repeuplait une selection qu'on venait de
       quitter : cliquer une cellule puis changer d'edition cent millisecondes
       plus tard reinstallait cent vingt compositeurs et reecrivait la barre
       orange de l'ancienne edition PAR-DESSUS la nouvelle vue ; cliquer un
@@ -169,7 +169,7 @@ var takeCountIntoAccount;
 
 /* Ordre alphabetique de la liste des compositeurs — 2026-08-07.
 
-   ⚠️ LE TRI PORTE SUR LE NOM DE FAMILLE, alors que la ligne affiche
+   LE TRI PORTE SUR LE NOM DE FAMILLE, alors que la ligne affiche
       « Prenom Nom ». C'est l'ordre d'un catalogue, pas celui de la chaine
       affichee : trier sur ce qui est ecrit rangerait le corpus par prenoms.
       Le prenom departage les homonymes.
@@ -514,7 +514,7 @@ function matchComposersHeight(){
 }
 /* UNE SEULE LIGNE DE LA LISTE — 2026-08-07.
 
-   ⚠️ CETTE FONCTION N'EXISTAIT PAS : displayCpInfos() portait DEUX FOIS le
+   CETTE FONCTION N'EXISTAIT PAS : displayCpInfos() portait DEUX FOIS le
       meme bloc, une fois pour les compositeurs de l'edition selectionnee,
       une fois pour les autres, a la classe CSS pres. Les deux copies
       etaient deja divergentes d'un caractere (« ' ' » contre « " " » entre
@@ -548,7 +548,7 @@ function appendComposerLi(obj, count, inSelectedEdition){
     if(masked)            tip += ' — name withheld';
     li.attr('title', tip);
 
-    /* ⚠️ NI IDENTIFIANT NI ISNI SUR UNE LIGNE MASQUEE. Masquer le libelle
+    /* NI IDENTIFIANT NI ISNI SUR UNE LIGNE MASQUEE. Masquer le libelle
        et laisser `data-id` ou `data-isni` dans le document reviendrait a
        ecrire le nom en clair juste a cote, une inspection plus loin —
        l'identifiant est precisement ce qui permet de le redemander. Le
@@ -601,7 +601,7 @@ function displayCpInfos(){
         var obj=liste[j];
         var count=numTitlesByArtist[obj.id];
 
-        /* ⚠️ « ONLY THOSE WITH A WORK » VAUT AUSSI POUR CETTE LISTE — 2026-08-11.
+        /* « ONLY THOSE WITH A WORK » VAUT AUSSI POUR CETTE LISTE — 2026-08-11.
 
            Le commutateur agit depuis toujours sur les trois graphes ET sur les
            comptes de la barre orange ; la liste du bas, elle, continuait
@@ -618,7 +618,7 @@ function displayCpInfos(){
            aurait fait dire « 12 / 12 » a une barre dont tout l'interet est
            l'ecart entre les deux nombres.
 
-           ⚠️ CONSEQUENCE A CONNAITRE : commutateur allume, plus AUCUN nom n'est
+           CONSEQUENCE A CONNAITRE : commutateur allume, plus AUCUN nom n'est
               masque, puisque le masque ne vise que les fiches sans oeuvre
               (voir appendComposerLi). La liste devient donc entierement
               cliquable — ce n'est pas un effet de bord, c'est la meme regle
@@ -632,7 +632,7 @@ function displayCpInfos(){
     matchComposersHeight();
 }
 //---------------------------------------------//
-/* ⚠️ RETIRER LE GRAPHE COURANT AVANT D'EN CONSTRUIRE UN AUTRE — 2026-08-08.
+/* RETIRER LE GRAPHE COURANT AVANT D'EN CONSTRUIRE UN AUTRE — 2026-08-08.
 
    Les trois graphes de cette page partagent UN SEUL canvas. Le line chart
    entretient une boucle requestAnimationFrame pour le fondu de survol, qui met
@@ -648,7 +648,7 @@ function displayCpInfos(){
    constructions, plutot que devant chacune : c'est ce qui garantit qu'un
    quatrieme graphe, un jour, ne l'oubliera pas. */
 function retireCurrentChart(){
-    /* ⚠️ ON RELEVE L'ISOLEMENT AVANT DE RETIRER LE GRAPHE. Il ne survivait
+    /* ON RELEVE L'ISOLEMENT AVANT DE RETIRER LE GRAPHE. Il ne survivait
        qu'a la commutation de vue — changer de periode ou passer au diagramme
        en barres l'effacait —, alors que le TRI, lui, survivait a tout. Deux
        reglages voisins, deux memoires differentes, sans raison. C'est ici
@@ -659,7 +659,7 @@ function retireCurrentChart(){
         if(typeof myLineChart.retire === 'function') myLineChart.retire();
     }
 }
-/* ⚠️ LE PANNEAU DE DROITE SUIT LA SELECTION, IL NE LUI SURVIT PAS — 2026-08-08.
+/* LE PANNEAU DE DROITE SUIT LA SELECTION, IL NE LUI SURVIT PAS — 2026-08-08.
 
    Signale a l'usage : commuter du line chart vers la matrice laissait en place
    la petite boite orange (le NOM du compositeur), sa fiche ISNI et la boite
@@ -687,7 +687,7 @@ function clearWorkPanel(){
     lastComposerOrigin   = '';
     titles = [];
 
-    /* ⚠️ ET LA LISTE DES COMPOSITEURS AVEC. Le vidage de `#composers` vivait
+    /* ET LA LISTE DES COMPOSITEURS AVEC. Le vidage de `#composers` vivait
        dans generateLineGraph() et generateBarChart() ; quand aucune des deux
        ne s'execute — une seule annee choisie et « span » allume —, il ne se
        produisait pas, et la liste survivait a la selection qui l'avait
@@ -873,7 +873,7 @@ function updateSlData(){
 
         /* UNE SEULE ANNEE CHOISIE, « SPAN » ALLUME : on attend la seconde.
 
-           ⚠️ CET ETAT NE CONSTRUISAIT RIEN, ET NE DISAIT RIEN. Le graphe
+           CET ETAT NE CONSTRUISAIT RIEN, ET NE DISAIT RIEN. Le graphe
               precedent restait donc PEINT a l'ecran — fige, puisqu'il venait
               d'etre retire, mais toujours a l'ecran. Depuis que la matrice
               repond au clic sans passer par le garde « multi-editions », elle
@@ -1064,7 +1064,7 @@ function bindViewSwitch(){
     }
 
     function choose(el){
-        /* ⚠️ LE TEST D'ETAT EST ICI, ET NON DANS LA CSS SEULE.
+        /* LE TEST D'ETAT EST ICI, ET NON DANS LA CSS SEULE.
            `pointer-events: none` ne barre que la SOURIS : le bloc grise
            restait atteignable a la tabulation, et Entree y commutait la vue
            pour de bon — les boutons basculaient sous une opacite de 0,45, la
@@ -1107,7 +1107,7 @@ function bindViewSwitch(){
 }
 /* LE COMMUTATEUR DE COMPTE (#count dans animated_data.php).
 
-   ⚠️ IL AGIT EN AMONT DES TROIS VUES, et c'est tout son interet. Le drapeau
+   IL AGIT EN AMONT DES TROIS VUES, et c'est tout son interet. Le drapeau
       qu'il pilote, `takeCountIntoAccount`, est lu par updateSlData() au moment
       ou les donnees sont regroupees par pays et par edition — donc avant que
       la moindre figure soit choisie. Les trois vues, la liste des compositeurs
@@ -1122,7 +1122,7 @@ function bindViewSwitch(){
    candidats dont une oeuvre est archivee). Les deux sont vrais ; ils ne
    repondent pas a la meme question, et jusqu'ici la page n'en montrait qu'un.
 
-   ⚠️ LES COMPTEURS `c/t` NE BOUGENT PAS avec lui, et c'est voulu : ils
+   LES COMPTEURS `c/t` NE BOUGENT PAS avec lui, et c'est voulu : ils
       enoncent un fait sur un pays a travers TOUTES les editions, pas sur la
       selection courante. Les faire suivre en ferait « c/c », c'est-a-dire
       rien. La legende le dit. */
@@ -1150,7 +1150,7 @@ function bindCountSwitch(){
         paint();
         hideLineTooltip();
         if(init){
-            /* ⚠️ LA LISTE OUVERTE SURVIT A LA BASCULE — 2026-08-12.
+            /* LA LISTE OUVERTE SURVIT A LA BASCULE — 2026-08-12.
                updateSlData() reconstruit les trois vues et vide `#composers` ;
                la liste ouverte disparaissait, et il fallait re-cliquer le pays
                pour la retrouver. Or le commutateur ne change ni le pays ni
@@ -1159,7 +1159,7 @@ function bindCountSwitch(){
                `lastComposerQuery` est pose par LineChart.prototype.retrieveData
                (js/linechart.js), qui est le seul chemin par lequel la liste se
                remplit — matrice, courbe et barres passent tous par lui.
-               ⚠️ On ne la rouvre QUE si elle etait ouverte : `#composers` vide
+               On ne la rouvre QUE si elle etait ouverte : `#composers` vide
                veut dire qu'aucune selection n'etait faite, et rouvrir alors
                ferait apparaitre une liste que personne n'a demandee. */
             var etaitOuverte = $('#composers').children().length > 0;
@@ -1246,7 +1246,7 @@ function generateBarChart(data){ //display only one year TODO
 	var max=0;
 	for (var k=0; k<arr.length; k++) max = Math.max(max, arr[k].value);
 
-	/* ⚠️ LA BARRE ORANGE N'ENUMERE PLUS LES PAYS. Elle ecrivait
+	/* LA BARRE ORANGE N'ENUMERE PLUS LES PAYS. Elle ecrivait
 	   « 23 countries: Argentina 3 - Australia 1 - … », ce qui etait la seule
 	   facon de lire les chiffres quand le diagramme ne se survolait pas et ne
 	   se cliquait pas. A cinquante pays c'etait un paragraphe, et il disait
@@ -1306,7 +1306,7 @@ function generateBarChart(data){ //display only one year TODO
 //---------------------------------------//
 function editData(evt){
 
-    /* ⚠️ LE GARDE MANQUAIT ICI ALORS QU'IL EXISTAIT DANS hoverData(). Tant que
+    /* LE GARDE MANQUAIT ICI ALORS QU'IL EXISTAIT DANS hoverData(). Tant que
        l'aiguillage vivait sous le test `sl_years.length===2 || menu[0].state`,
        il protegeait par ricochet — au chargement, avant la premiere reponse du
        serveur, aucune des deux conditions n'est vraie. En le sortant de ce
@@ -1327,7 +1327,7 @@ function editData(evt){
        — « a gauche de `w` les donnees, a droite la legende » — n'y a pas de
        sens. On demande a l'objet s'il sait traiter un clic plutot que de
        deduire de l'etat des menus lequel des trois graphes est a l'ecran :
-       ⚠️ c'est ce garde-la qui interdisait tout clic sur le diagramme en
+       c'est ce garde-la qui interdisait tout clic sur le diagramme en
        barres, puisqu'il ne s'ouvrait qu'aux vues multi-editions. */
     if(typeof myLineChart.handleClick === 'function'){
         myLineChart.handleClick(mouseX, mouseY);
@@ -1376,7 +1376,7 @@ function getLineTooltip(){
     if(!t){
         t = document.createElement('div');
         t.id = 'lineTooltip';
-        /* ⚠️ `white-space: nowrap` A SAUTE — 2026-08-08. Les infobulles se
+        /* `white-space: nowrap` A SAUTE — 2026-08-08. Les infobulles se
            sont allongees (pays + edition + effectif + part archivee + ce que
            fait le clic) : sur une seule ligne, elles sortaient de la fenetre
            par la droite et se retrouvaient tronquees, c'est-a-dire illisibles
@@ -1414,7 +1414,7 @@ function showLineTooltip(txt, clientX, clientY){
     if(x + r.width  > window.innerWidth  - marge) x = clientX - r.width  - dx;
     if(y + r.height > window.innerHeight - marge) y = clientY - r.height - dx;
 
-    /* ⚠️ PUIS ON BORNE POUR DE BON. La bascule ne suffit pas : elle suppose
+    /* PUIS ON BORNE POUR DE BON. La bascule ne suffit pas : elle suppose
        que le curseur, lui, est dans la fenetre. Le canvas de la matrice fait
        un millier de pixels de haut et debordait de la fenetre a la
        verticale — pres du bas, la bascule renvoyait l'infobulle a une
@@ -1615,7 +1615,7 @@ function createMenu(){
    qui decline. C'est faux : les editions de 1996 a 2008 comptent 500 a 633
    candidats au proces-verbal.
 
-   ⚠️ CE LISERE ETAIT CODE EN DUR, ET IL EST DEVENU FAUX. Ses deux tableaux
+   CE LISERE ETAIT CODE EN DUR, ET IL EST DEVENU FAUX. Ses deux tableaux
       d'annees etaient releves a la main dans le fichier de suivi du
       depouillement. Ils decrivaient l'etat du DEPOUILLEMENT — un travail
       mene hors de la base — et non l'etat de la BASE. Le jour ou les
@@ -1681,7 +1681,7 @@ var PV_LABELS = {
     liste:         "counted from the entrants list and from archived works — second-hand",
     inconnu:       "provenance not loaded"
 };
-/* ⚠️ TANT QUE LA PROVENANCE N'EST PAS CHARGEE, ON NE DESSINE RIEN — 2026-08-08.
+/* TANT QUE LA PROVENANCE N'EST PAS CHARGEE, ON NE DESSINE RIEN — 2026-08-08.
 
    Les liserés se peignaient en GRIS avant la reponse du `case 12`, et le gris
    ne figure dans aucune legende : il ne disait donc pas « on ne sait pas
@@ -1754,7 +1754,7 @@ function loadPvProvenance(){
         pvLoaded = true;
         drawPvStrip(menu);
 
-        /* ⚠️ ET LE GRAPHE, S'IL PORTE LUI AUSSI UN LISERE. Les deux requetes
+        /* ET LE GRAPHE, S'IL PORTE LUI AUSSI UN LISERE. Les deux requetes
            partent ensemble au chargement ; rien ne garantit laquelle repond la
            premiere. Quand le `case 12` arrivait APRES le `case 10`, la matrice
            etait deja dessinee et son liseré restait entierement gris —

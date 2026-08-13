@@ -4,7 +4,7 @@
 	<title>Overview | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<?php include_once("./php/asset.php") ?>
-	<!-- ⚠️ Feuilles et scripts horodates par asset() : sans cela, une correction
+	<!-- Feuilles et scripts horodates par asset() : sans cela, une correction
 	     deployee reste invisible tant que le lecteur n'a pas vide son cache —
 	     verifie le 2026-08-11 sur une regle de main.css. Voir php/asset.php. -->
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/main.css') ?>">
@@ -112,7 +112,7 @@
 						     et dans le programme du festival. Comptes mesures sur la base
 						     le 2026-08-08 : classe 1 = 6 736 annees (69,4 %), classe 2 =
 						     2 660 (27,4 %), classe 3 = 109 (1,1 %), classe 4 = 199 (2,1 %).
-						     ⚠️ C'EST ICI QUE LE VOCABULAIRE S'EXPLIQUE, ET NULLE PART
+						     C'EST ICI QUE LE VOCABULAIRE S'EXPLIQUE, ET NULLE PART
 						     AILLEURS : les infobulles du survol ne portent que deux mots
 						     (« competition · IMEB list of entrants »), parce qu'une phrase
 						     de vingt mots au survol d'une annee ne se lit pas. Voir

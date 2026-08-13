@@ -193,7 +193,7 @@ function computeAll(){
     var editions=allData[i+4];
     var iso=allData[i+5];*/
 
-    /* ⚠️ SEULS LES COMPOSITEURS AYANT AU MOINS UNE OEUVRE ARCHIVEE ENTRENT
+    /* SEULS LES COMPOSITEURS AYANT AU MOINS UNE OEUVRE ARCHIVEE ENTRENT
        DANS LE SYSTEME — 2026-08-07. Ils sont 1 259 sur 2 550 : la moitie de
        la population etait faite d'agents qui n'avaient rien a montrer.
        Ouvrir leur groupe rendait une liste d'oeuvres vide, et le clic sur
@@ -207,7 +207,7 @@ function computeAll(){
        `?v=all` rend la population entiere — c'est la vue de travail (voir
        SHOW_ALL_NAMES dans js/functions.js).
 
-       ⚠️ `compute traces` N'EST PAS TOUCHE : ce sont les compositeurs que
+       `compute traces` N'EST PAS TOUCHE : ce sont les compositeurs que
           l'utilisateur a lui-meme consultes dans l'Overview, ecrits dans
           son cookie. Y appliquer un filtre reviendrait a lui retirer de sa
           propre trace des noms qu'il a vus — et les traces anciennes en
@@ -546,7 +546,7 @@ function getDataV2(){
            archivees) et les deux autres en tirent deja « n / N composers with
            archived works ». Meme calcul, meme phrase, meme place.
 
-           ⚠️ Le rapport n'est pas decoratif SUR CETTE PAGE : hors ?v=all,
+           Le rapport n'est pas decoratif SUR CETTE PAGE : hors ?v=all,
            « compute all » ne peuple le systeme qu'avec le numerateur (§16.6
            de Interface_et_fonctionnalites.md). La ligne dit donc combien de
            compositeurs le SMA va prendre, et sur combien la base en compte. */

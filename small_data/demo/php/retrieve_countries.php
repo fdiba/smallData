@@ -22,11 +22,11 @@
 		? 'imeb_music.misam >= 200000'
 		: 'imeb_music.misam > 0 AND imeb_music.misam < 200000';
 
-	/* ⚠️⚠️ QUATRE CHAMPS PAR PAYS DEPUIS LE 2026-08-12, ET NON TROIS.
+	/* QUATRE CHAMPS PAR PAYS DEPUIS LE 2026-08-12, ET NON TROIS.
 	   `iso3` est ajoute pour que catalog.php accepte `?ctry=FRA` dans la barre
 	   d'adresse. Il vient de `imeb_country.iso3` — une colonne du referentiel,
 	   pas une valeur saisie.
-	   ⚠️ LE PAS DE LECTURE DOIT SUIVRE : js/catalog.js lit ce flux par pas de
+	   LE PAS DE LECTURE DOIT SUIVRE : js/catalog.js lit ce flux par pas de
 	      QUATRE. Un pas reste a trois decalerait la lecture des le deuxieme
 	      pays, silencieusement, avec des noms qui deviendraient des comptes.
 	      C'est le defaut deja paye sur le `case 0` de retrieve_data.php, ou le

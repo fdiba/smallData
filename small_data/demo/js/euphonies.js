@@ -48,13 +48,13 @@ function retrieveEuphonies(cat, numOfElements){
             // (le champ 8 = temp id n'est pas affiche ; le champ 3 = imeb id,
             // c-a-d le MISAM, n'est plus affiche non plus mais reste transporte
             // et sert toujours de propriete imeb_id aux agents du SMA)
-            /* ⚠️⚠️ « first name » ET « last name » N'EN FONT PLUS QU'UNE —
+            /* « first name » ET « last name » N'EN FONT PLUS QU'UNE —
                2026-08-12. Deux colonnes pour une identite, c'etait deux
                colonnes a lire pour un nom, et surtout : la seule facon de
                trier par patronyme etait de cliquer la SECONDE. La colonne
                s'appelle « composer », affiche « Prenom NOM », et se trie sur
                le NOM grace a `data-sort` (js/table_sort.js).
-               ⚠️ La cle de tri est normalisee ici et pas ailleurs : accents
+               La cle de tri est normalisee ici et pas ailleurs : accents
                   retires et minuscules, sans quoi « Écoute » se range apres
                   « Zephyr » — un ordre d'octets n'est pas un ordre
                   alphabetique. Elle porte AUSSI le prenom, en second, pour
@@ -129,7 +129,7 @@ function retrieveEuphonies(cat, numOfElements){
             });
         }
 
-        /* ⚠️ « works » AJOUTE LE 2026-08-08 — un nombre nu ne dit pas de quoi
+        /* « works » AJOUTE LE 2026-08-08 — un nombre nu ne dit pas de quoi
            il est le nombre. Meme forme que js/aww.js et js/catalog.js, de
            sorte que les quatre pages comptent de la meme facon.
 
@@ -177,7 +177,7 @@ function retrieveEuphonies(cat, numOfElements){
 /* Cle de tri d'une identite : le PATRONYME d'abord, le prenom ensuite pour
    departager, accents retires et tout en minuscules. Elle n'est jamais
    affichee — elle ne sert qu'a `data-sort` (js/table_sort.js).
-   ⚠️ Un tri sur les codes de caracteres range « Étienne » APRES « Zeus » :
+   Un tri sur les codes de caracteres range « Étienne » APRES « Zeus » :
       ce n'est pas un ordre alphabetique, c'est un ordre d'octets. */
 function clePatronyme(nom, pre){
     var s = (String(nom || '') + ' ' + String(pre || '')).replace(/^\s+|\s+$/g, '');

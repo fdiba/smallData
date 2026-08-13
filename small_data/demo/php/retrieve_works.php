@@ -73,7 +73,7 @@
 		// Le rang n'est joint au libelle que pour les libelles GENERIQUES
 		// (« Prix », « Mention ») : « Mention speciale 3 » ne se dit pas.
 		//
-		// ⚠️ LES SELECTIONS NE SONT PAS DES RECOMPENSES — filtre du 2026-08-06.
+		// LES SELECTIONS NE SONT PAS DES RECOMPENSES — filtre du 2026-08-06.
 		//
 		// Un concours SELECTIONNE des oeuvres avant d'en primer quelques-unes.
 		// Le constat de 1985 en nomme vingt-quatre — « Ont ete selctionnees au
@@ -99,18 +99,18 @@
 		// jury », et le prochain mot du prochain constat. Le type classifie,
 		// le libelle cite la source : c'est le type qu'on interroge.
 		//
-		// ⚠️⚠️ CE QUI SUIT A ETE ECRIT LE 2026-08-12 ET CORRIGE LE 2026-08-13.
+		// CE QUI SUIT A ETE ECRIT LE 2026-08-12 ET CORRIGE LE 2026-08-13.
 		// IL EST GARDE TEL QUEL, PARCE QU'UNE DECISION RENVERSEE S'ECRIT DEUX
 		// FOIS : *une erreur effacee ne s'apprend pas.* La correction est plus
 		// bas, sous « 2026-08-13 ».
 		//
-		// ⚠️⚠️ ET `finaliste` REJOINT `selection` LE 2026-08-12, AVEC LE 2e PUY.
+		// ET `finaliste` REJOINT `selection` LE 2026-08-12, AVEC LE 2e PUY.
 		// Le constat de 1994 decerne UN « 1er Prix » par discipline, puis des
 		// « 1er / 2e / 3e finaliste ». Arbitrage de Florent : ce n'est ni un
 		// prix ni une mention, le rang est saisi dans la base, et la page ne
 		// l'affiche pas. La valeur d'enum est posee par
 		// DB/alter_distinction_finaliste.sql.
-		//   ⚠️ LE `<>` DEVIENT UN `NOT IN`, ET CE N'EST PAS UN DETAIL : une
+		//   LE `<>` DEVIENT UN `NOT IN`, ET CE N'EST PAS UN DETAIL : une
 		//   valeur d'enum ajoutee sans toucher a ce filtre S'AFFICHE. Un
 		//   `<> 'selection'` laisse passer tout ce qui n'est pas 'selection',
 		//   y compris ce qui n'existait pas quand on l'a ecrit.
@@ -120,7 +120,7 @@
 		// -----------------------------------------------------------------
 		// 2026-08-13 — LA CORRECTION, ET CE QUI L'A PROVOQUEE
 		// -----------------------------------------------------------------
-		// ⚠️⚠️ D'ABORD : LA REGLE ECRITE CI-DESSUS S'APPLIQUAIT A LA
+		// D'ABORD : LA REGLE ECRITE CI-DESSUS S'APPLIQUAIT A LA
 		// CORRECTION ELLE-MEME. Le `NOT IN ('selection','finaliste')` nommait
 		// ce qu'il excluait ; `nomine`, ouvert pour 1996 le lendemain,
 		// PASSAIT. Mesure sur temoin fabrique (DB/test_nomine_aww.sql) :
@@ -131,7 +131,7 @@
 		// valeur d'enum n'apparaitra plus d'elle-meme, et DB/controle_enum_aww.sql
 		// la nomme a voix haute au lieu de la laisser muette.
 		//
-		// ⚠️⚠️ ENSUITE : L'ARBITRAGE DE 2026-08-12 EST RENVERSE PAR FLORENT.
+		// ENSUITE : L'ARBITRAGE DE 2026-08-12 EST RENVERSE PAR FLORENT.
 		// « on affiche les finalistes + les nomines pour cette edition et les
 		// precedentes ». `finaliste` et `nomine` sont donc DANS la liste, et
 		// `selection` reste seule dehors. Mesure de l'effet, requete jouee
@@ -140,12 +140,12 @@
 		// Les cinq lignes sont les cinq finalistes du 2e PUY de 1994, et
 		// AUCUNE de 1996 : les onze nomines de 1996 ont deja une oeuvre au
 		// catalogue cette annee-la, donc le `NOT EXISTS` plus bas les sort de
-		// cette branche. ⚠️ ILS S'AFFICHENT DEJA, par la branche du catalogue,
+		// cette branche. ILS S'AFFICHENT DEJA, par la branche du catalogue,
 		// sous le mot du CATALOGUE — `Finaliste`, code 198 — et non sous celui
 		// de la piece, qui ecrit NOMINES. C'est une dette de imeb_music, pas
 		// de cette page.
 		//
-		// ⚠️⚠️ ET LE QUATRIEME CHAMP TESTAIT LE LIBELLE — corrige le 2026-08-13,
+		// ET LE QUATRIEME CHAMP TESTAIT LE LIBELLE — corrige le 2026-08-13,
 		// sur un defaut vu par Florent : « le 1er finaliste Matt Ingalls
 		// apparait en dessous du second Henri Demilecamps ».
 		// Il s'ecrivait
@@ -159,13 +159,13 @@
 		// NULL sur TOUTE la table sauf 139 prix et 5 finalistes, et aucun prix
 		// hors libelle `Prix` n'en porte — le CASE ne servait donc a rien
 		// d'autre qu'a exclure les finalistes.
-		//   ⚠️ ET IL FAUT QUE DB/rang_finaliste_1994.sql SOIT JOUE AVEC :
+		//   ET IL FAUT QUE DB/rang_finaliste_1994.sql SOIT JOUE AVEC :
 		//   le libelle de ces cinq lignes portait DEJA l'ordinal (« 1er
 		//   finaliste »), et js/aww.js compose « libelle + numero ». Sans ce
 		//   fichier, la page afficherait « 1er finaliste 1 ». Le rang etait
 		//   ecrit deux fois ; il ne l'est plus qu'une.
 		//
-		// ⚠️ ET AFFICHER N'EST PAS AFFICHER JUSTE. Le second champ rendait 100
+		// ET AFFICHER N'EST PAS AFFICHER JUSTE. Le second champ rendait 100
 		// pour tout ce qui n'est pas un prix — 100 est le code de la MENTION.
 		// Les cinq finalistes se seraient donc ranges parmi les mentions. Le
 		// code-book de js/aww.js porte 197 « Nomine » et 198 « Finaliste »
@@ -203,7 +203,7 @@
 		// colonnes se verifient mal. Chaque champ qu'on ajoute a la premiere
 		// source doit etre relu ici.
 		//
-		// ⚠️⚠️ LE LIBELLE DE CATEGORIE EST DESORMAIS LE CANONIQUE, PAS CELUI
+		// LE LIBELLE DE CATEGORIE EST DESORMAIS LE CANONIQUE, PAS CELUI
 		//    DU CATALOGUE — 2026-08-12, et c'est un DEFAUT qui a ete mesure,
 		//    pas un confort.
 		//
@@ -213,7 +213,7 @@
 		//    de 1993 appellent du meme nom complet. Une seule ligne survit,
 		//    `libelle` = « Studio », et l'autre graphie vit dans `libelle_alt`.
 		//
-		//    ⚠️ CETTE PAGE EN A ALORS AFFICHE DEUX NOMS LA MEME ANNEE. Mesure
+		//    CETTE PAGE EN A ALORS AFFICHE DEUX NOMS LA MEME ANNEE. Mesure
 		//    le 2026-08-12 sur les 71 recompenses de la categorie :
 		//
 		//        1986   6 lignes « Electroacoustique »  ET 1 ligne « Studio »
@@ -226,7 +226,7 @@
 		//    categorie, deux noms.** Ce n'est pas « la page affiche l'ancien
 		//    nom » : c'est qu'elle affichait les deux.
 		//
-		//    ⚠️ CE QUE CELA COUTE, ET IL FAUT L'ASSUMER : les 44 recompenses de
+		//    CE QUE CELA COUTE, ET IL FAUT L'ASSUMER : les 44 recompenses de
 		//    1985-1991 s'affichent maintenant sous « Studio », un mot que SIX
 		//    constats sur sept n'ecrivent pas ces annees-la — ils ecrivent
 		//    « PRIX DE LA MUSIQUE ELECTROACOUSTIQUE », sans « de Studio ».
@@ -236,7 +236,7 @@
 		//    legende explique les deux noms. Deux pages qui se contredisent
 		//    coutent plus qu'un nom anachronique explique en legende.
 		//
-		//    ⚠️ ET `imeb_music`.`award_cat` N'EST PAS TOUCHE (§4, principe 2) :
+		//    ET `imeb_music`.`award_cat` N'EST PAS TOUCHE (§4, principe 2) :
 		//    le Repertoire general garde ses deux mots, et une sous-requete —
 		//    non une jointure, qui pourrait multiplier les lignes — traduit a
 		//    l'affichage. `libelle_alt` reste la source de la graphie
@@ -393,11 +393,11 @@
 			// 149 (Harrison / Doherty) et 226 (Schryer / Scheidt), toutes de
 			// 1986 — les PREMIERES bandes co-signees distinguees du corpus.
 			//
-			// ⚠️ LE CHAMP EST VIDE PARTOUT AILLEURS, et c'est normal : la
+			// LE CHAMP EST VIDE PARTOUT AILLEURS, et c'est normal : la
 			//    colonne se masque toute seule quand la selection ne porte
 			//    aucune oeuvre co-signee (masquerColonnesVides, §21.18).
 			//
-			// ⚠️ C'EST UNE JOINTURE SUR UNE TABLE DERIVEE, ET NON UNE
+			// C'EST UNE JOINTURE SUR UNE TABLE DERIVEE, ET NON UNE
 			//    SOUS-REQUETE CORRELEE — corrige le 2026-08-07, une heure
 			//    apres l'avoir ecrite dans l'autre sens.
 			//
@@ -414,7 +414,7 @@
 			//    est sur un HOTE DISTANT, l'ecart etait bien plus visible —
 			//    c'est Florent qui l'a signale, pas une mesure.
 			//
-			//    ⚠️ ET LA TABLE DERIVEE FILTRE SUR `ba2.rang > 1`, non sur
+			//    ET LA TABLE DERIVEE FILTRE SUR `ba2.rang > 1`, non sur
 			//       « different de imeb_music.id_artist » : c'est ce qui la
 			//       rend independante de la ligne courante, donc calculable
 			//       une fois. Cela SUPPOSE que l'auteur du catalogue soit
@@ -424,7 +424,7 @@
 			//       parce qu'une hypothese qui ne se controle pas finit par
 			//       etre fausse en silence.
 			//
-			// ⚠️ LE CHAMP PORTE LE NOM **ET L'ISNI** DE CHAQUE CO-AUTEUR
+			// LE CHAMP PORTE LE NOM **ET L'ISNI** DE CHAQUE CO-AUTEUR
 			//    depuis le 2026-08-07, pour que son nom soit cliquable comme
 			//    celui du compositeur principal. La forme est
 			//    « Nom|ISNI;Nom|ISNI » : point-virgule entre co-auteurs,
@@ -433,7 +433,7 @@
 			//    1986 aujourd'hui, et le lien apparaitra le jour ou la
 			//    campagne ISNI les atteindra, sans toucher au code.
 			//
-			//    ⚠️ LES DEUX SEPARATEURS ONT ETE VERIFIES SUR LA BASE, pas
+			//    LES DEUX SEPARATEURS ONT ETE VERIFIES SUR LA BASE, pas
 			//       choisis au hasard : AUCUNE des 3 258 fiches ne porte
 			//       « | », « ; » ni « % » dans son nom ou son prenom. Le
 			//       troisieme est le separateur d'enregistrement du flux
@@ -452,7 +452,7 @@
 			// Le tri de js/aww.js s'en plaignait deja sans le dire — son
 			// critere `rank_num` comparait une colonne toujours vide.
 			//
-			// ⚠️ AWARD_ORDRE N'EST PAS AWARD_RANK, ET LES DEUX RESTENT DEUX
+			// AWARD_ORDRE N'EST PAS AWARD_RANK, ET LES DEUX RESTENT DEUX
 			//    COLONNES. Le §16.5 et le §22.8 du chantier ont tranche deux
 			//    fois : « 1°) » dans un palmares est l'ordinal dont le meme
 			//    document numerote ses depots, pas un classement. Le rang dit
@@ -462,7 +462,7 @@
 			//    indistinguables a l'affichage seulement, et c'est deja trop.
 			//    D'ou un champ de plus, et non un COALESCE.
 			//
-			// ⚠️ LES DEUX AUTRES BRANCHES SERVENT NULL, ET C'EST VOULU.
+			// LES DEUX AUTRES BRANCHES SERVENT NULL, ET C'EST VOULU.
 			//    `imeb_distinction.ordre_document` existe sur 113 lignes —
 			//    toutes les mentions depuis 1974 — parce qu'il compte la
 			//    POSITION DANS L'ENUMERATION du constat. Le servir ici
@@ -475,7 +475,7 @@
 			// 18e champ : L'EVENEMENT — ajoute le 2026-08-12, EN FIN
 			// d'enregistrement comme tous les precedents.
 			//
-			// ⚠️ 1993 EST LA PREMIERE EDITION A EN PORTER DEUX. Le constat du
+			// 1993 EST LA PREMIERE EDITION A EN PORTER DEUX. Le constat du
 			//    8 juin 1993 couvre le 21e Concours International ET le 1er PUY
 			//    de Musique electroacoustique — deux evenements, deux series de
 			//    numeros (C et P), une seule piece et une seule annee. Sans ce
@@ -483,7 +483,7 @@
 			//    Concours, et rien ne dit au lecteur que ce ne sont pas les
 			//    memes recompenses.
 			//
-			// ⚠️ IL VIENT DE LA BASE, PAS D'UNE LISTE D'IDENTIFIANTS. La
+			// IL VIENT DE LA BASE, PAS D'UNE LISTE D'IDENTIFIANTS. La
 			//    solution courte — « si la categorie est 23, 24, 25 ou 26 » —
 			//    est le code-book que cette page s'est deja interdit plus haut,
 			//    en ecartant un filtre par libelle : *le type classifie, le
@@ -492,7 +492,7 @@
 			//    D'ou `imeb_categorie`.`evenement`, ajoutee le meme jour par
 			//    DB/alter_categorie_evenement.sql.
 			//
-			// ⚠️ LA PREMIERE BRANCHE SERT 'concours' EN DUR, ET C'EST MESURE :
+			// LA PREMIERE BRANCHE SERT 'concours' EN DUR, ET C'EST MESURE :
 			//    `imeb_music` ne porte AUCUNE des sept recompenses du Puy de
 			//    1993 — le catalogue les ignore toutes (§29.5). Le controle est
 			//    ecrit dans DB/alter_categorie_evenement.sql et rend zero.

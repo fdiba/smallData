@@ -72,7 +72,7 @@ th{
 }
 /* le menu Year degage deja la barre fixe : ce qui suit vient directement,
    sans re-appliquer la marge haute (sinon double ecart).
-   ⚠️ #main_container n'est plus le voisin de #years — il est descendu dans
+   #main_container n'est plus le voisin de #years — il est descendu dans
       #left_col le 2026-08-10 — et css/main.css lui pose une marge haute de la
       hauteur de la barre. Sans la ligne ci-dessous il rouvrait ce blanc-la au
       milieu de la page. */
@@ -169,7 +169,7 @@ th{
    autres cellules de la meme ligne remontaient, et la ligne ne se lisait
    plus d'un trait.
 
-   ⚠️ ET LA COLONNE « with » A RENDU LE DEFAUT VISIBLE, parce qu'elle porte
+   ET LA COLONNE « with » A RENDU LE DEFAUT VISIBLE, parce qu'elle porte
       des noms longs — « Douglas Doherty », « Hans van Helvert » — dans une
       colonne etroite, a cote de titres qui debordent eux aussi. Une colonne
       ajoutee ne cree pas le defaut, elle le met sous les yeux : c'est la
@@ -212,7 +212,7 @@ th{
    (js/aww.js, masquerColonnesVides). La classe est posee sur l'en-tete ET
    sur toutes les cellules de la colonne, y compris les cellules fusionnees
    par rowspan : le tableau reste rectangulaire.
-   ⚠️ display:none et non visibility:hidden — une colonne invisible mais
+   display:none et non visibility:hidden — une colonne invisible mais
       toujours large laisserait un trou, et c'est la largeur qu'on veut
       rendre aux colonnes qui restent. */
 #works_table .col-vide{
@@ -266,14 +266,14 @@ th{
    boites ont donc toute la hauteur de la page devant elles : elles grandissent
    sans rien pousser, et sans defilement interieur.
 
-   ⚠️ #infos N'EST PLUS UN ENFANT DE #main_container. Les regles
+   #infos N'EST PLUS UN ENFANT DE #main_container. Les regles
       `#main_container > #infos` de css/main.css — largeur, marge, cesure — ne
       s'appliquent donc plus a cette page, et sont reprises ci-dessous. Celles
       qui visent `#isniColumn` par ce meme chemin non plus : elles sont reprises
-      aussi. ⚠️ Les trois autres pages a SMA gardent l'ancienne structure ;
+      aussi. Les trois autres pages a SMA gardent l'ancienne structure ;
       css/main.css ne bouge pas.
 
-   ⚠️ LARGEUR FIXE A 1064 px sur la colonne gauche : c'est celle du canvas, du
+   LARGEUR FIXE A 1064 px sur la colonne gauche : c'est celle du canvas, du
       menu Year, de la legende et du tableau, qui alignent deja leurs bords
       droits. La poser sur le conteneur evite que le tableau, plus large qu'a
       l'ordinaire sur une selection qui montre les neuf colonnes, elargisse la

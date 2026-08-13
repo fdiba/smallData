@@ -18,25 +18,25 @@ var allWorks = [];          // toutes les oeuvres primees chargees (objets)
    mal. La hauteur passe donc a la MOITIE des qu'une annee est choisie, et
    revient a la pleine hauteur sur « All works ».
 
-   ⚠️ ECRIRE `canvas.height` REMET LE CONTEXTE 2D A ZERO. Ce n'est pas un
+   ECRIRE `canvas.height` REMET LE CONTEXTE 2D A ZERO. Ce n'est pas un
       redimensionnement : le navigateur jette le bitmap, et `fillStyle`,
       `strokeStyle`, les transformations reviennent a leur valeur par defaut.
       D'ou le fond repeint juste apres — sans quoi la premiere image du SMA
       s'affiche sur un canvas transparent.
 
-   ⚠️ ET ELLE SE POSE AVANT `resetAll()`, PAS APRES. Les particules naissent a
+   ET ELLE SE POSE AVANT `resetAll()`, PAS APRES. Les particules naissent a
       `Math.random()*canvas.height` (js/sma_core.js) : creees pendant que le
       canvas fait encore 800, la moitie d'entre elles naitrait sous le bord du
       nouveau. La grille spatiale, elle, se refait toute seule — `ensureGrid`
       compare ses dimensions a celles du canvas a chaque tour.
 
-   ⚠️ AUCUNE HAUTEUR N'EST ECRITE EN CSS pour `#myCanvas` : c'est l'attribut
+   AUCUNE HAUTEUR N'EST ECRITE EN CSS pour `#myCanvas` : c'est l'attribut
       qui fait la taille affichee. Si une regle CSS lui en donne une un jour,
       cette fonction changera la resolution du bitmap SANS changer la mise en
       page, et les clics tomberont a cote (`getBoundingClientRect` dans
       js/sma_core.js).
 
-   ⚠️ ET RIEN D'AUTRE NE DEPEND DE CETTE HAUTEUR. La colonne d'information est
+   ET RIEN D'AUTRE NE DEPEND DE CETTE HAUTEUR. La colonne d'information est
       depuis le 2026-08-10 a cote de TOUTE la pile (canvas + legende +
       tableau) et non du canvas seul : elle ne se cale plus dessus, et le
       canvas peut passer de 800 a 400 sans deplacer quoi que ce soit. */
@@ -64,7 +64,7 @@ window.onload = function() {
     $.ajax({ url: 'php/retrieve_works.php', type: "POST" }).done(function(str) {
         allWorks = parseWorks(str);
         buildYearMenu();
-        /* ⚠️ L'ETAT INITIAL VIENT DE L'URL, PAS D'UNE CONVENTION — 2026-08-12.
+        /* L'ETAT INITIAL VIENT DE L'URL, PAS D'UNE CONVENTION — 2026-08-12.
            `?y=1994` ouvre la page sur cette edition. Sans `y`, ou avec un `y`
            que le fonds ne porte pas, on retombe sur « All works » : une adresse
            fausse ne doit pas rendre une page vide, elle doit rendre la page. */
@@ -94,7 +94,7 @@ function parseWorks(str){
     // ne l'affichait — voir le bloc `rank` ci-dessous.
     //
     // 17 -> 18 le 2026-08-12 : L'EVENEMENT (arr[i+17]), imeb_categorie.evenement.
-    // ⚠️ 1993 est la premiere edition du fonds a en porter DEUX : le constat du
+    // 1993 est la premiere edition du fonds a en porter DEUX : le constat du
     //    8 juin 1993 couvre le 21e Concours International ET le 1er PUY de
     //    Musique electroacoustique. Une seule piece, une seule annee, deux
     //    series de numeros — C et P — et deux palmares. Sans ce champ, les sept
@@ -133,7 +133,7 @@ function parseWorks(str){
            « les mentions numerotees de 1981, 1983, 1987 et 1993 » : il ne
            servait rien, puisque sa colonne etait vide.
 
-           ⚠️ RANG ET ORDRE RESTENT DEUX CHOSES. Le rang dit qui l'emporte,
+           RANG ET ORDRE RESTENT DEUX CHOSES. Le rang dit qui l'emporte,
               l'ordre dit dans quel ordre c'est proclame (§16.5, §22.8). On
               affiche l'un OU l'autre — jamais les deux, jamais leur somme —
               et le rang passe devant quand les deux existent, ce qui
@@ -168,7 +168,7 @@ function parseWorks(str){
         else if(cat2==11)cat2="tendance création";
         else if(cat2==12)cat2="tendance performance";
 
-        /* ⚠️ DEUX « CATEGORIES » QUI N'EN SONT PAS — 2026-08-08.
+        /* DEUX « CATEGORIES » QUI N'EN SONT PAS — 2026-08-08.
 
            `imeb_music`.`award_cat` porte « Magistère » et « Résidence » sur
            les codes 500 et 600 : UN TYPE DE DISTINCTION DANS LA COLONNE DE
@@ -182,7 +182,7 @@ function parseWorks(str){
            constat de cette annee-la qui les introduit dans le fonds, et
            c'est pourquoi le defaut s'est vu ce jour-la.
 
-           ⚠️ QUATRIEME FOIS QU'UN CODE MELANT DEUX NATURES COUTE QUELQUE
+           QUATRIEME FOIS QU'UN CODE MELANT DEUX NATURES COUTE QUELQUE
               CHOSE : le 199 qui mettait onze editions de prix sous leurs
               mentions (§21.13), les mentions numerotees classees sous les
               autres (§23.13), les secondes distinctions invisibles
@@ -194,7 +194,7 @@ function parseWorks(str){
            Le libelle continue de venir de `award_label`, et la colonne
            « price » affiche donc « Magistère » ou « Résidence ».
 
-           ⚠️ LE TEST PORTE SUR LE CODE, PAS SUR LE LIBELLE. `award_price`
+           LE TEST PORTE SUR LE CODE, PAS SUR LE LIBELLE. `award_price`
               est stable ; `award_cat` est une chaine que quelqu'un peut
               corriger un jour. Et la cellule n'est videe QUE si elle
               repete le libelle : si un Magistere recevait un jour une
@@ -205,7 +205,7 @@ function parseWorks(str){
         var catRang = CAT_HORS_AXE[parseInt(arr[i+1], 10)] || 0;
         if(catRang && (cat === 'Magistère' || cat === 'Résidence')) cat = '';
 
-        /* ⚠️⚠️ LE PUY N'EST PAS UN DEGRE DU CONCOURS, C'EST UN AUTRE CONCOURS
+        /* LE PUY N'EST PAS UN DEGRE DU CONCOURS, C'EST UN AUTRE CONCOURS
            — 2026-08-12.
 
            Le constat du 8 juin 1993 en couvre DEUX, et il le dit lui-meme en
@@ -233,7 +233,7 @@ function parseWorks(str){
                +1  Residence    un sejour, pas une recompense de rang
                +2  le PUY       un autre concours
 
-           ⚠️ ET LE TEST PORTE SUR L'EVENEMENT, PAS SUR LE LIBELLE NI SUR
+           ET LE TEST PORTE SUR L'EVENEMENT, PAS SUR LE LIBELLE NI SUR
               L'IDENTIFIANT. Quatre identifiants en dur — 23, 24, 25, 26 —
               seraient le code-book que php/retrieve_works.php s'est deja
               interdit, et il se perimerait des le 2e Puy de 1994 : celui-la
@@ -260,10 +260,10 @@ function parseWorks(str){
    cliquable comme celui du compositeur principal. Point-virgule entre
    co-auteurs, barre verticale entre le nom et l'ISNI.
 
-   ⚠️ LES DEUX SEPARATEURS SONT VERIFIES SUR LA BASE, pas choisis au hasard :
+   LES DEUX SEPARATEURS SONT VERIFIES SUR LA BASE, pas choisis au hasard :
       aucune des 3 258 fiches ne porte « | », « ; » ni « % » dans son nom.
 
-   ⚠️ ET L'ISNI EST VIDE POUR LES TROIS CO-AUTEURS D'AUJOURD'HUI — Doherty,
+   ET L'ISNI EST VIDE POUR LES TROIS CO-AUTEURS D'AUJOURD'HUI — Doherty,
       Van Helvert, Scheidt. Le lien apparaitra le jour ou la campagne ISNI les
       atteindra, sans qu'une ligne de code bouge : c'est la difference entre
       « la page ne sait pas le faire » et « la donnee n'est pas la ». */
@@ -285,7 +285,7 @@ function parseCoauteurs(champ){
    est un souligne pointille, comme sur catalog.php et dans le diagramme de
    flux. `data-label` sert l'en-tete de la fiche.
 
-   ⚠️ UNE SEULE FONCTION POUR LE COMPOSITEUR ET SES CO-AUTEURS depuis le
+   UNE SEULE FONCTION POUR LE COMPOSITEUR ET SES CO-AUTEURS depuis le
       2026-08-07. Elle etait ecrite en dur dans buildTableRows et ne servait
       qu'au premier ; la dupliquer pour les co-auteurs aurait remis deux
       copies d'une meme chose dans ce fichier — la panne habituelle du
@@ -404,7 +404,7 @@ function selectYear(year){
 //------------------------------------------------------------------
 // L'ANNEE DANS L'ADRESSE — `?y=1994`
 //------------------------------------------------------------------
-/* ⚠️⚠️ RIEN DE CE PARAMETRE N'ATTEINT LA BASE, ET C'EST LA REPONSE A LA
+/* RIEN DE CE PARAMETRE N'ATTEINT LA BASE, ET C'EST LA REPONSE A LA
    QUESTION DE L'INJECTION. Le flux `php/retrieve_works.php` est appele SANS
    parametre : il rend TOUTES les œuvres primees, une fois, et `y` ne fait que
    filtrer un tableau deja en memoire (`allWorks`). Il n'y a donc ni requete
@@ -412,7 +412,7 @@ function selectYear(year){
    *La donnee la mieux protegee d'une injection est celle qui n'atteint pas le
    SQL.*
 
-   ⚠️ DEUX BARRIERES QUAND MEME, parce qu'une valeur d'URL est une valeur
+   DEUX BARRIERES QUAND MEME, parce qu'une valeur d'URL est une valeur
       etrangere meme quand elle ne va nulle part :
         1. la FORME — exactement quatre chiffres, `^\d{4}$` ;
         2. la LISTE BLANCHE — l'annee doit exister dans le menu, donc dans le
@@ -420,14 +420,14 @@ function selectYear(year){
       La valeur n'est jamais injectee dans le DOM : elle sert de cle de
       comparaison (`String(w.year) === String(year)`) et rien d'autre.
 
-   ⚠️ `replaceState` ET NON `pushState` : choisir une edition dans le menu
+   `replaceState` ET NON `pushState` : choisir une edition dans le menu
       n'est pas une navigation, c'est un filtre. `pushState` empilerait une
       entree d'historique par clic, et le bouton « precedent » deviendrait un
       « annuler mon dernier clic » que personne n'a demande. L'adresse suit la
       selection ; l'historique n'en garde qu'une trace, celle par laquelle on
       est arrive.
 
-   ⚠️ ET LA PAGE NE SE RECHARGE PAS : tout est deja charge. C'est le meme
+   ET LA PAGE NE SE RECHARGE PAS : tout est deja charge. C'est le meme
       tableau `allWorks` qui est refiltre, exactement comme au clic. */
 function anneesDuFonds(){
     var out = {};
@@ -487,7 +487,7 @@ function renderSelection(works){
        cette separation. Ecrase l'un par l'autre, on melangerait « Prix 1 »
        et « Mention 1 ».
 
-       ⚠️ ET IL NE SERVAIT RIEN JUSQU'AU 2026-08-07. `rank_num` valait
+       ET IL NE SERVAIT RIEN JUSQU'AU 2026-08-07. `rank_num` valait
        `award_rank`, qui est NULL sur TOUTES les mentions du fonds : le
        critere comparait une colonne vide a une autre colonne vide. Le
        numero des mentions vit dans `award_ordre`, et il n'entrait pas dans
@@ -501,7 +501,7 @@ function renderSelection(works){
        imeb_distinction.ordre_document, QUI NE VOYAGE PAS DANS CE FLUX — le
        servir afficherait un classement que le document n'a pas prononce.
 
-       ⚠️ ET 1987 DONNE ENFIN LA PROVENANCE QU'ON IGNORAIT. Le constat de la
+       ET 1987 DONNE ENFIN LA PROVENANCE QU'ON IGNORAIT. Le constat de la
        musique en direct ecrit « PREMIERE MENTION : bande 215 » puis
        « MENTIONS : bande 19, bande 197 » : le numero du catalogue
        (award_ordre = 1, award_price = 101 sur le seul Schweizer) est celui
@@ -509,7 +509,7 @@ function renderSelection(works){
 
        Un rang vide — l'immense majorite des mentions du fonds — compare
        comme chaine vide et laisse le tri retomber sur le patronyme. */
-    /* ⚠️ `cat_rang` PASSE AVANT `cat`, ET L'ORDRE DES DEUX LIGNES EST TOUT
+    /* `cat_rang` PASSE AVANT `cat`, ET L'ORDRE DES DEUX LIGNES EST TOUT
        LE CORRECTIF DU 2026-08-08.
 
        Le Magistere et la Residence portent leur propre nom dans
@@ -567,7 +567,7 @@ function renderSelection(works){
    oeuvres c'est un RANG — 1, 2, 3, 4 —, pour les autres un CODE DE FORME :
    100 « Mention », 600 « Residence », 199 « Prix, rang non renseigne ».
 
-   ⚠️ CE MELANGE MARCHE TANT QUE LES CODES SONT BIEN RANGES, ET PAS PLUS.
+   CE MELANGE MARCHE TANT QUE LES CODES SONT BIEN RANGES, ET PAS PLUS.
       Trier sur le nombre brut donnait le bon ordre par accident : 1 et 2
       avant 100. Le jour ou une valeur superieure a 100 a designe autre
       chose qu'une mention, l'accident a cesse — et il a cesse DEUX FOIS.
@@ -593,7 +593,7 @@ function renderSelection(works){
        303  ... + Mention                   2           1984, 1985
        304  ... + Mention 1                 1           1986
 
-   ⚠️ LE CODE NE DIT PAS QUEL ORGANISME, LE LIBELLE OUI. La famille des 300
+   LE CODE NE DIT PAS QUEL ORGANISME, LE LIBELLE OUI. La famille des 300
    couvre le Prix C.I.M. France (1981-1983) ET le Prix C.I.M.E. (1984-1987)
    — deux prix distincts que le §16 du chantier a du separer, et que ce code
    confond encore.
@@ -623,7 +623,7 @@ function renderSelection(works){
    500 « Magistere », 600 « Residence ». Les nomines et finalistes restent
    SOUS les mentions : ce ne sont pas des recompenses mais des etapes.
 
-   ⚠️ UNE LISTE DE VALEURS EN DUR NE SE MET PAS A JOUR TOUTE SEULE. Le 200 y
+   UNE LISTE DE VALEURS EN DUR NE SE MET PAS A JOUR TOUTE SEULE. Le 200 y
       manquait jusqu'au 2026-08-06 (vu en relisant imeb_music apres 1984,
       premiere edition a en porter un) ; le 199 n'y etait nulle part (vu sur
       1985). Deux fois en deux jours. Quand une edition entre, REDEMANDER AU
@@ -660,7 +660,7 @@ var PRIX_SANS_RANG = 199;
    Le constat de 1987 dit l'inverse en toutes lettres : « PREMIERE MENTION :
    bande 215 » — Schweizer — PUIS « MENTIONS : bande 19, bande 197 ».
 
-   ⚠️ C'EST LE MEME DEFAUT QUE LE 199, ET POUR LA MEME RAISON : un code qui
+   C'EST LE MEME DEFAUT QUE LE 199, ET POUR LA MEME RAISON : un code qui
       melange une FORME (« ceci est une mention ») et un RANG (« la
       premiere ») ne peut pas se trier comme un nombre. Le 199 avait mis
       onze editions de prix sous leurs mentions ; celui-ci met les mentions
@@ -681,7 +681,7 @@ var MENTIONS = {100:1, 101:1, 102:1, 103:1};
    La valeur est un RANG SUR L'AXE DES CATEGORIES, pas une place de
    distinction : -1 passe devant les categories, +1 passe derriere.
 
-   ⚠️ ET LE COMMENTAIRE DU 2026-08-06 LE DEMANDAIT DEJA : « toute valeur
+   ET LE COMMENTAIRE DU 2026-08-06 LE DEMANDAIT DEJA : « toute valeur
       > 100 qui n'est pas une mention doit etre classee ici ». 500 et 600
       etaient dans « tout le reste garde son code » depuis toujours, c'est-
       a-dire nulle part. La liste en dur ne s'est pas mise a jour toute
@@ -693,7 +693,7 @@ function ordreDistinction(code){
     if(HORS_CATEGORIE[n])      return -1;
     if(n === PRIX_SANS_RANG)   return 99;   // un prix, donc avant 100
     if(MENTIONS[n])            return 100;  // toutes les mentions au meme rang
-    /* ⚠️ LE MAGISTERE ET LA RESIDENCE SONT DEJA SEPARES PAR `cat_rang`,
+    /* LE MAGISTERE ET LA RESIDENCE SONT DEJA SEPARES PAR `cat_rang`,
        AVANT que cette fonction soit consultee — dans le cas ordinaire elle
        ne les voit donc jamais. Mais si l'un d'eux recevait un jour une
        VRAIE categorie, `cat_rang` vaudrait quand meme -1 ou +1 et les
@@ -711,7 +711,7 @@ function ordreDistinction(code){
    Il faut l'inverse : le document proclame d'abord ce qu'il numerote, puis
    le reste. On repousse donc les valeurs vides a la fin de leur famille.
 
-   ⚠️ 99 ET NON 999 : la valeur ne sert qu'a comparer entre elles des lignes
+   99 ET NON 999 : la valeur ne sert qu'a comparer entre elles des lignes
       qui ont deja la meme place de distinction, la meme categorie et la
       meme annee. Aucune edition n'a jamais eu 99 mentions dans une
       categorie — la plus fournie en a six (1981, analogique). */
@@ -734,7 +734,7 @@ function cmpValues(a, b){
    masquerColonnesVides() de savoir, sans relire le DOM, si une colonne est
    vide pour la selection courante.
 
-   ⚠️ L'ORDRE EST CELUI DES <th> DE award-winning_works.php, et les classes
+   L'ORDRE EST CELUI DES <th> DE award-winning_works.php, et les classes
       y sont ecrites aussi. Un contrôle le vérifie à chaque rendu et se
       plaint dans la console si les deux divergent : c'est le genre de
       couple qui se desynchronise le jour ou l'on ajoute une colonne d'un
@@ -751,7 +751,7 @@ var COLONNES = [
        n'en font plus qu'une, « composer », et le marqueur ISNI ne se pose
        plus qu'une fois au lieu de deux.
 
-       ⚠️ LE TRI, LUI, RESTE SUR LE PATRONYME (`o.name`, dernier critere de
+       LE TRI, LUI, RESTE SUR LE PATRONYME (`o.name`, dernier critere de
           sortAndRender). L'affichage est « Prenom Nom », l'ordre est celui
           des noms de famille : c'est voulu, et c'est ce que fait toute
           liste de compositeurs. */
@@ -765,7 +765,7 @@ var COLONNES = [
        149 Harrison / Doherty, 226 Schryer / Scheidt. Le second nom
        n'apparaissait nulle part.
 
-       ⚠️ LA COLONNE EST VIDE SUR TOUTES LES AUTRES SELECTIONS, et elle se
+       LA COLONNE EST VIDE SUR TOUTES LES AUTRES SELECTIONS, et elle se
           masque donc toute seule (masquerColonnesVides). C'est exactement ce
           pour quoi ce mecanisme a ete ecrit la veille : une colonne d'en-tete
           au-dessus de trente cellules vides n'informe pas. */
@@ -785,13 +785,13 @@ var COLONNES = [
    cellules vides n'informe pas — elle fait croire a une donnee manquante la
    ou il n'y a rien a manquer.
 
-   ⚠️ ON MASQUE, ON NE SUPPRIME PAS. La colonne revient telle quelle des que
+   ON MASQUE, ON NE SUPPRIME PAS. La colonne revient telle quelle des que
       la selection change, et « All works » les montre toutes : le tableau
       ne perd aucune colonne, il n'affiche que celles qui portent quelque
       chose. Le masquage est donc une propriete de la SELECTION, pas du
       tableau, et il se recalcule a chaque rendu.
 
-   ⚠️ ET UNE SELECTION VIDE NE MASQUE RIEN. Sans cette garde, un filtre qui
+   ET UNE SELECTION VIDE NE MASQUE RIEN. Sans cette garde, un filtre qui
       ne rend aucune oeuvre ferait disparaitre les neuf colonnes d'un coup,
       en-tetes compris, et la page semblerait cassee plutot que vide. */
 function masquerColonnesVides(objects){
@@ -874,13 +874,13 @@ function buildTableRows(objects){
         /* La duree, ajoutee le 2026-08-06, JUSTE APRES LE TITRE : elle
            qualifie l'oeuvre et se lit avec lui.
 
-           ⚠️ RIEN N'A CHANGE COTE DONNEES. `imeb_music.duration` voyageait
+           RIEN N'A CHANGE COTE DONNEES. `imeb_music.duration` voyageait
               deja dans le flux — septieme champ, arr[i+6] — et servait la
               boite violette du SMA depuis toujours ; elle n'etait simplement
               pas dans le tableau. La longueur d'enregistrement ne bouge donc
               pas, et php/retrieve_works.php n'est pas touche.
 
-           ⚠️ QUARANTE-TROIS LIGNES SUR 755 SORTENT VIDES, et les trois causes
+           QUARANTE-TROIS LIGNES SUR 755 SORTENT VIDES, et les trois causes
               sont legitimes :
                  15  oeuvres primees dont le catalogue ne donne pas la duree
                      — quatorze depuis toujours, plus celle de Lea Collins

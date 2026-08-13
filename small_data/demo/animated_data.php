@@ -4,7 +4,7 @@
 	<title>Participation | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<?php include_once("./php/asset.php") ?>
-	<!-- ⚠️ Feuilles et scripts sont horodates par asset() : sans cela, une
+	<!-- Feuilles et scripts sont horodates par asset() : sans cela, une
 	     correction deployee reste invisible tant que le lecteur n'a pas vide
 	     son cache — verifie le 2026-08-11 sur une regle de main.css. Voir
 	     l'en-tete de php/asset.php ; a reporter sur les six autres pages. -->
@@ -117,7 +117,7 @@
 						<li>the switch acts on all three charts at once, <em>and on the list of composers below them</em> &mdash; it is the same question put to the same data, so the figures change together. That last part had been promised here and was not done until 2026-08-11: the charts dropped the people known by a candidacy alone, and the list went on naming them just underneath. With the switch on, the list holds only composers with an archived work &mdash; so <em>no name in it is withheld any more</em>, and every line is clickable: a name published with a work is a published name. The <em>c/t</em> counts beside each country do not move: they state a fact about that country across all editions, not about the current selection</li>
 					</ul>
 				</div>
-				<!-- ⚠️ Bloc ajoute le 2026-08-11. Il repond a une question posee sur la page,
+				<!-- Bloc ajoute le 2026-08-11. Il repond a une question posee sur la page,
 				     et la reponse est une propriete du MODELE, pas un defaut du graphe :
 				     `imeb_artist.id_country` porte l'Etat d'AUJOURD'HUI, `imeb_adresse.id_country`
 				     celui que le document ECRIVAIT. Les trois charts comptent des PERSONNES,

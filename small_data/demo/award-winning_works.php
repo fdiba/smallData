@@ -61,7 +61,7 @@
 			     canvas seul. Les boites peuvent donc grandir autant qu'elles
 			     veulent : elles ont toute la hauteur de la page devant elles et
 			     ne deplacent plus rien. Aucun defilement interieur.
-			     ⚠️ #infos n'est plus un enfant de #main_container : les regles
+			     #infos n'est plus un enfant de #main_container : les regles
 			        `#main_container > #infos` de css/main.css ne s'appliquent
 			        plus, et css/aww.css les reprend pour la nouvelle place. -->
 			<div id="page_cols">
@@ -77,7 +77,7 @@
 			     en-tete). Une page sans JavaScript garde donc la legende dans
 			     l'etat ou le serveur l'a envoyee, et aucune page ne s'ouvre sur
 			     un panneau qui se refermerait sous les yeux.
-			     ⚠️ LES DEUX MARQUES VONT ENSEMBLE : `is-collapsed` sur #legend
+			     LES DEUX MARQUES VONT ENSEMBLE : `is-collapsed` sur #legend
 			        fait le repli visuel, `aria-expanded="false"` sur le bouton le
 			        dit aux lecteurs d'ecran. N'en changer qu'une laisse la page
 			        annoncer le contraire de ce qu'elle montre. -->

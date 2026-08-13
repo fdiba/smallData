@@ -40,7 +40,7 @@
 	   suffisait d'ouvrir l'onglet Reseau du navigateur pour les lire.
 	   Desormais ils ne partent plus.
 
-	   ⚠️ ET CE N'EST TOUJOURS PAS UN CONTROLE D'ACCES. Le drapeau arrive
+	   ET CE N'EST TOUJOURS PAS UN CONTROLE D'ACCES. Le drapeau arrive
 	      du client, en clair, dans le POST : n'importe qui peut poster
 	      `v=all` et recevoir tout. Ce qui est gagne est REEL mais precis —
 	      le nom d'un candidat ne se trouve plus dans une page qu'on lit,
@@ -56,7 +56,7 @@
 	      pas fait, ce fichier ne doit pas etre presente comme protegeant
 	      quoi que ce soit.
 
-	   ⚠️ LE CRITERE DOIT RESTER LE MEME QUE CELUI DU `case 10`, qui compte
+	   LE CRITERE DOIT RESTER LE MEME QUE CELUI DU `case 10`, qui compte
 	      les oeuvres avec `statut <> 'hors_repertoire'` (28 oeuvres
 	      ecartees sur 6 772 ; la colonne est NOT NULL, donc le `<>` ne perd
 	      aucune ligne). S'ils divergeaient, le navigateur nommerait
@@ -157,7 +157,7 @@
 	   quelque part, et il ne reste que le releve des proces-verbaux des
 	   annees 1990 pour l'expliquer.
 
-	   ⚠️ POURQUOI CE TROISIEME COMPTE, ET PAS SIMPLEMENT `inconnu`. De
+	   POURQUOI CE TROISIEME COMPTE, ET PAS SIMPLEMENT `inconnu`. De
 	      1996 a 2009, TOUTES les lignes 'inconnu' sont expliquees par une
 	      oeuvre ou par la liste — `inexplique` y vaut zero, sauf UNE, en
 	      2005 : Philippe Auclair, fiche 1426, deja signale au §3 de
@@ -264,7 +264,7 @@
 									 imeb_country.c_name, imeb_country.iso3,
 									 imeb_country.iso2
 
-							/* ⚠️ IL N\'Y AVAIT AUCUN ORDER BY — 2026-08-08.
+							/* IL N\'Y AVAIT AUCUN ORDER BY — 2026-08-08.
 							   Le flux sortait dans l\'ordre que le moteur
 							   produisait pour le GROUP BY : non garanti, et
 							   susceptible de differer entre MariaDB et
@@ -371,7 +371,7 @@
 			/* --- CE QUE LA BASE SAIT DE CHAQUE ANNEE -------------------------
 			   Ecrit le 2026-08-04, REFAIT LE 2026-08-08.
 
-			   ⚠️ LA VERSION PRECEDENTE DISAIT LE CONTRAIRE DE LA BASE, et sur
+			   LA VERSION PRECEDENTE DISAIT LE CONTRAIRE DE LA BASE, et sur
 			      une grande echelle. Elle deduisait « festival seul » de deux
 			      colonnes de imeb_music — pas de prix cette annee-la, mais une
 			      programmation — parce qu'elle a ete ecrite TROIS JOURS AVANT
@@ -399,7 +399,7 @@
 			     3  FESTIVAL SEUL — la seule trace est cette programmation :
 			        la personne etait a Bourges, rien n'atteste qu'elle ait
 			        candidate. 109 (1,1 %), 91 compositeurs, concentres sur
-			        1990 et 2000. ⚠️ CLASSE AMBIGUE, PAS FAUSSE : sur le PV de
+			        1990 et 2000. CLASSE AMBIGUE, PAS FAUSSE : sur le PV de
 			        1973, 7 des 9 cas de cette classe avaient bel et bien
 			        candidate, et 2 non (Luc Ferrari, Joran Rudi).
 			     4  RELEVE SANS PIECE RATTACHEE — ni constat, ni liste, ni
@@ -685,7 +685,7 @@
 			   et la longueur de la liste changeraient — mais elle n'est
 			   plus NOMMEE.
 
-			   ⚠️ L'IDENTIFIANT PART AVEC LE NOM, et c'est le point qui
+			   L'IDENTIFIANT PART AVEC LE NOM, et c'est le point qui
 			      compte. Un nom masque a cote de son id de fiche ne serait
 			      pas masque : l'id se repose au `case 1`, qui rend les
 			      oeuvres, et il se compare a la grille de l'Overview.

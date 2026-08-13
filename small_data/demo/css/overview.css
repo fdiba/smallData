@@ -22,7 +22,7 @@
    a 700px de la grille qu'ils commandent. Cales a gauche, le probleme ne se
    pose plus : ils suivent les menus, ou que s'arrete la fenetre.
 
-   ⚠️ LA HAUTEUR EST CONTRAINTE. La barre est fixe et sa hauteur est declaree
+   LA HAUTEUR EST CONTRAINTE. La barre est fixe et sa hauteur est declaree
    une fois, `--sd-bar-h` (128px) dans main.css ; toutes les pages calent leur
    contenu dessous avec `margin-top: calc(var(--sd-bar-h) + 8px)`. Deux rangees
    empilees doivent donc tenir dans 128px moins le padding de la barre, soit
@@ -257,7 +257,7 @@
 #myCanvas{
 	margin: 0 5px 0 0;
 }
-/* ⚠️ LA LISTE DES RESULTATS EST BORNEE EN HAUTEUR — 2026-08-08.
+/* LA LISTE DES RESULTATS EST BORNEE EN HAUTEUR — 2026-08-08.
 
    Elle n'avait aucune limite. Une recherche sur deux ou trois lettres rend
    couramment plusieurs centaines de noms, et la boite blanche poussait alors
@@ -310,7 +310,7 @@
 	margin: 0 0 1px 0;
 }
 
-/* ⚠️ CE COMMENTAIRE DISAIT LE CONTRAIRE JUSQU'AU 2026-08-11 : « la liste des
+/* CE COMMENTAIRE DISAIT LE CONTRAIRE JUSQU'AU 2026-08-11 : « la liste des
    oeuvres (zone violette) s'adapte a son contenu : pas de hauteur bornee ».
    Elle l'est desormais — 36vh, la borne de la fiche ISNI en flux, posee dans
    css/main.css sur `#titles.t-boxed` parce que TROIS pages portent cette
@@ -357,7 +357,7 @@
 	border-bottom: 1px dotted currentColor;
 	cursor: help;
 }
-/* ⚠️ QUATRE MARQUEURS — 2026-08-08. Le pointille dit « il y a quelque chose
+/* QUATRE MARQUEURS — 2026-08-08. Le pointille dit « il y a quelque chose
    de plus a savoir ici » et vaut pour les trois classes qui ne sont pas la
    participation attestee ordinaire. Le signe distingue : rien = concours,
    `+` = concours et festival la meme annee, `°` = festival seul,

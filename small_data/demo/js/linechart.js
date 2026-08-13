@@ -35,7 +35,7 @@ function LineChart(config){
 
     /* UN GRAPHE RETIRE NE DESSINE PLUS — 2026-08-08.
 
-       ⚠️ DEFAUT ANCIEN, TROUVE PAR RELECTURE ADVERSARIALE. startHoverAnim()
+       DEFAUT ANCIEN, TROUVE PAR RELECTURE ADVERSARIALE. startHoverAnim()
           lance une boucle requestAnimationFrame qui met ~350 ms a s'eteindre.
           Si, pendant ce fondu, l'utilisateur change de selection — cliquer une
           annee, basculer « span », commuter de vue —, un NOUVEAU graphe est
@@ -161,7 +161,7 @@ LineChart.prototype.retrieveData = function(cId, year, value){
 
     var sl_ctry=this.sl_ctry;
 
-    /* ⚠️ ON RETIENT CE QUI A OUVERT LA LISTE — 2026-08-12.
+    /* ON RETIENT CE QUI A OUVERT LA LISTE — 2026-08-12.
        Le commutateur « all entrants / only those with a work » reconstruit les
        trois vues, et cette reconstruction vide `#composers`. La liste ouverte
        disparaissait donc a chaque bascule, alors que la question posee ne
@@ -174,7 +174,7 @@ LineChart.prototype.retrieveData = function(cId, year, value){
         window.lastComposerQuery = {cId: cId, year: year, value: value, ctry: sl_ctry};
     }
 
-    /* ⚠️ JETON DE GENERATION. La reponse arrive apres coup, et rien ne
+    /* JETON DE GENERATION. La reponse arrive apres coup, et rien ne
        garantit que la selection qui l'a demandee existe encore. Constate au
        banc : cliquer une cellule puis changer d'edition cent millisecondes
        plus tard reinstallait cent vingt compositeurs et reecrivait la barre
@@ -295,7 +295,7 @@ LineChart.prototype.soloPalette = (typeof VIZ_CAT !== 'undefined') ? VIZ_CAT :
 // selon son rang parmi les pays actifs (ordre des donnees). null hors mode solo.
 LineChart.prototype.soloColor = function(i){
     if(this.numSolos<=0 || !this.solo_btns[i] || !this.solo_btns[i].state) return null;
-    /* ⚠️ LE RANG EST CELUI QU'ON LUI A DONNE EN L'ISOLANT, ET NON SA POSITION
+    /* LE RANG EST CELUI QU'ON LUI A DONNE EN L'ISOLANT, ET NON SA POSITION
        PARMI LES ACTIFS. Compte a la volee (`for k<i`), il changeait des qu'un
        pays situe plus haut dans le tableau etait isole a son tour : toutes les
        lignes deja coloriees changeaient de couleur. Voir vizTakeSlot(). */
@@ -415,7 +415,7 @@ LineChart.prototype.getLongestValueWidth = function(){
 
 /* L'EN-TETE DU GRAPHE : le nom de la mesure, et rien d'autre.
 
-   ⚠️ IL A PORTE UN LISERE DE PROVENANCE, RETIRE LE JOUR MEME. L'idee etait
+   IL A PORTE UN LISERE DE PROVENANCE, RETIRE LE JOUR MEME. L'idee etait
       bonne dans la matrice — la bande de navigation y est loin, en haut d'un
       canvas de mille pixels, et ses carres ne sont pas au meme pas horizontal
       que les colonnes. Ici elle ne l'etait pas : le liseré tombait a VINGT
@@ -559,7 +559,7 @@ LineChart.prototype.drawLegend = function(){
     var arr = this.data;
     var ctx = this.context;
 
-    /* ⚠️⚠️ LA LEGENDE DEBORDAIT DE LA TOILE, ET SIX PAYS ETAIENT PEINTS DEHORS.
+    /* LA LEGENDE DEBORDAIT DE LA TOILE, ET SIX PAYS ETAIENT PEINTS DEHORS.
        ------------------------------------------------------------------------
        Mesure du 2026-08-11, sur la selection « all » : le graphe trace
        QUATRE-VINGT-UNE lignes, et la legende n'en montrait que SOIXANTE-QUINZE.
@@ -576,7 +576,7 @@ LineChart.prototype.drawLegend = function(){
        LES SIX PERDUS ETAIENT LES SIX DERNIERS DE L'ALPHABET — le tri est
        alphabetique (animated_data.js, `f_data.sort`) : Unknown, Uruguay,
        Venezuela, Vietnam, YUGOSLAVIA et Zimbabwe, 58 fiches en tout.
-       ⚠️ Yougoslavie en faisait partie, et c'est le seul Etat disparu que le
+       Yougoslavie en faisait partie, et c'est le seul Etat disparu que le
        fonds porte encore sur des fiches d'artistes.
 
        *Rien ne signalait la perte* : `canvas` n'a pas de bord qui proteste, il
@@ -592,7 +592,7 @@ LineChart.prototype.drawLegend = function(){
        CHANGE A L'ECRAN — la disposition d'avant est un cas particulier de
        celle-ci.
 
-       ⚠️⚠️ ET LA BORNE SE MESURE, ELLE NE SE CALCULE PAS DE TETE. La premiere
+       ET LA BORNE SE MESURE, ELLE NE SE CALCULE PAS DE TETE. La premiere
        ecriture de ce commentaire annoncait 116 — 58 lignes par colonne, deux
        colonnes. La simulation de la boucle rend **114** : la premiere colonne
        part de y = 42 et non de 20, elle porte donc 56 lignes et non 58. *Une
@@ -647,7 +647,7 @@ LineChart.prototype.drawLegend = function(){
 
     for (var i=0; i<arr.length; i++) {
 
-        /*  ⚠️ LE GARDE DU BORD. Il ne devrait jamais servir — 114 places pour
+        /*  LE GARDE DU BORD. Il ne devrait jamais servir — 114 places pour
             88 pays possibles —, et c'est precisement pour cela qu'il est ecrit :
             le defaut corrige ici consistait a peindre dans le vide sans que rien
             ne l'arrete ni ne le dise. On s'arrete au bord, et le compte final
@@ -688,7 +688,7 @@ LineChart.prototype.drawLegend = function(){
         }
     }
 
-    /*  ⚠️ LE CONTROLE QUI MANQUAIT. Il ne corrige rien — il DIT, une fois, que
+    /*  LE CONTROLE QUI MANQUAIT. Il ne corrige rien — il DIT, une fois, que
         des pays ont ete tracés sans etre nommes. Sans lui, la perte etait
         muette pendant des mois. */
     if(placees < arr.length && typeof console !== 'undefined' && console.warn){
@@ -834,7 +834,7 @@ LineChart.prototype.hover = function(mouseX, mouseY){
 /* Meme point d'entree que la matrice et le diagramme en barres, et meme
    richesse d'infobulle.
 
-   ⚠️ ELLE NE DISAIT QUE LE NOM DU PAYS. Les deux autres vues annoncent pays,
+   ELLE NE DISAIT QUE LE NOM DU PAYS. Les deux autres vues annoncent pays,
       edition et effectif ; ici l'annee etait pourtant deja calculee au clic
       (requestData fait exactement cette recherche), et l'effectif est dans le
       tableau. Une asymetrie gratuite, et sur le geste le plus frequent des
@@ -881,7 +881,7 @@ LineChart.prototype.clearHover = function(){
 //la COULEUR (bleu<->jaune) et l'OPACITE (avant-plan<->arriere-plan) dans redraw.
 /* Retire le graphe : il ne peindra plus, quoi qu'il arrive. Appele par la
    page juste avant de construire le graphe suivant dans le meme canvas. */
-/* ⚠️ RETIRER, C'EST AUSSI CESSER DE REPONDRE. La premiere version n'engageait
+/* RETIRER, C'EST AUSSI CESSER DE REPONDRE. La premiere version n'engageait
    que le dessin : un graphe retire ne peignait plus mais acceptait encore les
    clics et les survols — donc l'ecran restait fige pendant que l'etat interne
    changeait et que des requetes partaient. Le pire des deux mondes : ni image

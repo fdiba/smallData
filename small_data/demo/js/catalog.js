@@ -24,7 +24,7 @@ window.onload = function() {
         // masque. En dessous de SMA_MIN_WORKS oeuvres, une portion-pays reste
         // sans SMA — trop peu d'agents pour un regroupement parlant.
         //
-        // ⚠️ CE QUI ETAIT ECRIT ICI, ET POURQUOI CE N'ETAIT PAS UN OBSTACLE :
+        // CE QUI ETAIT ECRIT ICI, ET POURQUOI CE N'ETAIT PAS UN OBSTACLE :
         //    « Phono A : trop d'oeuvres (~4380) pour un seul SMA (SMA.md §11)
         //      -> All works = tableau complet SANS SMA ». La crainte etait un
         //    nuage d'agents ingerable. Or LE NOMBRE D'AGENTS A L'ECRAN EST
@@ -36,7 +36,7 @@ window.onload = function() {
         //    enregistrements qu'il defile (`particles[i].records.pop()`).
         //    *La borne existait ; c'est la regle qui l'ignorait.*
         //
-        // ⚠️ CE QUE CA COUTE QUAND MEME, et qui reste vrai : la reponse AJAX
+        // CE QUE CA COUTE QUAND MEME, et qui reste vrai : la reponse AJAX
         //    porte les 4 380 oeuvres, le tableau les insere par lots de 200, et
         //    le regroupement par propriete travaille sur cette masse. La page
         //    est plus lente a s'etablir en Phono A "All works" qu'en Phono B.
@@ -59,7 +59,7 @@ var _catLoadSeq = 0;
 
 function retrieveData(cat, numOfElements, country){
 
-    //  ⚠️ 2026-08-11 : les deux phonotheques construisent le SMA, y compris
+    //  2026-08-11 : les deux phonotheques construisent le SMA, y compris
     //     Phono A en "All works" (voir le commentaire de window.onload).
     //     Auparavant : `(cat == 2) || (cat == 1 && (+country) > 0)`.
     var doSMA  = (cat == 1 || cat == 2);
@@ -106,7 +106,7 @@ function retrieveData(cat, numOfElements, country){
 
         // Visibilite du SMA + du canvas.
         var showSMA = doSMA;
-        //  ⚠️ LA BRANCHE QUI MASQUAIT LE CANVAS EN PHONO A "All works" EST
+        //  LA BRANCHE QUI MASQUAIT LE CANVAS EN PHONO A "All works" EST
         //     RETIREE — 2026-08-11. Les deux phonotheques passent desormais par
         //     la meme regle : le SMA s'affiche des que la portion compte au
         //     moins SMA_MIN_WORKS oeuvres, et "All works" en compte toujours
@@ -286,7 +286,7 @@ function retrieveData(cat, numOfElements, country){
                 $("#loading").remove();
                 // si tout tient dans la colonne de gauche, on masque la seconde
                 if(table2 && splitIndex >= works.length){ table2.classList.add('is-empty'); }
-                /* ⚠️ « (provisionnal count) » RETIRE LE 2026-08-08, et le
+                /* « (provisionnal count) » RETIRE LE 2026-08-08, et le
                    nombre porte desormais son unite. Deux raisons :
 
                      - la mention ne paraissait que sur la branche
@@ -437,7 +437,7 @@ function buildCountryMenu(){
         ul.append(allLi);
 
         if(!str) return;
-        /* ⚠️ PAS DE QUATRE DEPUIS LE 2026-08-12 — php/retrieve_countries.php
+        /* PAS DE QUATRE DEPUIS LE 2026-08-12 — php/retrieve_countries.php
            transporte desormais `iso3` en quatrieme champ, pour `?ctry=FRA`.
            Un pas reste a trois decalerait la lecture des le deuxieme pays,
            silencieusement. C'est le defaut du `case 0` de retrieve_data.php,
@@ -480,28 +480,28 @@ function selectCountry(cid, name, liEl){
 //------------------------------------------------------------------
 // LE PAYS DANS L'ADRESSE — `?ctry=FRA`
 //------------------------------------------------------------------
-/* ⚠️⚠️ LE CODE DE L'URL N'ATTEINT JAMAIS LA BASE. `?ctry=` est cherche dans
+/* LE CODE DE L'URL N'ATTEINT JAMAIS LA BASE. `?ctry=` est cherche dans
    le MENU deja construit, et ce qui part vers php/retrieve_data.php est
    l'IDENTIFIANT NUMERIQUE du pays trouve la — jamais la chaine de l'adresse.
    Il n'y a donc rien a echapper : la valeur etrangere s'arrete au menu.
    *La donnee la mieux protegee d'une injection est celle qui n'atteint pas le
    SQL.*
 
-   ⚠️ Deux barrieres quand meme :
+   Deux barrieres quand meme :
         1. la FORME — exactement trois lettres, `^[A-Za-z]{3}$` ;
         2. la LISTE BLANCHE — le code doit etre l'`iso3` d'un pays du menu,
            donc de la phonotheque courante. `?ctry=XXX`, `?ctry=<script>` et
            `?ctry=FRA` sur une phono ou la France n'a rien tombent pareil : sur
            « All works ».
-      ⚠️ Deux pays du referentiel n'ont pas d'iso3 : ils ne sont pas
+      Deux pays du referentiel n'ont pas d'iso3 : ils ne sont pas
          adressables, et l'URL ne s'ecrit pas pour eux plutot que d'inventer un
          code.
 
-   ⚠️⚠️ ET `?id=` EST PRESERVE. catalog.php porte deja la phonotheque dans son
+   ET `?id=` EST PRESERVE. catalog.php porte deja la phonotheque dans son
       adresse ; ecrire `?ctry=` en l'ecrasant renverrait le lecteur sur l'autre
       catalogue au premier rechargement. Les deux parametres cohabitent.
 
-   ⚠️ `replaceState` et non `pushState` : choisir un pays est un filtre, pas
+   `replaceState` et non `pushState` : choisir un pays est un filtre, pas
       une navigation (meme raison que sur award-winning_works.php). */
 function isoDuCid(cid){
     var el = $("#countries ul li[data-cid='" + String(cid).replace(/'/g, "") + "']");

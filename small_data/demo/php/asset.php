@@ -1,7 +1,7 @@
 <?php
 /* asset.php — L'ADRESSE D'UN FICHIER STATIQUE, DATEE DE SA DERNIERE ECRITURE
    ---------------------------------------------------------------------------
-   ⚠️ POURQUOI CE FICHIER EXISTE : le 2026-08-11, une regle de css/main.css a
+   POURQUOI CE FICHIER EXISTE : le 2026-08-11, une regle de css/main.css a
    ete corrigee, deployee, verifiee sur le disque — et elle ne se voyait pas.
    Le fichier etait juste ; le navigateur servait celui d'avant. Les <link> et
    les <script> du site portaient une adresse SANS VERSION, donc immuable :
@@ -22,7 +22,7 @@
        <link rel="stylesheet" type="text/css" href="<?php echo asset('css/main.css') ?>">
        <script src="<?php echo asset('js/functions.js') ?>"></script>
 
-   ⚠️ LE CHEMIN EST RELATIF A CE DOSSIER-CI (demo/), comme dans le HTML : la
+   LE CHEMIN EST RELATIF A CE DOSSIER-CI (demo/), comme dans le HTML : la
    page et le disque disent la meme chose, il n'y a rien a traduire. Le fichier
    introuvable rend le chemin NU plutot que de lever une erreur — une page qui
    perd son horodatage doit rester une page, pas une trace d'exception.

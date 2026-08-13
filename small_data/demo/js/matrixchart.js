@@ -251,7 +251,7 @@ MatrixChart.prototype.visibleCount = function(){ return this.data.length; };
 
 /* ISOLER UN PAYS L'ECLAIRE, ÇA NE FAIT PAS DISPARAITRE LES AUTRES.
 
-   ⚠️ LA PREMIERE VERSION LES MASQUAIT, comme le fait le line chart, et le
+   LA PREMIERE VERSION LES MASQUAIT, comme le fait le line chart, et le
       geste s'y detruisait lui-meme. Dans le line chart, la legende est une
       colonne a part : masquer des courbes ne deplace pas les carres sur
       lesquels on clique, et on peut donc en cocher cinq d'affilee. Dans la
@@ -275,7 +275,7 @@ MatrixChart.prototype.isVisible = function(i){ return true; };
 
 /* Niveau d'attenuation d'une ligne : 1 = pleine, <1 = en retrait.
 
-   ⚠️ UNE LIGNE DONT UNE CELLULE EST SELECTIONNEE N'EST JAMAIS ATTENUEE. La
+   UNE LIGNE DONT UNE CELLULE EST SELECTIONNEE N'EST JAMAIS ATTENUEE. La
       selection est un geste explicite ; l'effacer parce qu'un AUTRE pays est
       isole ferait se contredire les deux facons de designer un pays. Meme
       regle dans le diagramme en barres. */
@@ -291,7 +291,7 @@ MatrixChart.prototype.visibleOrder = function(){ return this.order.slice(); };
 
 /* Rang de palette d'un pays isole.
 
-   ⚠️ IL EST ATTRIBUE UNE FOIS, A L'ISOLEMENT, ET NE BOUGE PLUS. Il a ete
+   IL EST ATTRIBUE UNE FOIS, A L'ISOLEMENT, ET NE BOUGE PLUS. Il a ete
       calcule deux fois de la mauvaise facon avant d'arriver ici, et les deux
       erreurs ont la meme forme — un rang deduit d'un ORDRE plutot que porte
       par le pays :
@@ -410,7 +410,7 @@ MatrixChart.prototype.spanLabel = function(){
    rappels differes (le liseré de provenance quand le `case 12` repond tard) :
    le drapeau garantit qu'un rappel en retard ne reveille pas un graphe mort.
    Et la page n'a pas a savoir lequel des deux graphes elle tient. */
-/* ⚠️ RETIRER, C'EST AUSSI CESSER DE REPONDRE. La premiere version n'engageait
+/* RETIRER, C'EST AUSSI CESSER DE REPONDRE. La premiere version n'engageait
    que draw() : le graphe retire n'ecrivait plus dans le canvas mais acceptait
    encore clics et survols. Constate au banc — on isolait un pays et on
    selectionnait une cellule, l'etat interne changeait, une requete partait, et
@@ -696,7 +696,7 @@ MatrixChart.prototype.drawColumnHeads = function(y){
        compteurs dans une gouttiere de deux cents pixels. On n'ecrit que ce
        qui ne se devine pas. */
     ctx.textAlign="right";
-    /* ⚠️ LES DEUX COLONNES DE CHIFFRES NE COMPTENT PAS SUR LA MEME ETENDUE, et
+    /* LES DEUX COLONNES DE CHIFFRES NE COMPTENT PAS SUR LA MEME ETENDUE, et
        rien ne le disait : « 35/97 » a gauche vient de numCpByCountry, qui
        porte sur TOUT le fonds, tandis que « 8 » a droite est le total de la
        PERIODE affichee. Sur 1973-1974 les deux se lisaient cote a cote et se
@@ -927,7 +927,7 @@ MatrixChart.prototype.handleClick = function(mx,my){
 
         /* RECLIQUER LA MEME CELLULE LA DESELECTIONNE.
 
-           ⚠️ IL FALLAIT UN GESTE POUR DEFAIRE, ET IL N'Y EN AVAIT PLUS. Le
+           IL FALLAIT UN GESTE POUR DEFAIRE, ET IL N'Y EN AVAIT PLUS. Le
               line chart deselectionne par un clic « dans le vide », entre deux
               courbes ; une matrice n'a pas de vide — chaque point de la grille
               est une cellule, y compris celles qui ne portent rien (une case
@@ -963,7 +963,7 @@ MatrixChart.prototype.handleClick = function(mx,my){
     /* Clic « dans le vide » : on deselectionne, comme le clic entre deux
        lignes du line chart.
 
-       ⚠️ MAIS SEULEMENT DANS LA GRILLE. La premiere version deselectionnait
+       MAIS SEULEMENT DANS LA GRILLE. La premiere version deselectionnait
           au moindre clic hors cible : sur la cle de couleur, sur le bandeau
           des totaux, sur les etiquettes d'annees, sur le liseré de
           provenance, sur la colonne 1995 — laquelle est pourtant survolable
@@ -973,7 +973,7 @@ MatrixChart.prototype.handleClick = function(mx,my){
     /* Reste : la colonne 1995, la cle de couleur, le bandeau, les etiquettes
        d'annees, le liseré, les entetes. IL NE S'Y PASSE RIEN.
 
-       ⚠️ La premiere version deselectionnait tout au moindre clic hors cible.
+       La premiere version deselectionnait tout au moindre clic hors cible.
           Trois cellules choisies disparaissaient pour avoir clique sur une
           legende — et la colonne 1995, barree, etiquetee et survolable, donc
           l'endroit de la grille qui se PRESENTE le plus comme une cible, etait

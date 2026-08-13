@@ -334,7 +334,7 @@ Particle.prototype.getInfoFrom=function(target){
 	   copie. La fiche du tableau n'est pas concernee : c'est un autre objet,
 	   avec son etat a lui (js/isni_box.js).
 
-	   ⚠️ APRES la boucle d'affichage, et non avant : sma_core.js ecrit
+	   APRES la boucle d'affichage, et non avant : sma_core.js ecrit
 	   « N elements » dans la boite orange juste avant d'appeler cette fonction,
 	   et c'est le dernier ecrivain qui reste. */
 	if(typeof displaySmaIdentityGN === 'function'){

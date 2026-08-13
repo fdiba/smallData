@@ -127,7 +127,7 @@ ul{
    #count sont des <div> qui portent d'abord un <label>, comme #searchBox sur
    index.php, puis le <ul> ; d'ou les regles supplementaires plus bas.
 
-   ⚠️ #count est AJOUTE AUX SELECTEURS EXISTANTS et n'a pas de bloc a lui :
+   #count est AJOUTE AUX SELECTEURS EXISTANTS et n'a pas de bloc a lui :
       une copie de ces regles dans css/animated_data.css aurait diverge a la
       premiere retouche faite d'un seul cote — c'est le mecanisme decrit au
       §14.4. La contrepartie est que main.css, charge par les sept pages, doit
@@ -387,7 +387,7 @@ ul{
 }
 
 /* =========================================================================
-   ⚠️ LA BOITE VIOLETTE EST BORNEE EN HAUTEUR — 2026-08-11
+   LA BOITE VIOLETTE EST BORNEE EN HAUTEUR — 2026-08-11
 
    Meme dispositif que la fiche ISNI, et meme borne : 36vh, celle de
    `.isni-inflow .isni-box` (css/isni.css). Les deux boites vivent dans la
@@ -403,14 +403,14 @@ ul{
    `flex: 0 0 auto`, `.isni-bd` seul defile). Ici la boite est un <ul> et son
    en-tete un <li> : le meme resultat s'obtient par `sticky` plutot qu'en
    ajoutant un niveau de balise a une structure que trois pages produisent.
-   ⚠️ Le detail qui a coute un aller-retour est juste en dessous : l'en-tete
+   Le detail qui a coute un aller-retour est juste en dessous : l'en-tete
    ne peut affleurer le haut du cadre que si sa position NATURELLE y est deja.
    Voir le bloc suivant.
 
    `overscroll-behavior: contain` : arrive au bout de la liste, la molette
    n'emporte pas la page — meme reglage que `#results` sur Overview.
 
-   ⚠️ LA REGLE PORTE SUR `.t-boxed` ET NON SUR `#titles`. La classe est posee
+   LA REGLE PORTE SUR `.t-boxed` ET NON SUR `#titles`. La classe est posee
    par displayTitlesInfosGN() (js/functions.js), donc uniquement sur les trois
    pages qui affichent la boite en colonne. Le catalogue et les œuvres primees
    remplissent le meme identifiant autrement : chez eux la liste des œuvres
@@ -422,7 +422,7 @@ ul{
 	overscroll-behavior: contain;
 }
 
-/* ⚠️⚠️ ET L'EN-TETE DESCENDAIT DE CINQ PIXELS A L'OUVERTURE — corrige le
+/* ET L'EN-TETE DESCENDAIT DE CINQ PIXELS A L'OUVERTURE — corrige le
    2026-08-11, meme jour que la borne, signale a l'usage.
 
    PREMIERE ECRITURE, FAUSSE : `position: sticky; top: 0` en laissant
@@ -452,7 +452,7 @@ ul{
    Les marges laterales de -10px restent : elles compensent le padding
    horizontal, que rien ne retire.
 
-   ⚠️ `t-hd-on` — POSEE PAR displayTitlesInfosGN() QUAND ELLE ECRIT L'EN-TETE,
+   `t-hd-on` — POSEE PAR displayTitlesInfosGN() QUAND ELLE ECRIT L'EN-TETE,
    et retiree quand elle ecrit « no archived work ». Sans elle, le
    `padding-top: 0` s'appliquerait aussi a la boite SANS en-tete, dont
    l'unique ligne viendrait alors toucher le bord haut. */
@@ -656,7 +656,7 @@ ul{
 	color: #bdc3c7;
 	text-align: justify;
 }
-/* ⚠️ L'EMPHASE DES PUCES N'ETAIT PAS DECIDEE, ELLE ETAIT HERITEE — 2026-08-11.
+/* L'EMPHASE DES PUCES N'ETAIT PAS DECIDEE, ELLE ETAIT HERITEE — 2026-08-11.
 
    Cette regle posait `color` et `font-style` et TAISAIT `font-weight` : les
    <em> des listes prenaient donc le gras de la regle globale `em{font-weight:
@@ -674,7 +674,7 @@ ul{
    porte SEPT en 333 caracteres. A cette densite, le gras cesse de distinguer
    quoi que ce soit : il devient la couleur du fond.
 
-   ⚠️ RESERVE, ecrite pour ne pas etre reperdue : `<em>` fait ici au moins
+   RESERVE, ecrite pour ne pas etre reperdue : `<em>` fait ici au moins
    trois metiers differents — nommer une commande de l'interface (`span`,
    `chart`, `c/t`, `this period`), citer un chiffre (`62`, `4 276`), et
    appuyer une affirmation (`an empty cell is not a zero`). Les trois recoivent
