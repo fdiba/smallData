@@ -1715,10 +1715,67 @@ function pvLabel(year){
    decoupage. On prend 5, au milieu, et on ecrit pourquoi. */
 var PV_SEUIL_DEPOUILLEMENT = 5;
 
+/* LE SECOND SEUIL — 2026-08-14, ET IL CORRIGE UNE REGLE QUI VIENT DE DEVENIR
+   FAUSSE.
+
+   `constat > 0` a suffi tant qu'une edition versee l'etait ENTIEREMENT. Le
+   versement partiel de 2002 casse cela : 59 participations de provenance
+   `constat` sur 447, pour 65 bandes sur 583 — le registre des depots est
+   perdu, il n'en reste que le palmares et deux pages caviardees. Avec l'ancien
+   test, 2002 passait au VERT, dont le libelle dit « transcribed in full from
+   the bailiff's record — every entry attested ». **C'EST CE QUE LA REGLE
+   PROMETTAIT, ET 2002 NE LE TIENT PAS.**
+
+   La part de `constat` mesuree le 2026-08-14, edition par edition :
+     - les VINGT-HUIT editions versees : 98 a 100 %,
+     - 2002 : 13 %,
+     - les huit editions non versees : 0 %.
+
+   Entre 13 % et 98 % il n'y a rien. N'importe quelle valeur de 20 a 95 donne
+   le meme decoupage ; on prend 40, et on ecrit pourquoi — comme pour
+   PV_SEUIL_DEPOUILLEMENT.
+
+   LE DENOMINATEUR EST CELUI DU `case 12`, ET IL NE COMPTE PAS TOUT. La
+   requete ne remonte que `constat`, `inconnu` et `liste` ; l'enum en porte
+   cinq. Mesure du 2026-08-14 : `depouillement` est vide, et `oeuvre` ne vaut
+   que pour 1992 — ses 33 presences, qui viennent des Euphonies d'Or, la
+   retrospective du 20e anniversaire, et non du concours. 1992 fait donc
+   79/79 ici, la ou 79/112 le mettrait a 71 %. LES DEUX SONT AU-DESSUS DU
+   SEUIL et le decoupage ne change pas — mais la part affichee est celle des
+   CANDIDATURES, et c'est bien ce que la couleur doit juger : une presence
+   deduite d'une oeuvre rejouee n'est pas une entree que le constat aurait
+   pu attester. *Je l'avais d'abord ecrit a 71 % avant de mesurer ; la valeur
+   attendue s'ecrit apres la mesure, pas avant.*
+
+   2002 REDEVIENT DONC BLEU, avec les editions comptees sur la liste. Ce n'est
+   pas tout a fait exact — 59 de ses participations sont de premiere main —
+   mais la couleur repond a une question binaire, « le constat est-il
+   transcrit en entier », et la reponse est non. La legende le dit en une
+   clause ; le detail est dans imeb_pv.commentaire, qui est fait pour cela.
+
+   ET LE SEUIL EST UNE PART, PAS UN COMPTE : une edition qui serait versee a
+   moitie l'an prochain retomberait bleue toute seule, sans qu'on y touche. */
+var PV_PART_CONSTAT_MINI = 0.40;
+
+/* L ORANGE N EST PLUS DECRIT PAR LA LEGENDE — 2026-08-14. La ligne
+   « minutes transcribed, but not attested by a bailiff's record » en a ete
+   retiree, et la mesure du jour dit pourquoi elle pouvait l etre : `inexplique`
+   vaut ZERO pour les trente-six editions, sans exception. L etat
+   `depouillement` etait la signature d un depouillement saisi sans constat, et
+   les editions qui le portaient — 1988 a 1994 — sont versees depuis.
+
+   LA COULEUR RESTE DANS LE CODE, et c est un choix, pas un oubli : si un
+   dump futur ramenait un `inexplique` au-dessus du seuil, mieux vaut une bande
+   orange dont on peut retrouver le sens ici qu une edition rangee a tort avec
+   celles qui sont comptees sur la liste. **Mais il faudrait alors rouvrir la
+   legende** : une couleur qu aucune legende ne decrit ne dit rien au lecteur,
+   c est la lecon du gris de 2026-08-08, en tete de pvKnown(). */
+
 function pvState(year){
     var d = pvByYear[year];
     if(!d) return 'inconnu';                              // pas encore charge
-    if(d.constat > 0)                        return 'constat';
+    var tot = d.constat + d.inconnu + d.liste;
+    if(tot > 0 && d.constat / tot >= PV_PART_CONSTAT_MINI) return 'constat';
     if(d.inexplique >= PV_SEUIL_DEPOUILLEMENT) return 'depouillement';
     return 'liste';
 }

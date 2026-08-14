@@ -545,6 +545,55 @@ function renderSelection(works){
             || cmpValues(a.cat2, b.cat2)
             || cmpValues(ordreDistinction(a.rank_code), ordreDistinction(b.rank_code))
             || cmpValues(numeroDeTri(a.rank_num), numeroDeTri(b.rank_num))
+            /* LE CODE DEPARTAGE CE QUE `ordreDistinction` A MIS A EGALITE
+               — 2026-08-13. Relevé par Florent : *« Pierre d'Argent est
+               placé au-dessus de Pierre d'Or en 1999, ça devrait être
+               l'inverse »*.
+
+               `HORS_CATEGORIE` compte DIX codes — 200, 201, 296 a 300, 302,
+               303, 304 — et `ordreDistinction` les replie tous sur **-1**.
+               C'est juste pour les sortir de l'axe des categories, et faux
+               pour les ordonner entre eux : l'egalite retombait sur le
+               critere suivant, puis sur le PATRONYME. En 1999, Kosk
+               (Pierre d'Argent, 297) passait donc devant Merit (Pierre
+               d'Or, 296).
+
+               DEUX EDITIONS ETAIENT CONCERNEES, et deux seulement :
+                 1987 — CIME, Bregman, CNM-France, c'est-a-dire 300, 298,
+                        200 : l'ordre du patronyme, Alvarez, Karpen,
+                        Kergomard. Les trois sont dans `Mixte` ;
+                 1999 — Pierre d'Argent avant Pierre d'Or, Kosk avant Merit.
+                        Les deux sont sans categorie.
+               2001 portait les deux Pierres dans le bon ordre PAR ACCIDENT,
+               Brummer venant avant Harrison.
+
+               J'AI D'ABORD ANNONCE QUATRE EDITIONS, ET LE BANC EN A RENDU
+                  DEUX. J'avais compte 1985 — deux `Prix CNM-France` que
+                  separait un `Prix CIME` — et 1986 — deux `Prix
+                  FNME-France` separes de meme. **Ces lignes-la ne sont pas
+                  dans la meme categorie** : MacDonald est en `Mixte` et
+                  Beyls en `Numerique` ; de Clercq est en `Programme` et
+                  Normandeau en `Studio`. La categorie est comparee AVANT la
+                  distinction, et elle avait donc deja tranche. *Elles
+                  n'etaient pas mal ordonnees, elles etaient groupees par
+                  autre chose — et je l'avais lu de travers en regardant la
+                  liste sans la colonne qui separe.*
+
+               CE CRITERE NE DEPLACE RIEN D'AUTRE. Il ne se lit que sur des
+                  lignes qui ont deja la meme annee, la meme categorie, la
+                  meme place de distinction ET le meme numero : partout
+                  ailleurs, un des criteres precedents a deja tranche. Les
+                  mentions sont departagees par `numeroDeTri` une ligne plus
+                  haut, et les prix ordinaires portent leur code comme place.
+
+               ET LE CODE N'EST UNE HIERARCHIE QUE POUR LES DEUX PIERRES :
+                  296 avant 297, l'or avant l'argent, et c'est ce que le
+                  catalogue a voulu en les numerotant ainsi. Pour les prix
+                  d'organismes — CNM, FNME, Bregman, CIME — il n'ordonne
+                  rien ; il GROUPE, ce qui est deja tout ce qu'on lui
+                  demande : deux lignes du meme prix ne doivent pas etre
+                  separees par une troisieme. */
+            || cmpValues(a.rank_code, b.rank_code)
             || cmpValues(a.name, b.name);
     });
 
