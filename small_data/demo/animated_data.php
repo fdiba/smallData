@@ -96,54 +96,52 @@
 			     laissaient les deux tiers de leur bande vides : leur `max-width` est
 			     de 80ch et rien ne venait a cote. Dans la grille, les huit blocs
 			     plus celui-ci font NEUF, soit trois rangees pleines de trois. -->
+			<!-- TROIS CELLULES DE TROIS RUBRIQUES, ET NON NEUF CELLULES — 2026-08-14.
+			     La grille est un flex qui passe a la ligne : la hauteur d une rangee
+			     est celle de sa plus haute cellule, et les rubriques courtes laissaient
+			     sous elles la hauteur de la plus longue de leur rangee. Empilees trois
+			     par trois dans une meme cellule, les neuf ne font plus qu UNE rangee.
+			     Meme geste que sur demo/index.php le meme jour. -->
 			<div class="lg-cols">
 				<div>
-					<p class="lg-note"><strong>What is counted</strong> &mdash; <em>entrants</em>, not works. Most of the people on this page have <em>no work in the collection at all</em>: of the <em>4&nbsp;262</em> entrants the database records, <em>2&nbsp;773</em> left nothing but a candidacy &mdash; a name read off an entry list. That gap is the subject of this page, and it is why most names in the list below are withheld.</p>
-					<p class="lg-note"><strong>The chart is knowingly incomplete</strong>, and the strip above each edition square says <em>on what authority</em> that edition is counted. There was <em>no competition in 1995</em>: the timeline skips it and 1994 joins 1996 directly. Two low editions are not gaps in the record &mdash; <em>1992</em> (112) was open for one degree only, the Residence, and <em>2004</em> (137) ran without its first three categories.</p>
-				</div>
-				<div>
+					<p class="lg-note"><strong>What is counted</strong>: <em>entrants</em>, not works. Most of the people on this page have <em>no work in the collection at all</em>: of the <em>4&nbsp;262</em> entrants the database records, <em>2&nbsp;773</em> left nothing but a candidacy, a name read off an entry list. That gap is the subject of this page, and it is why most names in the list below are withheld.</p>
+					<p class="lg-note"><strong>The chart is knowingly incomplete</strong>, and the strip above each edition square says <em>on what authority</em> that edition is counted. There was <em>no competition in 1995</em>: the timeline skips it and 1994 joins 1996 directly. Two low editions are not gaps in the record: <em>1992</em> (112) was open for one degree only, the Residence, and <em>2004</em> (137) ran without its first three categories.</p>
 					<p><strong>Timeline (top strip)</strong></p>
 					<ul>
 						<li><span class="sq" style="background:#ecf0f1"></span> one square per edition; the first, <em>all</em>, charts 1973&ndash;2009</li>
 						<!-- Le lisere de provenance, dessine par drawPvStrip() dans js/animated_data.js.
 						     Il n'est PAS CODE EN DUR : il est lu dans imeb_participation par le
 						     case 12 de php/retrieve_data.php, et se corrige a chaque edition versee. -->
-						<li><span class="sq" style="background:#2ecc71"></span> <em>the bailiff&rsquo;s record is transcribed in full</em> &mdash; every entry attested</li>
-						<li><span class="sq" style="background:#5dade2"></span> <em>counted from the entrants list</em> and from archived works &mdash; second-hand, and short of the minutes</li>
+						<li><span class="sq" style="background:#2ecc71"></span> <em>the bailiff&rsquo;s record is transcribed in full</em>, every entry attested</li>
+						<li><span class="sq" style="background:#5dade2"></span> <em>counted from the entrants list</em> and from archived works: second-hand, and short of the minutes</li>
 						<li><span class="sq" style="background:#1abc9c"></span> selected &middot; <span class="sq" style="background:#f1c40f"></span> inside the selected span &middot; <span class="sq" style="background:#e74c3c"></span> <em>span</em> on, <span class="sq" style="background:#ffcccc"></span> off (a single year gives a bar chart)</li>
 					</ul>
-				</div>
-				<div>
 					<p><strong>Count</strong> &mdash; the switch, on all three charts <em>and</em> on the list</p>
 					<ul>
-						<li><em>all entrants</em> &mdash; everyone recorded as having entered, work or no work. The honest measure of the <em>competition</em></li>
-						<li><em>only those with a work</em> &mdash; the measure of the <em>collection</em>, and a good deal smaller</li>
+						<li><em>all entrants</em>: everyone recorded as having entered, work or no work. The honest measure of the <em>competition</em></li>
+						<li><em>only those with a work</em>: the measure of the <em>collection</em>, and a good deal smaller</li>
 						<li>with the switch on, <em>no name in the list is withheld</em> and every line is clickable: a name published with a work is a published name</li>
 					</ul>
 				</div>
+				<div>
 				<!-- Bloc ajoute le 2026-08-11. Il repond a une question posee sur la page,
 				     et la reponse est une propriete du MODELE, pas un defaut du graphe :
 				     `imeb_artist.id_country` porte l'Etat d'AUJOURD'HUI, `imeb_adresse.id_country`
 				     celui que le document ECRIVAIT. Les trois charts comptent des PERSONNES,
 				     donc le premier. -->
-				<div>
 					<p><strong>Countries</strong> &mdash; whose map is this</p>
 					<ul>
 						<li><em>81 countries.</em> Each person is charted under the state they are attached to <em>today</em>, not the one on the envelope they posted in</li>
 						<li>so <em>Czechoslovakia, the GDR and the USSR never appear</em>, though <em>62</em>, <em>22</em> and <em>9</em> addresses in the base name them. A chart drawn on addresses would show the other answer; both are true</li>
 						<li><em>Unknown</em> is a country row like any other (25 people)</li>
 					</ul>
-				</div>
-				<div>
 					<p><strong>Matrix</strong> &mdash; the default chart</p>
 					<ul>
 						<li>one row per country, one column per edition; the colour counts the entrants, on the authority the strip above names</li>
 						<li>the scale is square-root and runs through the <em>colour</em>, so one entrant stays visible next to a hundred. Key top right</li>
-						<li><em>rows: total &middot; first entry &middot; A&ndash;Z</em> &mdash; three orders, three questions. Click a country to isolate it (eight at most); the others fade but keep their place</li>
+						<li><em>rows: total &middot; first entry &middot; A&ndash;Z</em> reorders the grid. Click a country to isolate it (eight at most); the others fade but keep their place</li>
 						<li>click a cell to list that country&rsquo;s composers below, again to drop it; <em>reset all</em> clears everything</li>
 					</ul>
-				</div>
-				<div>
 					<p><strong>Band on top</strong> &mdash; entrants per edition</p>
 					<ul>
 						<li>the outline is the total for each edition, every country together</li>
@@ -158,22 +156,18 @@
 						<li><em>the gap between the two is the subject of this database</em>: two countries can send the same number of entrants and leave very different amounts of music behind</li>
 						<li>hover for figures, click to list that country&rsquo;s composers, click again to clear</li>
 					</ul>
-				</div>
-				<div>
 					<p><strong>Line chart</strong> &mdash; the other view</p>
 					<ul>
 						<li>one line per country, square-root axis (gridlines at 1, 2, 5, 10, 20, 50, 100&hellip;)</li>
 						<li>no provenance strip of its own: the one on the edition squares sits just above and is read with it</li>
 					</ul>
-				</div>
-				<div>
 					<p><strong>Composers list</strong></p>
 					<ul>
-						<li><span class="demo demo-active">Name (n)</span> n archived works &mdash; click to list them &middot; <span class="demo demo-selected">Name</span> took part in the selected edition</li>
+						<li><span class="demo demo-active">Name (n)</span> n archived works, click to list them &middot; <span class="demo demo-selected">Name</span> took part in the selected edition</li>
 						<!-- Le nom masque : voir SHOW_ALL_NAMES / maskName dans js/animated_data.js. -->
-						<li><span class="demo">J****** D*****</span> an entrant with no archived work: the name is withheld and the line is not clickable &mdash; what is recorded is an <em>application</em>, not a published work</li>
-						<li>the orange bar sums up the selection &mdash; click it to switch between all composers and those of the selected edition</li>
-						<li>clicking a name opens a panel on the right: the name, the count of archived works (click to unfold), and &mdash; if the composer <strong>has an ISNI</strong> &mdash; a third box for the international identity record. Nothing is requested until you unfold it</li>
+						<li><span class="demo">J****** D*****</span> an entrant with no archived work: the name is withheld and the line is not clickable: what is recorded is an <em>application</em>, not a published work</li>
+						<li>the orange bar sums up the selection; click it to switch between all composers and those of the selected edition</li>
+						<li>clicking a name opens a panel on the right: the name, the count of archived works (click to unfold), and, if the composer <strong>has an ISNI</strong>, a third box for the international identity record. Nothing is requested until you unfold it</li>
 					</ul>
 				</div>
 			</div>
