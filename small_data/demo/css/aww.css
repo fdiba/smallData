@@ -27,21 +27,7 @@ th{
 #calculations li {
 	display: inline;
 	padding: 0 7px;
-	/*background: yellow;*/
 }
-/* LA COLONNE D'INFORMATION N'EST PLUS REGLEE ICI — 2026-08-05.
-
-   Elle flottait a la suite du canvas : elle se placait donc a sa droite tant
-   qu'il y avait la place, et repassait DESSOUS sinon — une colonne
-   d'information tout en bas de la page, sous la visualisation qu'elle
-   commente. Et sa largeur suivait son contenu, ce qui etait sans consequence
-   tant que la fiche ISNI ne s'ouvrait qu'au clic, mais ne l'est plus depuis
-   qu'elle s'affiche d'elle-meme dans la colonne.
-
-   Les deux reglages — ligne flex sans repli, colonne de 300px — sont communs
-   aux quatre pages qui portent un SMA dans un #main_container et vivent donc
-   dans css/main.css (§ « Le SMA et sa colonne d'information »), en une seule
-   copie. */
 #listing{
 	padding: 0;
 	margin: calc(var(--sd-bar-h) + 8px) 0 0 0;
@@ -49,7 +35,6 @@ th{
 	display: block;
 	background: #F6F6F6;
 	min-width: 120px;
-	/*min-height: 200px;*/
 }
 #listing ul{
 	padding:0;
@@ -57,25 +42,16 @@ th{
 }
 #middle{
 	margin: calc(var(--sd-bar-h) + 8px) 0 0 0;
-	/*background: #70db70;*/
 }
-
-/* --- menu "Year" (calque sur le menu Country de catalog) --- */
 #middle > #years{
 	background: #fff;
 	color: #2c3e50;
 	box-sizing: border-box;
 	padding: 6px 10px;
 	margin: 0 0 8px 0;
-	width: 1064px;             /* meme largeur que le canvas SMA et le tableau */
+	width: 1064px;
 	max-width: 100%;
 }
-/* le menu Year degage deja la barre fixe : ce qui suit vient directement,
-   sans re-appliquer la marge haute (sinon double ecart).
-   #main_container n'est plus le voisin de #years — il est descendu dans
-      #left_col le 2026-08-10 — et css/main.css lui pose une marge haute de la
-      hauteur de la barre. Sans la ligne ci-dessous il rouvrait ce blanc-la au
-      milieu de la page. */
 #middle > #years + #page_cols{
 	margin-top: 0;
 }
@@ -93,7 +69,7 @@ th{
 #years ul{
 	padding: 0;
 	margin: 0;
-	max-height: 108px;         /* ~4-5 lignes ; defile au-dela */
+	max-height: 108px;
 	overflow-y: auto;
 }
 #years li{
@@ -110,9 +86,6 @@ th{
 	font-style: italic;
 	font-weight: 600;
 }
-
-/* note affichee quand une annee a trop peu d'oeuvres pour le SMA
-   (masquee par defaut ; montree via jQuery) */
 #sma_note{
 	display: none;
 	box-sizing: border-box;
@@ -125,7 +98,6 @@ th{
 }
 #selection{
 	margin: 1px 0;
-	/*padding: 0 10px 0 10px;*/
 }
 #sma_menu{
 	padding: 0 0 0 4px;
@@ -137,147 +109,55 @@ th{
 	padding-bottom: 10px;
 }
 #titles p {
-	/*line-height: .5em;*/
 	margin: 0;
 	padding: 0;
 }
-/* Boite violette : les informations de l'agent selectionne sont groupees en
-   blocs (identite / oeuvre / palmares / concours). sma-blk marque le premier
-   paragraphe de chaque bloc et fait office de ligne vide de separation.
-   Meme regle que sur css/euphonies.css.
-   Voir Particle.prototype.getInfoFrom dans js/particles_award.js. */
 #titles p.sma-blk {
 	margin-top: .9em;
 }
 #works_table{
 	width: 1064px;
 }
-
-/* --- regroupement par edition + category + sub category + price --- */
-/* TOUTES LES CELLULES SE CENTRENT VERTICALEMENT — 2026-08-07.
-
-   Les cellules fusionnees le faisaient depuis le 2026-08-06, pour une
-   raison qui reste vraie : un bloc de huit lignes — les huit mentions de
-   1975, que le jury nomme sans les classer et qui partagent une seule
-   cellule « price » — laissait son libelle colle en haut, a huit lignes de
-   la derniere oeuvre qu'il couvre. On croyait que seule la premiere portait
-   la mention.
-
-   Les cellules ORDINAIRES restaient en haut, et cela se voyait des qu'une
-   valeur tenait sur DEUX lignes : un titre long, un pays a deux mots
-   (« United Kingdom »), un nom de co-auteur qui passe a la ligne. Les
-   autres cellules de la meme ligne remontaient, et la ligne ne se lisait
-   plus d'un trait.
-
-   ET LA COLONNE « with » A RENDU LE DEFAUT VISIBLE, parce qu'elle porte
-      des noms longs — « Douglas Doherty », « Hans van Helvert » — dans une
-      colonne etroite, a cote de titres qui debordent eux aussi. Une colonne
-      ajoutee ne cree pas le defaut, elle le met sous les yeux : c'est la
-      meme mecanique que la duree au §21.17, qui avait fait sortir 127 zeros
-      en une heure. */
 #works_table td{
 	vertical-align: middle;
 }
 #works_table .grp-cell{
 	vertical-align: middle;
 }
-/* bloc fusionne (edition/category/sub category/price) : teinte alternee
-   par groupe -> deux groupes voisins se distinguent */
 #works_table .grp-cell.grp-cell-a{
 	background: #C1C1C1;
 }
 #works_table .grp-cell.grp-cell-b{
 	background: #D6D6D6;
 }
-/* cellules-membres : teinte alternee par oeuvre -> on separe les
-   elements rassembles a l'interieur d'un meme groupe */
 #works_table .mem-a{
 	background: #F6F6F6;
 }
 #works_table .mem-b{
 	background: #E4E4E4;
 }
-/* La colonne "duration" — mm:ss, ajoutee le 2026-08-06. Elle ne change pas
-   d'alignement : tout le tableau est a gauche, et une seule colonne a droite
-   se remarquerait plus qu'elle ne servirait. Deux precautions seulement — le
-   chiffre a chasse fixe, pour que les deux-points s'alignent d'une ligne a
-   l'autre, et pas de retour a la ligne au milieu d'une duree. */
 #works_table td.dur{
 	white-space: nowrap;
 	font-variant-numeric: tabular-nums;
 	font-feature-settings: "tnum";
 }
-
-/* Colonne masquee parce qu'elle ne porte rien pour la selection courante
-   (js/aww.js, masquerColonnesVides). La classe est posee sur l'en-tete ET
-   sur toutes les cellules de la colonne, y compris les cellules fusionnees
-   par rowspan : le tableau reste rectangulaire.
-   display:none et non visibility:hidden — une colonne invisible mais
-      toujours large laisserait un trou, et c'est la largeur qu'on veut
-      rendre aux colonnes qui restent. */
 #works_table .col-vide{
 	display: none;
 }
-
-/* trait de separation entre groupes */
 #works_table tr.group-start > td{
 	border-top: 2px solid #16A085;
 }
 .even {
 	background: #C7C7C7;
 }
-/* La legende "How to read" a EXACTEMENT la largeur du tableau (1064px),
-   comme le canvas SMA et le menu Year : bords droits alignes. */
 #legend{
 	box-sizing: border-box;
 	width: 1064px;
 	max-width: 1064px;
 }
-
-/* --- legende : les agents sont des ellipses, pas des carres --- */
 #legend .sq{
 	border-radius: 50%;
 }
-
-/* Fiche ISNI : les styles .isni-* ont ete extraits dans css/isni.css, feuille
-   partagee avec les trois autres pages qui ouvrent la fiche ; award-winning_works.php
-   la charge par un <link> place juste apres celui-ci. */
-
-/* Nom de compositeur cliquable : le souligne pointille de .composer-isni vit
-   desormais dans css/isni.css, avec le reste du comportement partage — la
-   meme regle etait ici et dans css/catalog.css, et Overview en aurait fait
-   une troisieme copie. Ici le nom occupe deux cellules (prenom et patronyme) :
-   les deux portent la classe, c'est le seul point propre a cette page, et il
-   se joue dans js/aww.js, pas dans la CSS. */
-
-/* --- DEUX COLONNES POUR TOUTE LA PAGE — 2026-08-10
-   ---------------------------------------------------------------------------
-   La colonne d'information vivait DANS #main_container, a cote du seul canvas.
-   #main_container etant un flex, sa hauteur valait celle du plus grand de ses
-   enfants : des que la fiche ISNI depassait la hauteur du canvas, c'est la
-   colonne qui commandait, et « How to read » comme le tableau descendaient
-   d'autant. **La page bougeait au moment meme ou l'on cliquait un
-   compositeur** — le geste faisait fuir ce qu'on regardait.
-
-   La reponse n'est pas de faire defiler la colonne : deux ascenseurs sur une
-   page, c'est deux endroits ou chercher ce qu'on ne voit plus. Ce sont les
-   COLONNES qui changent. Le canvas, la legende et le tableau sont empiles dans
-   #left_col ; #infos est a cote de CETTE PILE, et non du canvas seul. Les
-   boites ont donc toute la hauteur de la page devant elles : elles grandissent
-   sans rien pousser, et sans defilement interieur.
-
-   #infos N'EST PLUS UN ENFANT DE #main_container. Les regles
-      `#main_container > #infos` de css/main.css — largeur, marge, cesure — ne
-      s'appliquent donc plus a cette page, et sont reprises ci-dessous. Celles
-      qui visent `#isniColumn` par ce meme chemin non plus : elles sont reprises
-      aussi. Les trois autres pages a SMA gardent l'ancienne structure ;
-      css/main.css ne bouge pas.
-
-   LARGEUR FIXE A 1064 px sur la colonne gauche : c'est celle du canvas, du
-      menu Year, de la legende et du tableau, qui alignent deja leurs bords
-      droits. La poser sur le conteneur evite que le tableau, plus large qu'a
-      l'ordinaire sur une selection qui montre les neuf colonnes, elargisse la
-      colonne et pousse #infos hors de l'ecran. */
 #middle > #page_cols{
 	display: flex;
 	flex-wrap: nowrap;
@@ -297,7 +177,6 @@ th{
 	margin-left: 2px;
 	word-wrap: break-word;
 }
-/* Reprises de css/main.css, ou elles passaient par `#main_container > #infos`. */
 #page_cols > #infos > #isniColumn{
 	box-sizing: border-box;
 	width: 100%;

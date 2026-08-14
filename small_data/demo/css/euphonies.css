@@ -27,34 +27,13 @@ th{
 #calculations li {
 	display: inline;
 	padding: 0 7px;
-	/*background: yellow;*/
 }
 #euphonies_table{
 	width: 1200px;
 }
-
-/* Le zebra est porte par les CLASSES .even / .odd posees par euphonies.js
-   (plus bas), et surtout PAS par :nth-child : l'accordeon data.bnf.fr insere
-   des <tr class="bnf-row"> entre les lignes, ce qui inverserait la parite de
-   toutes les lignes suivantes. */
-
-/* LA COLONNE D'INFORMATION N'EST PLUS REGLEE ICI — 2026-08-05.
-
-   Elle flottait a la suite du canvas : elle se placait donc a sa droite tant
-   qu'il y avait la place, et repassait DESSOUS sinon — une colonne
-   d'information tout en bas de la page, sous la visualisation qu'elle
-   commente. Et sa largeur suivait son contenu, ce qui etait sans consequence
-   tant que la fiche ISNI ne s'ouvrait qu'au clic, mais ne l'est plus depuis
-   qu'elle s'affiche d'elle-meme dans la colonne.
-
-   Les deux reglages — ligne flex sans repli, colonne de 300px — sont communs
-   aux quatre pages qui portent un SMA dans un #main_container et vivent donc
-   dans css/main.css (§ « Le SMA et sa colonne d'information »), en une seule
-   copie. */
 #listing{
 	padding: 0;
 	margin: 10px 0 5px 0;
-	/*margin: calc(var(--sd-bar-h) + 8px) 0 0 0;*/
 	clear: both;
 	display: block;
 	background: none;
@@ -75,14 +54,12 @@ th{
 }
 #middle{
 	margin: calc(var(--sd-bar-h) + 8px) 0 0 0;
-	/*background: #70db70;*/
 }
 #myCanvas{
 	margin: 0 5px 10px 0;
 }
 #selection{
 	margin: 1px 0;
-	/*padding: 0 10px 0 10px;*/
 }
 #sma_menu{
 	padding: 0 0 0 4px;
@@ -94,14 +71,9 @@ th{
 	padding-bottom: 10px;
 }
 #titles p {
-	/*line-height: .5em;*/
 	margin: 0;
 	padding: 0;
 }
-/* Boite violette : les informations de l'agent selectionne sont groupees en
-   blocs (identite / oeuvre / palmares / ISNI). sma-blk marque le premier
-   paragraphe de chaque bloc et fait office de ligne vide de separation.
-   Voir Particle.prototype.getInfoFrom dans js/particles_euphonies.js. */
 #titles p.sma-blk {
 	margin-top: .9em;
 }
@@ -115,44 +87,14 @@ th{
 #euphonies_table tr.odd:hover{
 	background: rgba(241, 196, 15, .45);
 }
-
-/* --- legende : les agents sont des ellipses, pas des carres --- */
 #legend .sq{
 	border-radius: 50%;
 }
-
-/* La legende "How to read" a EXACTEMENT la largeur du tableau (1200px)
-   (sinon max-width:1170px + padding la laissaient ~2px plus etroite). */
 #legend{
 	box-sizing: border-box;
 	width: 1200px;
 	max-width: 1200px;
 }
-
-/* =========================================================================
-   Fiche ISNI (js/euphonies.js -> php/retrieve_isni.php)
-   -------------------------------------------------------------------------
-   Les styles de la boite (.isni-*) ont ete extraits dans css/isni.css,
-   feuille partagee avec award-winning_works.php, catalog.php et
-   categories.php ; euphonies.php la charge par un <link> place juste apres
-   celui-ci. Ne reste ici que ce qui est propre a cette page : le lien ISNI
-   de la colonne du tableau, qui en est le point d'entree.
-   ========================================================================= */
-
-/* Le lien ISNI du tableau : cliquable, mais il ouvre la fiche.
-   Son survol etait un aplat VERT translucide (greensea 35 %). Ca tenait tant
-   que la ligne restait grise, mais depuis l'accordeon data.bnf.fr la ligne
-   survolee est JAUNE et la ligne depliee jaune plein (#f1c40f) : du vert sur
-   du jaune ne se lit plus, et le fond n'est de toute facon plus gris.
-   On abandonne donc l'aplat de couleur d'accent et on INVERSE le lien au
-   survol : fond sombre, texte blanc. Ca se detache aussi bien sur le gris que
-   sur le blanc, le jaune ou le vert du tableau — une seule regle valable pour
-   tous les fonds, au lieu d'une teinte a re-choisir a chaque etat de ligne.
-   (La couleur du texte passe par #euphonies_table, un id : sans cela la regle
-   historique "table a:link" (0,1,2) l'emporterait et le texte resterait noir
-   sur le fond sombre — meme piege que pour les liens du panneau BnF.)
-   Le padding horizontal est compense par une marge negative de meme valeur :
-   la colonne ne bouge pas d'un pixel au survol. */
 #euphonies_table a.isni-link{
 	border-bottom: 1px dotted rgba(0, 0, 0, .55);
 	text-decoration: none;
@@ -167,19 +109,6 @@ th{
 	color: #fff;
 	border-bottom-color: transparent;
 }
-
-/* =========================================================================
-   Notices data.bnf.fr — accordeon (js/euphonies.js)
-   -------------------------------------------------------------------------
-   Le clic sur une ligne insere un <tr class="bnf-row"> juste apres elle : la
-   notice s'ouvre a l'endroit du clic et non plus en bas de page. La ligne
-   cliquee passe en jaune (#f1c40f, la couleur de selection de l'application).
-
-   La liste des oeuvres est en colonnes CSS (column-width) et non en grille :
-   les items ont des hauteurs tres inegales (certains portent des editions),
-   et une grille alignerait chaque rangee sur l'item le plus haut, laissant de
-   grands trous. Les colonnes remplissent l'espace au plus serre.
-   ========================================================================= */
 
 #euphonies_table tr.bnf-open,
 #euphonies_table tr.bnf-open:hover{
@@ -227,7 +156,7 @@ th{
 	font-size: 11px;
 }
 .bnf-hd .bnf-close{
-	margin-left: auto;   /* toujours colle a droite */
+	margin-left: auto;
 	cursor: pointer;
 	color: #bdc3c7;
 	font-size: 16px;
@@ -259,7 +188,6 @@ th{
 	border-left-color: var(--sd-greensea);
 	background: rgba(255, 255, 255, .06);
 }
-/* l'Euphonie d'Or de la ligne cliquee, reperee dans la liste BnF */
 .bnf-work.is-match{
 	border-left-color: #f1c40f;
 }
@@ -270,10 +198,6 @@ th{
 	color: #95a5a6;
 	font-variant-numeric: tabular-nums;
 }
-/* .bnf-t / .is-match .bnf-t : leur couleur est posee plus bas, avec les
-   autres liens du panneau, la ou la specificite suffit a l'emporter. */
-
-/* editions rattachees a une oeuvre */
 .bnf-eds{
 	margin: 0;
 	padding: 0 0 0 34px;
@@ -288,14 +212,6 @@ th{
 	font-variant-numeric: tabular-nums;
 	margin-right: 5px;
 }
-
-/* Liens de la notice.
-   ATTENTION a la specificite : la regle historique "table a:link" en tete de
-   cette feuille pese (0,1,2) — un pseudo-classe + deux elements — alors qu'un
-   simple ".bnf-panel a" ne pese que (0,1,1). Elle l'emportait donc, et tous
-   les liens du panneau sortaient en NOIR sur le fond sombre. On repasse par
-   #euphonies_table (un id) pour reprendre la main sans toucher au noir des
-   liens des lignes de donnees, qui lui est correct sur fond clair. */
 
 #euphonies_table .bnf-panel a,
 #euphonies_table .bnf-panel a:link,

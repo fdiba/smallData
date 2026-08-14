@@ -2,245 +2,10 @@
 
 	retrieve_works();
 
-	//-------------------------------- functions --------------------------------------//
-
 function retrieve_works(){
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
-		//---------------
-
-
-		//Le pays est lu sur imeb_country (LEFT JOIN : un artiste sans pays
-		//renseigne doit rester dans le tableau) et servi en anglais, comme le
-		//menu "Country" des pages catalogue : c_name_en, a defaut c_name.
-		//
-	//L'ISNI identifie une PERSONNE, pas une oeuvre : il est donc lu sur
-		//imeb_artist (colonne alimentee depuis data.bnf.fr) et non sur
-		//imeb_music.isni, vestige des essais d'interconnexion de 2017. Meme
-		//source que la page euphonies (php/retrieve_cat.php).
-		//award_label / award_rank / award_label_2 : les distinctions EN CLAIR,
-		//depuis le 2026-08-04. `award_price` reste lu pour memoire mais
-		//l'interface ne le decode plus — le code-book vivait en double dans
-		//js/aww.js et php/retrieve_cat.php, dont une copie ne traduisait que
-		//trois valeurs sur vingt-trois. Il est desormais dans la DONNEE.
-		//
-	//TROIS SOURCES, depuis le 2026-08-04.
-		//
-	//  1. imeb_music    — l'oeuvre primee et archivee. Le cas normal.
-		//  2. imeb_bande    — la distinction dont l'oeuvre n'est PAS au
-		//                     fonds (« Happy end », 1974).
-		//  3. imeb_non_attribution — le prix que le jury a refuse de
-		//                     decerner. Ni oeuvre, ni laureat, ni bande.
-		//
-	//La troisieme est la plus etrange et la plus utile : elle fait
-		//apparaitre un TROU a l'endroit exact ou il se trouve. « 1977,
-		//Mixte, Prix 1, not awarded » se lit entre les categories voisines
-		//et dit quelque chose que l'absence de ligne ne dirait pas — un
-		//jury qui refuse de decerner a pris une decision, il n'a pas oublie.
-		//
-	//LE LIBELLE EST EN ANGLAIS — « not awarded » — comme tout le reste
-		//de cette page : ses en-tetes (« first name », « country »,
-		//« title »), son menu (« All works ») et ses messages. La citation
-		//francaise du jury, elle, reste dans imeb_non_attribution.citation.
-		//
-	//Ces lignes n'ont ni compositeur ni pays : js/aww.js n'affiche que
-		//ce qu'on lui donne, les cellules restent vides. L'identifiant est
-		//tres negatif (-1000000 - id) pour ne heurter ni les identifiants
-		//d'oeuvre ni ceux, deja negatifs, des distinctions de bande.
-		//
-	//DEUXIEME SOURCE : les distinctions qui ne tiennent pas a une oeuvre.
-		//
-	//La page a toujours ete construite sur imeb_music : une recompense y
-		//est une COLONNE de l'oeuvre primee. Cela suppose que l'oeuvre soit au
-		//fonds — et ce n'est pas toujours vrai. Le proces-verbal de 1974
-		//attribue une mention speciale a « Happy end » d'Alexandre
-		//Rabinovitch-Barakovsky, piece qui n'a jamais ete archivee : la
-		//distinction existe, elle est attestee par un constat d'huissier, et
-		//elle n'avait aucun endroit ou s'afficher.
-		//
-	//D'ou l'union avec imeb_distinction, qui s'accroche a la BANDE.
-		//Le NOT EXISTS evite le double affichage : quand le laureat a bien une
-		//oeuvre primee la meme annee — dix cas sur onze aujourd'hui —, c'est
-		//la ligne du catalogue qui parle, plus riche (duree, MISAM, categorie).
-		//Seule remonte ici la distinction qu'aucune oeuvre ne porte.
-		//
-	//L'identifiant est le NEGATIF de l'identifiant de bande : il ne peut
-		//entrer en collision avec aucun id d'oeuvre, et son signe suffit a
-		//dire d'ou vient la ligne. Meme convention que le -1 de la recherche
-		//par nom dans overview.
-		//
-	//Le rang n'est joint au libelle que pour les libelles GENERIQUES
-		//(« Prix », « Mention ») : « Mention speciale 3 » ne se dit pas.
-		//
-	// LES SELECTIONS NE SONT PAS DES RECOMPENSES — filtre du 2026-08-06.
-		//
-	//Un concours SELECTIONNE des oeuvres avant d'en primer quelques-unes.
-		//Le constat de 1985 en nomme vingt-quatre — « Ont ete selctionnees au
-		//13eme Concours les oeuvres de : … » —, celui de 1973 en nomme deux.
-		//Elles sont dans la base et doivent y rester : c'est une decision du
-		//jury, attestee par un huissier, et rien d'autre ne la porte.
-		//
-	//MAIS CETTE PAGE LISTE DES OEUVRES PRIMEES, et une selection n'en est
-		//pas une. Les seize de 1985 y sont apparues le jour de son versement,
-		//parce que leurs deposants n'ont pas d'oeuvre primee cette annee-la et
-		//qu'ils passaient donc par cette branche.
-		//
-	//LE FILTRE PORTE SUR LE TYPE, PAS SUR LE LIBELLE. `imeb_distinction`
-		//a l'enum ('prix','selection','mention') depuis sa creation, et
-		//`selection` y attendait sans emploi — le §7.4 du chantier l'avait
-		//meme reserve a ce cas, avant que le §16.3 ne verse les deux bandes
-		//de 1973 en `mention`. Les deux paragraphes se contredisaient ; la
-		//question posee par cette page tranche, et DB/type_selection.sql
-		//remet les dix-huit lignes a `selection`.
-		//
-	//Filtrer sur le libelle aurait remis un code-book dans le PHP —
-		//« Oeuvre selectionnee par le jury », « Bande selectionnee par le
-		//jury », et le prochain mot du prochain constat. Le type classifie,
-		//le libelle cite la source : c'est le type qu'on interroge.
-		//
-	// CE QUI SUIT A ETE ECRIT LE 2026-08-12 ET CORRIGE LE 2026-08-13.
-		//IL EST GARDE TEL QUEL, PARCE QU'UNE DECISION RENVERSEE S'ECRIT DEUX
-		//FOIS : *une erreur effacee ne s'apprend pas.* La correction est plus
-		//bas, sous « 2026-08-13 ».
-		//
-	// ET `finaliste` REJOINT `selection` LE 2026-08-12, AVEC LE 2e PUY.
-		//Le constat de 1994 decerne UN « 1er Prix » par discipline, puis des
-		//« 1er / 2e / 3e finaliste ». Arbitrage de Florent : ce n'est ni un
-		//prix ni une mention, le rang est saisi dans la base, et la page ne
-		//l'affiche pas. La valeur d'enum est posee par
-		//DB/alter_distinction_finaliste.sql.
-		//   LE `<>` DEVIENT UN `NOT IN`, ET CE N'EST PAS UN DETAIL : une
-		//  valeur d'enum ajoutee sans toucher a ce filtre S'AFFICHE. Un
-		//  `<> 'selection'` laisse passer tout ce qui n'est pas 'selection',
-		//  y compris ce qui n'existait pas quand on l'a ecrit.
-		//  *Un filtre qui nomme ce qu'il exclut se perime a chaque valeur
-		//   nouvelle ; il faut donc le relire quand on en ajoute une.*
-		//
-	//-----------------------------------------------------------------
-		//2026-08-13 — LA CORRECTION, ET CE QUI L'A PROVOQUEE
-		//-----------------------------------------------------------------
-		// D'ABORD : LA REGLE ECRITE CI-DESSUS S'APPLIQUAIT A LA
-		//CORRECTION ELLE-MEME. Le `NOT IN ('selection','finaliste')` nommait
-		//ce qu'il excluait ; `nomine`, ouvert pour 1996 le lendemain,
-		//PASSAIT. Mesure sur temoin fabrique (DB/test_nomine_aww.sql) :
-		//    <> 'selection'                       424 -> 425   laisse passer
-		//    NOT IN ('selection','finaliste')     419 -> 420   laisse passer
-		//    IN ('prix','mention',…)              419 -> 419   exclut
-		//Le filtre est donc INVERSE : il nomme ce qu'il GARDE. Une huitieme
-		//valeur d'enum n'apparaitra plus d'elle-meme, et DB/controle_enum_aww.sql
-		//la nomme a voix haute au lieu de la laisser muette.
-		//
-	// ENSUITE : L'ARBITRAGE DE 2026-08-12 EST RENVERSE PAR FLORENT.
-		//« on affiche les finalistes + les nomines pour cette edition et les
-		//precedentes ». `finaliste` et `nomine` sont donc DANS la liste, et
-		//`selection` reste seule dehors. Mesure de l'effet, requete jouee
-		//telle quelle sur le dump du 2026-08-13 08:20 :
-		//    avant  6 738 lignes      apres  6 743 lignes
-		//Les cinq lignes sont les cinq finalistes du 2e PUY de 1994, et
-		//AUCUNE de 1996 : les onze nomines de 1996 ont deja une oeuvre au
-		//catalogue cette annee-la, donc le `NOT EXISTS` plus bas les sort de
-		//cette branche.  ILS S'AFFICHENT DEJA, par la branche du catalogue,
-		//sous le mot du CATALOGUE — `Finaliste`, code 198 — et non sous celui
-		//de la piece, qui ecrit NOMINES. C'est une dette de imeb_music, pas
-		//de cette page.
-		//
-	// ET LE QUATRIEME CHAMP TESTAIT LE LIBELLE — corrige le 2026-08-13,
-		//sur un defaut vu par Florent : « le 1er finaliste Matt Ingalls
-		//apparait en dessous du second Henri Demilecamps ».
-		//Il s'ecrivait
-		//    CASE WHEN d.libelle IN ('Prix','Mention') THEN d.rang ELSE NULL END
-		//— UN TEST SUR LE LIBELLE, ce que ce fichier s'interdit vingt lignes
-		//plus haut. `1er finaliste` n'etant ni `Prix` ni `Mention`, le rang
-		//tombait a NULL, les deux lignes sortaient avec le meme rank_code
-		//(198) et un rang vide, et la chaine de tri de js/aww.js retombait
-		//sur le PATRONYME : DEMILECAMPS avant INGALLS.
-		//Il s'ecrit maintenant `d.rang`, sans condition. Mesure : `rang` est
-		//NULL sur TOUTE la table sauf 139 prix et 5 finalistes, et aucun prix
-		//hors libelle `Prix` n'en porte — le CASE ne servait donc a rien
-		//d'autre qu'a exclure les finalistes.
-		//   ET IL FAUT QUE DB/rang_finaliste_1994.sql SOIT JOUE AVEC :
-		//  le libelle de ces cinq lignes portait DEJA l'ordinal (« 1er
-		//  finaliste »), et js/aww.js compose « libelle + numero ». Sans ce
-		//  fichier, la page afficherait « 1er finaliste 1 ». Le rang etait
-		//  ecrit deux fois ; il ne l'est plus qu'une.
-		//
-	// ET AFFICHER N'EST PAS AFFICHER JUSTE. Le second champ rendait 100
-		//pour tout ce qui n'est pas un prix — 100 est le code de la MENTION.
-		//Les cinq finalistes se seraient donc ranges parmi les mentions. Le
-		//code-book de js/aww.js porte 197 « Nomine » et 198 « Finaliste »
-		//depuis le catalogue (13 lignes en 1999, 26 en 1996-1998) : le CASE
-		//les rend maintenant, et les deux familles restent SOUS les mentions,
-		//ce que ce code-book dit deja.
-		//
-	//LE DEUXIEME CHAMP SUIT LE MEME CODE-BOOK QUE LE CATALOGUE — corrige
-		//le 2026-08-04. Il valait « 100 + rang » pour une mention, la ou
-		//imeb_music.award_price ecrit 100 tout court quel que soit le rang.
-		//C'etait une ruse de tri, du temps ou le rang ne voyageait pas dans
-		//le flux : elle ordonnait les mentions entre elles. Depuis que le
-		//rang s'y lit en clair, elle NUIT — une mention 3 codee 103 se
-		//classait apres toutes les mentions du catalogue, codees 100, au lieu
-		//de s'intercaler a son rang. Deux encodages pour une meme notion,
-		//la panne habituelle : il n'y en a plus qu'un, et js/aww.js trie sur
-		//le rang lui-meme.
-		//
-	//LA CATEGORIE DE LA DEUXIEME SOURCE — corrige le 2026-08-04.
-		//
-	//Cette branche servait NULL en categorie, et la ligne s'affichait sans
-		//categorie ni sous-categorie. Le defaut s'est vu sur Ricardo
-		//Mandolini, mention 3 de musique analogique en 1979 : seul laureat de
-		//l'edition dont l'oeuvre n'est pas au catalogue, donc seul a passer
-		//par ici, et le seul des vingt-deux a apparaitre sans categorie.
-		//
-	//C'etait un oubli de recopie, pas un manque de donnee :
-		//imeb_distinction.id_categorie est renseigne depuis 1977, il n'etait
-		//simplement pas lu. Le LEFT JOIN (et non INNER) parce que les editions
-		//d'avant 1977 n'ont pas de categorie du tout — une distinction sans
-		//categorie doit rester affichee, colonne vide.
-		//
-	//A RETENIR : cette branche est peu frequentee — deux lignes sur
-		//plusieurs milliers aujourd'hui — et c'est justement pourquoi ses
-		//colonnes se verifient mal. Chaque champ qu'on ajoute a la premiere
-		//source doit etre relu ici.
-		//
-	// LE LIBELLE DE CATEGORIE EST DESORMAIS LE CANONIQUE, PAS CELUI
-		//   DU CATALOGUE — 2026-08-12, et c'est un DEFAUT qui a ete mesure,
-		//   pas un confort.
-		//
-	//   Les lignes 6 et 12 de `imeb_categorie` ont ete fusionnees ce
-		//   jour-la : « Electroacoustique » (1985-1991) et « Studio »
-		//   (1993-1998) sont une seule categorie, que les constats de 1990 et
-		//   de 1993 appellent du meme nom complet. Une seule ligne survit,
-		//   `libelle` = « Studio », et l'autre graphie vit dans `libelle_alt`.
-		//
-	//    CETTE PAGE EN A ALORS AFFICHE DEUX NOMS LA MEME ANNEE. Mesure
-		//   le 2026-08-12 sur les 71 recompenses de la categorie :
-		//
-	//       1986   6 lignes « Electroacoustique »  ET 1 ligne « Studio »
-		//       1989   5 lignes « Electroacoustique »  ET 1 ligne « Studio »
-		//
-	//   Les deux intruses viennent de la SECONDE branche, qui joint
-		//   `imeb_categorie` PAR L'ID et servait donc deja le libelle
-		//   fusionne ; la premiere servait `imeb_music.award_cat`, la chaine
-		//   du Repertoire general. **Une meme page, une meme annee, une meme
-		//   categorie, deux noms.** Ce n'est pas « la page affiche l'ancien
-		//   nom » : c'est qu'elle affichait les deux.
-		//
-	//    CE QUE CELA COUTE, ET IL FAUT L'ASSUMER : les 44 recompenses de
-		//   1985-1991 s'affichent maintenant sous « Studio », un mot que SIX
-		//   constats sur sept n'ecrivent pas ces annees-la — ils ecrivent
-		//   « PRIX DE LA MUSIQUE ELECTROACOUSTIQUE », sans « de Studio ».
-		//   C'est le §21.7, *l'annee decide du nom que le document employait*,
-		//   et il plaide en sens inverse. On tranche pour la COHERENCE : la
-		//   page `categories.php` annonce deja « Studio, 1985-1998 » et sa
-		//   legende explique les deux noms. Deux pages qui se contredisent
-		//   coutent plus qu'un nom anachronique explique en legende.
-		//
-	//    ET `imeb_music`.`award_cat` N'EST PAS TOUCHE (§4, principe 2) :
-		//   le Repertoire general garde ses deux mots, et une sous-requete —
-		//   non une jointure, qui pourrait multiplier les lignes — traduit a
-		//   l'affichage. `libelle_alt` reste la source de la graphie
-		//   historique pour qui la voudra.
 		$sth = $dbh->query('SELECT imeb_music.award_year, imeb_music.award_price,
 							imeb_music.award_label, imeb_music.award_rank,
 							imeb_music.award_label_2,
@@ -358,24 +123,10 @@ function retrieve_works(){
 			$award_year=$row['award_year'];
 			$award_price=$row['award_price'];
 			$award_cat=$row['award_cat'];
-			// LA CATEGORIE EN CLAIR, DEPUIS LA TABLE — 2026-08-13.
-			//   Ce champ servait `imeb_music.award_cat_2` BRUT, un code entier
-			//   de 1 a 12, et js/aww.js le traduisait cote client avec un
-			//   tableau qui existait en TROIS exemplaires. Le serveur sert
-			//   maintenant le libelle, lu sur `imeb_categorie` par
-			//   `imeb_music`.`id_categorie` : LE CODE-BOOK DISPARAIT DU CLIENT.
-			//   La condition `deg.id <> cat.id` de la jointure rend exactement
-			//   ce que le code-book rendait, sans ecrire d'annee — de 1977 a
-			//   1999 `award_cat` EST la categorie, et ce champ repeterait le
-			//   precedent. *La categorie ne se repete pas quand elle est deja
-			//   dite.*
-			//   LE NOM DU CHAMP NE CHANGE PAS et la longueur d'enregistrement
-			//   non plus : js/aww.js lit toujours arr[i+9]. *Un bloc qu'on
-			//   recompose se recompte* — le renommage est un geste separe.
+
 			$award_cat2=$row['award_cat_2'];
 
 			$euphonies=$row['euphonies'];
-
 
 			$misam=$row['misam'];
 			$title=$row['title'];
@@ -386,168 +137,21 @@ function retrieve_works(){
 
 			$id=$row['id'];
 
-			//11e champ : le pays du compositeur. Chaine vide si l'artiste
-			//n'a pas de pays rattache.
 			$ctry=$row['ctry'] ? $row['ctry'] : '';
 
-			//12e et dernier champ : l'ISNI du compositeur, ajoute en fin
-			//d'enregistrement pour ne decaler aucun index existant. Chaine
-			//vide pour la majorite des artistes (la colonne n'est renseignee
-			//que pour ceux alignes sur data.bnf.fr) : js/aww.js n'affiche le
-			//lien que si la valeur ressemble a un ISNI.
-			//ATTENTION : le separateur d'enregistrements est '%' ici (et non
-			//'|' comme dans retrieve_cat.php) ; toute modification de la
-			//longueur d'enregistrement doit etre repercutee sur
-			//numOfElements dans js/aww.js.
 			$isni=$row['isni'] ? $row['isni'] : '';
 
-			//13e, 14e et 15e champs : la distinction en clair. AJOUTES EN FIN
-			//d'enregistrement, comme toujours — numOfElements passe de 12 a 15
-			//dans js/aww.js, seul consommateur de ce flux.
 			$award_label  = $row['award_label']   !== null ? $row['award_label']   : '';
 			$award_rank   = $row['award_rank']    !== null ? $row['award_rank']    : '';
 			$award_label2 = $row['award_label_2'] !== null ? $row['award_label_2'] : '';
 
-			//16e champ : LES CO-AUTEURS, ajoute le 2026-08-07.
-			//
-		//`imeb_music.id_artist` est un entier UNIQUE : le catalogue n'a
-			//jamais connu la co-signature. `imeb_bande_artiste` la porte
-			//depuis 1981 (§13.2), et depuis le 2026-08-07 `imeb_bande.id_music`
-			//relie les deux (§22.9) — c'est ce lien qui rend la requete
-			//ci-dessus possible, et il n'existe que pour 1986.
-			//
-		//TROIS BANDES SONT CONCERNEES : 94 (De Clercq / Van Helvert),
-			//149 (Harrison / Doherty) et 226 (Schryer / Scheidt), toutes de
-			//1986 — les PREMIERES bandes co-signees distinguees du corpus.
-			//
-		// LE CHAMP EST VIDE PARTOUT AILLEURS, et c'est normal : la
-			//   colonne se masque toute seule quand la selection ne porte
-			//   aucune oeuvre co-signee (masquerColonnesVides, §21.18).
-			//
-		// C'EST UNE JOINTURE SUR UNE TABLE DERIVEE, ET NON UNE
-			//   SOUS-REQUETE CORRELEE — corrige le 2026-08-07, une heure
-			//   apres l'avoir ecrite dans l'autre sens.
-			//
-		//   La premiere branche de cette union N'A PAS DE WHERE : elle
-			//   lit les 6 772 lignes de imeb_music et c'est le PHP qui
-			//   ecarte les non primees ($award_year != null). Une
-			//   sous-requete correlee s'y executait donc SIX MILLE SEPT CENT
-			//   SOIXANTE-DOUZE FOIS, pour dix-neuf lignes de resultat. La
-			//   table derivee, elle, est calculee UNE FOIS et jointe.
-			//
-		//   Mesure sur le banc, base locale : 44 ms sans co-auteurs,
-			//   64 ms avec la sous-requete correlee, 45 ms avec la jointure.
-			//   Le surcout tombe de 45 % a 2 %. Sur le serveur, ou la base
-			//   est sur un HOTE DISTANT, l'ecart etait bien plus visible —
-			//   c'est Florent qui l'a signale, pas une mesure.
-			//
-		//    ET LA TABLE DERIVEE FILTRE SUR `ba2.rang > 1`, non sur
-			//      « different de imeb_music.id_artist » : c'est ce qui la
-			//      rend independante de la ligne courante, donc calculable
-			//      une fois. Cela SUPPOSE que l'auteur du catalogue soit
-			//      l'auteur de rang 1 de la bande liee — vrai pour les
-			//      dix-neuf liens de 1986, et VERIFIE PAR UN CONTROLE
-			//      PERMANENT (§5.7 de DB/controles_toutes_editions.sql),
-			//      parce qu'une hypothese qui ne se controle pas finit par
-			//      etre fausse en silence.
-			//
-		// LE CHAMP PORTE LE NOM **ET L'ISNI** DE CHAQUE CO-AUTEUR
-			//   depuis le 2026-08-07, pour que son nom soit cliquable comme
-			//   celui du compositeur principal. La forme est
-			//   « Nom|ISNI;Nom|ISNI » : point-virgule entre co-auteurs,
-			//   barre verticale entre le nom et l'ISNI, ISNI VIDE quand la
-			//   fiche n'en porte pas — c'est le cas des trois co-auteurs de
-			//   1986 aujourd'hui, et le lien apparaitra le jour ou la
-			//   campagne ISNI les atteindra, sans toucher au code.
-			//
-		//    LES DEUX SEPARATEURS ONT ETE VERIFIES SUR LA BASE, pas
-			//      choisis au hasard : AUCUNE des 3 258 fiches ne porte
-			//      « | », « ; » ni « % » dans son nom ou son prenom. Le
-			//      troisieme est le separateur d'enregistrement du flux
-			//      lui-meme — le seul dont la presence casserait la page
-			//      entiere, et il n'apparait pas.
 			$coauteurs = isset($row['coauteurs']) && $row['coauteurs'] !== null
 						? $row['coauteurs'] : '';
 
-			//17e champ : LE NUMERO DE LA MENTION, ajoute le 2026-08-07.
-			//
-		//ONZE OEUVRES DU FONDS PORTENT UN NUMERO DE MENTION — 1981,
-			//1983 (trois), 1987 et 1993 (six) — ET AUCUNE NE L'AFFICHAIT.
-			//La page compose « libelle + rang » (arr[i+12] + arr[i+13]), et
-			//`award_rank` est NULL sur TOUTES les mentions du fonds : le
-			//numero vit dans `award_ordre`, qui n'entrait pas dans le flux.
-			//Le tri de js/aww.js s'en plaignait deja sans le dire — son
-			//critere `rank_num` comparait une colonne toujours vide.
-			//
-		// AWARD_ORDRE N'EST PAS AWARD_RANK, ET LES DEUX RESTENT DEUX
-			//   COLONNES. Le §16.5 et le §22.8 du chantier ont tranche deux
-			//   fois : « 1°) » dans un palmares est l'ordinal dont le meme
-			//   document numerote ses depots, pas un classement. Le rang dit
-			//   QUI L'EMPORTE, l'ordre dit DANS QUEL ORDRE C'EST PROCLAME.
-			//   Les fondre en une colonne les rendrait indistinguables pour
-			//   toujours ; les fondre dans le FLUX les rendrait
-			//   indistinguables a l'affichage seulement, et c'est deja trop.
-			//   D'ou un champ de plus, et non un COALESCE.
-			//
-		// LES DEUX AUTRES BRANCHES SERVENT NULL, ET C'EST VOULU.
-			//   `imeb_distinction.ordre_document` existe sur 113 lignes —
-			//   toutes les mentions depuis 1974 — parce qu'il compte la
-			//   POSITION DANS L'ENUMERATION du constat. Le servir ici
-			//   afficherait « Mention 1 », « Mention 2 »… sur des mentions
-			//   que le document n'a JAMAIS numerotees : on inventerait un
-			//   classement. Seul le catalogue dit ou le document a ecrit un
-			//   numero, et il ne le dit que pour onze oeuvres.
 			$award_ordre = $row['award_ordre'] !== null ? $row['award_ordre'] : '';
 
-			//18e champ : L'EVENEMENT — ajoute le 2026-08-12, EN FIN
-			//d'enregistrement comme tous les precedents.
-			//
-		// 1993 EST LA PREMIERE EDITION A EN PORTER DEUX. Le constat du
-			//   8 juin 1993 couvre le 21e Concours International ET le 1er PUY
-			//   de Musique electroacoustique — deux evenements, deux series de
-			//   numeros (C et P), une seule piece et une seule annee. Sans ce
-			//   champ, les sept prix du Puy s'affichent melanges aux prix du
-			//   Concours, et rien ne dit au lecteur que ce ne sont pas les
-			//   memes recompenses.
-			//
-		// IL VIENT DE LA BASE, PAS D'UNE LISTE D'IDENTIFIANTS. La
-			//   solution courte — « si la categorie est 23, 24, 25 ou 26 » —
-			//   est le code-book que cette page s'est deja interdit plus haut,
-			//   en ecartant un filtre par libelle : *le type classifie, le
-			//   libelle cite la source.* Et il se perimerait des le 2e Puy de
-			//   1994, qui reconduit deux disciplines et en abandonne deux.
-			//   D'ou `imeb_categorie`.`evenement`, ajoutee le meme jour par
-			//   DB/alter_categorie_evenement.sql.
-			//
-		// LA PREMIERE BRANCHE SERT 'concours' EN DUR, ET C'EST MESURE :
-			//   `imeb_music` ne porte AUCUNE des sept recompenses du Puy de
-			//   1993 — le catalogue les ignore toutes (§29.5). Le controle est
-			//   ecrit dans DB/alter_categorie_evenement.sql et rend zero.
-			//
-		//ATTENTION : numOfElements passe de 17 a 18 dans js/aww.js, seul
-			//consommateur de ce flux. Les deux doivent bouger ensemble.
 			$evenement = $row['evenement'] !== null ? $row['evenement'] : 'concours';
 
-			/* LE DEGRE, DIX-NEUVIEME ET DERNIER CHAMP — 2026-08-13.
-
-			   Il vaut « I », « II » ou « III », et il est VIDE avant 1988 :
-			   les degres naissent cette annee-la, et c'est mesure par quatre
-			   chaines independantes (§33.13 de docs/Chantier_pv_addendum_2005.md).
-			   La colonne du tableau se masque donc d'elle-meme sur les quinze
-			   premieres editions, par masquerColonnesVides().
-
-			   LES TROIS BRANCHES NE LE CALCULENT PAS DE LA MEME SOURCE, ET
-			      C'EST VOULU. La premiere lit `imeb_music`.`award_cat`, ou le
-			      Repertoire general inscrit « Magistère » et « Résidence » ;
-			      la deuxieme lit `imeb_distinction`.`type`, un ENUM —
-			      `magisterium`, `residence` — qui dit la meme chose SANS
-			      passer par une chaine que quelqu'un corrigera un jour ;
-			      la troisieme n'a que l'annee, une non-attribution ne portant
-			      ni type ni categorie de degre.
-			      *Chaque branche interroge la source la plus proche d'elle.*
-
-			   ATTENTION : numOfElements passe de 18 a 19 dans js/aww.js, seul
-			      consommateur de ce flux. Les deux doivent bouger ensemble. */
 			$degre = $row['degre'] !== null ? $row['degre'] : '';
 
 			if($award_year!=null){
@@ -556,19 +160,9 @@ function retrieve_works(){
 							$award_cat2, $ctry, $isni, $award_label, $award_rank, $award_label2,
 							$coauteurs, $award_ordre, $evenement, $degre);
 
-				/*if($euphonies>0){
-
-					$year=-999;
-					if($euphonies==1)$year=1992;
-					else if($euphonies==2)$year=2004;
-
-					array_push($arr, $year, "Euphonie", $misam, $firstName, $name, $title, $duration, $id, "Euphonie", $award_cat2);
-				}*/
 			}
 
 		}
-
-		//---------------
 
 		$results="";
 		if(sizeof($arr)>0){
@@ -583,7 +177,5 @@ function retrieve_works(){
 		echo $results;
 
 	}
-
-
 
 ?>

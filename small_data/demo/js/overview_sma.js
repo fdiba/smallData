@@ -1,81 +1,51 @@
-//------------------------------------------------------------------
-// overview_sma.js — SMA de la page Overview (index.php)
-//
-// Moteur inspire de catalog (particles_catalog.js / sma_core.js) : chaque
-// agent GRIS erre dans un champ de bruit ; les agents d'un MEME PAYS se
-// rejoignent et FUSIONNENT en un groupe VERT portant le nom du pays.
-//
-// Differences volontaires avec le SMA de catalog :
-//   - alimente par les COMPOSITEURS CONSULTES (un agent par clic sur un
-//     carre de l'index), et non par un jeu de donnees pre-charge ;
-//   - regroupement FIXE par pays (targetedAttr = "country") : PAS de phase 1
-//     (« partage d'information »), les agents se regroupent directement ;
-//   - PAS d'ouverture des groupes verts (pas d'etat jaune, pas de membres
-//     bleus) : on ne peut pas cliquer un vert pour l'ouvrir ;
-//   - petit canvas (#sma), vitesses/bruit adaptes.
-//
-// Auto-contenu (IIFE) : n'expose que window.OverviewSMA et n'entre donc pas
-// en collision avec overview.js, qui utilise deja les globals canvas /
-// context / particles / animation01 / Particle, etc.
-//------------------------------------------------------------------
 (function(global){
     "use strict";
 
-    //==================================================================
-    // Reglages (repris de particles_catalog.js, adaptes au petit canvas).
-    //==================================================================
-    var GREY_NOISE      = .35;   //agitation des gris (1 = comme les autres)
-    var COLL_GAIN       = .4;    //masse ajoutee par voisin en contact / image
-    var COLL_DECAY      = .94;   //resorption de la masse de collision / image
-    var COLL_MAX        = 6;     //plafond de masse (anti-gel)
-    var COLL_MARGIN     = 10;    //portee de detection d'un contact
-    var GREY_REPULSION  = .1;    //repulsion douce gris <-> groupe non compatible
-    var AVOID_STRENGTH  = 1.4;   //force d'evitement anticipe des groupes
-    var GROUP_REPULSION = .2;    //separation entre groupes non compatibles
-    var GROUP_MARGIN    = 18;    //respiration entre groupes (petit canvas : reduit)
-    var MERGE_CREEP     = .4;    //vitesse min garantie vers le partenaire de fusion
-    var MASS_PRIORITY   = 1;     //le lourd va tout droit, le leger contourne
-    var BORDER_PUSH     = .03;   //coussin de bord pour les groupes
-    var WRAP_MARGIN     = 30;    //distance hors-champ avant reapparition d'un gris
-    var MERGE_MASS_EXP  = 0;     //compensation de masse de l'attraction (0 = organique)
+    var GREY_NOISE      = .35;
+    var COLL_GAIN       = .4;
+    var COLL_DECAY      = .94;
+    var COLL_MAX        = 6;
+    var COLL_MARGIN     = 10;
+    var GREY_REPULSION  = .1;
+    var AVOID_STRENGTH  = 1.4;
+    var GROUP_REPULSION = .2;
+    var GROUP_MARGIN    = 18;
+    var MERGE_CREEP     = .4;
+    var MASS_PRIORITY   = 1;
+    var BORDER_PUSH     = .03;
+    var WRAP_MARGIN     = 30;
+    var MERGE_MASS_EXP  = 0;
 
-    var STRENGTH_NOISE  = 10;    //force du champ de bruit (comme catalog ; *.5 en boucle)
-    var MAX_SPEED       = 2.5;   //vitesse max d'un agent (catalog = 4 sur grand canvas)
-    var CANVAS_W        = 350;   //largeur imposee (identique a l'ancien SMA de trace)
-    var BG              = "#ecf0f1";  //fond clair du petit canvas
+    var STRENGTH_NOISE  = 10;
+    var MAX_SPEED       = 2.5;
+    var CANVAS_W        = 350;
+    var BG              = "#ecf0f1";
 
-    //--- tailles : un GRIS n'est JAMAIS plus gros qu'un VERT ---
-    var GREY_MAX_R      = 5;     //rayon max d'un gris (isole)
-    var GREY_WORK_SCALE = 8;     //echelle de saturation du terme "nombre d'oeuvres" des gris
-    var GREEN_BASE      = 5.5;   //rayon de base d'un vert (groupe de 2 ~7.5 > GREY_MAX_R)
+    var GREY_MAX_R      = 5;
+    var GREY_WORK_SCALE = 8;
+    var GREEN_BASE      = 5.5;
 
-    //==================================================================
-    // Etat du module
-    //==================================================================
     var cv = null, ctx = null;
     var particles = [];
-    var records = [];        //file d'attente des compositeurs a faire apparaitre
+    var records = [];
     var pointer = 0;
     var scale = 1;
     var noiseField = true;
     var running = true;
     var anim = null;
 
-    var seenIds = {};        //dedup : un meme compositeur n'est ajoute qu'une fois
-    var countryCount = {};   //pays distincts consultes (pour le compteur)
+    var seenIds = {};
+    var countryCount = {};
     var consulted = 0;
 
     function dist(x1, x2, y1, y2){ var a = x1 - x2, b = y1 - y2; return Math.sqrt(a*a + b*b); }
 
-    //==================================================================
-    // Particle — un agent (compositeur consulte) ; fusionne par pays.
-    //==================================================================
     function Particle(config){
 
         this.canvas = cv;
         this.context = ctx;
 
-        this.country = config.country;   //valeur ciblee ET etiquette (nom de pays)
+        this.country = config.country;
         this.fn = config.fn;
         this.ln = config.ln;
         this.id = config.id;
@@ -84,7 +54,6 @@
         this.records = [{country: this.country, fn: this.fn, ln: this.ln,
                          id: this.id, count: this.count}];
 
-        //gris, vert emeraude, (jaune/bleu inutilises ici), bleu nuit (selection)
         this.colors = ["#bdc3c7", "#2ecc71", "#f1c40f", "#3498db", "#2C3E50"];
 
         this.x = config.x;
@@ -101,7 +70,6 @@
         this.fillAlpha = .1;
         this.maxSpeed = MAX_SPEED;
 
-        //regroupement FIXE par pays, actif des l'apparition (pas de phase 1)
         this.targetedAttr = "country";
         this.on = true;
 
@@ -109,7 +77,6 @@
         this.lastNodeSelected = false;
     }
 
-    //nombre total d'oeuvres portees par l'agent (somme des "count" des compositeurs)
     Particle.prototype.totalWorks = function(){
         var s = 0;
         for(var i=0; i<this.records.length; i++){ var c = parseInt(this.records[i].count); if(c>0)s += c; }
@@ -120,28 +87,22 @@
         var n = this.records.length;
 
         if(n <= 1){
-            //GRIS (compositeur isole) : petite taille, VARIABLE selon le nombre
-            //d'oeuvres du compositeur (terme saturant + radVar), mais toujours
-            //BORNEE a GREY_MAX_R -> un gris n'est jamais plus gros qu'un vert.
+
             var w = this.totalWorks();
-            var worksTerm = (GREY_MAX_R - 1.*this.scale) * (w/(w + GREY_WORK_SCALE)); //0..(GREY_MAX_R-1)
+            var worksTerm = (GREY_MAX_R - 1.*this.scale) * (w/(w + GREY_WORK_SCALE));
             var rg = 1.*this.scale + this.radVar*.4 + worksTerm;
             return Math.min(rg, GREY_MAX_R*this.scale);
         }
 
-        //VERT (groupe pays) : la taille croit avec le NOMBRE DE COMPOSITEURS
-        //regroupes (racine carree). Le plus petit vert (2 compositeurs) reste plus
-        //gros que le plus gros gris. Plafonnee par la taille du canvas.
         var r = GREEN_BASE*this.scale + this.radius_to_add*2.*Math.sqrt(n-1);
         return Math.min(r, maxR);
     };
 
     Particle.prototype.update = function(index, arr){
 
-        this.mHas = false;   //remis a vrai par mergeNodesAndFindTarget s'il a une cible
-        this.yieldW = 0;     //0..1 : a quel point cet agent CEDE a un non-compatible plus lourd
+        this.mHas = false;
+        this.yieldW = 0;
 
-        //derive lente et continue des groupes (jamais totalement immobiles)
         if(this.driftT === undefined){ this.driftT = Math.random()*1000; this.driftP = Math.random()*100; }
         this.driftT += .008;
         if(this.records.length>1){
@@ -150,19 +111,14 @@
             this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*driftAmp;
         }
 
-        //les gris isoles s'ecartent doucement des autres gris non compatibles
         if(this.records.length===1)this.separateFromLoners(index, arr);
 
-        //un gris/groupe qui fonce vers un groupe non compatible l'esquive avant contact
         this.avoidGroupsAhead(index, arr);
 
-        //masse de collision : ralentissement cumulatif et temporaire
         this.updateMass(index, arr);
 
-        //separation entre groupes non compatibles (toujours active)
         if(this.records.length>1)this.getAwayFromGroups(index, arr);
 
-        //pas d'ouverture ici : simple ajustement du rayon vers la cible
         var target = this.setSmallRadius();
         if(this.radius>target)this.radius = Math.max(target, this.radius-3.);
         else if(this.radius<target)this.radius = Math.min(target, this.radius+.25);
@@ -171,13 +127,9 @@
 
         this.checkEdgesV2();
 
-        //les gros groupes bougent moins (division par la masse). La masse de
-        //collision ne freine QUE la propulsion (voir addNoiseField), pas la
-        //separation -> un agent coince peut toujours se degager.
         this.velocity.x /= this.records.length;
         this.velocity.y /= this.records.length;
 
-        //approche inexorable vers la cible de fusion (creep) : ne recule jamais
         if(this.mHas){
             var mdx = this.mTX-this.x, mdy = this.mTY-this.y, mdl = Math.sqrt(mdx*mdx+mdy*mdy);
             if(mdl>1){
@@ -196,7 +148,6 @@
         this.x += this.velocity.x;
         this.y += this.velocity.y;
 
-        //garde-fou dur : un groupe ne sort jamais du cadre
         if(this.records.length>1){
             var W = this.canvas.width, H = this.canvas.height;
             if(this.x<0)this.x=0; else if(this.x>W)this.x=W;
@@ -211,8 +162,8 @@
 
         var val = this[this.targetedAttr];
 
-        var t = this.seekMergeTarget(index, arr, val);   //peu d'agents : recherche globale directe
-        if(t === -2) return;                             //fusion faite
+        var t = this.seekMergeTarget(index, arr, val);
+        if(t === -2) return;
 
         if(t >= 0){
             this.getCloserFrom(arr[t]);
@@ -222,8 +173,6 @@
         }
     };
 
-    //cherche un partenaire compatible (meme pays). MANGE un compatible
-    //recouvert/plus petit -> renvoie -2 ; sinon renvoie l'index du plus proche.
     Particle.prototype.seekMergeTarget = function(index, arr, val){
 
         var maxDistance = 9999;
@@ -239,7 +188,6 @@
             var minDistance = Math.min(this.radius, p.radius);
             var distance = dist(this.x, p.x, this.y, p.y);
 
-            //fusion au recouvrement total ou au contact quand ce disque est le plus gros
             var engulfed = distance + p.radius*2 <= this.radius*2;
 
             if((distance<minDistance && this.records.length >= p.records.length) || engulfed){
@@ -384,7 +332,7 @@
 
             if(index===i)continue;
             var o = arr[i];
-            if(o.records.length<=1)continue;   //on n'esquive que les GROUPES
+            if(o.records.length<=1)continue;
 
             var sameValue = this.targetedAttr!=="" && this[this.targetedAttr]!=="" &&
                 String(this[this.targetedAttr]).localeCompare(String(o[o.targetedAttr]))===0;
@@ -417,7 +365,6 @@
 
         if(this.records.length>1){
 
-            //coussin doux : ressort perpendiculaire au(x) mur(s) le(s) plus proche(s)
             var border = this.radius*2+25;
             var W = this.canvas.width, H = this.canvas.height;
             var fx = 0, fy = 0;
@@ -436,7 +383,6 @@
 
         } else {
 
-            //gris sorti du cadre : reapparait a un endroit libre au hasard, en fondu
             var W2 = this.canvas.width, H2 = this.canvas.height, m = WRAP_MARGIN;
             if(this.x < -m || this.x > W2 + m || this.y < -m || this.y > H2 + m){
 
@@ -498,7 +444,6 @@
 
         } else {
 
-            //groupe pays : vert (jamais ouvert -> pas de jaune)
             c.fillStyle = this.colors[1];
             c.beginPath();
             c.arc(this.x, this.y, this.radius*2*this.fillAlpha, 0, 2*Math.PI);
@@ -506,7 +451,6 @@
             c.closePath();
         }
 
-        //etiquette : nom du pays sur les groupes
         if(this.records.length>1){
             c.font = '10px "Helvetica Neue", Helvetica, Arial, sans-serif';
             c.fillStyle = "black";
@@ -517,12 +461,8 @@
         }
     };
 
-    //==================================================================
-    // Boucle d'animation (phase 2 uniquement : regroupement par pays)
-    //==================================================================
     function loop(){
 
-        //apparition progressive : un agent par image tant que la file n'est pas vide
         if(pointer<records.length && running && noiseField){
             particles.push(createParticle(records[pointer]));
             pointer++;
@@ -563,13 +503,9 @@
         for (var i=0; i<particles.length; i++) particles[i].lastNodeSelected = false;
     }
 
-    //clic sur le canvas : affiche le pays + le nombre de compositeurs de l'agent
-    //vise (PAS d'ouverture des groupes verts, contrairement aux autres SMA).
     function onCanvasClick(evt){
         var r = cv.getBoundingClientRect();
-        //le canvas peut etre AFFICHE a une taille CSS differente de son buffer
-        //(350x250) : on ramene les coordonnees souris dans le repere du buffer,
-        //sinon les clics tombent a cote des agents et rien ne s'affiche.
+
         var sx = r.width ? cv.width / r.width : 1;
         var sy = r.height ? cv.height / r.height : 1;
         var mx = (evt.clientX - r.left) * sx;
@@ -578,9 +514,7 @@
             if(dist(mx, particles[i].x, my, particles[i].y) <= particles[i].radius*2 + 3){
                 removePrevSelection();
                 particles[i].lastNodeSelected = true;
-                // Au clic : on affiche UNIQUEMENT le pays + le nombre de compositeurs
-                // consultes de ce pays (le bilan global "consulted so far..." disparait).
-                // Le bilan global reste affiche, lui, a chaque nouvelle consultation.
+
                 var p = particles[i];
                 var cW = (p.records.length===1) ? 'composer' : 'composers';
                 var txt = p.country + ': ' + p.records.length + ' ' + cW;
@@ -601,20 +535,15 @@
         $("#cookies p").text(txt);
     }
 
-    //==================================================================
-    // API publique
-    //==================================================================
     global.OverviewSMA = {
 
-        //prepare le canvas #sma et lance la boucle
         init: function(canvasEl){
             cv = canvasEl;
             ctx = cv.getContext('2d');
-            cv.width = CANVAS_W;              //taille identique a l'ancien SMA (hauteur = HTML)
+            cv.width = CANVAS_W;
             resetCanvas();
             cv.addEventListener("click", onCanvasClick);
 
-            //pause / reprise du champ de bruit avec la touche 'p' (hors champs de saisie)
             $(document).on('keypress', function(e){
                 if(e.which === 112 && !$(e.target).is('input,textarea')) noiseField = !noiseField;
             });
@@ -622,11 +551,9 @@
             if(!anim)anim = setInterval(loop, 1000/30);
         },
 
-        //ajoute un compositeur consulte : {country, fn, ln, id, count}
-        //il apparait comme agent gris puis fusionne avec les siens (meme pays)
         addComposer: function(obj){
             if(obj && obj.id != null){
-                if(seenIds[obj.id])return;   //deja consulte : pas de doublon
+                if(seenIds[obj.id])return;
                 seenIds[obj.id] = true;
             }
             records.push(obj);
@@ -638,7 +565,6 @@
             updateConsultedNote();
         },
 
-        //remet le SMA a zero
         reset: function(){
             particles = [];
             records = [];

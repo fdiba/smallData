@@ -21,9 +21,7 @@ function LineChart(config){
 
     this.lg_btns=[];
     this.solo_btns=[];
-    /* index du pays -> rang de palette qu'il GARDE tant qu'il est isole.
-       Voir vizTakeSlot() dans js/variables.js : sans lui, isoler un pays
-       repeignait tous ceux qui le suivent dans le tableau des donnees. */
+
     this.soloSlot={};
     this.numSolos=0;
     this.bWidth=10;
@@ -31,32 +29,8 @@ function LineChart(config){
     this.lines=[];
 
     this.colors=["#bdc3c7", "#4aa3df", "#2ecc71", "#16a085"];
-    //grey: silver, blue: peter river, emerald: green, green sea: dark green
 
-    /* UN GRAPHE RETIRE NE DESSINE PLUS — 2026-08-08.
-
-       DEFAUT ANCIEN, TROUVE PAR RELECTURE ADVERSARIALE. startHoverAnim()
-          lance une boucle requestAnimationFrame qui met ~350 ms a s'eteindre.
-          Si, pendant ce fondu, l'utilisateur change de selection — cliquer une
-          annee, basculer « span », commuter de vue —, un NOUVEAU graphe est
-          construit dans le meme canvas pendant que l'ancien continue d'y
-          peindre. Constate au banc : dix-sept redrawLineChart() apres coup.
-          Le line chart n'efface que 1200 x 600 : le diagramme en barres
-          (900 x 500) etait INTEGRALEMENT recouvert, et la matrice
-          transparaissait autour de la zone effacee. Une seconde d'attente
-          avant le clic suffisait a ne rien voir — d'ou un defaut qui ne se
-          reproduit qu'en allant vite.
-
-       Le graphe est donc RETIRE avant qu'un autre prenne sa place
-       (retireCurrentChart(), dans js/animated_data.js), et sa boucle s'arrete
-       a l'image suivante. On ne peut pas se contenter d'annuler le rAF : le
-       fondu peut etre relance par un dernier evenement de souris en vol. */
     this._retired=false;
-
-    /* (Une troisieme palette, `this.soloColors`, vivait ici : huit couleurs
-       encore differentes de VIZ_CAT et de son repli, referencees NULLE PART.
-       Retiree le 2026-08-08 — une palette morte a cote de deux vivantes finit
-       par etre celle qu'on corrige.) */
 
     this.padding = 10;
     this.tickSize = 10;
@@ -71,9 +45,7 @@ function LineChart(config){
     this.numXTicks = Math.round(this.rangeX / this.unitsPerTickX);
     this.numYTicks = Math.round(this.rangeY / this.unitsPerTickY);
     this.x = this.getLongestValueWidth() + this.padding * 2;
-    /* UNE LIGNE D'EN-TETE : le nom de la mesure, la meme phrase que dans les
-       deux autres vues. (Elle en a porte deux le temps d'un lot — la seconde
-       tenait un liseré de provenance, retire depuis : voir drawHeader().) */
+
     this.hdr1 = 11;
     this.y = 24;
     this.width = this.w - this.x - this.padding * 2;
@@ -83,11 +55,10 @@ function LineChart(config){
 
     this.sl_ctry="";
 
-    this.hoverIdx=-1;   //index de la ligne actuellement survolee (-1 = aucune)
-    this.hl=[];         //surbrillance ANIMEE par ligne (0 = bleu/arriere-plan, 1 = jaune/avant)
+    this.hoverIdx=-1;
+    this.hl=[];
     this._hoverAnimating=false;
-    //lignes selectionnees au clic : chacune {ctryId, yearId}. L'ordre = ordre des
-    //clics -> couleur attribuee (clickColor). Clic dans le vide = on vide ce tableau.
+
     this.selectedLines=[];
 
     this.resetCanvas();
@@ -95,8 +66,7 @@ function LineChart(config){
     this.drawYAxis();
 
 }
-//position verticale d'une valeur, en echelle racine carree :
-//dilate le bas de l'axe pour que les pays a faibles effectifs restent lisibles
+
 LineChart.prototype.yPos = function(value){
     if(this.maxY<=0)return this.y + this.height;
     var f = Math.sqrt(value / this.maxY);
@@ -108,21 +78,15 @@ LineChart.prototype.resetCanvas = function(){
 }
 LineChart.prototype.requestData = function(mouseX, mouseY){
 
-    // retire : il ne peint plus, il ne repond plus. Voir retire().
     if(this._retired) return;
 
-    // Ligne ciblee = celle actuellement survolee (en jaune) si elle est visible,
-    // sinon la plus proche du curseur.
     var i = (this.hoverIdx>=0 && this.isVisible(this.hoverIdx))
             ? this.hoverIdx : this.findNearestLine(mouseX, mouseY);
 
-    // On ne considere le clic "SUR une ligne" que s'il est assez proche d'elle
-    // (survolee, ou a <=20px). Sinon c'est un clic dans l'espace VIDE entre lignes.
     var onLine = (i>=0) && (this.hoverIdx===i || this.distanceToLine(i, mouseX, mouseY) <= 20);
 
     if(onLine){
 
-        // annee (point non saute) la plus proche SUR cette ligne
         var arr=this.data[i].arr, bj=-1, bd=1e9;
         for (var j=0; j<arr.length; j++){
             if(this.minYear + j === 1995) continue;
@@ -137,20 +101,17 @@ LineChart.prototype.requestData = function(mouseX, mouseY){
             var value = parseInt(this.data[i].arr[bj]);
             var cId   = parseInt(this.data[i].cId);
 
-            // deja coloree -> on deplace seulement son point ; sinon on l'AJOUTE
-            // (elle prend la prochaine couleur de la palette de clic).
             var k=this.selectedIndexOf(i);
             if(k>=0) this.selectedLines[k].yearId=bj;
             else     this.selectedLines.push({ctryId:i, yearId:bj});
 
             this.cleared=false;
-            this.redrawLineChart();                    // redessine tout + les points colores
+            this.redrawLineChart();
             this.retrieveData(cId, year, value);
             return;
         }
     }
 
-    // clic dans le vide (entre les lignes) -> on DECOLORE toutes les lignes
     if(this.selectedLines.length){
         this.selectedLines=[];
         this.cleared=true;
@@ -161,40 +122,16 @@ LineChart.prototype.retrieveData = function(cId, year, value){
 
     var sl_ctry=this.sl_ctry;
 
-    /* ON RETIENT CE QUI A OUVERT LA LISTE — 2026-08-12.
-       Le commutateur « all entrants / only those with a work » reconstruit les
-       trois vues, et cette reconstruction vide `#composers`. La liste ouverte
-       disparaissait donc a chaque bascule, alors que la question posee ne
-       change ni le pays ni l'edition : elle change QUI on y compte. C'est
-       exactement le cas ou la selection doit survivre a la vue.
-       On garde les quatre arguments de l'appel — et `value`, qui est le
-       compte de l'edition, sera RECALCULE par le rappel, pas repris : c'est
-       lui que le commutateur fait bouger. */
     if(typeof window !== 'undefined'){
         window.lastComposerQuery = {cId: cId, year: year, value: value, ctry: sl_ctry};
     }
 
-    /* JETON DE GENERATION. La reponse arrive apres coup, et rien ne
-       garantit que la selection qui l'a demandee existe encore. Constate au
-       banc : cliquer une cellule puis changer d'edition cent millisecondes
-       plus tard reinstallait cent vingt compositeurs et reecrivait la barre
-       orange de l'ANCIENNE edition par-dessus la nouvelle vue. La page se
-       remplissait toute seule d'une selection qu'on venait de quitter.
-
-       `dataGen` (js/animated_data.js) est incremente a chaque reconstruction ;
-       une reponse dont le jeton a change n'ecrit plus rien. On n'annule pas la
-       requete — elle est deja partie —, on refuse son resultat, ce qui suffit
-       et ne demande aucun XHR nomme. */
     var gen = (typeof dataGen !== 'undefined') ? dataGen : null;
-    
-    $.ajax({                                      
-        url: 'php/retrieve_data.php',       
+
+    $.ajax({
+        url: 'php/retrieve_data.php',
         type: "POST",
-        /* `v` — la vue demandee. Sans lui, php/retrieve_data.php masque les
-           compositeurs sans oeuvre archivee : il ne peut pas lire l'adresse
-           de la page, seulement ce qu'on lui poste. Voir SHOW_ALL_NAMES dans
-           js/functions.js, et l'en-tete de viewAll() cote PHP — qui dit aussi
-           pourquoi ce drapeau n'est pas une protection. */
+
         data: { cId: cId, year:year, value:value, case:0,
                 v: (typeof SHOW_ALL_NAMES !== 'undefined' && SHOW_ALL_NAMES) ? 'all' : '' }
     }).done(function(str) {
@@ -204,20 +141,6 @@ LineChart.prototype.retrieveData = function(cId, year, value){
         var arr=str.split("%");
         composers=[];
 
-        /* Six champs par compositeur depuis que l'identite accompagne le flux
-           (php/retrieve_data.php, case 0) :
-
-             0 id   1 prenom   2 nom   3 participation a l'annee   4 ISNI
-             5 pays d'origine
-
-           Le pays COURANT n'est pas dans le flux : l'appel porte sur un pays
-           unique et son libelle est deja ici, dans sl_ctry.
-
-           Le pas est passe de 4 a 5 (ISNI), puis de 5 a 6 (origine, le
-           2026-08-04) ; il DOIT suivre chaque ajout, sinon la lecture se decale
-           des le deuxieme compositeur — silencieusement, avec des noms qui
-           deviendraient des identifiants. C'est l'unique endroit du site qui
-           consomme le case 0. */
         for (var i=0; i<arr.length-5; i+=6) {
             composers.push({id:arr[i], fn:arr[i+1], n:arr[i+2], y:arr[i+3],
                             isni:arr[i+4], origin:arr[i+5], ctry:sl_ctry});
@@ -237,74 +160,47 @@ LineChart.prototype.editData = function(mouseX, mouseY){
     var bWidth=this.bWidth;
     var solos=this.solo_btns;
 
-    // option "reset" en tete de la liste : remet tous les pays a l'etat par defaut
     if(this.resetBtn && mouseX>=this.resetBtn.x && mouseX<=this.resetBtn.x+this.resetBtn.w
         && mouseY>=this.resetBtn.y && mouseY<=this.resetBtn.y+this.resetBtn.h){
         this.resetCountries();
         return;
     }
 
-    // UN SEUL bouton par pays : l'activer n'affiche QUE les pays actives (les autres
-    // deviennent invisibles) ; le desactiver revient a tout afficher si plus aucun
-    // n'est actif. Les lignes restent toujours bleues (pas de couleur specifique).
     for (var i=0; i<solos.length; i++) {
         if(mouseX>=solos[i].x && mouseX<=solos[i].x+bWidth && mouseY>=solos[i].y && mouseY<=solos[i].y+bWidth){
             solos[i].state = !solos[i].state;
             this.numSolos += solos[i].state ? 1 : -1;
-            // le rang de palette se prend a l'isolement et se rend au relachement
+
             if(solos[i].state){
                 this.soloSlot[i] = (typeof vizTakeSlot==='function') ? vizTakeSlot(this.soloSlot) : i;
             } else {
                 delete this.soloSlot[i];
             }
-            // le rang (donc la couleur) des pays actifs suivants change : on
-            // redessine tous les carres du menu pour garder carre <-> ligne coherents
+
             this.refreshLegendButtons();
             this.redrawLineChart();
             break;
         }
     }
 }
-//un pays est VISIBLE s'il est actif, ou si aucun pays n'est actif (etat par defaut = tout affiche)
+
 LineChart.prototype.isVisible = function(i){
     return this.numSolos>0 ? !!(this.solo_btns[i] && this.solo_btns[i].state) : true;
 };
-/* Palette categorielle "flat-UI" accordee a l'application. Le JAUNE (#f1c40f)
-   en reste exclu : il est reserve au survol et au point selectionne.
 
-   ELLE A DEMENAGE DANS js/variables.js LE 2026-08-08, pour deux raisons.
-
-   1. DEUX VUES dessinent maintenant les memes pays (line chart et matrice).
-      Un pays isole doit garder sa couleur quand on commute, sinon la couleur
-      cesse de designer le pays.
-   2. SON ORDRE ETAIT FAUTIF. Carotte (#e67e22) et alizarine (#e74c3c) y
-      occupaient les slots 4 et 5, donc se retrouvaient VOISINS des que cinq
-      pays etaient isoles : ecart OKLab de 10,8 en vision normale (plancher
-      15), 6,9 en simulation deuteranope (cible 8). Les douze memes valeurs,
-      reordonnees, portent le pire voisinage a 26,8 et 10,8. Aucune couleur
-      ajoutee, aucune retiree — seul l'ordre change, et l'ordre EST le
-      contenu d'une palette categorielle.
-
-   Le repli garde l'ancienne liste : si variables.js venait a manquer, la page
-   dessine encore. */
 LineChart.prototype.soloPalette = (typeof VIZ_CAT !== 'undefined') ? VIZ_CAT :
                                   ["#1abc9c","#3498db","#9b59b6","#e67e22","#e74c3c",
                                    "#2ecc71","#16a085","#d35400","#8e44ad","#2980b9",
                                    "#c0392b","#27ae60"];
-// couleur attribuee a un pays ACTIVE via le menu (isolement) : couleur stable,
-// selon son rang parmi les pays actifs (ordre des donnees). null hors mode solo.
+
 LineChart.prototype.soloColor = function(i){
     if(this.numSolos<=0 || !this.solo_btns[i] || !this.solo_btns[i].state) return null;
-    /* LE RANG EST CELUI QU'ON LUI A DONNE EN L'ISOLANT, ET NON SA POSITION
-       PARMI LES ACTIFS. Compte a la volee (`for k<i`), il changeait des qu'un
-       pays situe plus haut dans le tableau etait isole a son tour : toutes les
-       lignes deja coloriees changeaient de couleur. Voir vizTakeSlot(). */
+
     var slot = this.soloSlot[i];
     if(slot === undefined) slot = 0;
     return this.soloPalette[slot % this.soloPalette.length];
 };
-// redessine les carres du menu avec la couleur attribuee a chaque pays actif
-// (gris si inactif) -> le carre du menu et sa ligne partagent la meme couleur.
+
 LineChart.prototype.refreshLegendButtons = function(){
     var ctx=this.context, bWidth=this.bWidth;
     for (var i=0;i<this.solo_btns.length;i++){
@@ -312,50 +208,37 @@ LineChart.prototype.refreshLegendButtons = function(){
         this.drawRectangle(ctx, this.solo_btns[i], bWidth, col);
     }
 };
-/* Palette des lignes SELECTIONNEES AU CLIC. Meme famille que celle du menu,
-   mais SANS bleu : une ligne non selectionnee est deja bleue (this.colors[1]),
-   une ligne cliquee doit s'en detacher. Meme demenagement et meme
-   reordonnancement que ci-dessus (js/variables.js, VIZ_CLICK) — dix valeurs
-   inchangees, pire voisinage porte de 10,8 a 26,7 en vision normale. */
+
 LineChart.prototype.clickPalette = (typeof VIZ_CLICK !== 'undefined') ? VIZ_CLICK :
                                    ["#1abc9c","#9b59b6","#e67e22","#e74c3c","#2ecc71",
                                     "#16a085","#d35400","#8e44ad","#c0392b","#27ae60"];
 LineChart.prototype.clickColor = function(k){ return this.clickPalette[k % this.clickPalette.length]; };
-// rang d'un pays dans les lignes cliquees (ordre des clics), ou -1 si non selectionne
+
 LineChart.prototype.selectedIndexOf = function(ctryId){
     for (var k=0;k<this.selectedLines.length;k++){ if(this.selectedLines[k].ctryId===ctryId) return k; }
     return -1;
 };
-// couleur de base d'une ligne. PRIORITE au menu : une ligne affichee via le menu
-// d'isolement garde SA couleur de legende (le carre du menu et la ligne doivent
-// rester coherents). La couleur de CLIC ne s'applique donc qu'aux lignes NON
-// isolees par le menu ; sinon bleu par defaut.
+
 LineChart.prototype.baseColor = function(idx){
     var menu=this.soloColor(idx);
-    if(menu) return menu;                       // ligne du menu -> code couleur de la legende
+    if(menu) return menu;
     var k=this.selectedIndexOf(idx);
-    if(k>=0) return this.clickColor(k);         // ligne coloree au clic (hors menu)
-    return this.colors[1];                       // bleu par defaut
+    if(k>=0) return this.clickColor(k);
+    return this.colors[1];
 };
 LineChart.prototype.redrawLineChart = function(){
-    
+
     this.resetCanvas();
     this.drawXAxis();
     this.drawYAxis();
-
 
     var data=this.data;
     var hl=this.hl || (this.hl=[]);
     var YELLOW="#f1c40f", BLUE=this.colors[1];
 
-    // niveau de surbrillance global (0 = aucun survol) : sert a attenuer les autres
     var anyHl=0;
     for (var i=0;i<data.length;i++){ var v=hl[i]||0; if(v>anyHl)anyHl=v; }
 
-    // Ordre de dessin (du fond vers le dessus) : lignes bleues par defaut EN DESSOUS,
-    // puis les lignes COLOREES (clic ou menu) par-dessus, puis la ligne SURVOLEE tout
-    // en haut. Cle continue = (coloree?1:0) + 2*hl : le survol (hl->1) domine, et a
-    // survol egal une ligne coloree passe devant une bleue.
     var self=this;
     function zKey(i){
         var colored = (self.soloColor(i) || self.selectedIndexOf(i)>=0) ? 1 : 0;
@@ -367,29 +250,26 @@ LineChart.prototype.redrawLineChart = function(){
 
     for (var o=0;o<order.length;o++){
         var idx=order[o];
-        var h=hl[idx]||0;                          // 0..1 (surbrillance animee)
-        // couleur de base : couleur de clic si la ligne est selectionnee, sinon
-        // couleur d'isolement du menu, sinon bleu. Vire au jaune au survol (fondu).
+        var h=hl[idx]||0;
+
         var base=this.baseColor(idx);
         var color=lerpHexColor(base, YELLOW, h);
-        var alpha=1 - 0.7*(anyHl - h);             // les autres lignes visibles s'attenuent au survol
+        var alpha=1 - 0.7*(anyHl - h);
         if(alpha<0)alpha=0; else if(alpha>1)alpha=1;
         this.context.globalAlpha=alpha;
-        // les lignes SELECTIONNEES au clic sont legerement plus epaisses
+
         var lw=(this.selectedIndexOf(idx)>=0) ? 2 : 1;
         this.drawLine(data[idx], color, lw, false);
     }
     this.context.globalAlpha=1;
 
-    // un cercle par ligne SELECTIONNEE au clic : couleur de clic de la ligne
-    // (jaune au survol, en fondu), cercle blanc, redessine a chaque frame -> persiste.
     for (var s=0; s<this.selectedLines.length; s++){
         var sel=this.selectedLines[s], sd=data[sel.ctryId];
         if(!sd || !this.isVisible(sel.ctryId)) continue;
         var sx=sel.yearId*5*this.scaleX + this.x;
         var sy=this.yPos(sd.arr[sel.yearId]);
         var shl=hl[sel.ctryId]||0;
-        var sbase=this.baseColor(sel.ctryId);      // meme couleur que sa ligne (clic OU menu)
+        var sbase=this.baseColor(sel.ctryId);
         var ctx=this.context;
         ctx.lineWidth=2;
         ctx.strokeStyle="#ecf0f1";
@@ -413,22 +293,6 @@ LineChart.prototype.getLongestValueWidth = function(){
     return longestValueWidth;
 };
 
-/* L'EN-TETE DU GRAPHE : le nom de la mesure, et rien d'autre.
-
-   IL A PORTE UN LISERE DE PROVENANCE, RETIRE LE JOUR MEME. L'idee etait
-      bonne dans la matrice — la bande de navigation y est loin, en haut d'un
-      canvas de mille pixels, et ses carres ne sont pas au meme pas horizontal
-      que les colonnes. Ici elle ne l'etait pas : le liseré tombait a VINGT
-      PIXELS sous la bande de navigation, qui porte deja les memes couleurs.
-      Deux bandes vert/orange/bleu l'une sous l'autre, a deux pas differents,
-      et une etiquette entre les deux — signale a l'usage comme un reste de la
-      vue precedente, ce qui dit assez bien ce qu'on en comprenait.
-
-      *Porter une meme information partout n'est pas l'harmoniser : c'est
-      l'harmoniser la ou elle manque.* Elle reste donc dans la matrice
-      (liseré aligne sur les colonnes) et dans le diagramme en barres (une
-      edition unique, une phrase), et le line chart s'en remet a la bande de
-      navigation, qui est juste au-dessus de lui. */
 LineChart.prototype.drawHeader = function(){
     var ctx = this.context;
     ctx.save();
@@ -441,8 +305,6 @@ LineChart.prototype.drawHeader = function(){
 };
 LineChart.prototype.drawXAxis = function(){
 
-    // console.log(this.x);
-
     this.drawHeader();
 
     var ctx = this.context;
@@ -454,7 +316,6 @@ LineChart.prototype.drawXAxis = function(){
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // draw tick marks
     for (var n = 0; n < this.numXTicks; n++) {
         ctx.beginPath();
         ctx.moveTo((n + 1) * this.width / this.numXTicks + this.x, this.y + this.height);
@@ -462,7 +323,6 @@ LineChart.prototype.drawXAxis = function(){
         ctx.stroke();
     }
 
-    // draw labels
     ctx.font = this.font;
     ctx.fillStyle = "#ecf0f1";
     ctx.textAlign = "center";
@@ -495,7 +355,6 @@ LineChart.prototype.drawYAxis = function(){
     ctx.stroke();
     ctx.restore();
 
-    //graduations rondes, placees selon l'echelle racine carree
     var niceValues = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
     var ticks = [];
     for (var i = 0; i < niceValues.length; i++) {
@@ -509,21 +368,18 @@ LineChart.prototype.drawYAxis = function(){
 
         var y = this.yPos(ticks[n]);
 
-        //ligne de grille discrete sur toute la largeur
         ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
         ctx.beginPath();
         ctx.moveTo(this.x, y);
         ctx.lineTo(this.x + this.width, y);
         ctx.stroke();
 
-        //graduation
         ctx.strokeStyle = "#8fa3b0";
         ctx.beginPath();
         ctx.moveTo(this.x, y);
         ctx.lineTo(this.x + this.tickSize, y);
         ctx.stroke();
 
-        //valeur
         ctx.fillStyle = "#ecf0f1";
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
@@ -539,16 +395,16 @@ LineChart.prototype.drawRectangle = function(ctx, btn, bWidth, color){
     ctx.fillStyle = color;
     ctx.fillRect(btn.x, btn.y, bWidth, bWidth);
 }
-//remet tous les pays a l'etat par defaut : tous affiches, aucun surligne (solo)
+
 LineChart.prototype.resetCountries = function(){
     var ctx=this.context, bWidth=this.bWidth;
     this.soloSlot={};
     for (var i=0; i<this.solo_btns.length; i++){
         this.solo_btns[i].state=false;
-        this.drawRectangle(ctx, this.solo_btns[i], bWidth, this.colors[1]); //inactif -> gris
+        this.drawRectangle(ctx, this.solo_btns[i], bWidth, this.colors[1]);
     }
     this.numSolos=0;
-    this.selectedLines=[];   // "reset all" vide AUSSI les lignes colorees au clic
+    this.selectedLines=[];
     this.cleared=true;
     this.hoverIdx=-1;
     if(this.hl)for (var i=0; i<this.hl.length; i++)this.hl[i]=0;
@@ -559,75 +415,28 @@ LineChart.prototype.drawLegend = function(){
     var arr = this.data;
     var ctx = this.context;
 
-    /* LA LEGENDE DEBORDAIT DE LA TOILE, ET SIX PAYS ETAIENT PEINTS DEHORS.
-       ------------------------------------------------------------------------
-       Mesure du 2026-08-11, sur la selection « all » : le graphe trace
-       QUATRE-VINGT-UNE lignes, et la legende n'en montrait que SOIXANTE-QUINZE.
+    var xPos = 1255, yPos = 42;
 
-       L'ancienne disposition etait ecrite en dur : depart a x = 1255, colonne
-       suivante a +205, retour a la ligne tous les 15 pixels tant que
-       y <= this.h - 15. Cela donne 37 lignes dans la premiere colonne (42 a
-       582) et 38 dans la seconde (20 a 575), soit 75 ; la 76e ouvrait une
-       TROISIEME colonne a x = 1665, sur une toile large de 1640. Elle etait
-       donc dessinee hors du cadre : invisible, et son carre d'isolement
-       inatteignable au clic, puisque le test de survol porte sur les memes
-       coordonnees.
-
-       LES SIX PERDUS ETAIENT LES SIX DERNIERS DE L'ALPHABET — le tri est
-       alphabetique (animated_data.js, `f_data.sort`) : Unknown, Uruguay,
-       Venezuela, Vietnam, YUGOSLAVIA et Zimbabwe, 58 fiches en tout.
-       Yougoslavie en faisait partie, et c'est le seul Etat disparu que le
-       fonds porte encore sur des fiches d'artistes.
-
-       *Rien ne signalait la perte* : `canvas` n'a pas de bord qui proteste, il
-       peint dans le vide. Un compte affiche quelque part — « 81 pays » — l'eut
-       montre ; il n'y en avait pas. C'est le meme genre de defaut que le §21.17
-       du chantier : *une donnee qu'on n'affiche jamais n'est jamais relue*, et
-       ici c'est une donnee qu'on affiche AILLEURS QUE SUR L'ECRAN.
-
-       LA DISPOSITION SE CALCULE DONC, ET ELLE SE CALCULE SUR LA TOILE.
-       Le nombre de colonnes est deduit de la largeur reelle du canvas, le
-       nombre de lignes par colonne du nombre de pays a placer, et le pas
-       vertical de la place disponible. Tant que tout tient a 15 pixels, RIEN NE
-       CHANGE A L'ECRAN — la disposition d'avant est un cas particulier de
-       celle-ci.
-
-       ET LA BORNE SE MESURE, ELLE NE SE CALCULE PAS DE TETE. La premiere
-       ecriture de ce commentaire annoncait 116 — 58 lignes par colonne, deux
-       colonnes. La simulation de la boucle rend **114** : la premiere colonne
-       part de y = 42 et non de 20, elle porte donc 56 lignes et non 58. *Une
-       borne posee a la main dans un commentaire est exactement le genre
-       d'affirmation que ce correctif existe pour empecher.*
-       114 pour 88 lignes dans `imeb_country` : la legende peut nommer tous les
-       pays que la table peut nommer. Et si elle ne le pouvait plus, le garde
-       ci-dessous l'arreterait au bord et la console le dirait. */
-    var xPos = 1255, yPos = 42;   // decale pour laisser la place a l'option "reset" en haut
-
-    var COL_W = 205,              // pas horizontal d'une colonne a l'autre
-        TXT_W = 158,              // largeur maximale du libelle (voir plus bas)
-        Y_TOP = 20,               // premiere ligne des colonnes suivantes
-        Y_MAX = this.h - 6,       // derniere ordonnee utilisable
+    var COL_W = 205,
+        TXT_W = 158,
+        Y_TOP = 20,
+        Y_MAX = this.h - 6,
         PAS_MAX = 15, PAS_MIN = 10;
 
     var toile = (ctx.canvas && ctx.canvas.width) ? ctx.canvas.width : this.w;
 
-    //  Combien de colonnes tiennent SANS depasser le bord droit : la derniere
-    //  abscisse utilisable est celle dont le libelle finit encore sur la toile.
     var nbCols = Math.floor((toile - TXT_W - xPos) / COL_W) + 1;
     if(nbCols < 1) nbCols = 1;
 
-    //  Combien de lignes il faut par colonne, et quel pas les y fait tenir.
     var parCol = Math.ceil(arr.length / nbCols);
-    var haut1  = Y_MAX - yPos;            // hauteur utile de la 1re colonne
-    var hautN  = Y_MAX - Y_TOP;           // hauteur utile des suivantes
+    var haut1  = Y_MAX - yPos;
+    var hautN  = Y_MAX - Y_TOP;
     var pas    = PAS_MAX;
     if(parCol > 1){
         pas = Math.min(PAS_MAX, Math.floor(Math.min(haut1, hautN) / (parCol - 1)));
-        if(pas < PAS_MIN) pas = PAS_MIN;  // plancher : voir la borne ci-dessus
+        if(pas < PAS_MIN) pas = PAS_MIN;
     }
-    //  Nombre de lignes que le pas retenu permet reellement, colonne par
-    //  colonne. On repart de la, plutot que de `parCol`, pour que le retour a
-    //  la ligne suive exactement ce qui sera dessine.
+
     var maxCol1 = Math.floor(haut1 / pas) + 1;
     var maxColN = Math.floor(hautN / pas) + 1;
     var placees = 0, dansCol = 0, maxCol = maxCol1;
@@ -636,7 +445,6 @@ LineChart.prototype.drawLegend = function(){
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
 
-    // option cliquable "reset" en tete de la liste des pays
     ctx.fillStyle = "#f1c40f";
     ctx.fillText("reset all", xPos-38, 18);
     this.resetBtn = {x: xPos-38, y: 6, w: 120, h: 22};
@@ -647,14 +455,8 @@ LineChart.prototype.drawLegend = function(){
 
     for (var i=0; i<arr.length; i++) {
 
-        /*  LE GARDE DU BORD. Il ne devrait jamais servir — 114 places pour
-            88 pays possibles —, et c'est precisement pour cela qu'il est ecrit :
-            le defaut corrige ici consistait a peindre dans le vide sans que rien
-            ne l'arrete ni ne le dise. On s'arrete au bord, et le compte final
-            en rend raison. */
         if(xPos + TXT_W > toile) break;
 
-        // un seul carre par pays : le bouton d'isolement (toujours bleu)
         this.solo_btns.push({x:xPos-22, y:yPos-6, state:false});
         var solo = this.solo_btns[this.solo_btns.length-1];
         this.drawRectangle(ctx, solo, bWidth, this.colors[1]);
@@ -665,8 +467,6 @@ LineChart.prototype.drawLegend = function(){
         var counts=' '+numCpByCountry[ctry_id].c+'/'+numCpByCountry[ctry_id].t;
         var str=arr[i].ctry+counts;
 
-        //tronque les noms trop longs (Bosnia Herzegovina...) pour ne pas
-        //deborder sur la colonne suivante ; les compteurs restent visibles
         var maxTextWidth = 158;
         if(ctx.measureText(str).width > maxTextWidth){
             var name=arr[i].ctry;
@@ -688,9 +488,6 @@ LineChart.prototype.drawLegend = function(){
         }
     }
 
-    /*  LE CONTROLE QUI MANQUAIT. Il ne corrige rien — il DIT, une fois, que
-        des pays ont ete tracés sans etre nommes. Sans lui, la perte etait
-        muette pendant des mois. */
     if(placees < arr.length && typeof console !== 'undefined' && console.warn){
         console.warn('[linechart] legende : ' + placees + ' pays nommes sur ' +
                      arr.length + ' traces — ' + (arr.length - placees) +
@@ -717,7 +514,7 @@ LineChart.prototype.drawLine = function(obj, color, strokeWidth, init){
 
     var xPos, yPos;
     xPos=0;
-    
+
     for (var i=0; i<arr.length; i++) {
 
         yPos = arr[i];
@@ -725,11 +522,6 @@ LineChart.prototype.drawLine = function(obj, color, strokeWidth, init){
         var x=xPos*this.scaleX+xOffset;
         var y=this.yPos(yPos);
 
-        //1995 : le concours n'a pas eu lieu cette annee-la.
-        //On garde la graduation "95" sur l'axe (dessinee par drawXAxis)
-        //mais la ligne saute ce point et relie directement 1994 a 1996
-        //(pas de chute a zero). Le point reste dans le tableau, marque
-        //"skip", pour ne pas decaler la correspondance index <-> annee.
         if(this.minYear + i === 1995){
             points.push({x: x, y:y, skip:true});
             xPos += 5;
@@ -758,17 +550,9 @@ LineChart.prototype.drawLine = function(obj, color, strokeWidth, init){
         xPos += 5;
 
     }
-    // (this.lines n'est plus utilise : la detection au clic/survol recalcule
-    //  la geometrie a partir des donnees, ce qui evite une fuite memoire)
+
 };
 
-/* hexToRgb() et lerpHexColor() ONT DEMENAGE DANS js/functions.js le
-   2026-08-08 : la grille de l'Overview en a besoin a son tour, et
-   js/functions.js est charge par les sept pages alors que celui-ci ne l'est
-   que par Participation. Une seconde copie la-bas aurait diverge a la
-   premiere correction faite d'un seul cote. Elles restent utilisees ici et
-   dans js/matrixchart.js, tous deux charges apres functions.js. */
-//distance d'un point (px,py) au segment [a,b] — pour detecter la ligne survolee
 function distToSegment(px, py, ax, ay, bx, by){
     var dx=bx-ax, dy=by-ay;
     var len2=dx*dx + dy*dy;
@@ -778,15 +562,15 @@ function distToSegment(px, py, ax, ay, bx, by){
     var ex=px-cx, ey=py-cy;
     return Math.sqrt(ex*ex + ey*ey);
 }
-//trouve la ligne (pays) la plus proche du curseur, -1 si aucune assez proche
+
 LineChart.prototype.findNearestLine = function(mouseX, mouseY){
     var data=this.data;
-    var best=-1, bestDist=14;   //seuil de proximite (px)
+    var best=-1, bestDist=14;
     for (var i=0; i<data.length; i++){
-        if(!this.isVisible(i)) continue;   //on ne survole que les lignes affichees
+        if(!this.isVisible(i)) continue;
         var arr=data[i].arr, pts=[];
         for (var j=0; j<arr.length; j++){
-            if(this.minYear + j === 1995) continue; //segment 1994->1996 direct
+            if(this.minYear + j === 1995) continue;
             pts.push({x: j*5*this.scaleX + this.x, y: this.yPos(arr[j])});
         }
         if(pts.length===1){
@@ -800,7 +584,7 @@ LineChart.prototype.findNearestLine = function(mouseX, mouseY){
     }
     return best;
 };
-//distance minimale du curseur a la ligne (pays) i
+
 LineChart.prototype.distanceToLine = function(i, mouseX, mouseY){
     var arr=this.data[i].arr, pts=[];
     for (var j=0; j<arr.length; j++){
@@ -815,44 +599,29 @@ LineChart.prototype.distanceToLine = function(i, mouseX, mouseY){
     }
     return best;
 };
-//survol : met en avant la ligne la plus proche et attenue les autres.
-//HYSTERESIS : tant que le curseur reste assez proche de la ligne deja survolee
-//(seuil de relachement > seuil d'accroche), on la garde. Sans ca, dans les zones
-//denses (nombreuses lignes plates en bas), la ligne survolee sauterait d'une a
-//l'autre a chaque pixel et l'ensemble clignoterait.
+
 LineChart.prototype.hover = function(mouseX, mouseY){
     if(this._retired) return;
     if(this.hoverIdx>=0 && this.isVisible(this.hoverIdx)){
-        if(this.distanceToLine(this.hoverIdx, mouseX, mouseY) <= 24) return; //on garde la ligne courante
+        if(this.distanceToLine(this.hoverIdx, mouseX, mouseY) <= 24) return;
     }
     var idx=this.findNearestLine(mouseX, mouseY);
     if(idx !== this.hoverIdx){
         this.hoverIdx=idx;
-        this.startHoverAnim();   //transition progressive (couleur + opacite)
+        this.startHoverAnim();
     }
 };
-/* Meme point d'entree que la matrice et le diagramme en barres, et meme
-   richesse d'infobulle.
 
-   ELLE NE DISAIT QUE LE NOM DU PAYS. Les deux autres vues annoncent pays,
-      edition et effectif ; ici l'annee etait pourtant deja calculee au clic
-      (requestData fait exactement cette recherche), et l'effectif est dans le
-      tableau. Une asymetrie gratuite, et sur le geste le plus frequent des
-      trois. La regle « a gauche de `w` les donnees, a droite la legende »
-      reste enfermee ici, ou elle a un sens, au lieu de vivre dans la page. */
 LineChart.prototype.handleHover = function(mx, my){
     if(this._retired) return "";
 
-    if(mx >= this.w){ this.clearHover(); return ""; }   // curseur sur la legende
+    if(mx >= this.w){ this.clearHover(); return ""; }
 
     this.hover(mx, my);
 
     var i = this.hoverIdx;
     if(i<0 || !this.data[i]) return "";
 
-    // l'annee (point non saute) la plus proche SUR cette ligne — meme
-    // recherche que requestData(), pour que l'infobulle annonce l'annee que
-    // le clic chargera
     var arr = this.data[i].arr, bj=-1, bd=1e9;
     for (var j=0; j<arr.length; j++){
         if(this.minYear + j === 1995) continue;
@@ -873,23 +642,10 @@ LineChart.prototype.handleHover = function(mx, my){
 LineChart.prototype.clearHover = function(){
     if(this.hoverIdx !== -1){
         this.hoverIdx=-1;
-        this.startHoverAnim();   //retour progressif au bleu / premier plan
+        this.startHoverAnim();
     }
 };
-//fondu progressif de la surbrillance, image par image : chaque ligne fait evoluer
-//sa valeur hl (0..1) vers sa cible (1 si survolee, 0 sinon). hl pilote a la fois
-//la COULEUR (bleu<->jaune) et l'OPACITE (avant-plan<->arriere-plan) dans redraw.
-/* Retire le graphe : il ne peindra plus, quoi qu'il arrive. Appele par la
-   page juste avant de construire le graphe suivant dans le meme canvas. */
-/* RETIRER, C'EST AUSSI CESSER DE REPONDRE. La premiere version n'engageait
-   que le dessin : un graphe retire ne peignait plus mais acceptait encore les
-   clics et les survols — donc l'ecran restait fige pendant que l'etat interne
-   changeait et que des requetes partaient. Le pire des deux mondes : ni image
-   juste, ni inaction. Les points d'entree testent donc tous `_retired`. */
-/* `repaint` — LE NOM COMMUN AUX TROIS VUES. La matrice et le diagramme en
-   barres redessinent par `draw()`, le line chart par `redrawLineChart()` :
-   la page appelait donc l'un ou l'autre en testant la methode, c'est-a-dire
-   en devinant lequel des trois elle tenait. Un seul nom suffit. */
+
 LineChart.prototype.repaint = function(){ this.redrawLineChart(); };
 LineChart.prototype.retire = function(){
     this._retired=true;
@@ -901,7 +657,7 @@ LineChart.prototype.startHoverAnim = function(){
     this._hoverAnimating=true;
     var self=this;
     function step(){
-        // le canvas ne lui appartient plus : on s'arrete sans rien peindre
+
         if(self._retired){ self._hoverAnimating=false; return; }
         var settled=self.stepHoverAnim();
         self.redrawLineChart();

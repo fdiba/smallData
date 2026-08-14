@@ -1,16 +1,3 @@
-/* =========================================================
-   Participation (ex-« Line Charts ») — styles propres a la page (animated_data)
-   ========================================================= */
-
-/* ---------- legende ---------- */
-
-/* Demos de la liste des compositeurs, MEMES CODES QUE PLUS BAS — et c'est une
-   contrainte, pas une intention : ce sont les seules regles du site dont le
-   role est de RESSEMBLER a d'autres. Toute modification de `#composers
-   li.active` ou `li.selected` doit etre repercutee ici dans le meme
-   mouvement, sans quoi la legende enseigne une apparence que la page n'a plus.
-   Le gras y est tombe le 2026-08-11 avec celui de `#composers li.active` —
-   voir la raison la-bas. */
 #legend .demo{
 	display: inline-block;
 	padding: 0 6px;
@@ -26,22 +13,17 @@
 	color: #ecf0f1;
 }
 
-/* ---------- note de completude (How to read) ---------- */
-
 #legend .lg-note{
 	margin: 0 0 8px 0;
 	padding: 4px 0 4px 10px;
 	border-left: 3px solid var(--sd-amethyst);
 	color: #ecf0f1;
-	/* largeur de lecture (80ch) centralisee dans main.css */
 }
 #legend .lg-note em{
 	color: #fff;
 	font-style: normal;
 	font-weight: 600;
 }
-
-/* ---------- barre de statut (orange) ---------- */
 
 #selection{
 	margin: 0;
@@ -58,8 +40,6 @@
 	margin: 0;
 }
 
-/* ---------- liste des compositeurs ---------- */
-
 #composers{
 	padding: 10px;
 	margin: 0 0 10px 0;
@@ -68,7 +48,7 @@
 	word-wrap: break-word;
 
 	background: var(--sd-asphalt);
-	color: #95a5a6;               /* etat par defaut : aucune oeuvre archivee */
+	color: #95a5a6;
 
 	-webkit-column-count: 5;
 	-moz-column-count: 5;
@@ -84,51 +64,14 @@
 	-webkit-column-break-inside: avoid;
 	break-inside: avoid;
 }
-/* `:not(.masked)` ET NON UNE REGLE DE PLUS SUR .masked — 2026-08-07.
-   Le survol repond a un clic possible ; une ligne masquee n'en accepte pas,
-   elle ne doit donc pas s'allumer. Mais la neutraliser en ecrivant
-   `#composers li.masked:hover{ background: none }` effacait AUSSI le fond
-   turquoise de .selected — « showing this edition only » : le survol
-   emportait avec le surlignage de survol le surlignage de selection, qui
-   ne lui appartenait pas. Un :hover bat une classe simple, et « none »
-   n'annule pas le seul fond qu'on visait. On retire donc le survol a la
-   source, la ou il est pose, plutot que d'empiler une regle qui le
-   recouvre. */
 #composers li:not(.masked):hover{
 	background: rgba(255, 255, 255, 0.14);
 }
-/* ---- Possede des oeuvres archivees dans les capsules ----------------------
-
-   LE GRAS EST PARTI — 2026-08-11, et ce n'est pas une question de gout.
-
-   Cette regle disait UNE chose — « cette personne a une oeuvre au fonds » — et
-   la disait TROIS fois : en blanc contre le gris #95a5a6 de la liste, en gras
-   600, et par un filet emeraude a gauche. Trois signaux pour un fait binaire.
-   Ca tenait tant que les deux populations etaient melangees : le gras se lisait
-   contre la masse des noms retenus, qui sont gris et sans filet.
-
-   LE COMMUTATEUR « only those with a work » A DEFAIT CETTE CONDITION le
-   meme jour. Depuis qu'il filtre aussi la liste du bas, la population y devient
-   HOMOGENE : toutes les lignes sont `.active`, donc toutes blanches, toutes en
-   gras, toutes barrees d'emeraude. *Un signal qui est toujours allume ne
-   signale plus rien* — il devient la graisse du bloc, et cinq colonnes de noms
-   entierement en gras se lisent moins bien qu'une seule.
-
-   On garde les deux signaux qui gardent un sens dans les deux etats : le BLANC,
-   qui s'oppose au gris des noms retenus quand ils sont la, et le FILET
-   EMERAUDE, qui est le vert « atteste » du reste de la page. Le gras, lui,
-   n'ajoutait rien quand les deux populations coexistaient et masquait tout
-   quand elles ne coexistent plus.
-
-   Il reste un troisieme etat, orthogonal a celui-ci : `.selected` (fond
-   turquoise, « a participe a l'edition selectionnee »). Le gras lui faisait
-   concurrence sur les lignes qui portent les deux. */
 #composers li.active{
 	color: #fff;
 	text-decoration: none;
 	border-left-color: var(--sd-emerald);
 }
-/* a participe a l'edition selectionnee */
 #composers li.selected{
 	background: rgba(26, 188, 156, 0.35);
 	color: #ecf0f1;
@@ -136,84 +79,34 @@
 #composers li.active.selected{
 	color: #fff;
 }
-/* Nom retenu : aucune oeuvre archivee, et l'adresse ne porte pas `?v=all`.
-   La ligne n'ecoute aucun clic (voir appendComposerLi dans
-   js/animated_data.js) — il faut donc qu'elle ne se PRESENTE pas comme
-   cliquable, sans quoi le curseur promet une action qui n'arrive jamais.
-   `#composers li` pose cursor:pointer pour tout le monde ; c'est ici qu'on
-   le reprend. */
 #composers li.masked{
 	cursor: default;
-	letter-spacing: 0.04em;   /* les etoiles se collent, un peu d'air les separe */
+	letter-spacing: 0.04em;
 }
-
-/* La 2e ligne sous le titre est vide en mode line chart : il n'y a rien a en
-   dire, et elle ecrivait « no info » — un texte qui occupe la place d'une
-   information pour annoncer qu'il n'y en a pas. Vide, elle mesurerait encore
-   sa hauteur de ligne et pousserait la troisieme ; :empty la retire du flux.
-   Le <p> RESTE dans la page : les trois lignes sont adressees par leur rang
-   (`#info p:eq(0..2)`), en supprimer une deplacerait les deux autres. */
 #ctrl_bar #info p:empty{
 	display: none;
 }
-
-/* ---------- liste des oeuvres d'un compositeur ---------- */
-
-/* #content sert d'ancre : le panneau de droite est positionne en absolu par
-   rapport a lui (voir positionWorkPanel dans animated_data.js). */
 #content{ position: relative; }
-
-/* Le panneau de droite, en trois etages : le NOM du compositeur, la fiche ISNI
-   qu'il ouvre, puis ses oeuvres. C'est LUI qui est place en JS a droite de la
-   legende et a hauteur de la BARRE ORANGE #selection (position absolue ->
-   hors flux : la colonne de gauche, barre orange + compositeurs, ne bouge pas,
-   meme quand la liste des oeuvres est longue).
-
-   La boite du nom, orange elle aussi, part donc de la meme ligne que la barre
-   et jamais plus haut : les deux disent la meme selection. La fiche ISNI et la
-   boite violette, qui sont dans le flux du panneau, suivent sous elle.
-
-   ET JAMAIS DESSOUS NON PLUS — 2026-08-05. Sous une certaine largeur de
-   fenetre, le panneau revenait dans le flux normal et se rangeait sous la
-   liste des compositeurs : la petite boite orange se retrouvait au-dessous de
-   la grande, defaisant la lecture qu'on venait d'installer. Il reste
-   desormais a droite quoi qu'il arrive, et c'est la page qui defile
-   horizontalement quand la place manque (positionWorkPanel).
-
-   Le min-width ci-dessous n'est donc plus decoratif : c'est le plancher qui
-   produit ce defilement plutot qu'un panneau ecrase.
-
-   Le placement porte sur le panneau et non sur chaque boite : les trois etages
-   doivent rester solidaires, sinon la fiche ISNI resterait dans le flux pendant
-   que les oeuvres remontent a droite. */
 #workPanel{
 	position: absolute;
 	box-sizing: border-box;
 	min-width: 220px;
 	max-width: 440px;
 }
-/* La boite du nom : meme code que la barre de selection de la page et que la
-   boite orange d'Overview et de Network — l'orange y designe partout « ce qui
-   est selectionne ». C'est le nom qui porte le lien vers la notice ISNI. */
 #composerBox{
 	background: orange;
 	padding: 5px 10px;
 	word-wrap: break-word;
-	cursor: default;                   /* la barre n'est pas cliquable, le nom l'est */
+	cursor: default;
 }
 #composerBox p{
 	padding: 0;
 	margin: 0;
 }
-/* Fiche ISNI, rendue EN FLUX entre le nom et les oeuvres (js/isni_box.js,
-   option `into`) : elle prend sa place au lieu de recouvrir la liste. */
 #isniColumn{
 	box-sizing: border-box;
 	width: 100%;
 }
-/* Respiration de part et d'autre de la fiche, et seulement quand elle est
-   ouverte : sinon les trois boites se colleraient et se liraient comme une
-   seule. Portee par .open pour ne pas laisser de blanc permanent. */
 #isniColumn .isni-box.open{
 	margin: 8px 0;
 }
@@ -224,8 +117,6 @@
 	min-height: 20px;
 	margin: 0;
 }
-/* Distinction de chaque oeuvre par un fond alterne (comme dans Overview),
-   en deux nuances de violet pour rester lisible sur texte clair. */
 #titles li{
 	list-style: none;
 	padding: 2px 6px;
@@ -233,53 +124,22 @@
 }
 #titles li.t-a{ background: #9b59b6; }
 #titles li.t-b{ background: #8145a0; }
-
-/* La liste des compositeurs, la boite du nom et celle des oeuvres ne
-   s'affichent que lorsqu'elles contiennent quelque chose (sinon barres vides
-   inutiles). Le panneau qui les porte, lui, n'est jamais :empty au sens CSS —
-   il contient toujours ses trois enfants — mais il ne mesure rien tant qu'ils
-   sont tous vides. */
 #composers:empty,
 #composerBox:empty,
 #titles:empty{
 	display: none;
 }
-
-/* ---------- commutateur de vue (matrice / line chart) ---------- */
-
-/* L'apparence du bloc vient de main.css (#ctrl_bar #view), partagee avec
-   categories.php : meme geste, meme allure, rien de neuf a apprendre. Seul
-   l'etat GRISE est propre a cette page, parce qu'elle est la seule ou le
-   commutateur puisse se retrouver sans objet.
-
-   Il est grise et NON CACHE. Une seule edition selectionnee donne un
-   diagramme en barres : ni matrice ni courbe n'ont alors de sens. Faire
-   disparaitre le bloc ferait sauter toute la barre de controle a chaque
-   selection d'annee, et laisserait croire que la vue choisie a ete perdue —
-   alors qu'elle est seulement en attente, et qu'elle revient telle quelle des
-   qu'une periode est selectionnee. */
 #ctrl_bar #view[data-disabled]{
 	opacity: 0.45;
 }
 #ctrl_bar #view[data-disabled] li{
 	cursor: default;
-	pointer-events: none;    /* le survol ne promet plus une action qui n'arrive pas */
+	pointer-events: none;
 }
-
-/* ---------- "How to read" : TROIS colonnes, et pas un nombre variable ----------
-   La regle partagee de main.css est `flex: 1 1 300px` : le nombre de colonnes
-   depend alors de la largeur de la fenetre, et la legende passe de deux a
-   quatre sans qu'on l'ait decide. Sur cette page-ci elle en tient TROIS, et
-   c'est une decision : les HUIT blocs se lisent en trois rangees — 3, 3, 2 —
-   et le dernier, « Composers list », finit la troisieme sans la remplir.
-   Le calcul retire les deux gouttieres de 24px avant de diviser — sans quoi
-   la troisieme colonne passe a la ligne et on en obtient deux. */
 #legend .lg-cols > div{
 	flex: 0 1 calc((100% - 48px) / 3);
 	min-width: 0;
 }
 @media (max-width: 1100px){
-	/* en dessous, trois colonnes de moins de 350px ne se lisent plus : on
-	   retombe sur le comportement partage plutot que d'ecraser le texte. */
 	#legend .lg-cols > div{ flex: 1 1 300px; }
 }

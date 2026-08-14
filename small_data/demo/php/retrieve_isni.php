@@ -1,34 +1,7 @@
 <?php
-/* =========================================================================
-   retrieve_isni.php — proxy serveur pour les notices ISNI
-   -------------------------------------------------------------------------
-   Appele en AJAX depuis js/euphonies.js quand on clique sur un ISNI.
-
-   Pourquoi un proxy PHP et pas un fetch depuis le navigateur ?
-   isni.org / isni.oclc.org / query.wikidata.org n'envoient pas d'en-tete
-   CORS exploitable : un appel direct depuis la page serait bloque par le
-   navigateur. Le serveur, lui, n'est pas soumis a cette regle.
-
-   Trois sources, toutes optionnelles et tolerantes a la panne :
-     1. l'API SRU publique d'ISNI (schema isni-b)  -> noms, oeuvres, sources
-     2. la notice JSON-LD d'isni.org (/about.jsonld) -> liens externes
-     3. Wikidata (SPARQL, via l'ISNI)              -> Discogs, MusicBrainz,
-                                                       VIAF, Wikipedia, site
-   Si une source echoue, les autres continuent : la boite affiche toujours
-   au moins les deux liens canoniques (isni.org et isni.oclc.org).
-
-   Parametres :
-     isni     ISNI a interroger, 16 caracteres (les espaces sont tolerees)
-     refresh  1 pour ignorer le cache
-     raw      1 pour renvoyer aussi les charges utiles brutes (debogage)
-
-   Reponse : JSON (voir la cle "status" : ok | empty | invalid)
-   ========================================================================= */
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: public, max-age=3600');
-
-//---------------------------------------------------------------- parametres
 
 $raw_in  = isset($_REQUEST['isni']) ? $_REQUEST['isni'] : '';
 $refresh = !empty($_REQUEST['refresh']);
@@ -45,16 +18,10 @@ if(!preg_match('/^[0-9]{15}[0-9X]$/', $isni)){
 	exit;
 }
 
-$CACHE_TTL = 30 * 24 * 3600;   // 30 jours : une notice ISNI bouge rarement
-$TIMEOUT   = 8;                // secondes, par source
+$CACHE_TTL = 30 * 24 * 3600;
+$TIMEOUT   = 8;
 $UA        = 'SmallData-IMEB/1.0 (+https://webodrome.fr/small_data/)';
 
-//-------------------------------------------------------------------- cache
-
-/* Le numero de version fait partie du nom de fichier : l'incrementer suffit a
-   invalider tout le cache d'un coup quand le format ou le nettoyage des
-   donnees change, sans avoir a vider le repertoire a la main sur le serveur.
-   v2 : retrait du marqueur de tri "@" des titres et dedoublonnage (sd_push_title). */
 $CACHE_VERSION = 2;
 
 $cache_dir  = __DIR__ . '/../cache/isni';
@@ -63,17 +30,13 @@ $cache_file = $cache_dir . '/' . $isni . '.v' . $CACHE_VERSION . '.json';
 if(!$refresh && is_readable($cache_file) && (time() - filemtime($cache_file) < $CACHE_TTL)){
 	$hit = file_get_contents($cache_file);
 	if($hit !== false && $hit !== ''){
-		// on bascule le drapeau sans reparser le JSON (la cle est ecrite en tete)
+
 		$pos = strpos($hit, '"cached":false');
 		echo ($pos === false) ? $hit : substr_replace($hit, '"cached":true', $pos, 14);
 		exit;
 	}
 }
 
-//------------------------------------------------------------------ outils
-
-/* Recuperation HTTP : cURL si disponible, sinon file_get_contents.
-   Renvoie la chaine recue ou null. Ne leve jamais d'exception. */
 function sd_http_get($url, $timeout, $ua, $accept = '*/*'){
 
 	if(function_exists('curl_init')){
@@ -108,8 +71,6 @@ function sd_http_get($url, $timeout, $ua, $accept = '*/*'){
 	return null;
 }
 
-/* Hotes a ignorer quand on ramasse les URL : espaces de noms XML, vocabulaires
-   et l'auto-reference vers isni.org (deja fournie a part). */
 function sd_is_noise_url($url){
 	$noise = array('www.w3.org', 'xmlns.com', 'purl.org', 'rdvocab.info',
 	               'www.loc.gov/zing', 'schema.org', 'isni.org/ontology',
@@ -119,11 +80,10 @@ function sd_is_noise_url($url){
 	return false;
 }
 
-/* Nom lisible d'un service a partir de son domaine. */
 function sd_label_for_url($url){
 	$host = strtolower(parse_url($url, PHP_URL_HOST));
 	if(!$host) return 'lien';
-	// Wikipedia : on precise la langue (fr, en...)
+
 	if(preg_match('/^([a-z\-]+)\.wikipedia\.org$/', $host, $w)) return 'Wikipedia (' . $w[1] . ')';
 	$map = array(
 		'brahms.ircam.fr'    => 'Ircam — Brahms',
@@ -155,8 +115,6 @@ function sd_label_for_url($url){
 	return preg_replace('/^www\./', '', $host);
 }
 
-/* Ordre d'affichage des services : les plus utiles d'abord.
-   Sert aussi a departager deux libelles pour une meme ressource. */
 function sd_known_labels(){
 	return array('Discogs','MusicBrainz','Wikidata','Wikipedia (fr)','Wikipedia (en)',
 	             'VIAF','data.bnf.fr','Catalogue BnF','GND (DNB)','Library of Congress',
@@ -166,14 +124,11 @@ function sd_known_labels(){
 function sd_label_rank($label){
 	$i = array_search($label, sd_known_labels(), true);
 	if($i !== false) return $i;
-	// un libelle generique "Wikipedia (xx)" reste mieux classe qu'un simple domaine
+
 	if(strpos($label, 'Wikipedia') === 0) return 50;
 	return 99;
 }
 
-/* Cle de dedoublonnage : deux URL qui designent la MEME ressource (le meme
-   artiste Discogs avec ou sans slug, wikidata /wiki/ ou /entity/, http ou
-   https) doivent produire la meme cle, sinon la liste affiche des doublons. */
 function sd_url_key($url){
 	$u = strtolower($url);
 	if(preg_match('#discogs\.com/(?:[a-z]{2}/)?artist/(\d+)#',   $u, $m)) return 'discogs:'  . $m[1];
@@ -187,9 +142,6 @@ function sd_url_key($url){
 	return rtrim($u, '/');
 }
 
-/* Ajoute une URL a la liste des liens externes, sans doublon.
-   Si la ressource est deja presente, on garde le meilleur libelle et l'URL
-   la plus parlante (celle qui porte un slug lisible, en general la plus longue). */
 function sd_push_link(&$list, $url, $label = null){
 
 	$url = trim(html_entity_decode($url, ENT_QUOTES, 'UTF-8'));
@@ -210,7 +162,6 @@ function sd_push_link(&$list, $url, $label = null){
 	$list[] = array('label' => $label, 'url' => $url, 'key' => $key);
 }
 
-/* Ramasse toutes les URL http(s) d'un texte brut (XML ou JSON-LD). */
 function sd_harvest_urls($text, &$list){
 	if(!$text) return;
 	if(preg_match_all('#https?://[^\s"\'<>\\\\]+#i', $text, $m)){
@@ -218,7 +169,6 @@ function sd_harvest_urls($text, &$list){
 	}
 }
 
-/* URL canonique d'une source ISNI a partir de son code et de son identifiant. */
 function sd_source_url($code, $id){
 	$code = strtoupper(trim($code));
 	$id   = trim($id);
@@ -240,30 +190,15 @@ function sd_source_url($code, $id){
 	}
 }
 
-/* Titres d'oeuvres : nettoyage du marqueur de tri.
-   ---------------------------------------------------------------------------
-   Les notices ISNI reprennent les titres des catalogues qui les alimentent, en
-   UNIMARC, ou le caractere @ signale ou commence le tri alphabetique — c'est
-   a dire juste apres l'article initial, qui ne doit pas etre classant :
-
-       L'@ivresse de la vitesse    se classe a "ivresse"
-       @Below the Walls of Jericho se classe a "Below"
-
-   Le @ n'appartient donc pas au titre : il ne doit jamais etre affiche. On le
-   retire, et on en profite pour normaliser les espaces. */
 function sd_clean_title($s){
-	$s = str_replace(array("\xc2\xa0", "\xe2\x80\x8b"), ' ', (string)$s);   // nbsp, espace nulle
+	$s = str_replace(array("\xc2\xa0", "\xe2\x80\x8b"), ' ', (string)$s);
 	$s = str_replace('@', '', $s);
 	$s = preg_replace('/\s+/u', ' ', $s);
-	// une apostrophe suivie d'une espace vient souvent du @ retire ("L' ivresse")
+
 	$s = preg_replace('/(\p{L}[\'’])\s+(?=\p{L})/u', '$1', $s);
 	return trim($s);
 }
 
-/* Cle de dedoublonnage des titres : insensible a la casse, aux accents et a
-   la ponctuation, pour que "L'Ivresse de la vitesse" et "L'ivresse de la
-   vitesse" ne comptent qu'une fois — les catalogues sources livrent la meme
-   oeuvre sous plusieurs graphies. */
 function sd_title_key($s){
 	$s = mb_strtolower($s, 'UTF-8');
 	if(function_exists('iconv')){
@@ -273,9 +208,6 @@ function sd_title_key($s){
 	return preg_replace('/[^a-z0-9]+/', '', strtolower($s));
 }
 
-/* Ajoute un titre a la liste, sans doublon. A cle egale on garde la graphie
-   la plus longue : elle porte en general la ponctuation d'origine
-   ("In the natural doorway... I crouch" plutot que sans les points). */
 function sd_push_title(&$list, &$keys, $raw){
 	$v = sd_clean_title($raw);
 	if($v === '') return;
@@ -288,8 +220,6 @@ function sd_push_title(&$list, &$keys, $raw){
 		$list[$keys[$k]] = $v;
 	}
 }
-
-//------------------------------------------------------- 1. API SRU d'ISNI
 
 $sru_body = null;
 $sru_urls = array(
@@ -304,7 +234,7 @@ foreach($sru_urls as $u){
 
 $names    = array();
 $titles   = array();
-$titleKeys= array();   // cle normalisee -> index dans $titles (cf. sd_push_title)
+$titleKeys= array();
 $sources  = array();
 $notes    = array();
 $external = array();
@@ -321,7 +251,6 @@ if($sru_body){
 	if($ok){
 		$xp = new DOMXPath($doc);
 
-		// --- noms de personne : prenom / nom / dates
 		foreach($xp->query('//*[local-name()="personalName"]') as $n){
 			$get = function($tag) use ($xp, $n){
 				$r = $xp->query('.//*[local-name()="' . $tag . '"]', $n);
@@ -335,7 +264,7 @@ if($sru_body){
 			$key = $fore . '|' . $sur . '|' . $date;
 			$names[$key] = array('forename' => $fore, 'surname' => $sur, 'dates' => $date);
 		}
-		// --- noms d'organisation (au cas ou l'ISNI designe un ensemble)
+
 		foreach($xp->query('//*[local-name()="organisationName"]') as $n){
 			$r = $xp->query('.//*[local-name()="mainName"]', $n);
 			if($r->length){
@@ -344,12 +273,10 @@ if($sru_body){
 			}
 		}
 
-		// --- titres d'oeuvres
 		foreach($xp->query('//*[local-name()="titleOfWork"]/*[local-name()="title"]') as $t){
 			sd_push_title($titles, $titleKeys, $t->textContent);
 		}
 
-		// --- sources contributrices (VIAF, BnF, DNB...)
 		foreach($xp->query('//*[local-name()="sources"]') as $s){
 			$g = function($tag) use ($xp, $s){
 				$r = $xp->query('.//*[local-name()="' . $tag . '"]', $s);
@@ -359,7 +286,7 @@ if($sru_body){
 			$sid  = $g('sourceIdentifier');
 			if($code === '' && $sid === '') continue;
 			$url  = sd_source_url($code, $sid);
-			// une reference peut deja contenir une URL exploitable
+
 			foreach($xp->query('.//*[local-name()="reference"]', $s) as $r){
 				$txt = trim($r->textContent);
 				if(preg_match('#^https?://#i', $txt)){ $url = $txt; break; }
@@ -369,14 +296,11 @@ if($sru_body){
 			if($url) sd_push_link($external, $url);
 		}
 
-		// --- notes : tout element dont le nom local contient "note"
-		//     (c'est la que se logent souvent les renvois Discogs & co.)
 		foreach($xp->query('//*[contains(translate(local-name(),"NOTE","note"),"note")]') as $n){
 			$v = trim(preg_replace('/\s+/u', ' ', $n->textContent));
 			if($v !== '' && strlen($v) < 600 && !in_array($v, $notes, true)) $notes[] = $v;
 		}
 
-		// --- URI explicites
 		foreach($xp->query('//*[local-name()="URI" or local-name()="uri" or local-name()="isniURI"]') as $n){
 			sd_push_link($external, trim($n->textContent));
 		}
@@ -384,14 +308,11 @@ if($sru_body){
 		$warnings[] = 'Reponse SRU illisible (XML invalide).';
 	}
 
-	// filet de securite : on ramasse aussi les URL restees dans le texte brut
 	sd_harvest_urls($sru_body, $external);
 
 } else {
 	$warnings[] = "L'API SRU d'ISNI n'a pas repondu.";
 }
-
-//---------------------------------------------- 2. notice JSON-LD d'isni.org
 
 $jsonld_body = sd_http_get('https://isni.org/isni/' . $isni . '/about.jsonld',
                             $TIMEOUT, $UA, 'application/ld+json,application/json');
@@ -401,9 +322,6 @@ if($jsonld_body){
 	$warnings[] = "La notice JSON-LD d'isni.org n'a pas repondu.";
 }
 
-//------------------------------------------------------------ 3. Wikidata
-
-/* L'ISNI est stocke dans Wikidata (P213) par groupes de quatre chiffres. */
 $isni_spaced = trim(chunk_split($isni, 4, ' '));
 
 $sparql =
@@ -450,22 +368,16 @@ if($wd_body){
 	$warnings[] = "Wikidata n'a pas repondu.";
 }
 
-//----------------------------------------------- liens canoniques + reponse
-
-/* Les deux liens toujours presents : la notice publique et la base OCLC,
-   ou l'on peut consulter l'integralite des donnees de la notice. */
 $oclc = 'https://isni.oclc.org/cbs/DB=1.2//CMD?ACT=SRCH&IKT=8006&TRM=ISN%3A' . $isni
       . '&TERMS_OF_USE_AGREED=Y&terms_of_use_agree=send';
 
-/* Les liens externes sont tries : les services connus d'abord, le reste
-   ensuite, pour que Discogs & co. soient visibles sans defiler. */
 usort($external, function($a, $b){
 	$ia = sd_label_rank($a['label']);
 	$ib = sd_label_rank($b['label']);
 	if($ia !== $ib) return $ia - $ib;
 	return strcasecmp($a['label'], $b['label']);
 });
-// la cle de dedoublonnage est interne : elle ne part pas dans la reponse
+
 foreach($external as $i => $l) unset($external[$i]['key']);
 $external = array_values($external);
 
@@ -498,7 +410,6 @@ if($want_raw){
 
 $json = json_encode($out, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
-//-- ecriture du cache (silencieuse : un cache non inscriptible n'est pas une erreur)
 if(!$want_raw && $out['status'] === 'ok'){
 	if(!is_dir($cache_dir)) @mkdir($cache_dir, 0775, true);
 	if(is_dir($cache_dir) && is_writable($cache_dir)) @file_put_contents($cache_file, $json, LOCK_EX);

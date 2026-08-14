@@ -1,37 +1,3 @@
-/* =========================================================
-   Small Data — page Overview (index.php)
-   La barre de navigation est désormais traitée dans main.css.
-   Ne restent ici que la recherche, les filtres et la mise en
-   page propre à cette vue.
-   ========================================================= */
-
-/* ---------- Les deux outils de la page : recherche et filtre ----------
-
-   EMPILES, ET CALES A DROITE (2026-08-05). Ils etaient cote a cote, quatre
-   elements independants dans le flex de #ctrl_bar : « composer name », sa
-   fleche, « num of records », sa fleche. Des que la barre se repliait, ils se
-   redistribuaient un a un — le filtre passait sous les menus, la fleche de la
-   recherche restait en haut. Ils sont maintenant DANS UN SEUL element,
-   #tools, qui ne peut pas se couper en deux.
-
-   CALES A GAUCHE, a la suite des menus : ils sont un outil de la page, pas un
-   accessoire relegue au bout de la barre, et l'oeil les trouve sur le meme
-   parcours que la navigation. Ils ont d'abord ete pousses a droite
-   (`margin-left: auto`) — c'est ce qui obligeait a arreter la barre a la
-   largeur du contenu sur les tres grands ecrans, faute de quoi ils flottaient
-   a 700px de la grille qu'ils commandent. Cales a gauche, le probleme ne se
-   pose plus : ils suivent les menus, ou que s'arrete la fenetre.
-
-   LA HAUTEUR EST CONTRAINTE. La barre est fixe et sa hauteur est declaree
-   une fois, `--sd-bar-h` (128px) dans main.css ; toutes les pages calent leur
-   contenu dessous avec `margin-top: calc(var(--sd-bar-h) + 8px)`. Deux rangees
-   empilees doivent donc tenir dans 128px moins le padding de la barre, soit
-   118px. Trois valeurs ont ete rabotees pour cela — padding des boites 8 -> 5,
-   marge sous le libelle 4 -> 2, padding vertical des champs 5 -> 4 —, ce qui
-   ramene la barre de 137 a 127px. MESURE dans le navigateur, pas calculee :
-   la hauteur d'une ligne de texte depend de la police. Si l'un de ces nombres
-   change, remesurer — sinon la grille passe sous la barre sans que rien ne le
-   signale, et le defaut est invisible tant qu'on ne fait pas defiler. */
 #ctrl_bar #tools{
 	display: flex;
 	flex-direction: column;
@@ -43,49 +9,9 @@
 	gap: var(--sd-gap);
 	align-items: stretch;
 }
-
-/* --- LE PALIER DE 1100px N'A PLUS LIEU D'ETRE SUR CETTE PAGE -------------
-   main.css double la hauteur de la barre sous 1100px (--sd-bar-h: 256px),
-   parce que la barre passait alors a deux rangees. Ce palier avait ete regle
-   sur Overview, qui portait QUATRE elements d'outils cote a cote et etait donc
-   la plus large des sept barres. Empiles, ils n'en font plus qu'un, moitie
-   moins large : la barre tient sur une rangee jusqu'a 910px.
-
-   Sans cette regle, la page reservait 128px de barre VIDE entre 1100 et 910px
-   — soit exactement les largeurs d'un portable courant. Mesure a l'appui :
-   a 1000px, une seule rangee pour une barre de 256px.
-
-   Surcharge locale et non correction de main.css : les six autres pages n'ont
-   pas les memes outils, et rien ne dit que leur barre tienne, elle, sous
-   1100px. Le palier commun reste leur garde-fou. */
 @media (max-width: 1100px) and (min-width: 911px){
 	:root{ --sd-bar-h: 128px; }
 }
-
-/* --- LA BARRE N'EST PLUS BORNEE ------------------------------------------
-   Elle l'a ete un moment (`max-width: 1870px`), le temps ou les outils
-   etaient cales a droite : sur un ecran de 2560px ils se retrouvaient sinon
-   a 700px du contenu qu'ils commandent. Les outils calant desormais a gauche,
-   la raison a disparu et la regle avec elle — une contrainte dont le motif
-   n'existe plus est une contrainte qu'on ne saura plus expliquer. */
-
-/* --- LA COULEUR : turquoise, et la meme pour les deux ---------------------
-
-   C'etait rose et jaune. Deux teintes vives, hors de la palette Flat UI que
-   le reste du site suit, et sans rapport l'une avec l'autre alors qu'il
-   s'agit de deux objets de MEME NATURE : un champ, un libelle, une fleche qui
-   applique. Les menus, eux, sont tous du meme bleu et personne ne les
-   confond — le libelle suffit a les distinguer.
-
-   Turquoise #1abc9c : c'est le ton Flat UI dont --sd-greensea (#16a085) est
-   la version sombre, et le seul de la palette qui ne soit attribue a rien sur
-   cette page — le bleu est aux menus, le vert au compteur du SMA, l'orange a
-   la selection, l'ametyste aux oeuvres, et le bleu moyen a la fiche ISNI.
-
-   Mesure, contre le fond de barre --sd-midnight : 4,56. Le texte midnight
-   par-dessus : 4,56 aussi. Le rose donnait 7,14 et le jaune 10,23 — plus
-   contrastes, certes, mais c'est precisement ce qui les faisait crier plus
-   fort que la donnee. Le turquoise se voit sans hurler. */
 #ctrl_bar #searchBox,
 #ctrl_bar #filters{
 	padding: 5px;
@@ -96,8 +22,6 @@
 	flex: 1 1 auto;
 	background: #1abc9c;
 }
-
-/* Libelles au-dessus des champs */
 #ctrl_bar #searchBox label,
 #ctrl_bar #filters label{
 	display: block;
@@ -129,8 +53,6 @@
 	outline: 2px solid var(--sd-midnight);
 	outline-offset: 1px;
 }
-
-/* Les deux carrés de validation : 10px à l'origine, difficiles à viser */
 #ctrl_bar #searchBoxBtn,
 #ctrl_bar #filtersBtn{
 	margin: 0;
@@ -150,58 +72,20 @@
 }
 #ctrl_bar #searchBoxBtn::after,
 #ctrl_bar #filtersBtn::after{
-	content: "\2192";                  /* flèche : « appliquer » */
+	content: "\2192";
 }
-/* Au survol, le ton clair de la meme teinte plutot que le blanc : la fleche
-   reste lisible, et le bouton ne change pas de nature le temps d'un survol. */
 #ctrl_bar #searchBoxBtn:hover,
 #ctrl_bar #filtersBtn:hover{ background: #48c9b0; }
-
-/* ---------- Deux colonnes ---------- */
-/* Colonne gauche = canvas + legende "How to read" (solidaires : la legende
-   reste toujours collee sous le canvas, quelle que soit la hauteur de la
-   boite violette). Colonne droite = petit canvas SMA + infos (dont la boite
-   violette #titles qui peut s'etendre librement). */
-/* FLEXBOX ET NON FLOTTANTS depuis le 2026-08-05.
-
-   Les deux colonnes flottaient. Un flottant qui ne tient plus PASSE A LA
-   LIGNE : des que la fenetre retrecissait sous la largeur de la grille plus
-   celle de la colonne, la colonne de droite — SMA, boite verte, boite orange,
-   fiche ISNI, liste des oeuvres — descendait tout en bas de la page, sous la
-   legende. Elle n'etait pas perdue, mais il fallait la chercher.
-
-   Une ligne flex sans repli les tient cote a cote quoi qu'il arrive. Et pour
-   que « cote a cote » ne veuille pas dire « avec une barre de defilement
-   horizontale », la grille se re-repartit a la nouvelle largeur : voir
-   reflowGrid() dans js/overview.js. Les deux moities vont ensemble — la CSS
-   seule donnerait un debordement, le JS seul ne suffirait pas puisque le
-   canvas garde sa largeur le temps du recalcul temporise. */
 #board{
 	display: flex;
 	flex-wrap: nowrap;
 	align-items: flex-start;
 }
-/* Le clearfix des flottants deviendrait un TROISIEME ELEMENT FLEX — une boite
-   vide qui prendrait sa part de la ligne. Il n'a plus d'objet : on le retire
-   plutot que de le laisser agir autrement qu'il ne dit. */
 #board::after{ display: none; }
-/* La grille ne s'etire ni ne se comprime : c'est le JS qui lui donne sa
-   largeur, en fonction de la place restante. `min-width: 0` empeche le
-   comportement par defaut d'un element flex, qui refuse de passer sous la
-   largeur de son contenu — sans lui, un canvas large repousserait la colonne
-   de droite hors de l'ecran au lieu de deborder proprement. */
 #left_col{ flex: 0 0 auto; min-width: 0; }
-/* Distance canvas <-> colonne de droite (boites verte/orange/violette) reduite
-   de moitie : l'ecart total etait de 20px (5px de marge droite du canvas + 15px
-   ici), il passe a 10px.
-   `flex: 0 0 auto` : la colonne garde sa largeur propre, elle ne se comprime
-   pas — ses boites sont a 330/350px fixes et se chevaucheraient. */
 #right_col{ flex: 0 0 auto; margin-left: 5px; }
 #left_col #myCanvas{ float: none; display: block; }
-/* border-box : la largeur fixee par le JS (= largeur du canvas) inclut le
-   padding, donc la legende a exactement la meme largeur que la dataviz. */
 #left_col #legend{ float: none; clear: none; box-sizing: border-box; }
-/* Note de completude du "How to read" : liseree violette (comme le line chart). */
 #legend .lg-note{
 	margin: 0 0 8px 0;
 	padding: 4px 0 4px 10px;
@@ -209,45 +93,29 @@
 	color: #ecf0f1;
 }
 #legend .lg-note em{ color: #fff; font-style: normal; font-weight: 600; }
-/* meme decalage que #allCanvas (colonne gauche) pour degager le menu fixe :
-   sinon le haut du SMA passe sous la barre de navigation. */
 #right_col #sma{ float: none; display: block; margin-top: calc(var(--sd-bar-h) + 8px); }
 #right_col #infos{ float: none; clear: none; }
 
-/* ---------- Colonne d'information et canvas ---------- */
-
 #cookies, #selection, #titles, #results{
-	width: 330px;                      /* -20 de padding */
+	width: 330px;
 	word-wrap: break-word;
 	float: left;
 	clear: left;
 }
-/* Fiche ISNI, rendue EN FLUX dans la colonne (js/isni_box.js, option `into`) :
-   elle prend place entre la boite orange et la liste des oeuvres au lieu de
-   les recouvrir. 350px en border-box = les 330px de contenu + les 2x10px de
-   padding des autres boites : les bords droits coincident. Tant qu'aucun nom
-   n'a ete clique, la div est vide et ne mesure rien — la colonne est
-   exactement celle d'avant. */
 #isniColumn{
 	box-sizing: border-box;
 	width: 350px;
 	float: left;
 	clear: left;
 }
-/* Respiration SOUS la fiche, et seulement quand elle est ouverte : sinon la
-   boite violette viendrait se coller a elle et les deux se liraient comme un
-   seul bloc. Portee par .open plutot que par le conteneur, pour ne pas laisser
-   un blanc permanent dans la colonne quand aucune fiche n'est affichee. */
 #isniColumn .isni-box.open{
 	margin-bottom: 10px;
 }
-/* Le bloc vert forme un ensemble avec le canvas du SMA :
-   il vient s'y coller, sans espace. */
 #sma{
 	margin-bottom: 0;
 }
 #cookies{
-	margin: 0 0 10px 0;   /* gap vert->orange = 10px, identique a l'ecart grille<->SMA */
+	margin: 0 0 10px 0;
 }
 #infos{
 	float: left;
@@ -257,18 +125,6 @@
 #myCanvas{
 	margin: 0 5px 0 0;
 }
-/* LA LISTE DES RESULTATS EST BORNEE EN HAUTEUR — 2026-08-08.
-
-   Elle n'avait aucune limite. Une recherche sur deux ou trois lettres rend
-   couramment plusieurs centaines de noms, et la boite blanche poussait alors
-   TOUTE la colonne — le petit SMA, les boites d'identite, la fiche ISNI et la
-   liste des oeuvres — plusieurs milliers de pixels plus bas, c'est-a-dire hors
-   de l'ecran. On croyait la colonne vide ; elle etait seulement tres loin.
-
-   Elle defile donc sur place. `box-sizing: border-box` parce que la largeur
-   est declaree plus haut (330px de contenu) et que le defilement ajoute une
-   barre : sans lui, la boite deborderait des autres de la largeur de cette
-   barre, et les bords droits de la colonne cesseraient de coincider. */
 #results{
 	margin: 1px 0;
 	background: white;
@@ -276,28 +132,17 @@
 	box-sizing: content-box;
 	max-height: 300px;
 	overflow-y: auto;
-	overscroll-behavior: contain;   /* la page ne defile pas quand la liste est au bout */
+	overscroll-behavior: contain;
 }
 #results p{
 	padding: 0;
 	margin: 0;
 	display: block;
-	cursor: pointer;              /* les resultats sont cliquables */
+	cursor: pointer;
 }
 #results p:hover{
 	text-decoration: underline;
 }
-/* Resultat que la grille ne contient pas : la fiche existe dans imeb_artist mais
-   n'a aucune ligne de participation dans imeb_edition, donc aucun carre a
-   surligner. La ligne reste affichee — c'est le seul endroit de la page ou ces
-   compositeurs apparaissent — mais elle est grisee, en italique, et n'invite
-   pas au clic.
-
-   La meme regle habille, depuis le 2026-08-07, la ligne « N entrants — no
-   archived work, name not listed » : deux enonces differents, mais un seul
-   etat a l'ecran — quelque chose existe et n'est pas cliquable. Leur donner
-   deux apparences aurait demande au lecteur de distinguer ce que la page ne
-   distingue pas. */
 #results p.no-index{
 	color: var(--sd-asbestos);
 	font-style: italic;
@@ -309,95 +154,25 @@
 #selection{
 	margin: 0 0 1px 0;
 }
-
-/* CE COMMENTAIRE DISAIT LE CONTRAIRE JUSQU'AU 2026-08-11 : « la liste des
-   oeuvres (zone violette) s'adapte a son contenu : pas de hauteur bornee ».
-   Elle l'est desormais — 36vh, la borne de la fiche ISNI en flux, posee dans
-   css/main.css sur `#titles.t-boxed` parce que TROIS pages portent cette
-   boite. Un compositeur tres documente poussait sans cela tout ce qui la suit
-   hors de l'ecran.
-
-   `height: auto` reste : il n'a jamais dit « sans limite », il dit « pas de
-   hauteur imposee », et c'est toujours vrai — la boite prend la hauteur de son
-   contenu jusqu'a la borne, et defile au-dela.
-
-   La legende "How to read" reste maitrisee cote canvas (largeur calee sur le
-   canvas, hauteur du canvas ajustee au contenu). */
 #titles{
 	height: auto;
 }
-/* Distinction de chaque oeuvre par un fond alterne (comme les tables),
-   en deux nuances de violet pour rester lisible sur texte blanc. */
 #titles li{
 	list-style: none;
 	padding: 2px 6px;
 }
 #titles li.t-a{ background: #9b59b6; }
 #titles li.t-b{ background: #8145a0; }
-
-/* Le repli de la boite violette (en-tete « N archived works », chevron, liste
-   masquee) est dans css/main.css, aupres de la regle #titles : Network porte
-   la meme boite et les memes classes, produites par la meme fonction
-   partagee (displayTitlesInfosGN, js/functions.js). Une copie ici en aurait
-   fait deux a corriger. */
-
-/* --- Annees de participation adossees au SEUL festival (boite orange) -------
-   Produites par editionsHtml() dans js/overview.js : le degre marque une annee
-   ou la personne etait a Bourges sans qu'une candidature soit attestee (cf. le
-   commentaire de la fonction, et le §H du recapitulatif sur la semantique de
-   imeb_music.editions).
-
-   Discret volontairement : ce n'est pas une alerte mais une reserve. Le
-   pointille sous l'annee reprend la convention deja employee par
-   .composer-isni pour "il y a quelque chose de plus a savoir ici", et l'infobulle
-   porte la phrase complete — la boite orange n'a pas la place de l'ecrire. */
 #selection .ed-fest,
 #selection .ed-both,
 #selection .ed-loose{
 	border-bottom: 1px dotted currentColor;
 	cursor: help;
 }
-/* QUATRE MARQUEURS — 2026-08-08. Le pointille dit « il y a quelque chose
-   de plus a savoir ici » et vaut pour les trois classes qui ne sont pas la
-   participation attestee ordinaire. Le signe distingue : rien = concours,
-   `+` = concours et festival la meme annee, `°` = festival seul,
-   `*` = releve d'un proces-verbal dont la piece n'est pas rattachee.
-
-   `.ed-comp` ne porte que le curseur : la participation attestee est le cas
-   normal, elle s'ecrit en clair — mais son infobulle nomme quand meme la
-   piece, et il faut donc que le curseur l'annonce. */
 #selection .ed-comp{ cursor: help; }
-
-/* =========================================================================
-   LA BOITE ORANGE SE REPLIE — 2026-08-05
-
-   En-tete : « Prenom Nom ISO3 | n editions ». Sous le pli : la liste des
-   annees. Produit par selectionHtml() dans js/overview.js.
-
-   POURQUOI ICI ET NON DANS main.css, alors que le pli de la boite violette y
-   est. Ce n'est pas une hesitation : la boite violette est portee par DEUX
-   pages (Overview et Network) et construite par une fonction partagee —
-   displayTitlesInfosGN() —, donc ses regles doivent vivre a un seul endroit
-   accessible aux deux. La boite orange repliable n'existe que sur Overview.
-   La mettre dans la feuille commune la ferait charger par sept pages qui ne
-   la rencontrent jamais, et surtout laisserait croire qu'elle est partagee.
-   Le jour ou Network en veut une, ce bloc migre — il ne se recopie pas.
-
-   Le vocabulaire visuel, lui, est bien celui des deux autres plis : en-tete
-   pleine largeur, chevron qui pivote, corps masque. Trois plis dans le site,
-   une seule grammaire.
-   ========================================================================= */
-
-/* Marges NEGATIVES, meme raison qu'au #titles li.t-hd de main.css : #selection
-   porte son propre padding (5px 10px, dans main.css) sur fond orange. Un
-   bouton pose sagement dedans laisserait un lisere orange tout autour. Il en
-   ressort pour aller d'un bord a l'autre ; la liste des annees, elle, garde la
-   gouttiere. Si le padding de #selection change, ces marges doivent suivre. */
 #selection .s-hd{
 	margin: -5px -10px 0;
 }
-/* Replie, l'en-tete est le dernier element : le padding bas de #selection
-   laisserait a son tour une bande orange sous le bouton. */
 #selection.is-folded{
 	padding-bottom: 0;
 }
@@ -412,8 +187,6 @@
 	padding: 5px 10px;
 	border: 0;
 	background: none;
-	/* le texte etait noir sur orange ; il le reste — un bouton n'est pas une
-	   raison de changer la couleur de ce qu'on lisait hier. */
 	color: inherit;
 	font: inherit;
 	text-align: left;
@@ -436,10 +209,6 @@
 #selection.is-folded .s-caret{
 	transform: rotate(-90deg);
 }
-/* Le corps : la liste des annees. PAS DE FILET au-dessus — il y en avait un,
-   et il ne separait rien : l'en-tete a deja son propre fond au survol, et le
-   pli lui-meme dit ou finit le titre. Une ligne de plus dans une boite de
-   deux lignes est du bruit. */
 #selection .s-bd{
 	margin-top: 4px;
 }

@@ -1,10 +1,3 @@
-//------------------------------------------------------------------
-// sma_core.js — noyau partage du systeme multi-agents (SMA)
-// Charge par euphonies.php, catalog.php et award-winning_works.php,
-// avant childs_*.js, particles_*.js et le script propre a la page.
-//------------------------------------------------------------------
-
-//---- etat partage
 var canvas, context;
 
 var records = [];
@@ -12,7 +5,7 @@ var scale = 1;
 var animation01;
 
 var running=true;
-var numberOfNodesOnDisplayMax = 200; //les pages peuvent surcharger cette valeur
+var numberOfNodesOnDisplayMax = 200;
 var pointer001=0;
 var particles=[];
 var sl_attribute='';
@@ -23,39 +16,21 @@ var attr_treshold=150;
 var activationSpeed=1;
 var counter002 = 0;
 var strength_noise_field=10;
-//-----------
 
-//====================================================================
-// GRILLE SPATIALE (hachage spatial) — accelere les passes de voisinage
-//--------------------------------------------------------------------
-// Objectif : remplacer les boucles O(n^2) (chaque agent teste TOUS les
-// autres) par des requetes locales O(n). La grille decoupe le canvas en
-// cellules carrees ; on n'inspecte que les cellules couvrant le rayon
-// d'interaction, donc quelques voisins au lieu des ~400 agents.
-//
-// ISO-COMPORTEMENT : la grille ne fait que PRE-SELECTIONNER des candidats.
-// Chaque passe applique ensuite EXACTEMENT la meme condition de distance
-// qu'avant. Le rayon de requete est un majorant conservateur (rayon max
-// courant + marge SMA_GRID_SLACK pour le deplacement d'un agent depuis la
-// construction de la grille) -> l'ensemble des candidats est un SUR-ensemble
-// des vrais voisins, et le filtrage exact redonne un resultat identique.
-//--------------------------------------------------------------------
-var SMA_USE_GRID = true;  //false = ancien parcours O(n^2) (pour comparaison/debug ; comportement identique)
-var SMA_GRID_CELL = 80;   //taille d'une cellule (px). Reglage perf, sans effet sur le comportement.
-var SMA_GRID_SLACK = 16;  //marge (px) de securite du rayon de requete. Couvre le deplacement
-                          //intra-image d'un voisin deja mis a jour (<= maxSpeed*sqrt2 ~ 5.7px)
-                          //avec une marge large -> l'ensemble des candidats reste un sur-ensemble
-                          //strict des vrais voisins, resultat identique au parcours O(n^2).
-var smaGrid = null;       //instance courante de SpatialGrid
-var smaGridReady = false; //true uniquement en PHASE 2 (regroupement), quand la grille est fiable
-var smaMaxRadius = 1;     //plus grand rayon parmi les agents (borne le rayon de requete)
-var _smaScratch = [];     //tampon reutilise pour les resultats de requete (evite le GC)
+var SMA_USE_GRID = true;
+var SMA_GRID_CELL = 80;
+var SMA_GRID_SLACK = 16;
+
+var smaGrid = null;
+var smaGridReady = false;
+var smaMaxRadius = 1;
+var _smaScratch = [];
 
 function SpatialGrid(width, height, cellSize){
     this.cellSize = cellSize;
     this.cols = Math.max(1, Math.ceil(width/cellSize));
     this.rows = Math.max(1, Math.ceil(height/cellSize));
-    this.cells = [];   //cells[cx + cy*cols] = tableau d'indices dans `particles`
+    this.cells = [];
 }
 SpatialGrid.prototype.build = function(items){
     this.cells = [];
@@ -68,8 +43,7 @@ SpatialGrid.prototype.build = function(items){
         (this.cells[k] || (this.cells[k]=[])).push(i);
     }
 };
-//remplit `out` avec les indices des agents dont la cellule chevauche le
-//disque (x,y,radius). `out` est vide au retour puis rempli ; renvoie `out`.
+
 SpatialGrid.prototype.queryRadius = function(x, y, radius, out){
     out.length = 0;
     var cs = this.cellSize, cols = this.cols, rows = this.rows;
@@ -84,14 +58,11 @@ SpatialGrid.prototype.queryRadius = function(x, y, radius, out){
             if(cell)for(var i=0; i<cell.length; i++)out.push(cell[i]);
         }
     }
-    //ordre croissant : reproduit l'ordre de l'ancien parcours 0..n-1, donc
-    //l'accumulation des forces (addition flottante, non associative) est
-    //IDENTIQUE au bit pres. Bonus : simulation deterministe et reproductible.
+
     if(out.length>1)out.sort(function(a,b){return a-b;});
     return out;
 };
-//(re)construit la grille a partir de `particles` et met a jour smaMaxRadius.
-//Appele une fois par image, au debut de chaque phase (positions = debut d'image).
+
 function buildSMAGrid(){
     if(!canvas)return;
     if(!smaGrid || smaGrid.cellSize!==SMA_GRID_CELL
@@ -103,11 +74,9 @@ function buildSMAGrid(){
     var mr = 1;
     for(var i=0; i<particles.length; i++)if(particles[i].radius>mr)mr=particles[i].radius;
     smaMaxRadius = mr;
-    smaGridReady = true;   //fiable a partir de maintenant (phase 2)
+    smaGridReady = true;
 }
-//====================================================================
 
-//prepare le canvas et les controles communs (menu reset/pause, touche 'p')
 function initSMA(w, h){
 
     canvas = document.getElementById('myCanvas');
@@ -122,9 +91,9 @@ function initSMA(w, h){
 
     $(document).keypress(function(e) {
 
-        if(e.which == 32) { //space bar
-            // running=!running;
-        } else if(e.which == 112){ //'p'
+        if(e.which == 32) {
+
+        } else if(e.which == 112){
             noiseField =!noiseField;
             console.log('noiseField:', noiseField);
         }
@@ -138,14 +107,12 @@ function initSMA(w, h){
 
 }
 
-//lance la boucle d'animation et l'interaction au clic sur le canvas
 function startSMA(){
     animation01=setInterval(sma_animation, 1000/30);
     document.getElementById('myCanvas').addEventListener("click", getParticleInfos);
     document.getElementById('myCanvas').addEventListener("dblclick", closeParticleOnDblClick);
 }
 
-//fermeture au double-clic : referme le cercle ouvert vise
 function closeParticleOnDblClick(evt){
 
     var cv = canvas.getBoundingClientRect();
@@ -183,11 +150,7 @@ function resetAll(){
     $("#commons ul").empty();
     noiseField=true;
     $("#sma_main_ctrl ul li:last").text("pause");
-    /* clearIdentityBoxGN (js/functions.js) et non $("#selection").empty() :
-       la fiche ISNI part AVEC la boite d'identite. Une remise a zero du SMA
-       qui laisserait la notice du dernier compositeur au-dessus d'une colonne
-       vide est la desynchronisation corrigee partout ailleurs le 2026-08-05 —
-       elle survivait ici parce que ce fichier ecrit la boite en direct. */
+
     clearIdentityBoxGN();
     $("#titles").empty();
 }
@@ -218,28 +181,6 @@ function getParticleInfos(evt){
 
             var txt_2 = particles[i].records.length+' elements';
 
-            /* « N elements » N'EST PLUS ECRIT D'AVANCE — 2026-08-05.
-
-               Cette ligne partait AVANT qu'on sache ce que le clic designait,
-               et setSelectionTextGN retire la fiche ISNI avec le nom (un
-               groupe n'est pas un compositeur). Deux consequences, toutes deux
-               subies :
-
-                 - clic sur un MEMBRE d'un groupe ouvert : la boite passait par
-                   « 20 elements », fiche fermee, avant que getInfoFrom ne
-                   reecrive le nom deux lignes plus bas. Un battement, et une
-                   fiche ISNI rechargee pour rien ;
-                 - clic DANS le disque d'un groupe ouvert mais a cote de tout
-                   membre : le compte restait, et la selection en cours etait
-                   perdue. C'est le cas le plus visible, parce qu'un groupe qui
-                   fusionne grossit et deplace ses membres — on vise un cercle
-                   bleu, on tombe a cote, et la notice d'identite disparait
-                   sans qu'on ait rien demande.
-
-               Le compte n'est donc plus ecrit que la ou il repond vraiment au
-               geste : l'OUVERTURE d'un agent ferme. Un clic qui ne designe
-               rien ne defait plus ce qui etait affiche. */
-
             if(particles[i].records.length>1){
 
                 var child_targeted=false;
@@ -247,7 +188,6 @@ function getParticleInfos(evt){
                     child_targeted = particles[i].processChilds(mouseX, mouseY);
                 }
 
-                //le simple clic ouvre ; la fermeture se fait au double-clic
                 if(!child_targeted && !particles[i].opening && !particles[i].open){
                     particles[i].openOrCloseIt();
                     setSelectionTextGN(txt_2);
@@ -255,15 +195,8 @@ function getParticleInfos(evt){
                     removePreviousSelection();
                 }
 
-                /* Groupe DEJA ouvert et clic hors d'un membre : on ne touche a
-                   rien. Le geste ne designe ni un groupe (il est deja ouvert)
-                   ni une oeuvre (aucun membre vise) — il ne doit donc rien
-                   defaire. */
-
             } else if(particles[i].records.length===1){
-                // agent isole : c'est LUI la selection, getInfoFrom ecrit les
-                // trois boites. Le « 1 elements » qui le precedait n'apprenait
-                // rien et fermait la fiche au passage.
+
                 particles[i].getInfoFrom(particles[i].records[0]);
                 removePreviousSelection();
                 particles[i].lastNodeSelected=true;
@@ -283,11 +216,6 @@ function removePreviousSelection(){
 }
 function shareInformation(){
 
-    //PHASE 1 : pas de grille. Les agents bougent DEUX fois par image (deplacement
-    //en ligne dans SearchCommons... puis updateBeforeMerging) et se "wrappent"
-    //(checkEdgesV1) en cours d'image -> une grille figee en debut d'image
-    //deviendrait incoherente. Le cout O(n^2) reste faible ici : les agents sont
-    //ajoutes un par image, donc n est petit tant qu'on est en phase 1.
     smaGridReady = false;
 
     for (var i=0; i<particles.length; i++) {
@@ -302,8 +230,6 @@ function shareInformation(){
 
         }
 
-        //les gris se separent aussi en PHASE 1 (meme logique qu'en phase 2),
-        //sinon ils restent agglutines tant qu'aucun groupement n'est choisi.
         if(particles[i].records.length===1)particles[i].separateFromLoners(i, particles);
 
         particles[i].checkEdgesV1();
@@ -371,12 +297,11 @@ function setCommonAttr(event){
     var attr = event.target.innerText;
 
     $("#cookies").empty().append('<p>property: '+ attr + '</p>');
-    // la colonne repart a vide, fiche ISNI comprise : changer de critere de
-    // regroupement defait la selection (voir clearIdentityBoxGN).
+
     clearIdentityBoxGN();
     $("#titles").empty();
 
-    if(sl_attribute.localeCompare("")==0){ //first choice
+    if(sl_attribute.localeCompare("")==0){
         $(event.target).css("font-weight", "bold");
         sl_attribute = attr;
     } else {
@@ -407,7 +332,6 @@ function breakConnections(){
 }
 function sma_animation(){
 
-    //add progressively particles
     if(pointer001<records.length && running
         && particles.length<numberOfNodesOnDisplayMax && noiseField){
         addParticleUsing(pointer001);
@@ -415,13 +339,11 @@ function sma_animation(){
 
     resetSMACanvas();
 
-    //first state --> nodes are sharing information
     if(sl_attribute.localeCompare("")==0){
         shareInformation();
-    //second state --> nodes are regrouping
+
     } else {
 
-        //activate progressively particles
         if(counter001%activationSpeed===0 && particles.length>0){
             var id = counter002%particles.length;
             particles[id].targetedAttr=sl_attribute;
@@ -437,13 +359,10 @@ function sma_animation(){
 }
 function allowGrouping(){
 
-    buildSMAGrid();   //grille reconstruite en debut de phase (positions = debut d'image)
+    buildSMAGrid();
 
     for (var i=0; i<particles.length; i++) {
-        //une particule ouverte (jaune) n'est plus agitee par le champ de bruit :
-        //elle se stabilise pour qu'on puisse cliquer sur ses membres.
-        //en phase de regroupement, l'agitation est reduite de moitie : les gris
-        //sans partenaire derivent au lieu de s'agiter
+
         if(noiseField && !particles[i].open)particles[i].addNoiseField(strength_noise_field*.5);
         particles[i].update(i, particles);
         particles[i].display();
@@ -469,8 +388,6 @@ function addParticleUsing(i){
 
 }
 
-//cree une particule a partir d'un enregistrement :
-//toutes les proprietes de l'enregistrement sont copiees telles quelles
 function createNewParticle(obj){
 
     var params = {

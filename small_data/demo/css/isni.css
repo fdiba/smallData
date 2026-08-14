@@ -1,28 +1,3 @@
-/* =========================================================================
-   Fiche ISNI — feuille PARTAGEE
-   -------------------------------------------------------------------------
-   Styles de la boite flottante ouverte au clic sur un ISNI. Le meme bloc
-   etait recopie a l'identique dans css/euphonies.css, css/aww.css et
-   css/catalog.css ; la page categories.php en avait besoin a son tour, ce
-   qui en aurait fait une quatrieme copie. Il est donc extrait ici, et les
-   quatre pages qui ouvrent la fiche le chargent :
-
-       euphonies.php, award-winning_works.php, catalog.php, categories.php
-
-   Le <link> y est place APRES la feuille propre a la page, exactement comme
-   le bloc se trouvait en fin de fichier : l'ordre de cascade est inchange.
-
-   Ce qui n'a PAS ete deplace, parce que c'est propre a une page : la regle
-   de survol du lien ISNI de la colonne du tableau
-   (#euphonies_table a.isni-link, css/euphonies.css) et celle du nom
-   cliquable du diagramme de flux (.node text.isni-node, css/sankey.css).
-
-   La boite est attachee a <body> en position:absolute : elle est HORS FLUX,
-   donc elle ne pousse ni le tableau, ni le canvas — la mise en page ne bouge
-   pas d'un pixel quand elle s'ouvre.
-   z-index 9 : juste sous #ctrl_bar (10), qui reste toujours lisible.
-   ========================================================================= */
-
 .isni-box{
 	display: none;
 	position: absolute;
@@ -90,8 +65,6 @@
 	color: #bdc3c7;
 	font-style: italic;
 }
-
-/* titre de rubrique : meme code que les legendes des autres pages */
 .isni-sec{
 	margin: 10px 0 3px 0 !important;
 	font-weight: 600;
@@ -140,55 +113,23 @@
 	color: #bdc3c7;
 	font-style: italic;
 }
-/* L'avertissement ferme la fiche : « No detailed data retrieved… », « The
-   server could not query ISNI… ». Il porte sur TOUT ce qui precede, pas sur la
-   derniere rubrique — or il venait se coller au dernier lien de la liste
-   au-dessus (.isni-list a une marge nulle, et .isni-bd p ne pose qu'une marge
-   BASSE). Un filet et une respiration l'en detachent : on voit d'un coup d'oeil
-   que c'est une note sur la notice, et non une entree de plus.
-
-   SELECTEUR EN DEUX CLASSES, et ce n'est pas du zele : « .isni-warn » seul
-   pese (0,1,0) contre (0,1,1) pour « .isni-bd p » plus haut, dont le raccourci
-   « margin: 0 0 6px 0 » remet la marge haute a zero. La specificite l'emporte
-   sur l'ordre des declarations — ecrire la regle apres n'aurait rien change
-   (meme piege qu'au §6.3 du document d'interface). */
 .isni-bd .isni-warn{
 	margin: 12px 0 0 0;
 	padding-top: 8px;
 	border-top: 1px solid rgba(236, 240, 241, .22);
 }
-/* Sauf s'il est seul dans la fiche : il n'a alors rien dont se detacher, et
-   un filet en tete de boite se lirait comme une barre de titre vide. */
 .isni-bd .isni-warn:first-child{
 	margin-top: 0;
 	padding-top: 0;
 	border-top: 0;
 }
-
-/* ---------- Le panneau lateral (catalog.php, award-winning_works.php) ----------
-   Ces pages n'ouvrent pas la fiche en boite flottante mais dans un panneau
-   ancre a droite du contenu (js/isni_box.js, enableIsniPanel). Le conteneur
-   est en position FIXE : il ne pousse rien — tableaux, canvas et legende
-   gardent leur bande au pixel pres — et la fiche reste sous les yeux pendant
-   qu'on parcourt la liste. Son abscisse est calculee en JS : il se cale a
-   droite du contenu, pas au bord de la fenetre, pour se lire comme une
-   colonne de plus.
-
-   pointer-events: none sur le conteneur — vide, il couvrirait sinon une bande
-   de 340 px et intercepterait les clics destines au tableau.
-
-   Ces regles vivent ici, et non dans la feuille de chaque page : le
-   comportement est partage, la CSS doit l'etre aussi. Elles sont de surcroit
-   a l'abri du piege d'ordre — #isniPanel .isni-box donne (1,1,0) contre
-   (0,1,0) pour .isni-box, la specificite l'emporte quelle que soit la
-   position des <link>. */
 #isniPanel{
 	position: fixed;
 	top: calc(var(--sd-bar-h) + 8px);
-	left: 0;                                        /* recalcule en JS */
+	left: 0;
 	width: 340px;
 	max-width: calc(100vw - 16px);
-	z-index: 9;                                     /* sous #ctrl_bar (10) */
+	z-index: 9;
 	pointer-events: none;
 }
 #isniPanel .isni-box{
@@ -198,25 +139,6 @@
 	max-height: calc(100vh - var(--sd-bar-h) - 24px);
 	pointer-events: auto;
 }
-
-/* ---------- Le nom cliquable dans le contenu de la page ----------
-   Le marqueur pose sur un nom de compositeur quand la fiche existe : un
-   souligne pointille, en couleur HERITEE (currentColor), donc noir sur le
-   fond clair des tableaux et blanc sur le fond orange d'Overview — une seule
-   regle pour tous les fonds.
-
-   La classe s'appelle composer-isni et NON isni-name : .isni-name est deja
-   pris plus haut par les formes du nom DANS la fiche (color:#fff, fond
-   sombre). Le reprendre avait rendu les noms des tableaux blancs sur blanc.
-   Le prefixe isni- est le namespace de cette feuille : ne rien y ajouter sans
-   verifier.
-
-   La regle etait recopie a l'identique dans css/catalog.css et css/aww.css ;
-   Overview en aurait fait une troisieme copie. Elle est donc ici, comme le
-   reste du comportement partage (meme raison qu'au §K du recapitulatif).
-   Aucune regle des feuilles de page ne pose border-bottom ni cursor sur un
-   span : passer de #main_table .composer-isni (1,1,0) a .composer-isni
-   (0,1,0) ne perd donc aucun combat de specificite. */
 .composer-isni{
 	border-bottom: 1px dotted currentColor;
 	cursor: pointer;
@@ -226,8 +148,6 @@
 	border-bottom-style: solid;
 	outline: none;
 }
-/* L'exemple cite dans le "How to read" porte le meme marqueur pour se lire,
-   mais rien n'y est cliquable : ni curseur, ni reaction au survol. */
 #legend .composer-isni{
 	cursor: default;
 }
@@ -235,36 +155,6 @@
 #legend .composer-isni:focus{
 	border-bottom-style: dotted;
 }
-
-/* ---------- Dock EN FLUX (option `into` de enableIsniPanel) ----------
-   Overview n'a pas de gouttiere libre : la grille occupe toute la largeur
-   moins la colonne d'information. Une fiche flottante y recouvrirait la boite
-   violette — le defaut meme qui avait ete signale sur le catalogue. Elle est
-   donc rendue DANS la colonne, sous la boite orange d'ou part le clic : elle
-   prend sa place au lieu de recouvrir, et se lit a l'endroit ou on vient de
-   cliquer (meme lecon que l'accordeon BnF des Euphonies, qui s'affichait
-   auparavant en bas de page).
-
-   Hauteur bornee a 36vh : la fiche d'un compositeur tres documente ne doit
-   pas repousser la liste des oeuvres hors de l'ecran. Au-dela, c'est le corps
-   de la fiche (.isni-bd) qui defile, comme en mode flottant.
-
-   36 et non 60 depuis le 2026-08-05 : la borne d'origine laissait encore la
-   fiche depliee occuper les trois cinquiemes de la hauteur utile, donc
-   repousser la boite violette sous le pli de l'ecran — le defaut meme que la
-   borne devait empecher. Une reduction de 40 % la ramene a un peu plus du
-   tiers : les quatre boites de la colonne tiennent ensemble a l'ecran, et
-   c'est le corps de la fiche qui defile, ce pour quoi il est fait.
-
-   La fiche FLOTTANTE, elle, garde ses 70vh (plus haut dans cette feuille) :
-   posee au-dessus d'un tableau, elle ne repousse rien, et la borner plus bas
-   ne ferait que la faire defiler sans raison.
-
-   L'ombre portee disparait : elle disait "cette boite est posee au-dessus".
-   Ici la fiche est une boite de la colonne, comme la verte et l'orange.
-
-   (0,2,0) contre (0,1,0) pour .isni-box : la specificite l'emporte quel que
-   soit l'ordre des <link>. */
 .isni-inflow .isni-box{
 	position: static;
 	width: 100%;
@@ -272,66 +162,12 @@
 	max-height: 36vh;
 	box-shadow: none;
 }
-
-/* --- ET UNE COULEUR A ELLE, parce qu'elle n'en avait pas (2026-08-05) ---
-
-   La fiche etait --sd-asphalt (#34495e) sur en-tete --sd-midnight (#2c3e50).
-   Ces deux valeurs sont justes EN MODE FLOTTANT : la boite s'y pose au-dessus
-   d'un tableau clair, l'ombre portee la detache, et le sombre dit « je suis
-   par-dessus ».
-
-   EN FLUX, c'est l'inverse exact. `body` est --sd-midnight : l'en-tete de la
-   fiche avait donc LA COULEUR DU FOND DE LA PAGE, et son corps s'en ecartait
-   d'un ton. Entre une boite verte, une orange et une violette, la fiche ne se
-   lisait pas comme une boite du tout — elle se lisait comme un trou. Et
-   l'ombre portee, qui l'aurait sauvee, avait ete retiree deux lignes plus
-   haut, a juste titre : en flux elle n'est pas au-dessus.
-
-   Elle prend donc le BLEU de la palette — le seul des cinq tons a n'etre
-   attribue a aucune boite : vert au compteur du SMA, orange a la selection,
-   violet aux oeuvres. Et le meme partage que la boite violette entre en-tete
-   et corps : un ton plus sombre au-dessus, la teinte pleine en dessous.
-
-   LES DEUX VALEURS SONT MESUREES, pas choisies a l'oeil. Le rapport de
-   contraste de reference est celui de la boite violette, qui fait autorite
-   sur cette page depuis un an :
-
-     corps violet #9b59b6 / fond de page  2,35     blanc dessus  4,67
-     corps bleu   #2980b9 / fond de page  2,55     blanc dessus  4,30
-
-   La fiche se detache donc du fond d'un cheveu MIEUX que la violette, et son
-   texte s'y lit aussi bien. Le bleu vif --sd-river (#3498db) avait ete essaye
-   d'abord : il ne donne que 2,75 au texte #ecf0f1, en dessous de ce que la
-   page pratique partout ailleurs. Il est trop clair pour du blanc.
-
-   C'EST L'EN-TETE QUI DOIT SE VOIR, pas le corps : REPLIEE, la fiche se
-   reduit a lui. #1b5e8a ne pese que 1,58 contre le fond de page — mais la
-   boite violette n'en pese que 1,06 avec le sien (#5b2c6f), et elle se voit
-   tres bien : c'est la TEINTE qui fait le travail, pas la luminosite. Le
-   defaut d'hier n'etait pas un manque de contraste, c'etait une IDENTITE —
-   l'en-tete etait --sd-midnight, exactement la couleur de `body`.
-
-   PORTEE : `.isni-inflow`, donc toutes les fiches rendues EN FLUX — celles
-   d'Overview, Network et Line Charts, et depuis le 2026-08-05 celle du SMA
-   des trois pages a tableau (oeuvres primees, catalogue, Euphonies). Le
-   defaut y est identique, puisqu'il vient du fond de page, qui est commun.
-
-   Les fiches ouvertes depuis un TABLEAU gardent le sombre, y compris sur ces
-   trois pages-la, ou les deux cohabitent : panneau lateral (catalogue,
-   oeuvres primees) ou boite flottante (Euphonies, Categories), elles se
-   posent au-dessus d'un tableau clair, et le sombre y est bon. La classe
-   suffit a les distinguer : elle n'est posee que sur le conteneur en flux. */
 .isni-inflow .isni-box{
 	background: #2980b9;
 }
 .isni-inflow .isni-box .isni-hd{
 	background: #1b5e8a;
 }
-/* Les gris de la fiche etaient regles pour l'asphalte. Sur le bleu ils
-   tombent trop bas — #95a5a6 n'y pese plus que 1,68. Chaque niveau remonte
-   d'un cran SANS changer de rang : le corps reste le plus clair (#ecf0f1,
-   3,75), les notes viennent apres (3,36), les codes en dernier (2,80). La
-   hierarchie de lecture est la meme, elle est seulement lisible. */
 .isni-inflow .isni-box .isni-notes li,
 .isni-inflow .isni-box .isni-titles li{
 	color: #d4e6f1;
@@ -340,14 +176,9 @@
 .isni-inflow .isni-box .isni-codes{
 	color: #aed6f1;
 }
-/* Le titre de rubrique reste VERT — c'est sa couleur sur les cinq pages, et
-   un lecteur qui connait la fiche la retrouve. Mais l'emeraude pleine ne pese
-   que 2,05 sur ce bleu : la meme teinte, eclaircie, en donne 3,16. */
 .isni-inflow .isni-box .isni-sec{
 	color: #abebc6;
 }
-/* Filets et survols : calcules pour un fond sombre, ils passent mieux en noir
-   transparent sur le bleu plein — comme dans la boite orange. */
 .isni-inflow .isni-box .isni-list li:hover{
 	background: rgba(0, 0, 0, .12);
 }
@@ -361,35 +192,13 @@
 .isni-inflow .isni-box a{
 	border-bottom-color: rgba(255, 255, 255, .45);
 }
-
-/* =========================================================================
-   LA FICHE REPLIEE (.isni-foldable) — voir showIsniBox() dans js/isni_box.js
-
-   Posee par le seul mode ou la fiche s'affiche sans qu'on l'ait demandee :
-   elle est alors visible mais fermee, et son EN-TETE EST LE BOUTON. Les
-   quatre pages qui ouvrent la fiche au clic ne produisent jamais cette
-   classe, et ces regles n'y rencontrent rien.
-
-   Meme grammaire que le repli de la boite violette (#titles .t-toggle dans
-   css/main.css) et que celui du « How to read » (#legend .lg-caret) : un
-   en-tete pleine largeur, un chevron qui pivote, et le corps masque. Trois
-   plis dans le site, un seul vocabulaire visuel — c'est ce qui permet de
-   reconnaitre un pli sans l'avoir essaye.
-   ========================================================================= */
-
-/* L'en-tete cesse d'etre une bande de texte pour devenir un bouton : il perd
-   son padding, que le bouton reprend a son compte pour que toute la surface
-   soit cliquable et non le seul libelle. */
 .isni-box.isni-foldable .isni-hd{
 	padding: 0;
 }
-/* Pas de croix ici : une fiche qu'on n'a pas ouverte n'a pas a etre fermee,
-   et le pli suffit. Elle reste dans le DOM pour les pages en mode clic. */
 .isni-box.isni-foldable .isni-close{
 	display: none;
 }
 .isni-box.isni-foldable .isni-hd-t{
-	/* le <span> ne fait plus que porter le bouton */
 	flex: 1 1 auto;
 	min-width: 0;
 }
@@ -406,10 +215,6 @@
 	background: none;
 	color: #fff;
 	font: inherit;
-	/* EXPLICITE, et non un simple retrait du gras : `font: inherit` herite de
-	   .isni-hd-t, qui est en 600. Sans cette ligne l'en-tete reste gras. La
-	   graisse de .isni-hd-t est conservee telle quelle — elle sert aux pages
-	   qui ouvrent la fiche au clic, ou l'en-tete n'est pas un bouton. */
 	font-weight: normal;
 	letter-spacing: .04em;
 	font-variant-numeric: tabular-nums;
@@ -421,8 +226,6 @@
 	background: rgba(255, 255, 255, .08);
 	outline: none;
 }
-/* Le chevron pointe vers le bas quand la fiche est ouverte : il indique ce
-   qu'on voit, pas ce qu'on obtiendrait. Meme construction que .t-caret. */
 .isni-box .isni-caret{
 	flex: 0 0 auto;
 	width: 0;
@@ -435,14 +238,9 @@
 .isni-box.is-folded .isni-caret{
 	transform: rotate(-90deg);
 }
-/* Repliee, la fiche se reduit a son en-tete. `display:none` et non une
-   hauteur nulle : le corps peut contenir une liste longue, et une hauteur
-   nulle sur un conteneur qui defile (.isni-bd a overflow-y:auto) laisse une
-   barre de defilement fantome dans certains navigateurs. */
 .isni-box.is-folded .isni-bd{
 	display: none;
 }
-/* Et la boite cesse de reserver ses 60vh : repliee, elle epouse son en-tete. */
 .isni-box.is-folded{
 	max-height: none;
 }

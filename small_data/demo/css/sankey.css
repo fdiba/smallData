@@ -1,42 +1,15 @@
 @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:700|Exo+2:300,600);
-
-/* Cette page etait la seule a repeindre le fond en blanc : la surcharge est
-   supprimee, main.css pose desormais son bleu nuit (--sd-midnight) comme sur
-   les six autres pages, et le diagramme s'inscrit directement dessus — pas de
-   panneau clair intercale, qui redecouperait un rectangle blanc au milieu du
-   site.
-   #ctrl_bar reste volontairement sans fond, contrairement aux six autres
-   pages : c'est ici que le diagramme defile derriere le menu, et cette
-   transparence fait partie du rendu voulu. */
 #ctrl_bar{
 	background: none;
 }
-/* Hauteur de la bande de titre de la legende repliee : 10 px de padding en
-   haut, 18 px de texte (12 px de police, interligne 1,5), 10 px en bas — la
-   regle #legend de css/main.css. C'est la seule page ou ce calcul soit
-   necessaire, parce que c'est la seule ou la legende soit posee en FIXE : sur
-   les six autres elle est dans le flux et pousse le contenu d'elle-meme. */
 :root{
 	--lg-bar-h: 38px;
 }
-/* Le diagramme ne commence donc pas sous la barre de controle, mais sous la
-   bande de titre de la legende, augmentee du meme ecart de 8 px que celui deja
-   pose sous le menu. Sans cela le premier libelle de la colonne des annees —
-   2009, le diagramme se lisant du plus recent au plus ancien — se trouve
-   recouvert : il tombe a environ 26 px du haut du dessin, la bande en occupe
-   46. Une legende DEPLIEE recouvre bien davantage, et c'est voulu : c'est un
-   panneau qu'on ouvre, qu'on lit et qu'on referme, et le diagramme ne saute
-   pas sous les yeux a chaque fois. */
 #chart {
 	background: none;
 	margin: calc(var(--sd-bar-h) + var(--lg-bar-h) + 16px) 0 0 0;
 	font-family: "Exo 2", "Helvetica Neue", Helvetica, sans-serif;
 }
-/* Le libelle passe en clair sur le fond sombre : #ecf0f1, la teinte dont
-   Overview et Network remplissent leurs canevas (COLORS[0] dans
-   js/variables.js). La palette vert -> orange des noeuds et des liens, calculee
-   dans js/categories.js, n'a pas eu a etre touchee ; seule l'opacite des liens
-   remonte un peu, un trait a 50 % disparaissant sur un fond sombre. */
 text{
   font-size: 12px;
   fill: #ecf0f1;
@@ -45,24 +18,16 @@ text{
 
   fill-opacity: .9;
   shape-rendering: crispEdges;
-  
+
 }
 .link {
   fill: none;
-  /*stroke: #024;*/
   stroke-opacity: .65;
 }
 
 .link:hover {
   stroke-opacity: 1;
 }
-
-/* Nom de compositeur cliquable : la classe n'est posee par js/categories.js
-   que sur les noeuds porteurs d'un ISNI (236 sur 508). Le souligne pointille
-   reprend celui du lien ISNI du tableau d'euphonies.php : c'est le meme
-   geste, il se signale de la meme facon. Le trait passe en continu au survol,
-   seul retour possible sur un <text> SVG, qui n'accepte ni fond ni cadre.
-   Les styles de la fiche elle-meme sont dans css/isni.css. */
 .node text.isni-node{
   cursor: pointer;
   text-decoration: underline;
@@ -73,19 +38,6 @@ text{
   text-decoration-style: solid;
   font-weight: 600;
 }
-
-/* --- bulle de survol des flux ---------------------------------------------
-   Remplace le <title> SVG, dont l'infobulle native s'efface d'elle-meme au
-   bout de quelques secondes : le libelle d'un flux enumere jusqu'a une
-   dizaine d'annees, et on n'avait pas le temps de le lire. Celle-ci reste
-   tant que la souris est sur le flux.
-   Position absolue dans le document, et non fixe : le diagramme deborde de la
-   fenetre et defile dans les deux sens ; js/categories.js ajoute donc le
-   defilement aux coordonnees du pointeur. pointer-events: none est
-   indispensable — sans lui la bulle passerait sous la souris, provoquerait un
-   mouseout du flux, disparaitrait, reapparaitrait, et clignoterait.
-   Les couleurs reprennent celles de #legend (asphalte, liseré amethyste) :
-   c'est la meme famille de blocs d'explication. */
 #flow_tip{
 	position: absolute;
 	left: 0;
@@ -106,25 +58,6 @@ text{
 #flow_tip.open{
 	display: block;
 }
-
-/* --- "How to read" : panneau fixe et repliable ----------------------------
-   Septieme page a recevoir la legende, et seule ou elle soit repliable. Deux
-   raisons, toutes deux propres a cette page :
-     - le diagramme fait plus de 10 000 px de haut ; une legende posee dans le
-       flux serait hors d'atteinte des qu'on descend dans la colonne des
-       compositeurs, c'est-a-dire au moment precis ou l'on se demande ce que
-       signifie le pointille sous un nom ;
-     - le document est plus large que la fenetre (le diagramme deborde d'environ
-       440 px) et defile donc lateralement, alors que #ctrl_bar est en position
-       fixe et ne bouge pas : un bloc dans le flux se desalignerait de la barre
-       des le premier mouvement vers la droite.
-   Les marges gauche et droite reprennent le padding de #ctrl_bar
-   (var(--sd-pad) a gauche, var(--sd-gap) a droite) : le panneau a exactement la
-   largeur des blocs du menu. z-index 9 le place SOUS la barre (z-index 10),
-   pour qu'il glisse dessous plutot que de la recouvrir s'il depasse.
-   Tout le reste — fond asphalte, titre, colonnes, liseré amethyste de la note,
-   largeur de lecture — vient de #legend dans css/main.css, partage avec les six
-   autres pages : rien n'est redefini ici que le positionnement. */
 #legend{
 	position: fixed;
 	top: calc(var(--sd-bar-h) + 8px);
@@ -137,22 +70,8 @@ text{
 	overflow-y: auto;
 	box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
 }
-/* Etat replie — et c'est l'etat d'ARRIVEE sur cette page seule : la classe est
-   ecrite dans categories.php, le diagramme etant ce qu'on vient voir. Le repli
-   lui-meme (bouton, caret, masquage du corps) est commun aux sept pages et vit
-   dans css/main.css ; ce qui suit lui est propre, parce que cette legende est
-   la seule posee en fixe. Seule la bande de titre subsiste, et elle se
-   retrecit pour s'arreter au bord droit de "The Project", dernier bloc du
-   menu — barrer toute la fenetre pour trois mots n'aurait aucun sens. La
-   largeur est mesuree par js/legend_toggle.js, qui ne le fait justement que
-   pour une legende en position fixe, et posee dans --lg-collapsed-w ; sa
-   valeur de repli (auto) redonne la pleine largeur, left et right etant tous
-   deux definis. */
 #legend.is-collapsed{
 	overflow: hidden;
-	/* box-sizing: la largeur mesuree est celle de la BOITE, bord droit du
-	   panneau contre bord droit du menu ; sans cela les 14 px de padding de
-	   chaque cote s'y ajouteraient et le panneau depasserait de 28 px. */
 	box-sizing: border-box;
 	width: var(--lg-collapsed-w, auto);
 }

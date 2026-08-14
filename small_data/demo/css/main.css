@@ -1,22 +1,14 @@
-/* =========================================================
-   Small Data — feuille de style commune (main.css)
-   Chargée en premier par les 7 pages de l'application.
-   La barre de contrôle #ctrl_bar y est traitée une seule fois :
-   toute page qui inclut menus.php en hérite automatiquement.
-   Palette d'origine conservée (Flat UI, 2016-2017).
-   ========================================================= */
-
 :root{
-	--sd-gap: 5px;            /* écart unique entre les blocs de la barre */
+	--sd-gap: 5px;
 	--sd-pad: 10px;
-	--sd-bar-h: 128px;        /* hauteur de la barre fixe (4 entrees de menu) */
-	--sd-midnight: #2c3e50;   /* midnight blue */
-	--sd-asphalt: #34495e;    /* west asphalt */
-	--sd-amethyst: #9b59b6;   /* violet amethyst */
-	--sd-river: #3498db;      /* blue peter river */
-	--sd-emerald: #2ecc71;    /* emerald green */
-	--sd-greensea: #16a085;   /* dark green sea */
-	--sd-asbestos: #7f8c8d;   /* grey asbestos */
+	--sd-bar-h: 128px;
+	--sd-midnight: #2c3e50;
+	--sd-asphalt: #34495e;
+	--sd-amethyst: #9b59b6;
+	--sd-river: #3498db;
+	--sd-emerald: #2ecc71;
+	--sd-greensea: #16a085;
+	--sd-asbestos: #7f8c8d;
 }
 
 body{
@@ -63,16 +55,12 @@ ul{
 	padding: 0 5px 5px 10px;
 }
 
-/* =========================================================
-   1. LA BARRE DE CONTROLE — flexbox au lieu des flottants
-   ========================================================= */
-
 #ctrl_bar{
 	position: fixed;
 	top: 0;
 	left: 0;
 	right: 0;
-	width: auto;              /* corrige width:100% + left:5px, qui débordait */
+	width: auto;
 	box-sizing: border-box;
 	padding: var(--sd-gap) var(--sd-gap) var(--sd-gap) var(--sd-pad);
 	height: auto;
@@ -80,12 +68,10 @@ ul{
 	background: var(--sd-midnight);
 	display: flex;
 	flex-wrap: wrap;
-	align-items: stretch;     /* tous les blocs à la même hauteur */
+	align-items: stretch;
 	gap: var(--sd-gap);
 	z-index: 10;
 }
-
-/* Les blocs de premier niveau ne flottent plus : le gap gère l'espacement */
 #ctrl_bar > div,
 #ctrl_bar > ul{
 	float: none;
@@ -96,8 +82,6 @@ ul{
 	flex-direction: column;
 	justify-content: center;
 }
-
-/* ---------- Titre de page et compteur ---------- */
 
 #ctrl_bar #info{
 	padding: 8px var(--sd-pad);
@@ -116,23 +100,8 @@ ul{
 #ctrl_bar #info p{
 	margin: 0;
 	font-size: 12px;
-	font-variant-numeric: tabular-nums;  /* le compteur ne « danse » plus */
+	font-variant-numeric: tabular-nums;
 }
-
-/* ---------- Boutons d'action (get all data, anim, etc.) ---------- */
-/* #view (categories.php, animated_data.php) et #count (animated_data.php)
-   partagent ce panneau : c'est le meme geste — des boutons b_on / b_off dans
-   la barre — et il n'y avait aucune raison de leur inventer une apparence.
-   Seule difference de structure : #launcher EST le <ul>, tandis que #view et
-   #count sont des <div> qui portent d'abord un <label>, comme #searchBox sur
-   index.php, puis le <ul> ; d'ou les regles supplementaires plus bas.
-
-   #count est AJOUTE AUX SELECTEURS EXISTANTS et n'a pas de bloc a lui :
-      une copie de ces regles dans css/animated_data.css aurait diverge a la
-      premiere retouche faite d'un seul cote — c'est le mecanisme decrit au
-      §14.4. La contrepartie est que main.css, charge par les sept pages, doit
-      monter avec animated_data.php ; l'ajout est purement additif et ne peut
-      rien changer aux six autres, qui ne portent aucun #count. */
 #ctrl_bar #launcher,
 #ctrl_bar #view,
 #ctrl_bar #count{
@@ -157,8 +126,6 @@ ul{
 #ctrl_bar #count li:hover{
 	background: var(--sd-emerald);
 }
-/* Le libelle reprend la casse et l'interlettrage du titre de #info : c'est la
-   meme fonction, nommer le bloc au-dessus de son contenu. */
 #ctrl_bar #view label,
 #ctrl_bar #count label{
 	margin: 0 0 4px 0;
@@ -184,8 +151,6 @@ ul{
 	display: block;
 	padding: 0 0 0 5px;
 }
-
-/* ---------- Les trois menus de navigation ---------- */
 
 #ctrl_bar #links,
 #ctrl_bar #listings,
@@ -217,14 +182,11 @@ ul{
 	background: rgba(255, 255, 255, 0.16);
 	border-left-color: #fff;
 }
-/* Page courante : marquée par la classe .here posée dans menus.php */
 #ctrl_bar a.here{
 	border-left-color: #fff;
 	background: rgba(255, 255, 255, 0.22);
 	font-weight: 600;
 }
-
-/* ---------- Panneaux blancs des pages SMA / listings ---------- */
 
 #ctrl_bar #sma_main_ctrl,
 #ctrl_bar #commons,
@@ -257,7 +219,6 @@ ul{
 	padding: 0;
 	margin: 0;
 }
-/* Conteneur des deux panneaux sur award-winning / catalog / euphonies */
 #ctrl_bar #sma_menu{
 	padding: 0;
 	width: auto;
@@ -273,8 +234,6 @@ ul{
 	justify-content: center;
 }
 
-/* ---------- Accessibilité clavier et mouvement réduit ---------- */
-
 #ctrl_bar a:focus-visible,
 #ctrl_bar li:focus-visible,
 #ctrl_bar div:focus-visible{
@@ -285,49 +244,18 @@ ul{
 	#ctrl_bar *{ transition: none !important; }
 }
 
-/* ---------- Décalage du contenu sous la barre fixe ---------- */
-
 #allCanvas,
 #main_container,
 #middle,
 #chart{
 	margin-top: calc(var(--sd-bar-h) + 8px);
 }
-/* La barre passe sur deux rangs en dessous de 1100px, trois sous 720px */
 @media (max-width: 1100px){
 	:root{ --sd-bar-h: 256px; }
 }
 @media (max-width: 720px){
 	:root{ --sd-bar-h: 384px; }
 }
-
-/* ---------- Le SMA et sa colonne d'information ----------
-
-   QUATRE pages posent un canvas SMA suivi de sa colonne d'information dans un
-   #main_container : network.php, award-winning_works.php, catalog.php et
-   euphonies.php. La règle vivait dans css/network.css, où elle avait été
-   écrite pour cette page-là ; elle est ici depuis le 2026-08-05, parce que les
-   trois autres en avaient besoin le jour où leur fiche ISNI est passée EN FLUX
-   dans la colonne. La recopier trois fois, c'est le mécanisme qui a laissé
-   survivre l'en-tête « imeb id » sur une page après sa correction sur les
-   autres. (Overview n'est pas concernée : sa colonne vit dans #right_col, pas
-   dans un #main_container.)
-
-   FLEX PLUTÔT QUE DEUX FLOTTANTS. Le canvas flotte à gauche (règle `canvas`
-   plus haut) et la colonne flottait à sa suite : elle se plaçait donc à droite
-   TANT QU'IL Y AVAIT LA PLACE, et repassait sous le canvas sinon — une colonne
-   d'information à 500 px sous la visualisation qu'elle commente. En flex sans
-   retour à la ligne, elle est toujours à droite du canvas ; une fenêtre trop
-   étroite donne un défilement horizontal, ce qui se voit et se corrige, au
-   lieu d'un empilement qui passe pour la mise en page prévue.
-
-   LARGEUR FIXE, et non plus au contenu. En flottant, la colonne prenait la
-   largeur de son contenu — 193 px mesurés — sous un plafond de 300 px qui
-   n'était donc jamais atteint. C'était sans conséquence tant que la fiche ISNI
-   ne s'ouvrait qu'au clic ; depuis qu'elle s'affiche d'elle-même pour tout
-   compositeur qui en porte un, une notice d'identité à 193 px de large devient
-   illisible. La colonne prend donc les 300 px que son ancien `max-width`
-   annonçait. */
 
 #main_container{
 	display: flex;
@@ -347,25 +275,13 @@ ul{
 	margin-left: 2px;
 	word-wrap: break-word;
 }
-/* Fiche ISNI rendue EN FLUX dans la colonne (js/isni_box.js) : elle prend
-   place entre la boîte orange et la boîte violette au lieu de les recouvrir.
-   Tant qu'aucun compositeur portant un ISNI n'a été sélectionné, la div est
-   vide et ne mesure rien — la colonne est exactement celle d'avant. */
 #main_container > #infos > #isniColumn{
 	box-sizing: border-box;
 	width: 100%;
 }
-/* Respiration SOUS la fiche, et seulement quand elle est ouverte : sinon la
-   boîte violette viendrait s'y coller et les deux se liraient comme un seul
-   bloc. Portée par .open pour ne pas laisser un blanc permanent dans la
-   colonne quand aucune fiche n'est affichée. */
 #main_container > #infos > #isniColumn .isni-box.open{
 	margin-bottom: 10px;
 }
-
-/* =========================================================
-   2. BLOCS D'INFORMATION (hors barre) — règles d'origine
-   ========================================================= */
 
 #cookies{
 	padding: 5px 10px;
@@ -385,77 +301,11 @@ ul{
 	padding: 5px 10px;
 	margin: 0;
 }
-
-/* =========================================================================
-   LA BOITE VIOLETTE EST BORNEE EN HAUTEUR — 2026-08-11
-
-   Meme dispositif que la fiche ISNI, et meme borne : 36vh, celle de
-   `.isni-inflow .isni-box` (css/isni.css). Les deux boites vivent dans la
-   MEME colonne sur Overview et sur Participation ; leur donner deux bornes
-   differentes aurait fait qu'en depliant l'une on repousse l'autre — ce qui
-   est exactement le defaut que la borne de la fiche ISNI a du corriger le
-   2026-08-05, quand elle est passee de 60vh a 36vh « parce qu'elle repoussait
-   la boite violette sous le pli de l'ecran ». La reciproque n'avait jamais
-   ete posee : la boite violette, elle, n'etait bornee par rien.
-
-   L'EN-TETE RESTE VISIBLE PENDANT LE DEFILEMENT (`position: sticky`) —
-   c'est ce que fait la fiche ISNI par sa structure (`.isni-hd` en
-   `flex: 0 0 auto`, `.isni-bd` seul defile). Ici la boite est un <ul> et son
-   en-tete un <li> : le meme resultat s'obtient par `sticky` plutot qu'en
-   ajoutant un niveau de balise a une structure que trois pages produisent.
-   Le detail qui a coute un aller-retour est juste en dessous : l'en-tete
-   ne peut affleurer le haut du cadre que si sa position NATURELLE y est deja.
-   Voir le bloc suivant.
-
-   `overscroll-behavior: contain` : arrive au bout de la liste, la molette
-   n'emporte pas la page — meme reglage que `#results` sur Overview.
-
-   LA REGLE PORTE SUR `.t-boxed` ET NON SUR `#titles`. La classe est posee
-   par displayTitlesInfosGN() (js/functions.js), donc uniquement sur les trois
-   pages qui affichent la boite en colonne. Le catalogue et les œuvres primees
-   remplissent le meme identifiant autrement : chez eux la liste des œuvres
-   EST la page, et la borner l'aurait cassee.
-   ========================================================================= */
 #titles.t-boxed{
 	max-height: 36vh;
 	overflow-y: auto;
 	overscroll-behavior: contain;
 }
-
-/* ET L'EN-TETE DESCENDAIT DE CINQ PIXELS A L'OUVERTURE — corrige le
-   2026-08-11, meme jour que la borne, signale a l'usage.
-
-   PREMIERE ECRITURE, FAUSSE : `position: sticky; top: 0` en laissant
-   l'en-tete avec son `margin-top: -5px`, au motif que cette marge negative
-   « annule deja le padding-top de #titles, il affleure donc le haut du cadre
-   de defilement ». Le raisonnement portait sur la BOITE DE BORDURE ; les
-   decalages de `sticky` se mesurent sur la BOITE DE MARGE. Marge haute
-   negative : la boite de marge commence 5 px PLUS BAS que la boite de
-   bordure. `top: 0` exige donc que ce bord-la soit a 0, et pousse l'element
-   de 5 px vers le bas des l'instant ou la boite devient un cadre de
-   defilement — c'est-a-dire a l'ouverture.
-
-   *Une justification ecrite en meme temps que la regle ne la verifie pas :
-   elle la rend seulement plus difficile a soupconner.* Le commentaire d'a
-   cote annoncait « top: 0 et non -5px » avec un motif — et c'est ce motif
-   qui etait faux.
-
-   LA CORRECTION NE DEPLACE PLUS RIEN AU LIEU DE COMPENSER UN DEPLACEMENT.
-   On aurait pu ecrire `top: -5px` ; il aurait fallu que cette valeur suive
-   toute modification du padding de #titles, exactement comme les marges
-   negatives de `.t-hd` doivent deja le suivre — une troisieme valeur liee aux
-   deux autres sans que rien ne le dise. On retire donc la cause : la boite
-   perd son padding haut, l'en-tete perd sa marge negative, et sa position
-   naturelle dans le cadre de defilement EST zero. `sticky` n'a plus rien a
-   corriger, donc plus rien a decaler.
-
-   Les marges laterales de -10px restent : elles compensent le padding
-   horizontal, que rien ne retire.
-
-   `t-hd-on` — POSEE PAR displayTitlesInfosGN() QUAND ELLE ECRIT L'EN-TETE,
-   et retiree quand elle ecrit « no archived work ». Sans elle, le
-   `padding-top: 0` s'appliquerait aussi a la boite SANS en-tete, dont
-   l'unique ligne viendrait alors toucher le bord haut. */
 #titles.t-boxed.t-hd-on{
 	padding-top: 0;
 }
@@ -465,54 +315,17 @@ ul{
 	margin-top: 0;
 	z-index: 1;
 }
-
-/* --- La ligne de pays des boites d'identite (network, participation) ---
-   Produite par countryLineHtml() dans js/functions.js : le pays courant, et
-   devant lui le pays d'origine quand la base en porte un — « Argentina /
-   France », dans l'ordre des notices d'autorite de la BnF.
-
-   Elle vit SOUS le nom, en retrait typographique : c'est une precision sur la
-   personne nommee juste au-dessus, pas une information de meme rang. D'ou le
-   corps reduit et l'opacite — sur fond orange, un gris clair passerait mal, un
-   noir a 70 % reste lisible sans concurrencer le nom.
-
-   Elle herite du `padding: 0; margin: 0` de « #selection p » ci-dessus : seul
-   l'ecart au nom est ajoute. */
 .sd-country{
 	margin: 2px 0 0 0;
 	font-size: .85em;
 	opacity: .7;
 	letter-spacing: .01em;
 }
-
-/* --- Boite violette repliee : en-tete « N archived works » (index, network) ---
-   Le pli est produit par displayTitlesInfosGN() (js/functions.js), partagee
-   par ces deux pages : les regles vivent donc ici, aupres de #titles, et non
-   dans chacune des deux feuilles de page. Les autres pages a boite violette
-   (catalogue, oeuvres primees) la remplissent autrement et ne produisent ni
-   .t-hd ni .is-folded : ces regles n'y rencontrent jamais rien.
-
-   L'en-tete se detache de ses oeuvres par un fond plus sombre — meme partition
-   que la fiche ISNI (.isni-hd sur --sd-midnight, corps sur --sd-asphalt). Mais
-   PAS la meme couleur : sur Overview la fiche ISNI est juste au-dessus dans la
-   colonne, et deux bandes --sd-midnight qui se touchent se lisaient comme un
-   seul objet. D'ou un violet fonce, plus sombre que .t-b : il se detache de
-   ses oeuvres tout en restant visiblement de la meme boite qu'elles. */
 #titles li.t-hd{
-	/* Marges NEGATIVES : #titles porte lui-meme le padding 5px 10px ci-dessus,
-	   sur fond amethyste. Un en-tete pose sagement dedans laissait voir une
-	   bande violette de 5px au-dessus et de 10px de chaque cote — un lisere
-	   autour du bouton. Il en ressort pour aller d'un bord a l'autre, comme
-	   .isni-hd ; les oeuvres, elles, gardent la gouttiere. Si le padding de
-	   #titles change, ces marges doivent suivre : c'est pourquoi les deux
-	   regles sont voisines. */
 	margin: -5px -10px 0;
 	padding: 0;
 	background: #5b2c6f;
 }
-/* Replie, l'en-tete est le dernier element : le padding bas de #titles
-   laisserait a son tour une bande violette SOUS le bouton. On le retire, et
-   il revient des que la liste s'ouvre. */
 #titles.is-folded{
 	padding-bottom: 0;
 }
@@ -538,9 +351,6 @@ ul{
 	background: rgba(255, 255, 255, .08);
 	outline: none;
 }
-/* Le chevron : meme code visuel que le repli du "How to read" (.lg-caret),
-   un triangle CSS qui pivote. Il pointe vers le bas quand la liste est
-   ouverte — il indique ce qu'on voit, pas ce qu'on obtiendrait. */
 #titles .t-caret{
 	flex: 0 0 auto;
 	width: 0;
@@ -556,10 +366,6 @@ ul{
 #titles.is-folded li:not(.t-hd){
 	display: none;
 }
-
-/* =========================================================
-   3. LEGENDE DE PAGE (#legend) — partagee (participation, network)
-   ========================================================= */
 
 #legend{
 	clear: both;
@@ -577,13 +383,6 @@ ul{
 	text-transform: uppercase;
 	color: #fff;
 }
-/* Repli de la legende, commun aux sept pages qui en portent une. Le titre EST
-   le bouton : pas de commande a loger ailleurs, et la bande de titre reste
-   visible une fois la legende fermee, donc rouvrable sans remonter en haut de
-   page. Les proprietes listees ici ne font que neutraliser le rendu par defaut
-   de <button> ; la typographie reste celle de #legend .lg-title ci-dessus.
-   Le comportement est dans js/legend_toggle.js, l'etat d'arrivee dans le HTML
-   de chaque page : ouvert partout sauf sur categories.php. */
 #legend button.lg-title{
 	display: flex;
 	align-items: center;
@@ -619,11 +418,6 @@ ul{
 #legend.is-collapsed .lg-caret{
 	transform: rotate(-90deg);
 }
-/* categories.php ajoute a cet etat une largeur mesuree (voir css/sankey.css) :
-   sa legende est la seule posee en fixe, donc la seule a devoir se caler sur
-   la fin du menu plutot que sur la largeur de son contenu. */
-/* Intro / note "How to read" (toutes pages) : largeur de lecture confortable,
-   texte justifie, et emphase (em) en blanc gras SANS italique. */
 #legend .lg-intro,
 #legend .lg-note{
 	max-width: 80ch;
@@ -656,31 +450,6 @@ ul{
 	color: #bdc3c7;
 	text-align: justify;
 }
-/* L'EMPHASE DES PUCES N'ETAIT PAS DECIDEE, ELLE ETAIT HERITEE — 2026-08-11.
-
-   Cette regle posait `color` et `font-style` et TAISAIT `font-weight` : les
-   <em> des listes prenaient donc le gras de la regle globale `em{font-weight:
-   bold; font-style: italic}` (en tete de cette feuille), sans que personne
-   l'ait choisi. La note en prose, elle, declare son emphase en toutes lettres
-   — `font-weight: 600` trente lignes plus haut.
-
-   D'ou deux graisses pour un meme role sur la meme page, et la plus LOURDE
-   dans les puces : exactement l'inverse de ce qu'il faudrait, une puce etant
-   deja courte et deja contrastee — texte en #bdc3c7, emphase en blanc. *Le
-   passage au blanc suffit a emphaser ; le gras par-dessus ne fait que crier.*
-
-   Mesure du 2026-08-11 sur la legende de Participation : 10 % des caracteres
-   des puces sont en <em>, et SIX puces en portent trois ou plus — l'une en
-   porte SEPT en 333 caracteres. A cette densite, le gras cesse de distinguer
-   quoi que ce soit : il devient la couleur du fond.
-
-   RESERVE, ecrite pour ne pas etre reperdue : `<em>` fait ici au moins
-   trois metiers differents — nommer une commande de l'interface (`span`,
-   `chart`, `c/t`, `this period`), citer un chiffre (`62`, `4 276`), et
-   appuyer une affirmation (`an empty cell is not a zero`). Les trois recoivent
-   le meme signal. Les separer demande une classe a part pour les libelles de
-   commande, et une relecture de toutes les puces : c'est une decision
-   d'ecriture, pas de feuille de style, et elle n'est pas prise ici. */
 #legend li em{
 	color: #fff;
 	font-style: normal;
@@ -694,14 +463,10 @@ ul{
 	border: 1px solid rgba(0, 0, 0, 0.35);
 }
 
-/* ---------- Elements de menu cliquables : curseur main ---------- */
-
 #ctrl_bar #sma_main_ctrl li,
 #ctrl_bar #commons ul li{
 	cursor: pointer;
 }
-
-/* "Group by:" sur la meme ligne que les proprietes qui apparaissent */
 #ctrl_bar div#commons{
 	flex-direction: row;
 	align-items: center;
@@ -711,20 +476,6 @@ ul{
 #ctrl_bar div#commons > p{
 	white-space: nowrap;
 }
-
-/* =========================================================
-   4. EN-TETES DE TABLEAU TRIABLES (js/table_sort.js)
-   ---------------------------------------------------------
-   Regles communes a tous les tableaux du site : la classe .sortable et le
-   <span class="sort-caret"> sont poses par le script, jamais ecrits dans le
-   HTML. Une page servie sans JavaScript garde donc des en-tetes ordinaires,
-   sans curseur main ni caret qui promettraient un tri impossible.
-   Le caret reprend la construction de #legend .lg-caret — un triangle en
-   bordures, sans image ni police d'icones. Il est present mais tres pale sur
-   toutes les colonnes : c'est lui qui signale qu'elles sont cliquables, avant
-   meme le survol. currentColor le met a la couleur du texte de l'en-tete,
-   quel que soit le fond de la page (vert-de-gris sur euphonies.php).
-   ========================================================= */
 
 th.sortable{
 	cursor: pointer;
@@ -749,8 +500,6 @@ th.sortable:hover .sort-caret{
 th.sortable.is-sorted .sort-caret{
 	opacity: 1;
 }
-/* Tri croissant : le triangle se retourne vers le haut. La bordure du bas
-   remplace celle du haut, qui doit donc etre remise a zero. */
 th.sortable.is-asc .sort-caret{
 	border-top: 0;
 	border-bottom: 5px solid currentColor;

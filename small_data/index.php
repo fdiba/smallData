@@ -1,8 +1,4 @@
 <?php
-/* Small Data — landing page for small_data/.
-   $app = folder holding the application, relative to THIS file.
-   The former index.php linked to "./demo", so the default is 'demo/'.
-   If the application now sits directly in small_data/, use '' instead. */
 
 $app = 'demo/';
 ?><!DOCTYPE html>
@@ -33,9 +29,6 @@ body{
 	line-height:1.6;
 }
 .wrap{ max-width:860px; margin:0 auto; padding:48px 24px 72px; }
-
-/* --- Header: the colour band reuses the edition encoding,
-       1973 → 2009 mapped onto the colour wheel, as in Overview --- */
 .editions{ display:flex; height:10px; margin-bottom:28px; }
 .editions span{ flex:1; }
 
@@ -66,8 +59,6 @@ p{ margin:0 0 18px; text-align:justify; }
 a{ color:#fff; }
 
 .intro p:first-of-type{ font-size:18px; }
-
-/* --- Sections --- */
 .rubriques{ list-style:none; margin:22px 0 0; padding:0; }
 .rubriques li{
 	display:flex;
@@ -89,8 +80,6 @@ a{ color:#fff; }
 }
 .rubriques a:hover{ border-bottom-color:#fff; background:rgba(255,255,255,.12); }
 .rubriques span{ flex:1 1 320px; color:var(--silver); font-size:15px; text-align:justify; }
-
-/* --- Publications --- */
 .pub{
 	margin:0 0 18px;
 	padding-left:16px;
@@ -99,12 +88,10 @@ a{ color:#fff; }
 	color:var(--silver);
 }
 .pub em{ color:#fff; font-style:normal; font-weight:600; }
-
-/* --- Video --- */
 .video{
 	position:relative;
 	width:100%;
-	padding-top:56.25%;      /* 16/9 */
+	padding-top:56.25%;
 	margin:0 0 8px;
 	background:#000;
 }
@@ -115,8 +102,6 @@ a{ color:#fff; }
 	border:0;
 }
 .caption{ font-size:14px; color:var(--silver); margin:0 0 8px; }
-
-/* --- Liens annexes --- */
 .plain{ list-style:none; padding:0; margin:22px 0 0; }
 .plain li{ margin-bottom:8px; }
 .plain a{ font-weight:600; }
@@ -140,8 +125,7 @@ footer{
 
 	<div class="editions" aria-hidden="true">
 <?php
-	/* One band per edition, 1973 to 2009: the same hue formula
-	   as in overview.js — hue = (year - 1973) × 310 / 36. */
+
 	for ($y = 1973; $y <= 2009; $y++) {
 		$hue = ($y - 1973) * 310 / 36;
 		echo "\t\t<span style=\"background:hsl(" . round($hue) . ",50%,50%)\" title=\"" . $y . "\"></span>\n";

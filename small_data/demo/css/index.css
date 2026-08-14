@@ -6,15 +6,12 @@
 	clear: left;
 }
 #cookies, #selection, #titles, #results{
-	width: 330px;/*-20 padding*/
-	/*max-width: 330px;*/
+	width: 330px;
 	
 	word-wrap: break-word;
 	float: left;
 	clear:left;
 }
-
-/*alphabetic order*/
 #cookies{
 	margin: 1px 0 0 0;
 }

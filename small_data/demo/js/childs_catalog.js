@@ -6,29 +6,24 @@ function Child(config){
 
 	this.scale = config.scale;
 
-	//blue peter river, maroon
 	this.colors=["#3498db", "#800000"];
 
 	this.x=config.x;
 	this.y=config.y;
 
-	// this.edition = config.edition;
-	// this.year = config.year;
-	// this.price = config.price;
 	this.imeb_id = config.imeb_id;
 	this.fn = config.fn;
-	//voir la note en tete de particles_catalog.js
+
 	this.name = config.name;
 	this.ctry = config.ctry;
 	this.title = config.title;
 	this.duration = config.duration;
-	//voir la note en tete du particles_*.js correspondant
+
 	this.minutes = config.minutes;
 	this.editions = config.editions;
-	// this.cat = config.cat;
-	// this.sub_cat = config.sub_cat;
+
 	this.isni = config.isni;
-	
+
 	this.id=config.id;
 
 	this.radius=3.5*this.scale+Math.random()*1.5;
@@ -58,15 +53,12 @@ Child.prototype.getAwayFromCenter = function(t_x, t_y, t_radius){
 }
 Child.prototype.getCloseTo = function(t_x, t_y, t_radius){
 
-	//les membres restent bien a l'interieur du disque : ils ne
-	//s'approchent jamais du bord du cercle jaune
 	var maxDistance = t_radius*2*.7 - this.radius*2;
 	if(maxDistance<10)maxDistance = 10;
 	var distance = dist(t_x, this.x, t_y, this.y);
 
 	if(distance>maxDistance && distance>0){
 
-		//rappel proportionnel au depassement, pas a la distance brute
 		var x = (t_x - this.x)/distance;
 		var y = (t_y - this.y)/distance;
 
@@ -87,7 +79,6 @@ Child.prototype.getAwayFrom = function(arr, radius, index){
 
 			if(distance<minDistance && distance>0){
 
-				//ressort doux, proportionnel au chevauchement : glisse au lieu de sauter
 				var x = (arr[i].x - this.x)/distance;
 				var y = (arr[i].y - this.y)/distance;
 
@@ -100,7 +91,7 @@ Child.prototype.getAwayFrom = function(arr, radius, index){
 	}
 }
 Child.prototype.reduceVelocityAndUseIt = function(coeff){
-	//derive lente et continue, pour ne jamais etre parfaitement immobile
+
 	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
 	this.driftT+=.02;
 	this.velocity.x += noise.perlin2(this.driftT, this.driftP)*.4;
@@ -116,15 +107,13 @@ Child.prototype.display = function(){
 
 	var ctx=this.context;
 
-	//apparition en fondu : chaque membre nait transparent
 	if(this.appearAlpha===undefined)this.appearAlpha=0;
 	if(this.appearAlpha<1)this.appearAlpha=Math.min(1, this.appearAlpha+.05);
 	ctx.globalAlpha=this.appearAlpha;
 
 	if(this.lastNodeSelected)ctx.fillStyle=this.colors[1];
-	else ctx.fillStyle=this.colors[0];//blue
+	else ctx.fillStyle=this.colors[0];
 
-	//respiration : le diametre se contracte brievement, par intermittence
 	if(this.breathT===undefined){ this.breathT=Math.random()*6.28; this.breathS=.02+Math.random()*.02; }
 	this.breathT+=this.breathS;
 	var s = Math.sin(this.breathT);

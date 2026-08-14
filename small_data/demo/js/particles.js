@@ -1,40 +1,27 @@
-//--- Reglages du comportement des agents (portes depuis particles_catalog.js) ---
-//Agitation des gris (meme valeur que catalog).
 var GREY_NOISE = .35;
-//Ralentissement cumulatif/temporaire par collision (masse).
+
 var COLL_GAIN  = .4;
 var COLL_DECAY = .94;
 var COLL_MAX   = 6;
 var COLL_MARGIN= 10;
-//Repulsion douce d'un gris qui s'ecarte d'un groupe non compatible.
+
 var GREY_REPULSION = .1;
-//Evitement anticipe radial (stable) des groupes par un gris.
+
 var AVOID_STRENGTH = 1.4;
 
-//Raideur du "coussin" de bord pour les groupes (verts/jaunes) : ressort doux
-//perpendiculaire au mur, proportionnel a l'enfoncement. Monter = bord plus ferme.
 var BORDER_PUSH = .03;
 
-//Tampon d'hysteresis du wrap toroidal des gris (px) : evite les teleportations
-//en boucle a la couture. Le gris reapparait en retrait de cette marge du bord.
 var WRAP_MARGIN = 30;
 
 var MERGE_NEIGHBORHOOD = 260;
 
 var MERGE_MASS_EXP = 0.25;
 
-//Separation entre groupes NON compatibles : force + marge (px). Monter
-//GROUP_REPULSION = les verts se traversent moins (se collent a cote).
 var GROUP_REPULSION = .35;
 var GROUP_MARGIN = 45;
 
-//Vitesse min (px/image) garantie VERS le partenaire de fusion : un compatible
-//ne recule jamais -> les groupes eloignes se rejoignent inexorablement, meme
-//a travers une foule, sans aller plus vite. 0 = desactive.
 var MERGE_CREEP = .8;
 
-//Priorite de passage par la masse : le plus lourd va tout droit, le plus
-//leger fait le tour. 0 = symetrique (avant) ; 1 = priorite pleine.
 var MASS_PRIORITY = 1;
 
 function Particle(config){
@@ -43,8 +30,6 @@ function Particle(config){
 	this.canvas=document.getElementById(this.canvasId);
 	this.context=this.canvas.getContext("2d");
 
-	//midnight blue, green emerald, yellow sun flower, blue peter river
-	//#2C3E50 dark blue
 	this.colors=["#bdc3c7", "#2ecc71", "#f1c40f", "#3498db", "#2C3E50"];
 
 	this.x=config.x;
@@ -52,39 +37,37 @@ function Particle(config){
 
 	this.counts=[];
 	this.counts.push(config.count);
-	
+
 	this.ids=[];
 	this.ids.push(config.id);
 
 	this.scale = config.scale;
 
 	this.label=config.label;
-	this.radVar=Math.random()*2;   //variation de taille persistante (comme catalog)
+	this.radVar=Math.random()*2;
 	this.radius=this.radVar+1.*this.scale;
 
 	this.on = false;
 	this.maxSpeed = 4.;
 
 	this.velocity={x:0, y:0};
-	this.collMass=0;   //masse temporaire accumulee par les collisions
+	this.collMass=0;
 
 	this.alpha=.2;
 	this.fillAlpha = .1;
 
-	this.color1 = 'rgba(255, 165, 0,'+ this.alpha + ')'; //orange
-	this.color2 = 'rgb(52, 152, 219,'+ this.alpha + ')'; //blue
-	this.color3 = 'rgba(255, 0, 0, 1)'; //red
+	this.color1 = 'rgba(255, 165, 0,'+ this.alpha + ')';
+	this.color2 = 'rgb(52, 152, 219,'+ this.alpha + ')';
+	this.color3 = 'rgba(255, 0, 0, 1)';
 
 	this.font = 10*this.scale + "pt Calibri";
 
-	// code pays servi par retrieve_data.php (6e champ du case 10) : iso3, a
-	// defaut iso2 pour l'Ecosse (GB), a defaut le nom du pays.
 	this.iso=config.iso ? config.iso : this.label;
 
 	this.radius_to_add=config.addRadiusVal;
 
 	this.open=false;
-	this.max_extra_radius=32.*this.scale; //agrandi : les membres restent loin du bord
+	this.max_extra_radius=32.*this.scale;
 	this.extra_radius=0.;
 	this.opening=false;
 
@@ -95,7 +78,6 @@ function Particle(config){
 
 	this.lastNodeSelected=false;
 
-	//rotation des membres affiches quand tous ne tiennent pas dans le disque
 	this.memberCursor=0;
 	this.rotT=0;
 }
@@ -105,7 +87,6 @@ Particle.prototype.openOrCloseIt = function(){
 
 	if(this.open){
 
-		//cible d'ouverture d'apres la surface reelle des membres
 		this.max_extra_radius = Math.max(10., this.computeOpenRadius() - this.radius);
 
 		this.opening=true;
@@ -114,17 +95,14 @@ Particle.prototype.openOrCloseIt = function(){
 
 		this.childs=[];
 
-		// console.log('close it');	 	
 	 	this.extra_radius=0.;
 	 	this.lastHit=-999;
 
-	 	clearIdentityBoxGN();          // boite d'identite ET fiche ISNI
+	 	clearIdentityBoxGN();
 	 	$("#titles").empty();
 
 	}
 
-	// console.log(this.radius);
- 	
 }
 Particle.prototype.processChilds=function(mouseX, mouseY){
 
@@ -154,27 +132,15 @@ Particle.prototype.processChilds=function(mouseX, mouseY){
 }
 Particle.prototype.getTitlesFrom=function(artist_id){
 
-    $.ajax({                                      
-        url: 'php/retrieve_data.php',       
+    $.ajax({
+        url: 'php/retrieve_data.php',
         type: "POST",
-        data: { aId: artist_id, case:11 } 
+        data: { aId: artist_id, case:11 }
     }).done(function(str) {
 
         var arr=str.split("%");
         this.titles=[];
 
-        /* Dix champs par oeuvre depuis que l'identite de la fiche accompagne le
-           flux (php/retrieve_data.php, case 11) :
-
-             0 id   1 titre   2 duree   3 misam   4 editions
-             5 prenom   6 nom   7 ISNI   8 pays   9 pays d'origine
-                                  — les cinq derniers sont repetes a chaque
-                                    enregistrement
-
-           Le pas est passe de 7 a 8 (ISNI), puis de 8 a 10 (pays et origine, le
-           2026-08-04) ; il DOIT suivre chaque ajout, sinon la lecture se decale
-           des la deuxieme oeuvre. C'est l'unique endroit du site qui consomme
-           le case 11. */
         for (var i=0; i<arr.length-9; i+=10) {
 
         	if(i===0)displayFirstnameAndNameGN({fn:arr[i+5], n:arr[i+6], isni:arr[i+7],
@@ -186,7 +152,6 @@ Particle.prototype.getTitlesFrom=function(artist_id){
         displayTitlesInfosGN(this.titles);
 
     });
-
 
 }
 Particle.prototype.createNewChild=function(id, count){
@@ -206,25 +171,18 @@ Particle.prototype.createNewChild=function(id, count){
 
 Particle.prototype.addNoiseField = function(coef){
 
-	//champ de bruit lisse et evolutif : la 3e dimension avance lentement
-	//avec le temps, les courants se reconfigurent au lieu de se figer
 	var t = Date.now()*.00006;
 
 	var x = noise.perlin3(this.x/150, this.y/150, t);
     var y = noise.perlin3(this.x/150+7.31, this.y/150+3.17, t);
-    
-    //la force du champ diminue avec la TAILLE du cercle (masse ~ rayon),
-    //au lieu du seul nombre de membres : un gros cercle est moins deplace
-    //qu'un petit, et deux gris de tailles differentes reagissent differemment
+
     var sizeFactor = this.radius/(2.*this.scale);
-    if(sizeFactor<1)sizeFactor=1;   //plancher 1 : pas de sur-propulsion des petits (gris)
+    if(sizeFactor<1)sizeFactor=1;
     x*=coef/sizeFactor;
     y*=coef/sizeFactor;
 
-	//agitation reduite pour les gris (reglable via GREY_NOISE)
 	if(this.ids.length===1){ x*=GREY_NOISE; y*=GREY_NOISE; }
 
-	//la masse de collision freine la PROPULSION (a = F/masse), pas la separation
 	if(this.collMass){ var cd = 1/(1+this.collMass); x*=cd; y*=cd; }
 
 	this.velocity.x+=x;
@@ -243,11 +201,10 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 			var minDistance = this.radius*2+arr[i].radius*2+2;
 			var distance = dist(this.x, arr[i].x, this.y, arr[i].y);
 
-			if(distance<50){ //TODO PARAM
+			if(distance<50){
 
-				//TODO auto search for other attr than label
 				if(this.label.localeCompare(arr[i].label)===0){
-					//console.log("match");
+
 					if(commonAttributes.length<1){
 						commonAttributes.push({name:'label', count:1});
 					} else {
@@ -259,7 +216,6 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 				}
 			}
 
-			//get away from each other if
 			if(distance<minDistance){
 
 				var x = arr[i].x - this.x;
@@ -276,8 +232,6 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 
 				this.velocity.x*=.9;
 				this.velocity.y*=.9;
-
-			    //this.drawLine(this.x, this.y, arr[i].x, arr[i].y, this.color3);
 
 			}
 		}
@@ -297,80 +251,39 @@ Particle.prototype.update = function(index, particles){
 
 	this.mHas=false; this.yieldW=0;
 
-	//derive lente et continue : les regroupements ne deviennent jamais
-	//totalement immobiles, meme quand plus rien ne fusionne
 	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
 	this.driftT+=.008;
 	if(this.ids.length>1){
-		var driftAmp = (this.open ? .5 : .4)*this.ids.length/(1+this.collMass); //derive un peu plus vive (etait .4/.2), freinee par la masse de collision
+		var driftAmp = (this.open ? .5 : .4)*this.ids.length/(1+this.collMass);
 		this.velocity.x += noise.perlin2(this.driftT, this.driftP)*driftAmp;
 		this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*driftAmp;
 	}
 
-
-	//les gris isoles s'ecartent doucement de leurs voisins isoles
-	//avec lesquels ils ne partagent pas la valeur de propriete ciblee
 	if(this.ids.length===1)this.separateFromLoners(index, particles);
 
-	//evitement anticipe (radial, stable) des groupes non compatibles
 	this.avoidGroupsAhead(index, particles);
 
-	//masse de collision : ralentissement cumulatif et temporaire, pour TOUS
-	//(gris ET groupes) -> la masse se resorbe aussi sur les groupes, sinon un
-	//groupe herite d'une collMass figee et devient immobile.
 	this.updateMass(index, particles);
 
-	//separation entre groupes non compatibles : TOUJOURS active (meme en
-	//poursuite d'une fusion) -> les verts se contournent au lieu de se traverser.
 	if(this.ids.length>1)this.getAwayFromGroups(index, particles);
 
 	if(this.opening){
 
-		//les membres commencent a apparaitre des le debut de l'ouverture,
-		//chacun seulement quand il a de la place
 		this.tryAddChild();
 
 		if(this.extra_radius<this.max_extra_radius){
 			this.radius-=this.extra_radius;
-			this.extra_radius+=.25; //ouverture lente
+			this.extra_radius+=.25;
 			this.radius+=this.extra_radius;
-			// console.log(this.radius, " ", this.extra_radius);
-		} else { //cible atteinte ou depassee : fin d'ouverture
+
+		} else {
 			this.opening=false;
 
-			/* Le compte du groupe — MAIS PAS SI UN MEMBRE EST DEJA CHOISI
-			   (2026-08-05, meme correction que sur les trois pages a SMA +
-			   tableau).
-
-			   Les membres apparaissent des le DEBUT de l'ouverture et sont
-			   cliquables aussitot, alors que l'animation dure une centaine
-			   d'images (extra_radius progresse de .25 par image vers
-			   max_extra_radius) — plusieurs secondes, pendant lesquelles les
-			   fusions continuent et le disque grandit encore. Un compositeur
-			   choisi dans cet intervalle voyait, a la fin de l'ouverture, son
-			   nom et sa fiche ISNI remplaces par « 12 composers » : le SMA
-			   ecrasait une reponse precise par une reponse vague, longtemps
-			   apres le geste qui l'avait produite. Vu de l'ecran, la fiche se
-			   refermait toute seule tant que les fusions n'etaient pas finies.
-
-			   ICI LE DELAI EST DOUBLE. getTitlesFrom() est ASYNCHRONE : la
-			   boite d'identite et la fiche ne sont ecrites qu'au retour de
-			   retrieve_data.php. Selon que l'ouverture se termine avant ou
-			   apres cette reponse, le compte passait devant ou derriere —
-			   d'ou un defaut qui ne se reproduisait pas a tous les coups.
-			   lastNodeSelected, lui, est pose des le clic, donc avant la
-			   requete : le test ne depend d'aucun ordre d'arrivee.
-
-			   L'etat existait deja — processChilds() le pose sur le membre
-			   choisi, removePreviousSelection() le retire. */
 			var memberSelected = false;
 			for (var c=0; c<this.childs.length; c++) {
 				if(this.childs[c].lastNodeSelected){ memberSelected = true; break; }
 			}
 
-			// setSelectionTextGN (js/functions.js) et non $("#selection p") :
-			// la boite porte deux <p> depuis la ligne de pays, et le selecteur
-			// les ecrivait TOUS LES DEUX — le nombre s'affichait deux fois.
 			if(!memberSelected) setSelectionTextGN(this.ids.length+' composers');
 
 		}
@@ -378,8 +291,6 @@ Particle.prototype.update = function(index, particles){
 
 		this.tryAddChild();
 
-		//rotation continue : quand des membres restent invisibles faute de
-		//place, les affiches fondent tour a tour pour leur ceder la place
 		if(this.childs.length < this.ids.length && this.childs.length > 0){
 			this.rotT++;
 			if(this.rotT>40){
@@ -395,25 +306,21 @@ Particle.prototype.update = function(index, particles){
 			this.rotT = 0;
 		}
 
-		//cible recalculee en continu : le disque suit la surface reelle
-		//de ses membres, absorptions comprises
 		var rad_max = this.computeOpenRadius();
 
 		if(this.radius< rad_max)this.radius+=.25;
 
 	} else if(!this.open){
-		//taille fermee a saturation douce : les tres gros pays (USA, FRA)
-		//plafonnent vers ~33 au lieu de croitre lineairement sans limite
+
 		var target = this.radVar+1.*this.scale + 30.*(1.-Math.exp(-Math.sqrt(this.ids.length-1)/8.))*this.scale;
 		if(this.radius>target)this.radius=Math.max(target, this.radius-1.);
-		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25); //croissance lente apres fusion
+		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25);
 	}
 
 	for (var i = this.childs.length-1; i >= 0; i--) {
 
 		var ch = this.childs[i];
 
-		//disparition progressive : le diametre fond, puis retrait
 		if(ch.dying){
 			ch.radius *= .9;
 			ch.appearAlpha = Math.min(ch.appearAlpha===undefined ? 1 : ch.appearAlpha, ch.radius/3.);
@@ -423,20 +330,16 @@ Particle.prototype.update = function(index, particles){
 		ch.getAwayFrom(this.childs, this.radius, i);
 		ch.getCloseTo(this.x, this.y, this.radius);
 		ch.getAwayFromCenter(this.x, this.y, this.radius);
-		ch.reduceVelocityAndUseIt(.6); //plus d'inertie : glisse fluide
+		ch.reduceVelocityAndUseIt(.6);
 	}
 
 	if(this.on)this.mergeNodesAndFindTarget(index, particles);
-	// if(this.on)particles[index].mergeNodesAndFindTarget(index, particles);
-	
+
     this.checkEdgesV2();
-    // particles[index].checkEdgesV2();
 
     this.velocity.x /= this.ids.length;
     this.velocity.y /= this.ids.length;
 
-    //approche inexorable vers la cible de fusion (voir catalog) : composante de
-    //vitesse minimale garantie vers le partenaire, jamais reculer.
     if(this.mHas){
         var mdx=this.mTX-this.x, mdy=this.mTY-this.y, mdl=Math.sqrt(mdx*mdx+mdy*mdy);
         if(mdl>1){
@@ -445,7 +348,6 @@ Particle.prototype.update = function(index, particles){
         }
     }
 
-    //vitesses etagees : ouvert tres calme, vert pose, gris tranquille
     var maxSpeed = this.open ? 1.2 : (this.ids.length>1 ? 2. : 2.8);
 
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
@@ -460,7 +362,6 @@ Particle.prototype.update = function(index, particles){
 		if(this.y<0)this.y=0; else if(this.y>H)this.y=H;
 	}
 
-	//les enfants (cercles bleus) suivent le deplacement de leur parent ouvert
 	for (var k=0; k<this.childs.length; k++) {
 		this.childs[k].x += this.velocity.x;
 		this.childs[k].y += this.velocity.y;
@@ -468,17 +369,11 @@ Particle.prototype.update = function(index, particles){
 
 	this.velocity.x*=.9;
 	this.velocity.y*=.9;
-	
+
 }
 Particle.prototype.updateBeforeMerging = function(){
 
 	var maxSpeed = this.maxSpeed;
-
-	//this.velocity.x += (Math.random()*2.-1.)*.1;
-	//this.velocity.y += (Math.random()*2.-1.)*.1;
-
-	//this.velocity.x *= (2. - this.ids.length/600);
-	//this.velocity.y *= (2. - this.ids.length/600);
 
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
 	this.velocity.y = Math.min(Math.max(this.velocity.y, -maxSpeed), maxSpeed);
@@ -488,7 +383,6 @@ Particle.prototype.updateBeforeMerging = function(){
 
 	this.velocity.x*=.9;
 	this.velocity.y*=.9;
-
 
 }
 Particle.prototype.getCloserFrom = function(target){
@@ -519,8 +413,7 @@ Particle.prototype.getAwayFrom = function(index, particles){
 
 		if(index!==i
 			&& this.label.localeCompare(particles[i].label)!==0
-			//&& this.ids.length>1
-			//&& this.ids.length>3 
+
 			){
 
 			var minDistance = this.radius*2 + particles[i].radius*2 + 10;
@@ -528,7 +421,6 @@ Particle.prototype.getAwayFrom = function(index, particles){
 
 			if(distance<minDistance){
 
-				//select target to go away
 				if(target_numOfChilds<particles[i].ids.length){
 					target_numOfChilds = particles[i].ids.length;
 					target_id = i;
@@ -539,8 +431,6 @@ Particle.prototype.getAwayFrom = function(index, particles){
 
 	if(target_id>=0){
 
-		//repulsion DOUCE, proportionnelle au chevauchement (etait distance*.3,
-		//trop brutale : elle ejectait le gris)
 		var dx = particles[target_id].x - this.x;
 		var dy = particles[target_id].y - this.y;
 		var d = Math.sqrt(dx*dx + dy*dy);
@@ -552,14 +442,10 @@ Particle.prototype.getAwayFrom = function(index, particles){
 			this.velocity.y -= (dy/d)*push;
 		}
 
-		//console.log("labels:", this.label, particles[target_id].label);
-
 	}
 }
 Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 
-	//VOISINAGE D'ABORD (voir catalog) : partenaire compatible proche via la grille,
-	//repli global si rien a proximite. Le systeme se structure localement.
 	var qr = Math.max(MERGE_NEIGHBORHOOD, this.radius*2 + 2*smaMaxRadius) + SMA_GRID_SLACK;
 	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
 
@@ -571,8 +457,7 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 	}
 
 	if(t>=0){ this.getCloserFrom(particles[t]); this.mTX=particles[t].x; this.mTY=particles[t].y; this.mHas=true; }
-	//un gris isole garde sa repulsion reactive ; la separation entre groupes
-	//non compatibles est desormais TOUJOURS active (dans update())
+
 	else if(this.ids.length===1)this.getAwayFrom(index, particles);
 }
 Particle.prototype.seekMergeTarget = function(index, particles, cand){
@@ -604,17 +489,16 @@ Particle.prototype.seekMergeTarget = function(index, particles, cand){
 	return target_id;
 }
 Particle.prototype.display = function(){
-	
+
 	var ctx=this.context;
 
 	if(this.fillAlpha<1) {
 		this.fillAlpha+=.03;
 	}
 
-	//TODO do it somewhere else
 	if(this.ids.length===1) {
-		
-		if(this.fillAlpha<1) ctx.fillStyle='rgba(189,195,199,'+this.fillAlpha+')'; //grey;
+
+		if(this.fillAlpha<1) ctx.fillStyle='rgba(189,195,199,'+this.fillAlpha+')';
 		else ctx.fillStyle=this.colors[0];
 
 		if(this.lastNodeSelected)ctx.fillStyle=this.colors[4];
@@ -624,17 +508,9 @@ Particle.prototype.display = function(){
 	    ctx.fill();
 	    ctx.closePath();
 
-
 	} else if(this.open){
 
-		/*ctx.fillStyle="#999";
-
-		ctx.beginPath();
-	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha+2, 0, 2*Math.PI);
-	    ctx.fill();
-	    ctx.closePath();*/
-	    
-		ctx.fillStyle=this.colors[2];//yellow
+		ctx.fillStyle=this.colors[2];
 
 		ctx.beginPath();
 	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha, 0, 2*Math.PI);
@@ -642,25 +518,13 @@ Particle.prototype.display = function(){
 	    ctx.closePath();
 
 	} else {
-		ctx.fillStyle=this.colors[1];//green
-
-		/*ctx.fillStyle="#999";
-
-		ctx.beginPath();
-	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha+2, 0, 2*Math.PI);
-	    ctx.fill();
-	    ctx.closePath();
-
-		ctx.fillStyle="#FFF";*/
+		ctx.fillStyle=this.colors[1];
 
 		ctx.beginPath();
 	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha, 0, 2*Math.PI);
 	    ctx.fill();
 	    ctx.closePath();
 	}
-
-
-    
 
     for (var i = 0; i < this.childs.length; i++) {
 		this.childs[i].display();
@@ -675,8 +539,6 @@ Particle.prototype.display = function(){
 
 	    if(this.ids.length>=50){
 
-	    	//deux lignes (nom + effectif) : le bloc entier reste centre
-	    	//sur le cercle, le nom decale d'une demi-ligne vers le haut
 	    	ctx.fillText(this.iso, this.x, this.y - 7*this.scale);
 
 	    	var referenced = 0;
@@ -684,26 +546,6 @@ Particle.prototype.display = function(){
 	    		if(this.counts[j]>0)referenced++;
 	    	}
 
-	    	/* « 12/58 composers » disait : douze de ces cinquante-huit ont une
-	    	   oeuvre archivee. HORS VUE DE TRAVAIL, LE RAPPORT N'APPREND
-	    	   PLUS RIEN — `compute all` n'admet plus que les compositeurs ayant
-	    	   au moins une oeuvre (voir computeAll dans js/network.js), donc il
-	    	   vaut toujours « 58/58 ». Un rapport dont le numerateur egale
-	    	   toujours le denominateur se lit comme une information alors qu'il
-	    	   n'en est plus une.
-
-	    	   Le second test ne dit pas la meme chose que le premier, et les
-	    	   deux sont utiles : `?v=all` avec un groupe entierement reference
-	    	   afficherait « 58/58 » lui aussi, et il n'y a pas plus de raison de
-	    	   l'ecrire la. On compte donc l'ecart, et on ne l'affiche que
-	    	   lorsqu'il existe.
-
-	    	   `compute traces` N'EST PAS FILTRE (meme renvoi) : une trace de
-	    	      navigation peut contenir des compositeurs sans oeuvre, meme
-	    	      hors `?v=all`. Le rapport y aurait un sens ; il est tu quand
-	    	      meme, parce que la regle demandee porte sur la VUE et non sur
-	    	      le contenu du groupe. « 58 composers » reste vrai dans tous les
-	    	      cas — c'est un effectif, pas une affirmation sur les oeuvres. */
 	    	var effectif = (typeof SHOW_ALL_NAMES !== 'undefined' && SHOW_ALL_NAMES
 	    	                && referenced !== this.ids.length)
 	    	             ? referenced + '/' + this.ids.length + ' composers'
@@ -721,7 +563,6 @@ Particle.prototype.display = function(){
 
 }
 Particle.prototype.checkEdgesV1 = function(){
-	
 
 	if(this.x<0)this.x=this.canvas.width;
 	else if(this.x>this.canvas.width)this.x=0;
@@ -729,17 +570,11 @@ Particle.prototype.checkEdgesV1 = function(){
 	if(this.y<0)this.y=this.canvas.height;
 	else if(this.y>this.canvas.height)this.y=0;
 
-	
-	
 }
 Particle.prototype.checkEdgesV2 = function(){
 
 	if(this.ids.length>1){
 
-		//coussin doux : ressort PERPENDICULAIRE au mur le plus proche,
-		//proportionnel a l'enfoncement : le groupe longe la bordure et glisse
-		//au lieu d'etre catapulte vers le centre (fini le saccade au bord).
-		//Premultiplie par la masse car update() divise la vitesse par elle.
 		var border = this.radius*2+25;
 		var W = this.canvas.width, H = this.canvas.height;
 		var fx = 0, fy = 0;
@@ -758,11 +593,6 @@ Particle.prototype.checkEdgesV2 = function(){
 
 	} else {
 
-		//pas d'espace torique : quand un gris est sorti d'une certaine distance
-		//(WRAP_MARGIN), au lieu de le "wrapper" au bord oppose (source des
-		//teleportations en boucle a la couture), on le fait REAPPARAITRE a un
-		//endroit LIBRE au hasard sur le canvas, en FONDU (opacite + taille via
-		//fillAlpha remis a 0). Plus de couture, plus de pop brutal.
 		var W = this.canvas.width, H = this.canvas.height, m = WRAP_MARGIN;
 		if(this.x < -m || this.x > W + m || this.y < -m || this.y > H + m){
 
@@ -779,15 +609,13 @@ Particle.prototype.checkEdgesV2 = function(){
 			}
 			this.x = nx; this.y = ny;
 			this.velocity.x = 0; this.velocity.y = 0;
-			this.fillAlpha = 0;   //reapparition progressive : fondu + grossissement
+			this.fillAlpha = 0;
 		}
 
 	}
-	
+
 }
-//evitement reserve aux regroupements : pousse douce, proportionnelle au
-//chevauchement ; premultipliee par ids.length car update() divise la
-//vitesse par la taille du groupe
+
 Particle.prototype.getAwayFromGroups = function(index, particles){
 
 	var qr = this.radius*2 + 2*smaMaxRadius + GROUP_MARGIN + SMA_GRID_SLACK;
@@ -798,8 +626,6 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 
 		var i = cand ? cand[c] : c;
 
-		//les regroupements qui partagent le meme label (pays) sont des
-		//candidats a la fusion : on ne les repousse pas, on les laisse approcher
 		var sameValue = this.label!=="" &&
 			String(this.label).localeCompare(String(particles[i].label))===0;
 
@@ -824,8 +650,6 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 	}
 }
 
-//separation douce entre agents isoles (gris) : proportionnelle au
-//chevauchement, ignoree entre candidats a la fusion (meme valeur)
 Particle.prototype.separateFromLoners = function(index, particles){
 
 	var qr = this.radius*2 + 2*smaMaxRadius + 12 + SMA_GRID_SLACK;
@@ -838,7 +662,6 @@ Particle.prototype.separateFromLoners = function(index, particles){
 
 		if(index!==i && particles[i].ids.length===1){
 
-			//meme label (pays) -> candidats a la fusion, on ne les separe pas
 			if(this.label!=="" &&
 				String(this.label).localeCompare(String(particles[i].label))===0) continue;
 
@@ -859,14 +682,10 @@ Particle.prototype.separateFromLoners = function(index, particles){
 	}
 }
 
-//ajoute un membre seulement s'il y a de la place pour lui : capacite du
-//disque respectee, et emplacement libre trouve avant de le faire naitre
 Particle.prototype.tryAddChild = function(){
 
 	if(this.childs.length >= this.ids.length)return false;
 
-	//prochain membre a faire apparaitre : curseur circulaire qui saute les
-	//membres deja affiches — la rotation parcourt tout le monde a l'infini
 	var idx = -1;
 	for (var t2=0; t2<this.ids.length; t2++) {
 		var cand = (this.memberCursor + t2) % this.ids.length;
@@ -880,7 +699,6 @@ Particle.prototype.tryAddChild = function(){
 
 	var usable = this.radius*2*.7;
 
-	//capacite : somme des diametres reels des bleus presents + le candidat
 	var sum = 0;
 	for (var j=0; j<this.childs.length; j++) {
 		var dj = this.childs[j].radius*2 + 2.;
@@ -890,7 +708,6 @@ Particle.prototype.tryAddChild = function(){
 	sum += dc*dc;
 	if(sum > 0.55*usable*usable)return false;
 
-	//emplacement : quelques essais aleatoires, on garde une position libre
 	for (var t=0; t<20; t++) {
 
 		var a = Math.random()*2*Math.PI;
@@ -917,36 +734,24 @@ Particle.prototype.tryAddChild = function(){
 	return false;
 };
 
-//taille du disque ouvert calculee d'apres la surface reelle de ses membres :
-//un composer sans oeuvre archivee est minuscule et compte pour tres peu
 Particle.prototype.computeOpenRadius = function(){
 
-	//taille conditionnee uniquement au nombre et aux diametres reels
-	//des cercles bleus deja presents a l'interieur
 	var sum = 0;
 	for (var i=0; i<this.childs.length; i++) {
-		var d = this.childs[i].radius*2 + 2.; //diametre dessine + espacement
+		var d = this.childs[i].radius*2 + 2.;
 		sum += d*d;
 	}
 
-	var usable = Math.sqrt(sum/0.55); //taux de remplissage 55%
-	var r = usable/1.4;               //la zone utile fait 70% du rayon dessine
+	var usable = Math.sqrt(sum/0.55);
+	var r = usable/1.4;
 
-	//plancher base sur la taille FERMEE (stable) et non sur le rayon courant :
-	//se referer au rayon courant creait un effet cliquet qui faisait grossir
-	//tous les cercles ouverts jusqu'a la borne, quel que soit leur contenu
 	var closedT = 2.+1.*this.scale + 30.*(1.-Math.exp(-Math.sqrt(Math.max(0, this.ids.length-1))/8.))*this.scale;
 
-	//contrainte ferme : la taille de tous les cercles ouverts est bornee
-	//a une fraction modeste du canvas
 	var maxOpen = Math.min(this.canvas.width, this.canvas.height)/20.;
 
 	return Math.min(Math.max(r, closedT+8.), maxOpen);
 };
 
-//evitement anticipe des groupes (radial, stable) : un gris qui se dirige vers un
-//groupe non compatible est repousse a l'oppose, dose par l'alignement. Nulle des
-//qu'il se detourne -> pas d'oscillation, il se degage toujours.
 Particle.prototype.avoidGroupsAhead = function(index, particles){
 
 	var speed = Math.sqrt(this.velocity.x*this.velocity.x + this.velocity.y*this.velocity.y);
@@ -982,8 +787,7 @@ Particle.prototype.avoidGroupsAhead = function(index, particles){
 		var mThisA=this.ids.length, mOA=o.ids.length;
 		var yieldFA = (1-MASS_PRIORITY) + MASS_PRIORITY*(2*mOA/(mThisA+mOA)); var wa = MASS_PRIORITY*((2*mOA/(mThisA+mOA))-1); if(wa>this.yieldW)this.yieldW=wa;
 		var push = proximity*align*AVOID_STRENGTH*this.scale*this.ids.length*yieldFA;
-		//radiale (s'ecarter) + tangentielle (contourner) ; cote choisi par la
-		//direction de l'obstacle (stable) -> pas d'oscillation.
+
 		var ux = dx/distance, uy = dy/distance;
 		var tx = -uy, ty = ux;
 		if(vx*tx + vy*ty < 0){ tx = -tx; ty = -ty; }
@@ -992,8 +796,6 @@ Particle.prototype.avoidGroupsAhead = function(index, particles){
 	}
 }
 
-//masse de collision : chaque contact alourdit temporairement la particule
-//(cumulatif), et cette masse se resorbe quand les contacts cessent.
 Particle.prototype.updateMass = function(index, particles){
 
 	this.collMass *= COLL_DECAY;

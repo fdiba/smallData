@@ -14,23 +14,15 @@ th{
 	text-align: center;
 	vertical-align: middle;
 }
-/* menu "Country" (Phono A / catalog.php?id=1) : BANDE sous la barre de controle,
-   pas dans la barre fixe (64 pays -> trop large pour la barre, qui deborderait et
-   recouvrirait le contenu). Fond blanc, pleine largeur, liens qui reviennent a la
-   ligne, defilement si necessaire. */
 #middle > #countries{
 	background: #fff;
 	color: #2c3e50;
 	box-sizing: border-box;
 	padding: 6px 10px;
 	margin: 0 0 8px 0;
-	/* meme largeur que le canvas SMA et les deux tableaux (2x600 + gap 10 = 1210)
-	   pour que la bande pays coincide exactement avec la visualisation en dessous */
 	width: 1210px;
 	max-width: 100%;
 }
-/* le menu Country assure deja le degagement sous la barre fixe : le canvas suit
-   directement, sans re-appliquer la marge haute */
 #middle > #countries + #main_container{
 	margin-top: 0;
 }
@@ -45,7 +37,7 @@ th{
 #countries ul{
 	padding: 0;
 	margin: 0;
-	max-height: 108px;         /* ~4-5 lignes ; defile au-dela */
+	max-height: 108px;
 	overflow-y: auto;
 }
 #countries li{
@@ -62,8 +54,6 @@ th{
 	font-style: italic;
 	font-weight: 600;
 }
-/* note affichee quand une portion-pays a trop peu d'oeuvres pour le SMA
-   (masquee par defaut ; montree via jQuery) */
 #sma_note{
 	display: none;
 	box-sizing: border-box;
@@ -90,12 +80,10 @@ th{
 #calculations li {
 	display: inline;
 	padding: 0 7px;
-	/*background: yellow;*/
 }
 #listing{
 	padding: 0;
 	margin: 0 0 5px 0;
-	/*margin: 100px 0 0 0;*/
 	clear: both;
 	display: block;
 	background: none;
@@ -107,19 +95,6 @@ th{
 #content{
 
 }
-/* LA COLONNE D'INFORMATION N'EST PLUS REGLEE ICI — 2026-08-05.
-
-   Elle flottait a la suite du canvas : elle se placait donc a sa droite tant
-   qu'il y avait la place, et repassait DESSOUS sinon — une colonne
-   d'information tout en bas de la page, sous la visualisation qu'elle
-   commente. Et sa largeur suivait son contenu, ce qui etait sans consequence
-   tant que la fiche ISNI ne s'ouvrait qu'au clic, mais ne l'est plus depuis
-   qu'elle s'affiche d'elle-meme dans la colonne.
-
-   Les deux reglages — ligne flex sans repli, colonne de 300px — sont communs
-   aux quatre pages qui portent un SMA dans un #main_container et vivent donc
-   dans css/main.css (§ « Le SMA et sa colonne d'information »), en une seule
-   copie. */
 #listing ul{
 	padding:0;
 	margin:0 5px 5px 0;
@@ -129,11 +104,9 @@ th{
 }
 #middle{
 	margin: calc(var(--sd-bar-h) + 8px) 0 0 0;
-	/*background: #70db70;*/
 }
 #selection{
 	margin: 1px 0;
-	/*padding: 0 10px 0 10px;*/
 }
 #sma_menu{
 	padding: 0 0 0 4px;
@@ -145,25 +118,15 @@ th{
 	padding-bottom: 10px;
 }
 #titles p {
-	/*line-height: .5em;*/
 	margin: 0;
 	padding: 0;
 }
-/* Respiration entre les blocs de la boite violette (identite / oeuvre / ISNI).
-   La classe est posee sur la PREMIERE ligne de chaque bloc sauf le premier,
-   par Particle.prototype.getInfoFrom (js/particles_catalog.js) : aucune ligne
-   vide n'est generee, donc rien a nettoyer si un champ manque. */
 #titles p.sma-blk {
 	margin-top: .9em;
 }
-/* Libelle discret devant les annees de programmation ("programmed in 1980,
-   1992"), pose par getInfoFrom (js/particles_catalog.js). Blanc attenue sur
-   le fond amethyste : lisible, mais subordonne a la donnee qu'il annonce.
-   C'est le seul libelle de la boite, les autres lignes se passant d'etiquette. */
 #titles p .sma-lbl {
 	color: rgba(255, 255, 255, .68);
 }
-/* conteneur des deux tableaux : cote a cote, retour a la ligne si trop etroit */
 #main_table{
 	clear: both;
 	display: flex;
@@ -173,65 +136,38 @@ th{
 }
 .works_table{
 	width: 600px;
-	/* sur ecran etroit, chaque tableau peut retrecir plutot que deborder */
 	flex: 1 1 480px;
 	max-width: 600px;
 }
-/* second tableau masque quand il ne recoit aucune oeuvre (peu de donnees) */
 .works_table.is-empty{
 	display: none;
 }
-
-/* Nom de compositeur cliquable : le souligne pointille de .composer-isni vit
-   desormais dans css/isni.css, avec le reste du comportement partage — la
-   meme regle etait ici et dans css/aww.css, et Overview en aurait fait une
-   troisieme copie. Seul ce qui est propre a la page reste ici. */
-
-/* La legende "How to read" a EXACTEMENT la largeur du canvas et des deux tableaux
-   (2x600 + gap 10 = 1210px) : son bord droit s'aligne sur le tableau le plus a droite. */
 #legend{
 	box-sizing: border-box;
 	width: 1210px;
 	max-width: 1210px;
 }
-/* Intro de la rubrique "How to read" : rappelle de quelle phonotheque il s'agit */
 #legend .lg-intro{
 	margin: 0 0 10px 0;
 	max-width: 80ch;
 }
-/* Note de completude de la colonne "edition(s)" (catalog.php, $cov_note).
-   Reprise a l'identique de css/animated_data.css et css/overview.css : meme
-   liseré amethyste, meme retrait, pour que les trois pages signalent leurs
-   lacunes de la meme maniere. La largeur de lecture (80ch), la justification
-   et le rendu des <em> (blanc gras, sans italique) viennent de css/main.css. */
 #legend .lg-note{
 	margin: 0 0 10px 0;
 	padding: 4px 0 4px 10px;
 	border-left: 3px solid var(--sd-amethyst);
 }
-
-/* --- regroupement par compositeur (catalog.js) --- */
-/* meme code couleur que award-winning_works.php */
 .works_table td{
 	vertical-align: top;
 }
 .works_table td.composer{
 	font-weight: bold;
 }
-/* Pays du compositeur, en seconde ligne de la cellule compositeur et
-   seulement en vue "All works" (voir showCtry dans js/catalog.js).
-   display:block suffit a le passer a la ligne : pas de <br>, donc rien a
-   nettoyer si la regle est retiree. Graisse normale et teinte grise pour
-   qu'il reste subordonne au nom, qui est en gras. */
 .works_table td.composer .composer-ctry{
 	display: block;
 	font-weight: normal;
 	font-size: 12px;
 	color: #5a6b6b;
 }
-/* Marqueur des oeuvres primees, pose apres le titre par js/catalog.js.
-   Vert de la charte (identique au trait qui separe les compositeurs), taille
-   reduite et legerement souleve : present sans concurrencer le titre. */
 .work-award{
 	color: #16A085;
 	font-size: 11px;
@@ -239,48 +175,29 @@ th{
 	line-height: 0;
 	cursor: help;
 }
-/* Colonne "edition(s)" : annees, donc chiffres alignes et sans retour a la
-   ligne au milieu d'une liste ("1980, 1992"). */
 .works_table td.work-ed{
 	white-space: nowrap;
 	font-variant-numeric: tabular-nums;
 }
-/* "duration" et "edition(s)" sont deux colonnes de chiffres courts : centrees,
-   elles se lisent mieux sous leurs en-tetes, elles-memes centrees par la regle
-   th generale. Les deux autres colonnes (compositeur, titre) restent a gauche.
-   Le ciblage passe par une classe et non par nth-child : la cellule compositeur
-   etant fusionnee sur toutes les oeuvres d'un artiste (rowspan), une ligne de
-   tete porte quatre <td> et une ligne membre trois, si bien qu'un selecteur
-   positionnel viserait des colonnes differentes selon la ligne. Les classes
-   sont posees par renderChunk() dans js/catalog.js. */
 .works_table td.work-dur,
 .works_table td.work-ed{
 	text-align: center;
 }
-/* cellule compositeur (fusionnee) : teinte alternee par groupe */
 .works_table .grp-cell.grp-cell-a{
 	background: #C1C1C1;
 }
 .works_table .grp-cell.grp-cell-b{
 	background: #D6D6D6;
 }
-/* cellules-oeuvres : teinte alternee par oeuvre a l'interieur d'un compositeur */
 .works_table .mem-a{
 	background: #F6F6F6;
 }
 .works_table .mem-b{
 	background: #E4E4E4;
 }
-/* trait de separation entre compositeurs */
 .works_table tr.group-start > td{
 	border-top: 2px solid #16A085;
 }
-
-/* --- legende : les agents sont des ellipses, pas des carres --- */
 #legend .sq{
 	border-radius: 50%;
 }
-
-/* Fiche ISNI : les styles .isni-* ont ete extraits dans css/isni.css, feuille
-   partagee avec les trois autres pages qui ouvrent la fiche ; catalog.php
-   la charge par un <link> place juste apres celui-ci. */

@@ -22,12 +22,7 @@ var activationSpeed = 1;
 var counter002 = 0;
 
 var scale = 1;
- 
-//==================================================================
-// GRILLE SPATIALE (hachage spatial) - voir sma_core.js pour le detail.
-// Copie locale pour la page network (qui ne charge pas sma_core.js).
-// Iso-comportement : pre-selection de candidats, filtrage exact inchange.
-//------------------------------------------------------------------
+
 var SMA_USE_GRID = true;
 var SMA_GRID_CELL = 80;
 var SMA_GRID_SLACK = 16;
@@ -82,7 +77,6 @@ function buildSMAGrid(){
     smaMaxRadius = mr;
     smaGridReady = true;
 }
-//==================================================================
 
 window.onload = function() {
 
@@ -94,8 +88,6 @@ window.onload = function() {
     canvas.width = 1200*scale;
     canvas.height = 800*scale;
 
-    // la legende "How to read" epouse EXACTEMENT la largeur du canvas
-    // (sinon max-width:1170px + padding la laissaient ~2px plus etroite).
     var lg_ = document.getElementById('legend');
     if(lg_){ lg_.style.boxSizing='border-box'; lg_.style.width=canvas.width+'px'; lg_.style.maxWidth=canvas.width+'px'; }
 
@@ -107,13 +99,13 @@ window.onload = function() {
 
         if(state>=0){
 
-            if(e.which == 32) { //space bar
+            if(e.which == 32) {
                 console.log('pause:', running);
                 running=!running;
             }
         }
 
-        if (e.which == 112) { //p
+        if (e.which == 112) {
             console.log('noiseField:', noiseField);
             noiseField=!noiseField;
         }
@@ -123,23 +115,6 @@ window.onload = function() {
     $("#sma_main_ctrl ul").append('<li>pause</li>');
     $("#sma_main_ctrl ul li:last").css("text-decoration", "underline").on("click", pauseSMA);
 
-    /* Fiche ISNI du compositeur selectionne (js/isni_box.js, partage avec
-       Overview, euphonies, catalog et award-winning_works).
-
-       En FLUX, dans #isniColumn : la colonne d'information est etroite et
-       collee au canvas, il n'y a pas de gouttiere ou poser un panneau lateral.
-       La fiche se pose donc sous la boite d'identite, entre elle et la liste
-       des oeuvres, et pousse la suite au lieu de la masquer.
-
-       NI `clickable` NI `watch` DEPUIS LE 2026-08-05, comme sur Overview.
-       `clickable` designait le nom souligne de pointilles — il fallait deviner
-       ce que le pointille cachait ; la fiche s'affiche maintenant d'elle-meme,
-       repliee sur son identifiant, et c'est lui qui se deplie. `watch` posait
-       un observateur de mutations pour refermer la fiche quand la selection
-       changeait : il n'a plus d'objet, puisque displayFirstnameAndNameGN() (js/functions.js)
-       ecrit la fiche EN MEME TEMPS que la boite d'identite et qu'elles ne
-       peuvent donc plus se desynchroniser. L'appel reste pour le seul `into`,
-       qui declare le conteneur et bascule la fiche en mode flux. */
     if(typeof enableIsniPanel === 'function'){
         enableIsniPanel({ into: 'isniColumn' });
     }
@@ -147,12 +122,11 @@ window.onload = function() {
 }
 function pauseSMA(event){
     noiseField =!noiseField;
-    // console.log(event.target);
+
     if(noiseField) $(event.target).text("pause");
     else $(event.target).text("play");
 }
-//remet la simulation a zero : appele a chaque clic sur compute all
-//ou compute traces, pour pouvoir relancer l'un apres l'autre a volonte
+
 function resetSimulation(){
 
     if(animation01)clearInterval(animation01);
@@ -186,32 +160,6 @@ function computeAll(){
     $("#cp_all").removeClass('b_off').addClass('b_on');
     $("#get_sl").removeClass('b_on').addClass('b_off');
 
-    /*var id=allData[i];
-    var ctry=allData[i+1];
-    var ctry_id=allData[i+2];
-    var counter=allData[i+3];
-    var editions=allData[i+4];
-    var iso=allData[i+5];*/
-
-    /* SEULS LES COMPOSITEURS AYANT AU MOINS UNE OEUVRE ARCHIVEE ENTRENT
-       DANS LE SYSTEME — 2026-08-07. Ils sont 1 259 sur 2 550 : la moitie de
-       la population etait faite d'agents qui n'avaient rien a montrer.
-       Ouvrir leur groupe rendait une liste d'oeuvres vide, et le clic sur
-       leur noeud nommait une personne dont la base ne connait qu'une
-       CANDIDATURE — la meme population que Line Charts ne nomme plus.
-
-       Le compte lu est le 4e champ du `case 10`, celui-la meme qui ecrit
-       « 1259 / 2550 composers with archived works » en tete des Line
-       Charts : un seul critere pour les deux pages.
-
-       `?v=all` rend la population entiere — c'est la vue de travail (voir
-       SHOW_ALL_NAMES dans js/functions.js).
-
-       `compute traces` N'EST PAS TOUCHE : ce sont les compositeurs que
-          l'utilisateur a lui-meme consultes dans l'Overview, ecrits dans
-          son cookie. Y appliquer un filtre reviendrait a lui retirer de sa
-          propre trace des noms qu'il a vus — et les traces anciennes en
-          contiennent, puisqu'elles ont ete constituees avant tout ceci. */
     var ecartes = 0;
     for (var i=0; i<allData.length-5; i+=6){
         var n = parseInt(allData[i+3], 10);
@@ -259,7 +207,7 @@ function computeTraces(){
     }
 
 }
-//fermeture au double-clic : referme le cercle ouvert vise
+
 function closeParticleOnDblClick(evt){
 
     var cv = canvas.getBoundingClientRect();
@@ -284,7 +232,7 @@ function closeParticleOnDblClick(evt){
     }
 }
 function getParticleInfos(evt){
-    
+
     var cv = canvas.getBoundingClientRect();
 
     var mouseX = evt.clientX - cv.left;
@@ -295,7 +243,7 @@ function getParticleInfos(evt){
         var distance=dist(mouseX, particles[i].x, mouseY, particles[i].y)
         if(distance<=particles[i].radius*2){
             var txt=particles[i].label+' '+ particles[i].iso+' '+ particles[i].ids.length;
-            // console.log(txt);
+
             $("#cookies").empty().append('<p>');
             $("#cookies p").text(txt);
 
@@ -306,19 +254,18 @@ function getParticleInfos(evt){
                     child_targeted = particles[i].processChilds(mouseX, mouseY);
                 }
 
-                //le simple clic ouvre ; la fermeture se fait au double-clic
                 if(!child_targeted && !particles[i].opening && !particles[i].open){
                     particles[i].openOrCloseIt();
                     $("#titles").empty();
                     removePreviousSelection();
                 }
-            
+
             } else if(particles[i].ids.length===1){
                 particles[i].getTitlesFrom(particles[i].ids[0]);
                 removePreviousSelection();
                 particles[i].lastNodeSelected=true;
             }
-            
+
             break;
         }
     }
@@ -337,7 +284,6 @@ function addParticleUsing(i){
     var index=0;
     while(composers[i].id!=allData[index])index+=6;
 
-    //use artist_id, country name, country code, counter, radius to add as arguments
     if(usingCookie){
         particles.push(createNewParticle(composers[i].id, allData[index+1], allData[index+5], composers[i].count, 1));
     } else {
@@ -353,7 +299,6 @@ function addParticleUsing(i){
 }
 function sma_animation(){
 
-    //add progressively particles
     if(pointer001<composers.length && running
         && particles.length<numberOfNodesOnDisplayMax && noiseField){
         addParticleUsing(pointer001);
@@ -361,22 +306,20 @@ function sma_animation(){
 
     resetSMACanvas();
 
-    //first state --> nodes are sharing information
     if(sl_attribute.localeCompare("")==0){
         shareInformation();
-    //second state --> nodes are regrouping
+
     } else {
 
-        if(state===0){ //traces
+        if(state===0){
 
             particles[counter002%particles.length].on = true;
             counter002++;
- 
-        } else if(state===1){ //compute all
 
-            //activate progressively particles
+        } else if(state===1){
+
             if(counter001%activationSpeed===0 && particles.length>0){
-                //console.log(particles.length, " ",counter002%particles.length);
+
                 particles[counter002%particles.length].on = true;
                 counter002++;
             }
@@ -392,9 +335,9 @@ function shareInformation(){
     smaGridReady=false;
 
     for (var i=0; i<particles.length; i++) {
-        
+
         if(noiseField){
-            particles[i].addNoiseField(10.); //meme bruit de phase 1 que catalog
+            particles[i].addNoiseField(10.);
 
             var attributes = particles[i].SearchCommonsAndGetAwayFrom22(i, particles);
 
@@ -411,8 +354,6 @@ function shareInformation(){
 
 }
 function checkAttributes(attributes){
-
-    //console.log("check it");
 
     if(main_attributes.length<1){
 
@@ -431,7 +372,7 @@ function checkAttributes(attributes){
                 if(attributes[i].name.localeCompare(main_attributes[j].name)==0){
                     main_attributes[j].count+=attributes[i].count;
                     hasBeenFound = true;
-                    break; 
+                    break;
                 }
             }
 
@@ -439,11 +380,6 @@ function checkAttributes(attributes){
         }
     }
 
-    //la propriete est cliquable des qu'elle est identifiee ; le compteur
-    //d'echanges reste affiche tant que le seuil n'est pas atteint.
-    //IMPORTANT : la structure n'est construite qu'une seule fois — la
-    //reconstruire a chaque image detruisait le noeud <u> entre le mousedown
-    //et le mouseup d'un vrai clic, et le click ne se declenchait jamais.
     var commons_p = $("#commons p");
 
     if(commons_p.find('u').text() !== main_attributes[0].name){
@@ -460,7 +396,7 @@ function checkAttributes(attributes){
 function setCommonAttr(){
     sl_attribute = main_attributes[0].name;
     $("#commons p" ).off("click").css("cursor", "default");
-    $("#commons p u").contents().unwrap();  
+    $("#commons p u").contents().unwrap();
 }
 function allowGrouping(){
 
@@ -468,31 +404,28 @@ function allowGrouping(){
 
     for (var i=0; i<particles.length; i++) {
 
-        //une particule ouverte (jaune) n'est plus agitee par le champ de bruit
-        if(noiseField && !particles[i].open)particles[i].addNoiseField(5.); //meme bruit de phase 2 que catalog
+        if(noiseField && !particles[i].open)particles[i].addNoiseField(5.);
         particles[i].update(i, particles);
         particles[i].display();
 
     }
     removeDeadParticles();
 }
-function removeDeadParticles(){    
+function removeDeadParticles(){
     for (var i=particles.length-1; i>=0; i--) {
         if(particles[i].ids.length<1){
             particles.splice(i, 1);
-            // console.log("particles.length: ", particles.length);
+
         }
     }
 }
 function resetSMACanvas(){
-	// context.fillStyle="white";
+
     context.fillStyle=COLORS[0];
     context.fillRect(0, 0, canvas.width, canvas.height);
 }
 function createNewParticle(id, ctry, iso, count, addRadiusVal){
 
-    //800 600
-    
     return new Particle({
         canvasId: "myCanvas",
         count: count,
@@ -505,51 +438,25 @@ function createNewParticle(id, ctry, iso, count, addRadiusVal){
         scale: scale
     });
 
-    /*x:canvas.width/2-radius+Math.random()*(radius*2),
-    y:canvas.height/2-radius+Math.random()*(radius*2),*/
 }
 function getDataV2(){
 
 	init = true;
-    
+
     document.getElementById('get_all').removeEventListener("click", getDataV2);
     $("#get_all").toggleClass('b_off b_on');
     $("#get_all").hide();
 
-    $.ajax({                                      
-        url: 'php/retrieve_data.php',       
+    $.ajax({
+        url: 'php/retrieve_data.php',
         type: "POST",
-        data: {case:10} 
+        data: {case:10}
     }).done(function(str) {
-
-        // console.log(str);
 
         allData = str.split("%");
 
-        //TO DEBUG AND CATCH ERROR
-        // console.log(allData[0]);
-
-        /*var id=allData[i];
-        var ctry=allData[i+1];
-        var ctry_id=allData[i+2];
-        var counter=allData[i+3];
-        var editions=allData[i+4];
-        var iso=allData[i+5];*/
-
         var txt = "";
 
-        /* 2026-08-08 — LA MEME LIGNE QUE SUR OVERVIEW ET LINE CHARTS.
-           Elle affichait « allData: 4315 » : le nom d'une variable du script
-           et un nombre sans unite — un reste de mise au point, pas une
-           information. Les trois pages lisent pourtant le MEME flux (case 10,
-           six champs par compositeur, le 4e etant le nombre d'oeuvres
-           archivees) et les deux autres en tirent deja « n / N composers with
-           archived works ». Meme calcul, meme phrase, meme place.
-
-           Le rapport n'est pas decoratif SUR CETTE PAGE : hors ?v=all,
-           « compute all » ne peuple le systeme qu'avec le numerateur (§16.6
-           de Interface_et_fonctionnalites.md). La ligne dit donc combien de
-           compositeurs le SMA va prendre, et sur combien la base en compte. */
         var numComposersInCapsules = 0;
         for (var i=0; i<allData.length-5; i+=6) {
             if(allData[i+3] > 0) numComposersInCapsules++;
@@ -560,19 +467,15 @@ function getDataV2(){
 
         $("#selection").empty();
         $("#selection").append(txt);
-        
+
         $("#info p:eq(0)").text(txt2);
 
         context.fillStyle=COLORS[0];
-        context.fillRect(0, 0, canvas.width, canvas.height); 
+        context.fillRect(0, 0, canvas.width, canvas.height);
         context.stroke();
-
-        /*document.getElementById('anim').addEventListener("click", animation1) ;
-        canvas.addEventListener("mousedown", getInfo, false);*/
 
         document.getElementById('get_sl').addEventListener("click", computeTraces);
         document.getElementById('cp_all').addEventListener("click", computeAll);
-        //computeTraces();
 
     });
 }

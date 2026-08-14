@@ -10,63 +10,15 @@
 	padding: 0;
 	margin: 0;
 }
-/* --- LA COLONNE RESTE A DROITE DU CANVAS — 2026-08-05 --------------------
-
-   Le canvas et la colonne d'information FLOTTAIENT, et un flottant qui ne
-   tient plus passe a la ligne : sous ~1420px, la colonne — boite verte, boite
-   d'identite, fiche ISNI, liste des oeuvres — descendait sous le canvas, tout
-   en bas de la page. Meme defaut que sur Overview, meme correctif : une ligne
-   flex sans repli.
-
-   LA REGLE N'EST PLUS ICI. Elle a d'abord ete ecrite pour cette page, puis les
-   trois pages a tableau + SMA (award-winning_works, catalog, euphonies) en ont
-   eu besoin a leur tour, le jour ou leur fiche ISNI est passee en flux dans la
-   colonne. Elle vit donc dans css/main.css (§ « Le SMA et sa colonne
-   d'information »), en une seule copie, portee par #main_container — ce qui
-   laisse Overview, dont la colonne vit dans #right_col, exactement ou elle
-   etait. Ne restent ici que les valeurs propres a Network.
-
-   CE QUE LE PARTAGE NE DIT PAS, ET QUI VAUT POUR CETTE PAGE. Sur Overview,
-   la grille se re-repartit a la nouvelle largeur et il n'y a jamais de
-   debordement horizontal. Ici c'est impossible : le canvas de Network fait
-   1200x800 EN DUR (js/network.js), et les agents du SMA vivent dans ces
-   coordonnees — leurs positions, leurs vitesses et la grille spatiale qui
-   accelere les collisions. Le retrecir en cours de simulation deplacerait tout
-   le monde d'un coup.
-
-   Sous 1520px — mesure : 1200 de canvas + 5 + 2 d'ecarts + 300 de colonne +
-   15 de padding de page —, la page defile donc horizontalement. C'est le prix
-   demande, et il est explicite : mieux vaut chercher la colonne a droite en
-   faisant defiler que la trouver en bas apres avoir cru qu'elle avait
-   disparu. */
 #myCanvas{
 	margin: 0 5px 0 0;
 }
 #selection{
 	margin: 1px 0;
-	/*padding: 0 10px 0 10px;*/
 }
-/* --- legende : les agents sont des ellipses, pas des carres --- */
 #legend .sq{
 	border-radius: 50%;
 }
-
-/* Fiche ISNI, rendue EN FLUX dans la colonne (js/isni_box.js, option `into`) :
-   elle prend place entre la boite orange et la liste des oeuvres au lieu de
-   les recouvrir. La colonne est etroite (300px) et collee au canvas : il n'y a
-   pas de gouttiere ou poser un panneau lateral comme sur le catalogue. Ses
-   deux regles — largeur et respiration sous la fiche — sont partagees avec les
-   trois pages a tableau + SMA et vivent dans css/main.css avec le reste du
-   bloc #main_container.
-
-/* La boite violette (#titles) separe chaque oeuvre par un fond alterne, en deux
-   nuances de violet (comme Overview et les line charts). Le JS partage
-   (displayTitlesInfosGN) produit deja les <li class="t-a"/"t-b"> ; il ne manquait
-   que le style cote network.
-
-   Son en-tete repliable (« N archived works ») n'est PAS ici : il est produit
-   par la meme fonction partagee pour Overview et Network, et ses regles vivent
-   donc dans css/main.css, aupres de #titles. */
 #titles{ height: auto; }
 #titles li{
 	list-style: none;
