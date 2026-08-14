@@ -27,8 +27,8 @@
    ------------------------------------------------------
    Ce que le line chart ne disait pas non plus, c'est le TOTAL par edition :
    l'oeil ne somme pas soixante courbes. Le bandeau le dit — c'est la forme
-   du concours, montee jusqu'en 1994, retrospective de 1992, edition tronquee
-   de 2004, reprise apres 1996.
+   du concours, montee jusqu'en 1994, creux de 1992 ouvert au seul degre
+   Residence, edition tronquee de 2004, reprise apres 1996.
 
    Un vrai diagramme de flux cumule empilerait tous les pays dans ce bandeau.
    IL NE LE FAIT PAS, ET C'EST DELIBERE : soixante bandes demanderaient

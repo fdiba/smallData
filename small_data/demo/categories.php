@@ -56,33 +56,58 @@
 				How to read this page<span class="lg-caret" aria-hidden="true"></span>
 			</button>
 			<div id="lg_body">
-				<p class="lg-intro">This diagram follows the IMEB competition prize list from left to right: the <em>year</em> of the award, the <em>category</em> in which it was given, and the <em>composer</em> who received it. It gathers <em>729 awards</em> to <em>508 composers</em> across <em>27 named labels</em> and <em>36 editions</em>, from 1973 to 2009 &mdash; no competition was held in 1995. <strong>Two of those labels are not categories</strong>: the <em>Magist&egrave;re</em> and the <em>R&eacute;sidence</em> are <em>distinctions</em>, awarded across categories, which the <em>R&eacute;pertoire g&eacute;n&eacute;ral</em> nevertheless records in the category column. They carry <em>146 of the 729 awards</em>, from 1988 on, and are marked here with a <em>&#10022;</em>. Two views of the same data are available from the <em>diagram</em> switch above: <em>year &rarr; category</em>, which fits one screen and is where the page opens, and <em>year &rarr; category &rarr; composer</em>, which adds the 508 composers and is some ten times taller.</p>
-				<p class="lg-note">Two different years are recorded, and the diagram keeps them apart. <em>awarded</em> is the year of the prize; <em>festival</em> lists the years in which the work was programmed at Bourges. The two usually coincide, but need not: 69 awarded works were also played in another edition, and 7 carry an award year that is not among their programming years. For <em>234 of the 729 awards</em> the <em>R&eacute;pertoire g&eacute;n&eacute;ral</em> records no programming year at all; the <em>festival</em> mention is then simply omitted, which is an absence of evidence and not evidence that the work was never played.</p>
-				<!-- TROIS COLONNES DEPUIS LE 2026-08-13, et la troisieme n'est pas
-				     un decoupage de confort : la colonne du milieu repond a UNE
-				     question — que nomme un nœud de la colonne du milieu ? — et
-				     c'est la question que la page posait sans y repondre tant
-				     qu'elle parlait de « sous-categories ». Le concours a des
-				     DEGRES et des CATEGORIES ; il n'a jamais eu de sous-categorie.
-				     La regle CSS ne change pas : #legend .lg-cols est un flex a
-				     `flex: 1 1 300px`, qui prend trois colonnes comme il en prenait
-				     deux, et repasse a deux puis a une quand la fenetre retrecit. -->
+				<!-- CINQ RUBRIQUES DANS TROIS CELLULES — 2026-08-14. La grille est un
+				     flex qui passe a la ligne : la hauteur d une rangee est celle de sa
+				     plus haute cellule. Empilees, les rubriques ne font plus qu UNE
+				     rangee. Meme geste que sur index.php et animated_data.php.
+
+				     PHRASES ENTIERES — 2026-08-14, demande de Florent. Les puces de cette
+				     page commencent par une MAJUSCULE et finissent par un POINT ; une puce
+				     qui portait deux idees en fait deux phrases. Ce n'est pas encore le cas
+				     des six autres legendes, qui gardent le fragment en minuscules : si on
+				     les aligne un jour, c'est cette page qui sert de modele, pas l'inverse.
+				     Les points ajoutes APRES une infobulle citee (« … 7 awards. ») sont ceux
+				     de la legende, pas de l'interface : le </em> ferme avant le point. -->
 				<div class="lg-cols">
+					<div>
+						<p><strong>The diagram</strong></p>
+						<ul>
+							<li>It follows the prize list from left to right: the <em>year</em> of the award, the <em>category</em> it was given in, and the <em>composer</em> who received it. It gathers 729 awards to 508 composers under 27 labels, across the 36 editions of 1973 to 2009. No competition was held in 1995.</li>
+							<li>The <em>diagram</em> switch above gives two views of the same data. <em>year &rarr; category</em> fits one screen and is where the page opens. <em>year &rarr; category &rarr; composer</em> adds the 508 composers and is some ten times taller.</li>
+							<li>Both views share their first two columns, and every total is the same in both. The short view holds 64 nodes and 195 flows, the full one 572 and 848.</li>
+						</ul>
+						<p><strong>The two years</strong></p>
+						<ul>
+							<li>The <em>awarded</em> year is the year of the prize. The <em>festival</em> years are those in which the work was programmed at Bourges. The two usually coincide, and they need not.</li>
+							<li>For 234 of the 729 awards no programming year is recorded at all. The <em>festival</em> mention is then simply omitted, which is an absence of evidence and not evidence of absence.</li>
+						</ul>
+					</div>
 					<div>
 						<p><strong>The columns and the flows</strong></p>
 						<ul>
-							<li>categories are the competition's own labels, and they changed over the years; the <em>39 awards</em> recorded without one are gathered under <em>None</em> &mdash; 38 of them from 1973 to 1976, when the competition had a single ranking</li>
-							<li>the thickness of a flow is the <em>number of awards</em> it carries: a composer distinguished twice in the same category shows a band twice as thick as one distinguished once</li>
-							<li>flows on the left run from a year to a category and, in the full view, flows on the right from a category to a composer; a category therefore gathers, on one side, the editions that awarded it and, on the other, the composers it distinguished</li>
-							<li>both views share their first two columns, and <strong>every total is the same in both</strong>: the short view holds <em>64 nodes</em> and <em>195 flows</em> and fits one screen; the full view adds the 508 composers, which makes <em>572 nodes</em> and <em>848 flows</em></li>
-							<li>colours only tell neighbouring flows apart &mdash; they carry no meaning of their own</li>
-							<li>the full prize list, work by work, is on the <a href="award-winning_works.php">Award-winning works</a> page</li>
+							<li>The thickness of a flow is the number of awards it carries.</li>
+							<li>Flows on the left run from a year to a category. In the full view, flows on the right run from a category to a composer.</li>
+							<li>Colours only tell neighbouring flows apart. They carry no meaning of their own.</li>
+							<li>The 39 awards recorded without a category are gathered under <em>None</em>. Thirty-eight of them fall between 1973 and 1976, when the competition still had a single ranking.</li>
+							<li>The full prize list, work by work, is on the <a href="award-winning_works.php">Award-winning works</a> page.</li>
+						</ul>
+						<p><strong>Hovering and clicking</strong></p>
+						<ul>
+							<!-- LES TIRETS CADRATINS DES TROIS EXEMPLES CI-DESSOUS SONT CEUX DE
+							     L'INTERFACE, pas de la legende : ce sont les infobulles reproduites
+							     mot pour mot. Les remplacer par un deux-points ferait citer a la
+							     legende un texte que la page n'affiche pas. Voir les gabarits dans
+							     js/sankey.js. -->
+							<li>Hover a flow on the left for what a category received that year: <em>Programme, 1988 &mdash; 7 awards</em>.</li>
+							<li>Hover a node for what the diagram does <em>not</em> show. A year reads <em>31 awards in 6 categories</em>, a composer <em>9 awards in 6 categories</em>.</li>
+							<li>A category opens with <strong>the period it covers</strong>, as in <em>1977-1998 &mdash; 79 awards to 66 composers, across 20 editions</em>. That period is the one the competition declared, and <em>editions</em> counts the years in which it actually distinguished something. The two need not agree.</li>
+							<li>In the full view, hover a flow on the right for the composer, the category and the years concerned: <em>Robert Normandeau &mdash; 2 awards in Programme (awarded 1988, 1993 &middot; festival 1988, 1993)</em>.</li>
+							<li>In the full view, a name with a dotted underline has an ISNI, 396 of the 508. Click it to open the public authority record.</li>
 						</ul>
 					</div>
 					<div>
 						<p><strong>The categories</strong></p>
 						<ul>
-							<li><strong>twelve of them were defined in 2000</strong>, from <em>&oelig;uvre d'esth&eacute;tique formelle</em> to <em>&oelig;uvre pour le multim&eacute;dia</em>, and they carry <em>152 of the 729 awards</em></li>
 							<!-- La fusion des lignes 6 et 12 de imeb_categorie
 							     (DB/fusion_categorie_studio.sql, 2026-08-12) fait UN nœud la ou le
 							     catalogue en donnait deux : le diagramme ne doit pas le faire en
@@ -90,20 +115,22 @@
 							     n'est pas reecrit —, c'est la page qui n'en montre qu'un, et cette
 							     puce dit lequel est l'autre. Les citations sont dans le commentaire
 							     de la categorie 6. DB/fusion_multimedia.sql fait de meme pour les
-							     deux « Multimedia », celui de 1999 et celui de 2000-2009. -->
-							<li><strong>two nodes each carry two names</strong>, and the catalogue keeps both. The <em>R&eacute;pertoire g&eacute;n&eacute;ral</em> writes <em>&Eacute;lectroacoustique</em> for the awards of 1985&ndash;1991 and <em>Studio</em> for those of 1993&ndash;1998, but the two bailiff's records that <em>define</em> the category call it by the same full name, <em>&laquo;&nbsp;Prix de la Musique &Eacute;lectroacoustique de Studio&nbsp;&raquo;</em>. They are one node here, <em>Studio</em>, spanning <em>1985-1998</em> &mdash; and <strong>1992 is empty inside that span without being a gap</strong>: that year the competition held a retrospective and named no categories at all. <em>Multim&eacute;dia</em> is the second, one category over <em>1999-2009</em></li>
-							<li><strong>a node marked <em>&#10022;</em> is a distinction, not a category.</strong> The <em>Magist&egrave;re</em> crowns a whole edition &mdash; the 1988 record calls it <em>1er MAGISTERIUM du 16&egrave;me Concours</em>, with no category and no rank &mdash; and the <em>R&eacute;sidence</em> is a residency offered, not a ranked award. Both appear on this axis only because the printed catalogue puts them there, and they are kept rather than hidden: dropping them would lose a fifth of the prize list</li>
-						</ul>
-					</div>
-					<div>
-						<p><strong>Hovering and clicking</strong></p>
-						<ul>
-							<li>hover a flow on the left for the awards a category received in a given year, in the form <em>Programme, 1988 &mdash; 7 awards</em></li>
-							<li>hover a node &mdash; a year, a category, a composer &mdash; for what the diagram does <em>not</em> show. Its label is not repeated, since it is already written beside it: a year reads <em>31 awards in 6 categories</em>, a composer <em>9 awards in 6 categories</em></li>
-							<li>a category opens with <strong>the period it covers</strong>, as in <em>1977-1998 &mdash; 79 awards to 66 composers, across 20 editions</em>. That period is the category's own span, as the competition defined it; <em>editions</em> counts the years in which it actually distinguished something. The two need not agree, and the gap between them is itself worth reading</li>
-							<li><strong>that period is declared, not observed.</strong> <em>Art Visuel, 1982-1984</em> stays true whether or not a 1983 award has yet been entered</li>
-							<li>in the full view, hover a flow on the right for the composer, the category and the years concerned, in the form <em>Robert Normandeau &mdash; 2 awards in Programme (awarded 1988, 1993 &middot; festival 1988, 1993)</em></li>
-							<li>in the full view, a name carrying a <em>dotted underline</em> has an ISNI identifier &mdash; 396 of the 508 composers: click it to open the public authority record, with the works held by the Biblioth&egrave;que nationale de France where the alignment allows it</li>
+							     deux « Multimedia », celui de 1999 et celui de 2000-2009.
+
+							     LE TROU DE 1992 : la page a ecrit jusqu'au 2026-08-14 que le
+							     concours "held a retrospective". C'EST FAUX, et le constat du
+							     6 juin 1992 dit l'inverse en toutes lettres : « Le 20e Concours
+							     International de Bourges est exclusivement ouvert pour le Degre
+							     Residence ». Il y a bien eu concours, avec 102 bandes ; ce qu'il
+							     n'y a pas, c'est un deuxieme degre, donc aucun prix et aucune
+							     categorie a nommer. La conclusion ne change pas, le motif si :
+							     1992 ne relie ni ne separe Electroacoustique et Studio parce
+							     qu'aucun prix n'y a ete decerne (Chantier_pv_addendum_1992,
+							     §27.1). La retrospective de cette annee-la, ce sont les vingt
+							     Euphonies d'Or, qui ne sont pas le concours (euphonies.php). -->
+							<li><strong>Two nodes each carry two names</strong>, and the catalogue keeps both. <em>Studio</em> covers what the catalogue calls <em>&Eacute;lectroacoustique</em> in 1985&ndash;1991 and <em>Studio</em> in 1993&ndash;1998, the two bailiff's records that define it naming it alike. 1992 is empty inside that span without being a gap: the twentieth competition was open for one degree only, the R&eacute;sidence, so it ranked nothing and had no category to name. <em>Multim&eacute;dia</em> is the second such node, and it covers 1999&ndash;2009.</li>
+							<li><strong>A node marked <em>&#10022;</em> is a distinction, not a category.</strong> The <em>Magist&egrave;re</em> crowns a whole edition, and the <em>R&eacute;sidence</em> is a residency offered rather than a ranked award. They carry 146 of the 729 awards, from 1988 on. They sit on this axis only because the printed catalogue puts them there.</li>
+							<li>Twelve categories were defined in 2000, from <em>&oelig;uvre d'esth&eacute;tique formelle</em> to <em>&oelig;uvre pour le multim&eacute;dia</em>. They carry 152 of the 729 awards.</li>
 						</ul>
 					</div>
 				</div>
