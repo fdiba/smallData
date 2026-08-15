@@ -102,6 +102,7 @@ ul{
 	font-size: 12px;
 	font-variant-numeric: tabular-nums;
 }
+#ctrl_bar #launcher,
 #ctrl_bar #view,
 #ctrl_bar #count{
 	padding: var(--sd-gap);
@@ -110,6 +111,7 @@ ul{
 	min-width: 110px;
 	color: white;
 }
+#ctrl_bar #launcher li,
 #ctrl_bar #view li,
 #ctrl_bar #count li{
 	margin: 0;
@@ -119,6 +121,7 @@ ul{
 	transition: background 120ms ease;
 	user-select: none;
 }
+#ctrl_bar #launcher li:hover,
 #ctrl_bar #view li:hover,
 #ctrl_bar #count li:hover{
 	background: var(--sd-emerald);
@@ -142,11 +145,6 @@ ul{
 #ctrl_bar #view li,
 #ctrl_bar #count li{
 	white-space: nowrap;
-}
-#anim{
-	color: white;
-	display: block;
-	padding: 0 0 0 5px;
 }
 
 #ctrl_bar #links,

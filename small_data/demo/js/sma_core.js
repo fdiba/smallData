@@ -358,7 +358,7 @@ function sma_animation(){
 
     majMotion();
 
-    if(pointer001<records.length && running
+    if(pointer001<records.length && running && !smaPaused
         && particles.length<numberOfNodesOnDisplayMax){
         addParticleUsing(pointer001);
     }
@@ -370,7 +370,7 @@ function sma_animation(){
 
     } else {
 
-        if(counter001%activationSpeed===0 && particles.length>0){
+        if(!smaPaused && counter001%activationSpeed===0 && particles.length>0){
             var id = counter002%particles.length;
             particles[id].targetedAttr=sl_attribute;
             particles[id].on=true;
@@ -380,7 +380,7 @@ function sma_animation(){
         allowGrouping();
     }
 
-    if(running)counter001++;
+    if(running && !smaPaused)counter001++;
 
 }
 function allowGrouping(){

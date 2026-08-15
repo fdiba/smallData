@@ -132,7 +132,6 @@ function reinitialiser(){
 }
 function basculePause(){
     smaPaused = !smaPaused;
-    running = !smaPaused;
     $("#sma_main_ctrl ul li:last").text(smaPaused ? "play" : "pause");
 }
 function pauseSMA(){
@@ -362,7 +361,7 @@ function sma_animation(){
 
     majMotion();
 
-    if(pointer001<composers.length && running
+    if(pointer001<composers.length && running && !smaPaused
         && particles.length<numberOfNodesOnDisplayMax){
         addParticleUsing(pointer001);
     }
@@ -374,24 +373,27 @@ function sma_animation(){
 
     } else {
 
-        if(state===0){
+        if(!smaPaused){
 
-            particles[counter002%particles.length].on = true;
-            counter002++;
-
-        } else if(state===1){
-
-            if(counter001%activationSpeed===0 && particles.length>0){
+            if(state===0){
 
                 particles[counter002%particles.length].on = true;
                 counter002++;
+
+            } else if(state===1){
+
+                if(counter001%activationSpeed===0 && particles.length>0){
+
+                    particles[counter002%particles.length].on = true;
+                    counter002++;
+                }
             }
         }
 
         allowGrouping();
     }
 
-    if(running)counter001++;
+    if(running && !smaPaused)counter001++;
 }
 function shareInformation(){
 

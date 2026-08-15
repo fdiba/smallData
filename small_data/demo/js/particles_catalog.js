@@ -1,5 +1,8 @@
 var LINE_DIST = 50;
 var SMA_MOTION = 1;
+var SEP_MAX = .5;
+var OVERLAP_PUSH = .06;
+var OVERLAP_MAX = .5;
 
 var GREY_NOISE = .35;
 
@@ -71,6 +74,7 @@ function Particle(config){
 	this.radius = this.setSmallRadius();
 
 	this.velocity={x:0, y:0};
+	this.sep={x:0, y:0};
 	this.collMass=0;
 
 	this.fillAlpha = .1;
@@ -105,6 +109,7 @@ Particle.prototype.resetIt = function(){
 	this.radius = this.setSmallRadius();
 	this.fillAlpha = .1;
 	this.velocity={x:0, y:0};
+	this.sep={x:0, y:0};
 	this.collMass=0;
 }
 Particle.prototype.openOrCloseIt = function(){
@@ -251,6 +256,8 @@ Particle.prototype.update = function(i, particles){
 
 	if(this.records.length>1)this.getAwayFromGroups(i, particles);
 
+	this.degagerChevauchement(i, particles);
+
 	if(this.opening){
 
 		var toAdd = Math.max(1, Math.ceil(this.records.length/120));
@@ -292,8 +299,8 @@ Particle.prototype.update = function(i, particles){
 
 	} else if(!this.open){
 		var target = this.setSmallRadius();
-		if(this.radius>target)this.radius=Math.max(target, this.radius-3.);
-		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25);
+		if(this.radius>target)this.radius=Math.max(target, this.radius-3.*SMA_MOTION);
+		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25*SMA_MOTION);
 	}
 
 	for (var j=0; j<this.childs.length; j++) {
@@ -317,18 +324,17 @@ Particle.prototype.update = function(i, particles){
 			var vin=this.velocity.x*mux + this.velocity.y*muy;
 
 			var yw=this.yieldW; if(yw>1)yw=1; else if(yw<0)yw=0;
-			var creepEff=MERGE_CREEP*(1-yw);
+			var creepEff=MERGE_CREEP*(1-yw)*SMA_MOTION;
 			if(vin<creepEff){ var add=creepEff-vin; this.velocity.x+=mux*add; this.velocity.y+=muy*add; }
 		}
 	}
 
-    var maxSpeed = this.maxSpeed;
+    var maxSpeed = this.open ? this.maxSpeed*.3 : this.maxSpeed;
 
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
 	this.velocity.y = Math.min(Math.max(this.velocity.y, -maxSpeed), maxSpeed);
 
-	this.x+=this.velocity.x*SMA_MOTION;
-	this.y+=this.velocity.y*SMA_MOTION;
+	this.deplacer();
 
 	if(this.records.length>1){
 		var W=this.canvas.width, H=this.canvas.height;
@@ -337,8 +343,8 @@ Particle.prototype.update = function(i, particles){
 	}
 
 	for (var k=0; k<this.childs.length; k++) {
-		this.childs[k].x += this.velocity.x*SMA_MOTION;
-		this.childs[k].y += this.velocity.y*SMA_MOTION;
+		this.childs[k].x += this.dx;
+		this.childs[k].y += this.dy;
 	}
 
 	this.velocity.x*=.9;
@@ -361,7 +367,6 @@ Particle.prototype.mergeNodesAndFindTarget = function(index, particles){
 
 	if(t>=0){
 		this.getCloserFrom(particles[t]);
-
 		this.mTX=particles[t].x; this.mTY=particles[t].y; this.mHas=true;
 	} else if(this.records.length===1){
 
@@ -446,11 +451,9 @@ Particle.prototype.SearchCommonsAttrAndGetAwayFrom = function (arr, index){
 				x *=-0.1;
 				y *=-0.1;
 
-				this.velocity.x+=x;
-				this.velocity.y+=y;
+				this.pousseeSeparation(x, y);
 
-				this.x+=this.velocity.x*SMA_MOTION;
-				this.y+=this.velocity.y*SMA_MOTION;
+				this.deplacer();
 
 				this.velocity.x*=.9;
 				this.velocity.y*=.9
@@ -466,8 +469,8 @@ Particle.prototype.getCloserFrom = function(target){
 	var y = target.y - this.y;
 
 	var m = Math.pow(this.records.length, MERGE_MASS_EXP);
-	x *= 0.3 * m;
-	y *= 0.3 * m;
+	x *= 0.3 * m * SMA_MOTION;
+	y *= 0.3 * m * SMA_MOTION;
 
 	this.velocity.x += x;
 	this.velocity.y += y;
@@ -511,7 +514,7 @@ Particle.prototype.getAwayFrom = function(index, particles){
 		if(d>0){
 			var minD = this.radius*2 + particles[target_id].radius*2 + 10;
 			var overlap = minD - d;
-			var push = overlap*GREY_REPULSION;
+			var push = overlap*GREY_REPULSION*SMA_MOTION;
 			this.velocity.x -= (dx/d)*push;
 			this.velocity.y -= (dy/d)*push;
 		}
@@ -580,8 +583,7 @@ Particle.prototype.updateBeforeMerging = function(){
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
 	this.velocity.y = Math.min(Math.max(this.velocity.y, -maxSpeed), maxSpeed);
 
-	this.x+=this.velocity.x*SMA_MOTION;
-	this.y+=this.velocity.y*SMA_MOTION;
+	this.deplacer();
 
 	this.velocity.x*=.9;
 	this.velocity.y*=.9;
@@ -603,8 +605,7 @@ Particle.prototype.checkEdgesV2 = function(){
 
 		if(fx !== 0 || fy !== 0){
 			var k = BORDER_PUSH * this.records.length;
-			this.velocity.x += fx * k;
-			this.velocity.y += fy * k;
+			this.pousseeSeparation(fx * k, fy * k);
 		}
 
 	} else {
@@ -659,6 +660,67 @@ Particle.prototype.addNoiseField = function(coef){
 	this.velocity.x+=x;
 	this.velocity.y+=y;
 }
+Particle.prototype.degagerChevauchement = function(index, particles){
+
+	if(SMA_MOTION >= 1)return;
+
+	var qr = this.radius*2 + 2*smaMaxRadius + SMA_GRID_SLACK;
+	var cand = (SMA_USE_GRID && smaGridReady && smaGrid) ? smaGrid.queryRadius(this.x, this.y, qr, _smaScratch) : null;
+	var N = cand ? cand.length : particles.length;
+
+	for (var c=0; c<N; c++) {
+
+		var i = cand ? cand[c] : c;
+		if(index===i)continue;
+
+		var o = particles[i];
+
+		if(this.open !== o.open && !(o.open && this.records.length===1))continue;
+
+		if(this.targetedAttr!=="" && this[this.targetedAttr]!=="" &&
+			String(this[this.targetedAttr]).localeCompare(String(o[o.targetedAttr]))===0)continue;
+
+		var minDistance = this.radius*2 + o.radius*2;
+		var distance = dist(this.x, o.x, this.y, o.y);
+
+		if(distance >= minDistance)continue;
+
+		var ux, uy;
+
+		if(distance > 0){
+			ux = (o.x - this.x)/distance;
+			uy = (o.y - this.y)/distance;
+		} else {
+			var a = Math.random()*Math.PI*2;
+			ux = Math.cos(a); uy = Math.sin(a);
+		}
+
+		var push = (minDistance - distance)*OVERLAP_PUSH*(1 - SMA_MOTION);
+		if(push > OVERLAP_MAX) push = OVERLAP_MAX;
+
+		this.pousseeSeparation(-ux*push, -uy*push);
+	}
+}
+Particle.prototype.pousseeSeparation = function(x, y){
+	this.velocity.x += x;
+	this.velocity.y += y;
+	this.sep.x += x;
+	this.sep.y += y;
+}
+Particle.prototype.deplacer = function(){
+	var m = SMA_MOTION;
+	var sx = this.sep.x, sy = this.sep.y;
+	var sn = Math.sqrt(sx*sx + sy*sy);
+	if(sn > SEP_MAX){ sx = sx/sn*SEP_MAX; sy = sy/sn*SEP_MAX; }
+	var dx = this.velocity.x*m + sx*(1-m);
+	var dy = this.velocity.y*m + sy*(1-m);
+	this.x += dx;
+	this.y += dy;
+	this.sep.x *= .9;
+	this.sep.y *= .9;
+	this.dx = dx;
+	this.dy = dy;
+}
 Particle.prototype.drawLine = function(x1, y1, x2, y2, color, opacite){
 	var ctx = this.context;
 	var op = (opacite === undefined) ? 1 : opacite;
@@ -706,8 +768,7 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 
 				var push = (minDistance - distance)*GROUP_REPULSION*this.records.length*yieldF;
 
-				this.velocity.x -= x*push;
-				this.velocity.y -= y*push;
+				this.pousseeSeparation(-x*push, -y*push);
 			}
 		}
 	}
@@ -738,8 +799,7 @@ Particle.prototype.separateFromLoners = function(index, particles){
 
 				var push = (minDistance - distance)*.08;
 
-				this.velocity.x -= x*push;
-				this.velocity.y -= y*push;
+				this.pousseeSeparation(-x*push, -y*push);
 			}
 		}
 	}
@@ -806,7 +866,7 @@ Particle.prototype.avoidGroupsAhead = function(index, particles){
 
 		var wa = MASS_PRIORITY*((2*mO/(mThis+mO)) - 1);
 		if(wa>this.yieldW)this.yieldW=wa;
-		var push = proximity*align*AVOID_STRENGTH*this.scale*this.records.length*yieldF;
+		var push = proximity*align*AVOID_STRENGTH*this.scale*this.records.length*yieldF*SMA_MOTION;
 
 		var ux = dx/distance, uy = dy/distance;
 		var tx = -uy, ty = ux;
