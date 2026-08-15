@@ -1,3 +1,7 @@
+var SMA_MOTION = 1;
+var SMA_ATTRS = ['label', 'works'];
+function smaAttr(){ return (typeof sl_attribute === 'string' && sl_attribute) ? sl_attribute : 'label'; }
+
 var GREY_NOISE = .35;
 
 var COLL_GAIN  = .4;
@@ -44,6 +48,7 @@ function Particle(config){
 	this.scale = config.scale;
 
 	this.label=config.label;
+	this.works=(config.works===undefined || config.works===null || config.works==='') ? '' : String(config.works);
 	this.radVar=Math.random()*2;
 	this.radius=this.radVar+1.*this.scale;
 
@@ -163,6 +168,7 @@ Particle.prototype.createNewChild=function(id, count){
         id: id,
         count: count,
         label: this.label,
+        works: this.works,
         x:this.x-radius+Math.random()*(radius*2),
         y:this.y-radius+Math.random()*(radius*2),
         scale : this.scale
@@ -178,8 +184,8 @@ Particle.prototype.addNoiseField = function(coef){
 
     var sizeFactor = this.radius/(2.*this.scale);
     if(sizeFactor<1)sizeFactor=1;
-    x*=coef/sizeFactor;
-    y*=coef/sizeFactor;
+    x*=coef*SMA_MOTION/sizeFactor;
+    y*=coef*SMA_MOTION/sizeFactor;
 
 	if(this.ids.length===1){ x*=GREY_NOISE; y*=GREY_NOISE; }
 
@@ -203,17 +209,26 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 
 			if(distance<50){
 
-				if(this.label.localeCompare(arr[i].label)===0){
+				var partage = false;
 
-					if(commonAttributes.length<1){
-						commonAttributes.push({name:'label', count:1});
-					} else {
-						commonAttributes[0].count+=1;
+				for (var a=0; a<SMA_ATTRS.length; a++) {
+
+					var nom = SMA_ATTRS[a];
+					var v1 = this[nom], v2 = arr[i][nom];
+
+					if(v1===undefined || v1==="" || v2===undefined || v2==="") continue;
+					if(String(v1).localeCompare(String(v2))!==0) continue;
+
+					partage = true;
+
+					var trouve = false;
+					for (var k=0; k<commonAttributes.length; k++) {
+						if(commonAttributes[k].name===nom){ commonAttributes[k].count+=1; trouve=true; break; }
 					}
-					this.drawLine(this.x, this.y, arr[i].x, arr[i].y, this.color2);
-				} else {
-					this.drawLine(this.x, this.y, arr[i].x, arr[i].y, this.color1);
+					if(!trouve) commonAttributes.push({name:nom, count:1});
 				}
+
+				this.drawLine(this.x, this.y, arr[i].x, arr[i].y, partage ? this.color2 : this.color1);
 			}
 
 			if(distance<minDistance){
@@ -227,8 +242,8 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 				this.velocity.x+=x;
 				this.velocity.y+=y;
 
-				this.x+=this.velocity.x;
-				this.y+=this.velocity.y;
+				this.x+=this.velocity.x*SMA_MOTION;
+				this.y+=this.velocity.y*SMA_MOTION;
 
 				this.velocity.x*=.9;
 				this.velocity.y*=.9;
@@ -254,7 +269,7 @@ Particle.prototype.update = function(index, particles){
 	if(this.driftT===undefined){ this.driftT=Math.random()*1000; this.driftP=Math.random()*100; }
 	this.driftT+=.008;
 	if(this.ids.length>1){
-		var driftAmp = (this.open ? .5 : .4)*this.ids.length/(1+this.collMass);
+		var driftAmp = (this.open ? .5 : .4)*this.ids.length/(1+this.collMass)*SMA_MOTION;
 		this.velocity.x += noise.perlin2(this.driftT, this.driftP)*driftAmp;
 		this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*driftAmp;
 	}
@@ -353,8 +368,8 @@ Particle.prototype.update = function(index, particles){
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
 	this.velocity.y = Math.min(Math.max(this.velocity.y, -maxSpeed), maxSpeed);
 
-	this.x+=this.velocity.x;
-	this.y+=this.velocity.y;
+	this.x+=this.velocity.x*SMA_MOTION;
+	this.y+=this.velocity.y*SMA_MOTION;
 
 	if(this.ids.length>1){
 		var W=this.canvas.width, H=this.canvas.height;
@@ -363,8 +378,8 @@ Particle.prototype.update = function(index, particles){
 	}
 
 	for (var k=0; k<this.childs.length; k++) {
-		this.childs[k].x += this.velocity.x;
-		this.childs[k].y += this.velocity.y;
+		this.childs[k].x += this.velocity.x*SMA_MOTION;
+		this.childs[k].y += this.velocity.y*SMA_MOTION;
 	}
 
 	this.velocity.x*=.9;
@@ -378,8 +393,8 @@ Particle.prototype.updateBeforeMerging = function(){
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
 	this.velocity.y = Math.min(Math.max(this.velocity.y, -maxSpeed), maxSpeed);
 
-	this.x+=this.velocity.x;
-	this.y+=this.velocity.y;
+	this.x+=this.velocity.x*SMA_MOTION;
+	this.y+=this.velocity.y*SMA_MOTION;
 
 	this.velocity.x*=.9;
 	this.velocity.y*=.9;
@@ -411,8 +426,10 @@ Particle.prototype.getAwayFrom = function(index, particles){
 
 		var i = cand ? cand[c] : c;
 
+		var att = smaAttr();
+
 		if(index!==i
-			&& this.label.localeCompare(particles[i].label)!==0
+			&& String(this[att]).localeCompare(String(particles[i][att]))!==0
 
 			){
 
@@ -472,7 +489,8 @@ Particle.prototype.seekMergeTarget = function(index, particles, cand){
 		if(index===i)continue;
 
 		var p = particles[i];
-		if(this.label.localeCompare(p.label)!==0)continue;
+		var att = smaAttr();
+		if(String(this[att]).localeCompare(String(p[att]))!==0)continue;
 
 		var minDistance = Math.min(this.radius, p.radius);
 		var distance = dist(this.x, p.x, this.y, p.y);
@@ -487,6 +505,22 @@ Particle.prototype.seekMergeTarget = function(index, particles, cand){
 		}
 	}
 	return target_id;
+}
+Particle.prototype.etiquette = function(){
+
+	var att = smaAttr();
+
+	if(att === 'label') return this.iso;
+
+	var v = this[att];
+	if(v === undefined || v === null || v === '') return '';
+
+	if(att === 'works'){
+		var n = parseInt(v, 10);
+		if(!isNaN(n)) return n + (n === 1 ? ' work' : ' works');
+	}
+
+	return String(v);
 }
 Particle.prototype.display = function(){
 
@@ -539,7 +573,7 @@ Particle.prototype.display = function(){
 
 	    if(this.ids.length>=50){
 
-	    	ctx.fillText(this.iso, this.x, this.y - 7*this.scale);
+	    	ctx.fillText(this.etiquette(), this.x, this.y - 7*this.scale);
 
 	    	var referenced = 0;
 	    	for (var j=0; j<this.counts.length; j++) {
@@ -556,7 +590,7 @@ Particle.prototype.display = function(){
 	    	ctx.font = this.font;
 
 	    } else {
-	    	ctx.fillText(this.iso, this.x, this.y);
+	    	ctx.fillText(this.etiquette(), this.x, this.y);
 	    }
 
     }
@@ -626,8 +660,9 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 
 		var i = cand ? cand[c] : c;
 
-		var sameValue = this.label!=="" &&
-			String(this.label).localeCompare(String(particles[i].label))===0;
+		var att = smaAttr();
+		var sameValue = this[att]!=="" &&
+			String(this[att]).localeCompare(String(particles[i][att]))===0;
 
 		if(index!==i && particles[i].ids.length>1 && !sameValue){
 
@@ -662,8 +697,9 @@ Particle.prototype.separateFromLoners = function(index, particles){
 
 		if(index!==i && particles[i].ids.length===1){
 
-			if(this.label!=="" &&
-				String(this.label).localeCompare(String(particles[i].label))===0) continue;
+			var att = smaAttr();
+			if(this[att]!=="" &&
+				String(this[att]).localeCompare(String(particles[i][att]))===0) continue;
 
 			var minDistance = this.radius*2 + particles[i].radius*2 + 12;
 			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
@@ -772,7 +808,8 @@ Particle.prototype.avoidGroupsAhead = function(index, particles){
 		var o = particles[i];
 		if(o.ids.length<=1)continue;
 
-		var sameValue = this.label!=="" && String(this.label).localeCompare(String(o.label))===0;
+		var att = smaAttr();
+		var sameValue = this[att]!=="" && String(this[att]).localeCompare(String(o[att]))===0;
 		if(sameValue)continue;
 
 		var dx = o.x - this.x, dy = o.y - this.y;

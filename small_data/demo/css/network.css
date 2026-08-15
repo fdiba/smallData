@@ -1,3 +1,44 @@
+#sma_note{
+	display: none;
+	box-sizing: border-box;
+	width: 1200px;
+	max-width: 100%;
+	background: #fff;
+	color: #2c3e50;
+	padding: 10px 12px;
+	margin: 0 0 8px 0;
+	font-style: italic;
+}
+#middle > #page_cols,
+#content > #page_cols{
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: flex-start;
+	margin-top: calc(var(--sd-bar-h) + 8px);
+}
+#page_cols > #left_col{
+	flex: 0 0 auto;
+	min-width: 0;
+}
+#left_col > #main_container{
+	margin-top: 0;
+	display: block;
+}
+#page_cols > #infos{
+	flex: 0 0 300px;
+	width: 300px;
+	max-width: none;
+	float: none;
+	margin-left: 2px;
+	word-wrap: break-word;
+}
+#page_cols > #infos > #isniColumn{
+	box-sizing: border-box;
+	width: 100%;
+}
+#page_cols > #infos > #isniColumn .isni-box.open{
+	margin-bottom: 10px;
+}
 #commons{
 	margin: 0 0 0 5px;
 	min-width: 100px;
@@ -9,6 +50,12 @@
 #commons p {
 	padding: 0;
 	margin: 0;
+}
+#commons p u{
+	cursor: pointer;
+}
+#commons p u:hover{
+	background: rgba(44, 62, 80, .12);
 }
 #myCanvas{
 	margin: 0 5px 0 0;

@@ -9,6 +9,11 @@ var counter001, pointer001;
 var usingCookie=false;
 var state=-999;
 var running=false;
+var smaPaused=false;
+var SMA_MIN_TRACES = 20;
+var CANVAS_H_ALL = 800;
+var CANVAS_H_TRACES = 400;
+var MOTION_EASE = .06;
 
 var main_attributes=[];
 var sl_attribute='';
@@ -100,8 +105,7 @@ window.onload = function() {
         if(state>=0){
 
             if(e.which == 32) {
-                console.log('pause:', running);
-                running=!running;
+                basculePause();
             }
         }
 
@@ -115,16 +119,52 @@ window.onload = function() {
     $("#sma_main_ctrl ul").append('<li>pause</li>');
     $("#sma_main_ctrl ul li:last").css("text-decoration", "underline").on("click", pauseSMA);
 
+    majPause(false);
+    majCommons();
+
     if(typeof enableIsniPanel === 'function'){
         enableIsniPanel({ into: 'isniColumn' });
     }
 
 }
-function pauseSMA(event){
-    noiseField =!noiseField;
-
-    if(noiseField) $(event.target).text("pause");
-    else $(event.target).text("play");
+function basculePause(){
+    smaPaused = !smaPaused;
+    running = !smaPaused;
+    $("#sma_main_ctrl ul li:last").text(smaPaused ? "play" : "pause");
+}
+function pauseSMA(){
+    basculePause();
+}
+function majMotion(){
+    var cible = smaPaused ? 0 : 1;
+    SMA_MOTION += (cible - SMA_MOTION) * MOTION_EASE;
+    if(SMA_MOTION < .002) SMA_MOTION = 0;
+    else if(SMA_MOTION > .998) SMA_MOTION = 1;
+}
+function majPause(visible){
+    $("#sma_main_ctrl").css('display', visible ? '' : 'none');
+}
+function majNote(texte){
+    if(texte){
+        $("#myCanvas").hide();
+        $("#infos").hide();
+        $("#sma_note").text(texte).show();
+    } else {
+        $("#sma_note").hide().empty();
+        $("#myCanvas").show();
+        $("#infos").show();
+    }
+}
+function majCommons(){
+    var vide = $.trim($("#commons p").text()).length === 0;
+    $("#commons").css('display', vide ? 'none' : '');
+}
+function hauteurCanevas(h){
+    if(canvas.height === h*scale) return;
+    canvas.height = h*scale;
+    smaGridReady = false;
+    smaGrid = null;
+    resetSMACanvas();
 }
 
 function resetSimulation(){
@@ -141,17 +181,24 @@ function resetSimulation(){
     main_attributes=[];
     noiseField=true;
     running=false;
+    smaPaused=false;
+    SMA_MOTION=1;
 
-    $("#commons p").off("click").css("text-decoration", "none").empty();
+    $("#commons p").removeAttr('data-html').css({"text-decoration":"none","cursor":"default"}).empty();
     $("#cookies").empty();
     $("#titles").empty();
     $("#sma_main_ctrl ul li:last").text("pause");
+    majPause(false);
+    majCommons();
+    majNote('');
 
     resetSMACanvas();
 }
 function computeAll(){
 
     resetSimulation();
+
+    hauteurCanevas(CANVAS_H_ALL);
 
     usingCookie=false;
     state=1;
@@ -170,6 +217,7 @@ function computeAll(){
                               + composers.length + ' retenus)');
 
     if(composers.length>0){
+        majPause(true);
         animation01=setInterval(sma_animation, 1000/30);
         document.getElementById('myCanvas').addEventListener("click", getParticleInfos);
         document.getElementById('myCanvas').addEventListener("dblclick", closeParticleOnDblClick);
@@ -179,6 +227,8 @@ function computeAll(){
 function computeTraces(){
 
     resetSimulation();
+
+    hauteurCanevas(CANVAS_H_TRACES);
 
     usingCookie=true;
     state=0;
@@ -190,7 +240,7 @@ function computeTraces(){
     var saved = $.cookie('ids');
 
     if(!saved){
-        $("#cookies").empty().append('<p>no navigation trace yet — browse composers in Overview first</p>');
+        majNote('No navigation trace yet. Browse composers in Overview first, then come back.');
         $("#get_sl").removeClass('b_on').addClass('b_off');
         running=false;
         return;
@@ -200,7 +250,17 @@ function computeTraces(){
 
     for (var i=0; i<cookies.length; i+=2)composers.push({id:cookies[i], count:cookies[i+1]});
 
+    if(composers.length<SMA_MIN_TRACES){
+        majNote('Only ' + composers.length + ' composer' + (composers.length>1 ? 's' : '')
+                + ' in your navigation trace. The system needs at least ' + SMA_MIN_TRACES
+                + ' to say anything. Browse a few more in Overview, then come back.');
+        $("#get_sl").removeClass('b_on').addClass('b_off');
+        running=false;
+        return;
+    }
+
     if(composers.length>0){
+        majPause(true);
         animation01=setInterval(sma_animation, 1000/30);
         document.getElementById('myCanvas').addEventListener("click", getParticleInfos);
         document.getElementById('myCanvas').addEventListener("dblclick", closeParticleOnDblClick);
@@ -299,6 +359,8 @@ function addParticleUsing(i){
 }
 function sma_animation(){
 
+    majMotion();
+
     if(pointer001<composers.length && running
         && particles.length<numberOfNodesOnDisplayMax && noiseField){
         addParticleUsing(pointer001);
@@ -380,27 +442,70 @@ function checkAttributes(attributes){
         }
     }
 
+    main_attributes.sort(function(a, b){ return b.count - a.count; });
+
     var commons_p = $("#commons p");
-    var nom_affiche = nomAffiche(main_attributes[0].name);
+    var html = '', separateur = '';
 
-    if(commons_p.find('u').text() !== nom_affiche){
-        commons_p.html('Group by: <u>' + nom_affiche + '</u> <span class="gb-count"></span>')
-                 .off("click").on("click", setCommonAttr).css("cursor", "pointer");
+    for (var k=0; k<main_attributes.length; k++) {
+
+        var m = main_attributes[k];
+        var compte = m.count>attr_treshold ? '' : ' (' + m.count + ')';
+
+        html += separateur + '<u data-attr="' + m.name + '">' + nomAffiche(m.name) + '</u>' + compte;
+        separateur = ' &middot; ';
     }
 
-    if(main_attributes[0].count>attr_treshold){
-        commons_p.find('.gb-count').text('');
-    } else {
-        commons_p.find('.gb-count').text('(' + main_attributes[0].count + ')');
+    if(commons_p.attr('data-html') !== html){
+        commons_p.attr('data-html', html)
+                 .html('Group by: ' + html)
+                 .css("cursor", "pointer");
+        commons_p.find('u').off("click").on("click", setCommonAttr);
     }
+
+    majCommons();
 }
 function nomAffiche(n){
-    return n === 'label' ? 'country' : n;
+    if(n === 'label') return 'country';
+    if(n === 'works') return 'archived works';
+    return n;
 }
-function setCommonAttr(){
-    sl_attribute = main_attributes[0].name;
-    $("#commons p" ).off("click").css("cursor", "default");
-    $("#commons p u").contents().unwrap();
+function setCommonAttr(event){
+    var choisi = $(event.target).attr('data-attr');
+    if(!choisi) return;
+    if(smaPaused) basculePause();
+    sl_attribute = choisi;
+    afficheGroupe();
+}
+function afficheGroupe(){
+
+    var autre = '';
+    for (var i=0; i<SMA_ATTRS.length; i++) {
+        if(SMA_ATTRS[i] !== sl_attribute){ autre = SMA_ATTRS[i]; break; }
+    }
+
+    var html = 'Grouped by: ' + nomAffiche(sl_attribute);
+    if(autre) html += ' &middot; <u data-attr="' + autre + '">regroup by ' + nomAffiche(autre) + '</u>';
+
+    $("#commons p").removeAttr('data-html').css("cursor", "default").html(html);
+    $("#commons p u").off("click").on("click", regrouperDepuisMenu);
+
+    majCommons();
+}
+function regrouperDepuisMenu(event){
+
+    var attr = $(event.target).attr('data-attr');
+    if(!attr) return;
+
+    var traces = usingCookie;
+
+    if(traces) computeTraces();
+    else computeAll();
+
+    if(!running) return;
+
+    sl_attribute = attr;
+    afficheGroupe();
 }
 function allowGrouping(){
 
@@ -436,6 +541,7 @@ function createNewParticle(id, ctry, iso, count, addRadiusVal){
         addRadiusVal: addRadiusVal*scale,
         id: id,
         label: ctry,
+        works: count,
         iso: iso,
         x:Math.random()*canvas.width,
         y:Math.random()*canvas.height,

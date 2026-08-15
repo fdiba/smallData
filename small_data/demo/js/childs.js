@@ -15,6 +15,7 @@ function Child(config){
 	this.count=config.count;
 
 	this.label=config.label;
+	this.works=config.works;
 
 	if(this.count>0)this.radius=2.5*this.scale+Math.random();
 	else this.radius=1*this.scale;

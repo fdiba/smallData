@@ -42,15 +42,12 @@
 				</div>
 			</div>
 		</div>
+		<div id="page_cols">
+		<div id="left_col">
 		<div id="main_container">
+			<div id="sma_note"></div>
 			<canvas id="myCanvas" width="500" height="500">Votre navigateur ne supporte pas les canvas.</canvas>
-			<div id="infos">
-				<div id="cookies"></div>
-			    <div id="selection"></div>
-			    <div id="isniColumn"></div>
-			    <ul id="titles"></ul>
-		    </div>
-	    </div>
+		</div>
 		<div id="legend" class="is-collapsed">
 			<button type="button" id="lg_toggle" class="lg-title" aria-expanded="false" aria-controls="lg_body">
 				How to read this page<span class="lg-caret" aria-hidden="true"></span>
@@ -78,13 +75,21 @@
 				<div>
 					<p><strong>Grouping</strong></p>
 					<ul>
-						<li>Agents compare their properties as they move. When a shared property such as <em>country</em> has been exchanged often enough, its name appears in the white panel of the top bar.</li>
-						<li>Click that property name to let the agents regroup around it.</li>
+						<li>Agents compare their properties as they move. Two of them can be shared: <em>country</em> and <em>archived works</em>. Every time two agents meet and match on one, that property gains a point, and a blue line is drawn between them.</li>
+						<li>The white panel of the top bar lists the properties that have been exchanged, the most shared first, with a running count while it is still low. Click one to let the agents regroup around it. Nothing else changes: the same agents rearrange themselves under the other reading.</li>
 						<li>The green box reports the number of nodes while the system grows, then details whatever you click on the canvas.</li>
 					</ul>
 				</div>
 			</div>
 			</div>
+		</div>
+		</div>
+		<div id="infos">
+			<div id="cookies"></div>
+			<div id="selection"></div>
+			<div id="isniColumn"></div>
+			<ul id="titles"></ul>
+		</div>
 		</div>
  	</div>
 </body>
