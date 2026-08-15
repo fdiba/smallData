@@ -112,7 +112,9 @@ window.onload = function() {
         if(state>=0) basculePause();
     });
 
+    $("#sma_main_ctrl ul").append('<li>reset</li>');
     $("#sma_main_ctrl ul").append('<li>pause</li>');
+    $("#sma_main_ctrl ul li:first").css("text-decoration", "underline").on("click", reinitialiser);
     $("#sma_main_ctrl ul li:last").css("text-decoration", "underline").on("click", pauseSMA);
 
     majPause(false);
@@ -122,6 +124,13 @@ window.onload = function() {
         enableIsniPanel({ into: 'isniColumn' });
     }
 
+}
+function reinitialiser(){
+
+    if(state < 0) return;
+
+    if(usingCookie) computeTraces();
+    else computeAll();
 }
 function basculePause(){
     smaPaused = !smaPaused;
@@ -490,10 +499,7 @@ function regrouperDepuisMenu(event){
     var attr = $(event.target).attr('data-attr');
     if(!attr) return;
 
-    var traces = usingCookie;
-
-    if(traces) computeTraces();
-    else computeAll();
+    reinitialiser();
 
     if(!running) return;
 
