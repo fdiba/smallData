@@ -381,9 +381,10 @@ function checkAttributes(attributes){
     }
 
     var commons_p = $("#commons p");
+    var nom_affiche = nomAffiche(main_attributes[0].name);
 
-    if(commons_p.find('u').text() !== main_attributes[0].name){
-        commons_p.html('Group by: <u>' + main_attributes[0].name + '</u> <span class="gb-count"></span>')
+    if(commons_p.find('u').text() !== nom_affiche){
+        commons_p.html('Group by: <u>' + nom_affiche + '</u> <span class="gb-count"></span>')
                  .off("click").on("click", setCommonAttr).css("cursor", "pointer");
     }
 
@@ -392,6 +393,9 @@ function checkAttributes(attributes){
     } else {
         commons_p.find('.gb-count').text('(' + main_attributes[0].count + ')');
     }
+}
+function nomAffiche(n){
+    return n === 'label' ? 'country' : n;
 }
 function setCommonAttr(){
     sl_attribute = main_attributes[0].name;

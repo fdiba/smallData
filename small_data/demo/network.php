@@ -26,12 +26,12 @@
 				<h1 id="main">Network</h1>
 				<p></p>
 			</div>
-			<?php include_once("./php/menus.php") ?>
 			<ul id="launcher">
 				<li class="b_off" id="get_all">get all data</li>
 				<li class="b_off" id="get_sl">compute traces</li>
 				<li class="b_off" id="cp_all">compute all</li>		
 			</ul>
+			<?php include_once("./php/menus.php") ?>
 			<div id="sma_menu">
 				<div id="sma_main_ctrl">
 					<ul>
