@@ -409,6 +409,8 @@ function shareInformation(){
 
         if(attributes.length>0)checkAttributes(attributes);
 
+        particles[i].degagerChevauchement(i, particles);
+
         particles[i].checkEdgesV1();
 
         particles[i].updateBeforeMerging();

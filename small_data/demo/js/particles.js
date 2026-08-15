@@ -3,6 +3,7 @@ var SMA_MOTION = 1;
 var SEP_MAX = .5;
 var OVERLAP_PUSH = .06;
 var OVERLAP_MAX = .5;
+var OVERLAP_MARGIN = 12;
 var SMA_ATTRS = ['label', 'works'];
 function smaAttr(){ return (typeof sl_attribute === 'string' && sl_attribute) ? sl_attribute : 'label'; }
 
@@ -237,7 +238,7 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 				              partage ? this.color2 : this.color1, apparition);
 			}
 
-			if(distance<minDistance){
+			if(distance<minDistance && SMA_MOTION > 0){
 
 				var x = arr[i].x - this.x;
 				var y = arr[i].y - this.y;
@@ -245,7 +246,8 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 				x *=-0.1;
 				y *=-0.1;
 
-				this.pousseeSeparation(x, y);
+				this.velocity.x += x;
+				this.velocity.y += y;
 
 				this.deplacer();
 
@@ -274,10 +276,12 @@ Particle.prototype.degagerChevauchement = function(index, particles){
 
 		if(this.open !== o.open && !(o.open && this.ids.length===1))continue;
 
-		var attC = smaAttr();
-		if(this[attC]!=="" && String(this[attC]).localeCompare(String(o[attC]))===0)continue;
+		if(sl_attribute){
+			var attC = smaAttr();
+			if(this[attC]!=="" && String(this[attC]).localeCompare(String(o[attC]))===0)continue;
+		}
 
-		var minDistance = this.radius*2 + o.radius*2;
+		var minDistance = this.radius*2 + o.radius*2 + OVERLAP_MARGIN;
 		var distance = dist(this.x, o.x, this.y, o.y);
 
 		if(distance >= minDistance)continue;
@@ -740,7 +744,7 @@ Particle.prototype.getAwayFromGroups = function(index, particles){
 		var i = cand ? cand[c] : c;
 
 		var att = smaAttr();
-		var sameValue = this[att]!=="" &&
+		var sameValue = sl_attribute && this[att]!=="" &&
 			String(this[att]).localeCompare(String(particles[i][att]))===0;
 
 		if(index!==i && particles[i].ids.length>1 && !sameValue){
@@ -776,7 +780,7 @@ Particle.prototype.separateFromLoners = function(index, particles){
 		if(index!==i && particles[i].ids.length===1){
 
 			var att = smaAttr();
-			if(this[att]!=="" &&
+			if(sl_attribute && this[att]!=="" &&
 				String(this[att]).localeCompare(String(particles[i][att]))===0) continue;
 
 			var minDistance = this.radius*2 + particles[i].radius*2 + 12;
