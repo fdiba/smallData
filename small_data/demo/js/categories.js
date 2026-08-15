@@ -2,6 +2,10 @@ var graph = {};
 var nodes = [];
 var links = [];
 var colors;
+var SD_PALETTE = ['#00a57d', '#4299dc', '#ce7a3b'];
+function sdColor(i){
+  return SD_PALETTE[((i % SD_PALETTE.length) + SD_PALETTE.length) % SD_PALETTE.length];
+}
 var svgWidth;
 
 var nodeIndex = {};
@@ -61,11 +65,7 @@ function build(){
 
   .attr('width', svgWidth+150+'px');
 
-  var max = links.length;
-
-  colors = d3.scale.linear()
-    .domain([0, max*.25, max*.5, max*.75, max])
-    .range(['#5dbf8c', '#8ecb84', '#bad97a', '#dab470', '#f08f67']);
+  colors = sdColor;
 
   d3.selectAll('.link').style('stroke', function(d, i){
     return colors(i);
@@ -383,17 +383,12 @@ function chartHeight(pad, pitch){
 
 function sankeyStuff(){
 
-  var max = graph.nodes.length;
-
-  colors = d3.scale.linear()
-    .domain([0, max*.25, max*.5, max*.75, max])
-    .range(['#5dbf8c', '#8ecb84', '#bad97a', '#dab470', '#f08f67']);
+  colors = sdColor;
 
   var margin = {top: 20, right: 1, bottom: 20, left: 41};
 
   svgWidth = 960 - margin.left - margin.right
            + (mode === VIEW_FULL ? 760 : 280);
-  var color = d3.scale.category20();
 
   var NODE_PADDING = (mode === VIEW_FULL) ? 12 : 16;
   var LABEL_PITCH  = 18;
