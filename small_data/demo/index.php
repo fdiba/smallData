@@ -47,10 +47,6 @@
 				<h1 id="main">Small Data</h1>
 				<p></p>
 			</div>
-			<ul id="launcher">
-				<li class="b_off" id="get_all">get all data</li>
-				<li class="b_off" id="anim">anim</li>
-			</ul>
 			<?php include_once("./php/menus.php") ?>
 			<div id="tools">
 				<div class="tool-row">

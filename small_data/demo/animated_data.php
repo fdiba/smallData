@@ -72,9 +72,6 @@
 				</ul>
 			</div>
 			<?php include_once("./php/menus.php") ?>
-			<ul id="launcher">
-				<li class="b_off" id="get_all">get all data</li>
-			</ul>
 		</div>
 		<div id="allCanvas">
 			<canvas id="cv_nav" width="500" height="20">

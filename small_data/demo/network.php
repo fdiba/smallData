@@ -27,7 +27,6 @@
 				<p></p>
 			</div>
 			<ul id="launcher">
-				<li class="b_off" id="get_all">get all data</li>
 				<li class="b_off" id="get_sl">compute traces</li>
 				<li class="b_off" id="cp_all">compute all</li>		
 			</ul>

@@ -87,8 +87,6 @@ window.onload = function() {
 	canvas = document.getElementById('myCanvas');
     context = canvas.getContext('2d');
 
-    document.getElementById('get_all').addEventListener("click", getDataV2);
-
     canvas.width = 1200*scale;
     canvas.height = 800*scale;
 
@@ -339,7 +337,6 @@ function removePreviousSelection(){
         particles[i].lastNodeSelected=false;
         for (var j = 0; j < particles[i].childs.length; j++) {
             particles[i].childs[j].lastNodeSelected=false;
-            console.log(particles[i].childs[j].lastNodeSelected);
         }
     }
 }
@@ -552,9 +549,6 @@ function getDataV2(){
 
 	init = true;
 
-    document.getElementById('get_all').removeEventListener("click", getDataV2);
-    $("#get_all").toggleClass('b_off b_on');
-    $("#get_all").hide();
 
     $.ajax({
         url: 'php/retrieve_data.php',

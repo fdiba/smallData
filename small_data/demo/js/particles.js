@@ -121,7 +121,6 @@ Particle.prototype.processChilds=function(mouseX, mouseY){
         if(distance<=childs[i].radius*2){
 
         	if(childs[i].id !== this.lastHit){
-        		console.log('id:', childs[i].id, 'count:', childs[i].count);
         		this.getTitlesFrom(childs[i].id);
         		removePreviousSelection();
         		childs[i].lastNodeSelected=true;

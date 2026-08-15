@@ -413,11 +413,6 @@ BarChart.prototype.zoneOf = function(mx, my){
 	if(my >  this.y + this.height && my <= this.h)  return {i:i, zone:'label'};
 	return null;
 };
-BarChart.prototype.hitBar = function(mx, my){
-	var z = this.zoneOf(mx, my);
-	return z ? z.i : -1;
-};
-
 BarChart.prototype.handleClick = function(mx, my){
 	if(this._retired) return;
 

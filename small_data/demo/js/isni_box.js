@@ -68,8 +68,6 @@ function enableIsniPanel(opt){
         if(box){
             new MutationObserver(function(records){
 
-                if(isniRerenderGuard) return;
-
                 var onlyCounter = true;
                 var onlyFiche   = true;
                 for(var i = 0; i < records.length; i++){
@@ -220,26 +218,6 @@ function toggleIsniBox(){
                            + id + '&TERMS_OF_USE_AGREED=Y&terms_of_use_agree=send'
             }});
         });
-}
-
-var isniRerenderGuard = false;
-
-function isniBeginRerender(){
-    isniRerenderGuard = true;
-    setTimeout(function(){ isniRerenderGuard = false; }, 0);
-}
-
-function isniOpenFor(){
-    return isniAnchor
-         ? String(isniAnchor.data('isni') || '').replace(/\s+/g, '')
-         : '';
-}
-
-function reanchorIsniBox(anchor){
-    if(!anchor || !anchor.length) return false;
-    isniAnchor = anchor;
-    placeIsniBox(anchor);
-    return true;
 }
 
 function placeIsniBox(anchor){

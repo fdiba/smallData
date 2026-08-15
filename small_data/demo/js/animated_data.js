@@ -119,7 +119,6 @@ window.onload = function() {
 
     document.getElementById('myCanvas').addEventListener("mousemove", hoverData);
     document.getElementById('myCanvas').addEventListener("mouseleave", clearHoverData);
-	document.getElementById('get_all').addEventListener("click", getData);
 	document.getElementById('selection').addEventListener("click", toggleYearSl);
 
 	window.addEventListener("resize", positionWorkPanel);
@@ -439,11 +438,6 @@ function updateSlData(){
         for (var i=0; i<allData.length-5; i+=6) {
 
             var count = allData[i+3];
-
-            if(i===0){
-                console.log('id:', allData[i], 'ctry:',allData[i+1], 'ctry_id:', allData[i+2],
-                'artist appearance in capsules:', count, 'editions:', allData[i+4]);
-            }
 
             if(f_data.length<1){
 
@@ -1167,10 +1161,7 @@ function getData(){
 
     init = true;
 
-    document.getElementById('get_all').removeEventListener("click", getData);
 
-	$("#get_all").toggleClass('b_off b_on');
-    $("#launcher").hide();
 
 	$.ajax({
         url: 'php/retrieve_data.php',

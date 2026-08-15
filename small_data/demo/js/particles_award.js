@@ -125,8 +125,6 @@ Particle.prototype.openOrCloseIt = function(){
 
 		this.childs=[];
 
-		console.log('close it');
-
 	 	this.extra_rad=0.;
 	 	this.lastHit=-999;
 

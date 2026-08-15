@@ -12,7 +12,6 @@ var xRightOffset;
 
 var nAId;
 
-var tNoise;
 
 var xPos, yPos;
 var xDist, yDist;
@@ -92,8 +91,6 @@ function ovRecordOrder(){
     return idx;
 }
 
-var isAnimated;
-var animation2;
 
 var maxWidth;
 
@@ -125,17 +122,12 @@ function resultIsListed(count){
 
 window.onload = function() {
 
-	isAnimated = false;
-	tNoise = 0;
 
     canvas = document.getElementById('myCanvas');
     context = canvas.getContext('2d');
 
-    $('#anim').hide();
-
     OverviewSMA.init(document.getElementById('sma'));
 
-    document.getElementById('get_all').addEventListener("click", getData);
 
     document.getElementById('searchBoxBtn').addEventListener("click", getSearchTerms);
 
@@ -182,7 +174,7 @@ window.onload = function() {
 
     bindGridReflow();
 
-    setTimeout(getData(), 5000);
+    getData();
 
 }
 
@@ -345,18 +337,6 @@ function editionsHtml(eds, provenance){
     }
     return out.join(', ');
 }
-function animation1(evt){
-	if(isAnimated){
-		clearInterval(animation2);
-		repaintAllRects();
-	} else animation2 = setInterval(noise_animation, 1000/10);
-
-	isAnimated = !isAnimated;
-
-    $("#anim").toggleClass('b_off b_on');
-
-}
-
 function repaintAllRects(){
     for(var i=0; i<rectangles.length; i++) paintRect(rectangles[i], 'normal', 0);
 
@@ -400,7 +380,6 @@ function createEditionsRectangles(id, count, editions){
             createNewRectangle(id, count, false, parseInt(editions[j], 10));
         }
     } else {
-        console.log("error: no edition");
     }
 }
 function createNewRectangle(aId, count, anchor, year){
@@ -617,10 +596,6 @@ function getData(){
 
     init = true;
 
-    document.getElementById('get_all').removeEventListener("click", getData);
-    $("#get_all").toggleClass('b_off b_on');
-
-    $("#launcher").remove();
 
     $.ajax({
         url: 'php/retrieve_data.php',
@@ -652,8 +627,6 @@ function getData(){
 }
 function processData002(numberMinOfParticipation){
 
-    console.log("woot");
-
     canvas.removeEventListener("mousedown", getInfo, false);
     rectangles=[];
 
@@ -682,21 +655,6 @@ function drawRectanglesAndAddInteractivity(){
     canvas.addEventListener("mousedown", getInfo, false);
 }
 
-function noise_animation(){
-
-    for(var i=0; i<rectangles.length; i++){
-
-        var r = rectangles[i];
-        if(r.anchor || r.id == nAId) continue;
-
-        var value = Math.abs(noise.perlin2((r.x+tNoise)/1000, (r.y+tNoise)/1000));
-        if(value>1) value=1;
-
-        paintRect(r, 'normal', 0.55*value);
-    }
-
-    tNoise+=15;
-}
 
 function filterData(){
 
@@ -705,11 +663,7 @@ function filterData(){
 
     var numOfRecords = readNumOfRecords();
 
-    if(Number.isInteger(year_01) && Number.isInteger(year_02)){
-        console.log("all three");
-    } else if (Number.isInteger(year_01)){
-        console.log("year_01");
-    } else {
+    if(!Number.isInteger(year_01) && !Number.isInteger(year_02)){
         processData002(numOfRecords);
         updateCoverageNote(numOfRecords);
     }
