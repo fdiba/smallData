@@ -1,5 +1,25 @@
 <?php
 	$title = "IMEB Euphonies d’Or";
+
+	require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
+
+	function compte($dbh, $sql){
+		try {
+			$sth = $dbh->query($sql);
+			if(!$sth) return null;
+			$v = $sth->fetchColumn();
+			return ($v === false || $v === null) ? null : (int) $v;
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+	function nb($n){ return ($n === null) ? '?' : number_format($n, 0, ',', '&thinsp;'); }
+
+	$n_euph   = compte($dbh, "SELECT COUNT(*) FROM imeb_music WHERE euphonies > 0");
+	$n_euph_1 = compte($dbh, "SELECT COUNT(*) FROM imeb_music WHERE euphonies = 1");
+	$n_euph_2 = compte($dbh, "SELECT COUNT(*) FROM imeb_music WHERE euphonies = 2");
+	$n_euph_3 = compte($dbh, "SELECT COUNT(*) FROM imeb_music WHERE euphonies = 3");
+	$n_rondes = compte($dbh, "SELECT COUNT(DISTINCT euphonies) FROM imeb_music WHERE euphonies > 0");
 ?>
 <!DOCTYPE html>
 <html>
@@ -62,7 +82,7 @@
 				<div id="lg_body">
 				<div class="lg-cols">
 					<div>
-						<p class="lg-intro">The <em>Euphonies d'Or</em> are honorary distinctions awarded in <strong>three retrospective rounds</strong>, not one. There are <strong>35 works</strong> in all, which is why this page lists more than twenty: 20 at the competition's 20th anniversary in 1992, chosen among the finest works of 1973&ndash;1991; 10 more in 2004, chosen among the prizes of 1993&ndash;2003; and a final 5 in 2010, for 2005&ndash;2009. The <em>edition</em> column marks which round each work belongs to.</p>
+						<p class="lg-intro">The <em>Euphonies d'Or</em> are honorary distinctions awarded in <strong><?php echo nb($n_rondes) ?> retrospective rounds</strong>, not one. There are <strong><?php echo nb($n_euph) ?> works</strong> in all, which is why this page lists more than twenty: <?php echo nb($n_euph_1) ?> at the competition's 20th anniversary in 1992, chosen among the finest works of 1973&ndash;1991; <?php echo nb($n_euph_2) ?> more in 2004, chosen among the prizes of 1993&ndash;2003; and a final <?php echo nb($n_euph_3) ?> in 2010, for 2005&ndash;2009. The <em>edition</em> column marks which round each work belongs to.</p>
 						<p><strong>Table &amp; agents</strong></p>
 						<ul>
 							<li>The table lists the Euphonies d'Or, sorted on arrival by edition then last name. The <em>composer</em> column shows &laquo;&nbsp;first name last name&nbsp;&raquo; but sorts on the last name, the first one only breaking ties.</li>

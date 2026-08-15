@@ -1,3 +1,25 @@
+<?php
+
+	require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
+
+	function compte($dbh, $sql){
+		try {
+			$sth = $dbh->query($sql);
+			if(!$sth) return null;
+			$v = $sth->fetchColumn();
+			return ($v === false || $v === null) ? null : (int) $v;
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+	function nb($n){ return ($n === null) ? '?' : number_format($n, 0, ',', '&thinsp;'); }
+
+	$n_editions   = compte($dbh, "SELECT COUNT(DISTINCT annee) FROM imeb_participation");
+	$n_attestees  = compte($dbh, "SELECT COUNT(DISTINCT annee) FROM imeb_participation WHERE source = 'constat'");
+	$an_premier   = compte($dbh, "SELECT MIN(annee) FROM imeb_participation");
+	$an_dernier   = compte($dbh, "SELECT MAX(annee) FROM imeb_participation");
+
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -66,12 +88,12 @@
 			<div class="lg-cols">
 				<div>
 					<p><strong>Coverage</strong></p>
-					<p class="lg-note" id="lg-incomplete" style="display:none">With <em>num of records</em> at 0, every participant is listed and this index is then knowingly incomplete. The minutes are fully entered for the editions of 1973&ndash;1994, only partly for those of 1996&ndash;2009.</p>
-					<p class="lg-note">No competition was held in 1995, so no square carries that year. There are 36 editions in all.</p>
+					<p class="lg-note" id="lg-incomplete" style="display:none">With <em>num of records</em> at 0, every participant is listed and this index is then knowingly incomplete. The competition minutes are transcribed in full for <?php echo nb($n_attestees) ?> of the <?php echo nb($n_editions) ?> editions; the others are known through the entrants list and the archived works alone.</p>
+					<p class="lg-note">No competition was held in 1995, so no square carries that year. There are <?php echo nb($n_editions) ?> editions in all.</p>
 					<p><strong>The index</strong></p>
 					<ul>
 						<li>Each composer is a slate square followed by one coloured square per participation. The slate square only marks where a run begins, and it carries no count.</li>
-						<li>A participation square is coloured by its <em>edition year</em>, from the sea green of 1973 to the pale amethyst of 2009. It is the lightness that carries the order, and the key sits at the top right of the grid.</li>
+						<li>A participation square is coloured by its <em>edition year</em>, from the sea green of <?php echo $an_premier ?> to the pale amethyst of <?php echo $an_dernier ?>. It is the lightness that carries the order, and the key sits at the top right of the grid.</li>
 						<li>The <em>squares: first entry &middot; archived works &middot; A&ndash;Z</em> control at the top left reorders the grid. Three orders, three questions. <em>first entry</em> settles ties by surname.</li>
 					</ul>
 				</div>

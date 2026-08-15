@@ -1,3 +1,33 @@
+<?php
+
+	require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
+
+	function compte($dbh, $sql){
+		try {
+			$sth = $dbh->query($sql);
+			if(!$sth) return null;
+			$v = $sth->fetchColumn();
+			return ($v === false || $v === null) ? null : (int) $v;
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+	function nb($n){ return ($n === null) ? '?' : number_format($n, 0, ',', '&nbsp;'); }
+
+	$n_entrants   = compte($dbh, "SELECT COUNT(DISTINCT id_artist) FROM imeb_participation");
+	$n_sans_oeuvre = compte($dbh, "SELECT COUNT(*) FROM (SELECT DISTINCT p.id_artist FROM imeb_participation p
+								   WHERE NOT EXISTS (SELECT 1 FROM imeb_music m WHERE m.id_artist = p.id_artist)) t");
+	$n_1992       = compte($dbh, "SELECT COUNT(DISTINCT id_artist) FROM imeb_participation WHERE annee = 1992");
+	$n_2004       = compte($dbh, "SELECT COUNT(DISTINCT id_artist) FROM imeb_participation WHERE annee = 2004");
+	$n_pays       = compte($dbh, "SELECT COUNT(DISTINCT a.id_country) FROM imeb_participation p
+								  INNER JOIN imeb_artist a ON a.id = p.id_artist
+								  WHERE a.id_country IS NOT NULL");
+	$n_inconnu    = compte($dbh, "SELECT COUNT(DISTINCT p.id_artist) FROM imeb_participation p
+								  INNER JOIN imeb_artist a ON a.id = p.id_artist
+								  INNER JOIN imeb_country c ON c.id = a.id_country
+								  WHERE c.c_name_en = 'Unknown' OR c.c_name = 'Unknown'");
+
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -61,8 +91,8 @@
 			<div id="lg_body">
 			<div class="lg-cols">
 				<div>
-					<p class="lg-note"><strong>What is counted</strong>: <em>entrants</em>, not works. Most of the people on this page have no work in the collection at all. Of the 4&nbsp;262 entrants the database records, 2&nbsp;773 left nothing but a candidacy, a name read off an entry list. That gap is the subject of this page, and it is why most names in the list below are withheld.</p>
-					<p class="lg-note"><strong>The chart is knowingly incomplete</strong>, and the strip above each edition square says on what authority that edition is counted. There was no competition in 1995, so the timeline skips it and 1994 joins 1996 directly. Two low editions are not gaps in the record. 1992 (112) was open for one degree only, the R&eacute;sidence, and 2004 (137) ran without its first three categories.</p>
+					<p class="lg-note"><strong>What is counted</strong>: <em>entrants</em>, not works. Most of the people on this page have no work in the collection at all. Of the <?php echo nb($n_entrants) ?> entrants the database records, <?php echo nb($n_sans_oeuvre) ?> left nothing but a candidacy, a name read off an entry list. That gap is the subject of this page, and it is why most names in the list below are withheld.</p>
+					<p class="lg-note"><strong>The chart is knowingly incomplete</strong>, and the strip above each edition square says on what authority that edition is counted. There was no competition in 1995, so the timeline skips it and 1994 joins 1996 directly. Two low editions are not gaps in the record. 1992 (<?php echo nb($n_1992) ?>) was open for one degree only, the R&eacute;sidence, and 2004 (<?php echo nb($n_2004) ?>) ran without its first three categories.</p>
 					<p><strong>Timeline (top strip)</strong></p>
 					<ul>
 						<li><span class="sq" style="background:#ecf0f1"></span> One square per edition. The first, <em>all</em>, charts 1973&ndash;2009.</li>
@@ -80,9 +110,9 @@
 				<div>
 					<p><strong>Countries</strong>: whose map is this</p>
 					<ul>
-						<li>There are 81 countries. Each person is charted under the state they are attached to <em>today</em>, not the one on the envelope they posted in.</li>
-						<li>So Czechoslovakia, the GDR and the USSR never appear, though 62, 22 and 9 addresses in the base name them. A chart drawn on addresses would show the other answer, and both are true.</li>
-						<li><em>Unknown</em> is a country row like any other, and it holds 25 people.</li>
+						<li>There are <?php echo nb($n_pays) ?> countries. Each person is charted under the state they are attached to <em>today</em>, not the one on the envelope they posted in.</li>
+						<li>So Czechoslovakia, the GDR and the USSR never appear, though addresses in the base name all three. A chart drawn on addresses would show the other answer, and both are true.</li>
+						<li><em>Unknown</em> is a country row like any other, and it holds <?php echo nb($n_inconnu) ?> people.</li>
 					</ul>
 					<p><strong>Matrix</strong>: the default chart</p>
 					<ul>
