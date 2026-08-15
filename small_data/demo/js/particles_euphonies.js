@@ -1,3 +1,4 @@
+var LINE_DIST = 50;
 var SMA_MOTION = 1;
 
 var GREY_NOISE = .35;
@@ -405,8 +406,9 @@ Particle.prototype.SearchCommonsAttrAndGetAwayFrom = function (arr, index){
 			var minDistance = this.radius*2+arr[i].radius*2+2;
 			var distance = dist(this.x, arr[i].x, this.y, arr[i].y);
 			var atLeastOneAttrInCommonHasBeenFound = false;
+			var apparition = 1 - distance/LINE_DIST;
 
-			if(distance<50){
+			if(distance<LINE_DIST){
 
 				for (var j = 0; j < this.attrOfInterest.length; j++) {
 
@@ -424,8 +426,9 @@ Particle.prototype.SearchCommonsAttrAndGetAwayFrom = function (arr, index){
 					}
 				}
 
-				if(atLeastOneAttrInCommonHasBeenFound) this.drawLine(this.x, this.y, arr[i].x, arr[i].y, this.color2);
-				else this.drawLine(this.x, this.y, arr[i].x, arr[i].y, this.color1);
+				this.drawLine(this.x, this.y, arr[i].x, arr[i].y,
+				              atLeastOneAttrInCommonHasBeenFound ? this.color2 : this.color1,
+				              apparition);
 			}
 
 			if(distance<minDistance){
@@ -655,14 +658,20 @@ Particle.prototype.addNoiseField = function(coef){
 	this.velocity.x+=x;
 	this.velocity.y+=y;
 }
-Particle.prototype.drawLine = function(x1, y1, x2, y2, color){
+Particle.prototype.drawLine = function(x1, y1, x2, y2, color, opacite){
 	var ctx = this.context;
+	var op = (opacite === undefined) ? 1 : opacite;
+	if(op <= 0) return;
+	if(op > 1) op = 1;
+	var memoire = ctx.globalAlpha;
+	ctx.globalAlpha = memoire * op;
 	ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.stroke();
+    ctx.globalAlpha = memoire;
 }
 
 Particle.prototype.getAwayFromGroups = function(index, particles){

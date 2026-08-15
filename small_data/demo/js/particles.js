@@ -1,3 +1,4 @@
+var LINE_DIST = 50;
 var SMA_MOTION = 1;
 var SMA_ATTRS = ['label', 'works'];
 function smaAttr(){ return (typeof sl_attribute === 'string' && sl_attribute) ? sl_attribute : 'label'; }
@@ -207,8 +208,9 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 			var minDistance = this.radius*2+arr[i].radius*2+2;
 			var distance = dist(this.x, arr[i].x, this.y, arr[i].y);
 
-			if(distance<50){
+			if(distance<LINE_DIST){
 
+				var apparition = 1 - distance/LINE_DIST;
 				var partage = false;
 
 				for (var a=0; a<SMA_ATTRS.length; a++) {
@@ -228,7 +230,8 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 					if(!trouve) commonAttributes.push({name:nom, count:1});
 				}
 
-				this.drawLine(this.x, this.y, arr[i].x, arr[i].y, partage ? this.color2 : this.color1);
+				this.drawLine(this.x, this.y, arr[i].x, arr[i].y,
+				              partage ? this.color2 : this.color1, apparition);
 			}
 
 			if(distance<minDistance){
@@ -253,14 +256,20 @@ Particle.prototype.SearchCommonsAndGetAwayFrom22 = function (index, arr){
 	}
 	return commonAttributes;
 }
-Particle.prototype.drawLine = function(x1, y1, x2, y2, color){
+Particle.prototype.drawLine = function(x1, y1, x2, y2, color, opacite){
 	var ctx = this.context;
+	var op = (opacite === undefined) ? 1 : opacite;
+	if(op <= 0) return;
+	if(op > 1) op = 1;
+	var memoire = ctx.globalAlpha;
+	ctx.globalAlpha = memoire * op;
 	ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.stroke();
+    ctx.globalAlpha = memoire;
 }
 Particle.prototype.update = function(index, particles){
 
