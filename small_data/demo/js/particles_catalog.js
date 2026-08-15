@@ -1,3 +1,5 @@
+var SMA_MOTION = 1;
+
 var GREY_NOISE = .35;
 
 var COLL_GAIN  = .4;
@@ -205,6 +207,10 @@ Particle.prototype.getInfoFrom=function(target){
 						  + editions.replace(/\s*,\s*/g, ', ');
 	blocks.push([work, editions]);
 
+	var misam = val(target.imeb_id);
+	var infoMisam = (misam && misam !== '0')
+	              ? ' title="MISAM ' + misam.replace(/"/g, '&quot;') + '"' : '';
+
 	for (var b = 0; b < blocks.length; b++) {
 		var lines = [];
 		for (var l = 0; l < blocks[b].length; l++){
@@ -214,7 +220,8 @@ Particle.prototype.getInfoFrom=function(target){
 		var spaced = ($("#titles").children().length > 0);
 		for (var k = 0; k < lines.length; k++) {
 			var cls = (k === 0 && spaced) ? ' class="sma-blk"' : '';
-			$("#titles").append('<p'+ cls +'>'+ lines[k] +'</p>');
+			var tip = (b === 0 && k === 0) ? infoMisam : '';
+			$("#titles").append('<p'+ cls + tip +'>'+ lines[k] +'</p>');
 		}
 	}
 
@@ -232,7 +239,7 @@ Particle.prototype.update = function(i, particles){
 	this.driftT+=.008;
 	if(this.records.length>1){
 
-		var driftAmp = (this.open ? .5 : .3)*this.records.length/(1+this.collMass);
+		var driftAmp = (this.open ? .5 : .3)*this.records.length/(1+this.collMass)*SMA_MOTION;
 		this.velocity.x += noise.perlin2(this.driftT, this.driftP)*driftAmp;
 		this.velocity.y += noise.perlin2(this.driftT, this.driftP+50)*driftAmp;
 	}
@@ -321,8 +328,8 @@ Particle.prototype.update = function(i, particles){
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
 	this.velocity.y = Math.min(Math.max(this.velocity.y, -maxSpeed), maxSpeed);
 
-	this.x+=this.velocity.x;
-	this.y+=this.velocity.y;
+	this.x+=this.velocity.x*SMA_MOTION;
+	this.y+=this.velocity.y*SMA_MOTION;
 
 	if(this.records.length>1){
 		var W=this.canvas.width, H=this.canvas.height;
@@ -331,8 +338,8 @@ Particle.prototype.update = function(i, particles){
 	}
 
 	for (var k=0; k<this.childs.length; k++) {
-		this.childs[k].x += this.velocity.x;
-		this.childs[k].y += this.velocity.y;
+		this.childs[k].x += this.velocity.x*SMA_MOTION;
+		this.childs[k].y += this.velocity.y*SMA_MOTION;
 	}
 
 	this.velocity.x*=.9;
@@ -441,8 +448,8 @@ Particle.prototype.SearchCommonsAttrAndGetAwayFrom = function (arr, index){
 				this.velocity.x+=x;
 				this.velocity.y+=y;
 
-				this.x+=this.velocity.x;
-				this.y+=this.velocity.y;
+				this.x+=this.velocity.x*SMA_MOTION;
+				this.y+=this.velocity.y*SMA_MOTION;
 
 				this.velocity.x*=.9;
 				this.velocity.y*=.9
@@ -572,8 +579,8 @@ Particle.prototype.updateBeforeMerging = function(){
 	this.velocity.x = Math.min(Math.max(this.velocity.x, -maxSpeed), maxSpeed);
 	this.velocity.y = Math.min(Math.max(this.velocity.y, -maxSpeed), maxSpeed);
 
-	this.x+=this.velocity.x;
-	this.y+=this.velocity.y;
+	this.x+=this.velocity.x*SMA_MOTION;
+	this.y+=this.velocity.y*SMA_MOTION;
 
 	this.velocity.x*=.9;
 	this.velocity.y*=.9;
@@ -641,8 +648,8 @@ Particle.prototype.addNoiseField = function(coef){
 
     var sizeFactor = this.radius/(2.*this.scale);
     if(sizeFactor<1)sizeFactor=1;
-    x*=coef/sizeFactor;
-    y*=coef/sizeFactor;
+    x*=coef*SMA_MOTION/sizeFactor;
+    y*=coef*SMA_MOTION/sizeFactor;
 
 	if(this.records.length===1){ x*=GREY_NOISE; y*=GREY_NOISE; }
 

@@ -150,7 +150,7 @@
 						<ul>
 							<li>Agents compare their properties as they move. Candidate properties and their exchange counts appear in the white panel of the top bar, and a property such as <em>edition</em> or <em>price</em> becomes clickable once exchanged often enough.</li>
 							<li>Click that property name to let the agents regroup around it.</li>
-							<li><em>reset</em> restarts the system and <em>pause</em> freezes it. The <em>p</em> key toggles the agents' drift.</li>
+							<li><em>reset</em> restarts the system and <em>pause</em> freezes it. The space bar does the same as <em>pause</em>.</li>
 						</ul>
 	
 					</div>

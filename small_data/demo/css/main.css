@@ -195,11 +195,10 @@ ul{
 	background: #fff;
 	min-height: 0;
 }
-#ctrl_bar #sma_main_ctrl{
-	min-width: 52px;
-}
 #ctrl_bar #commons{
-	min-width: 250px;
+	min-width: 0;
+	flex: 0 0 auto;
+	width: auto;
 }
 #ctrl_bar #sma_main_ctrl ul,
 #ctrl_bar #commons ul,
@@ -214,6 +213,14 @@ ul{
 }
 #ctrl_bar #sma_main_ctrl li{
 	padding: 0 7px;
+	min-width: 52px;
+	box-sizing: border-box;
+}
+#ctrl_bar #sma_main_ctrl{
+	width: 66px;
+	min-width: 66px;
+	max-width: 66px;
+	flex: 0 0 66px;
 }
 #ctrl_bar #commons p{
 	padding: 0;

@@ -2,6 +2,23 @@ numberOfNodesOnDisplayMax = 400;
 
 var SMA_MIN_WORKS = 20;
 
+var SMA_H_FULL = 800;
+var SMA_H_PETIT = SMA_H_FULL / 2;
+var SMA_SEUIL_HAUTEUR = 400;
+
+function setCanvasHeight(h){
+    var cv = document.getElementById('myCanvas');
+    if(!cv) return;
+    var px = h * scale;
+    if(cv.height === px) return;
+    cv.height = px;
+    smaGridReady = false;
+    smaGrid = null;
+    context.fillStyle = COLORS[0];
+    context.fillRect(0, 0, cv.width, cv.height);
+    context.stroke();
+}
+
 var _catId = 0;
 
 window.onload = function() {
@@ -11,7 +28,7 @@ window.onload = function() {
 
     if(cat==1 || cat==2){
 
-        initSMA(1210, 800);
+        initSMA(1210, SMA_H_FULL);
         startSMA();
         buildCountryMenu();
         retrieveData(cat, 11, 0);
@@ -63,13 +80,16 @@ function retrieveData(cat, numOfElements, country){
 
             showSMA = (total >= SMA_MIN_WORKS);
             if(showSMA){
+                setCanvasHeight(total < SMA_SEUIL_HAUTEUR ? SMA_H_PETIT : SMA_H_FULL);
                 $("#sma_note").hide();
                 $("#myCanvas").show();
                 $("#infos").show();
+                majPause(true);
             } else {
                 $("#myCanvas").hide();
                 $("#infos").hide();
-                $("#sma_note").text('Too few works (' + total + ') to build the visualization — showing the table only.').show();
+                majPause(false);
+                $("#sma_note").text('Too few works (' + total + ') to build the visualization. Showing the table only.').show();
             }
         }
 
@@ -147,8 +167,11 @@ function retrieveData(cat, numOfElements, country){
                     if(showCtry && w.ctry){
                         composer += '<span class="composer-ctry">' + w.ctry + '</span>';
                     }
-                    row += '<td class="composer grp-cell ' + grpParity + '" rowspan="' + runLength[i] + '">'
-                          + composer + '</td>';
+                    var infoMisam = (w.misam && String(w.misam) !== '0')
+                                  ? ' title="MISAM ' + esc(String(w.misam)) + '"' : '';
+
+                    row += '<td class="composer grp-cell ' + grpParity + '" rowspan="' + runLength[i] + '"'
+                          + infoMisam + '>' + composer + '</td>';
                 }
 
                 var titleCell = w.title;

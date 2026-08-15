@@ -66,15 +66,11 @@
 			</div>
 		</div>
 		<div id="middle">
+			<div id="page_cols">
+			<div id="left_col">
 			<div id="main_container">
 				<canvas id="myCanvas" width="500" height="500">Votre navigateur ne supporte pas les canvas.</canvas>
-				<div id="infos">
-					<div id="cookies"></div>
-				    <div id="selection"></div>
-				    <div id="isniColumn"></div>
-				    <ul id="titles"></ul>
-			    </div>
-		    </div>
+			</div>
 			<div id="legend" class="is-collapsed">
 				<button type="button" id="lg_toggle" class="lg-title" aria-expanded="false" aria-controls="lg_body">
 					How to read this page<span class="lg-caret" aria-hidden="true"></span>
@@ -106,7 +102,7 @@
 						<ul>
 							<li>Agents compare their properties as they move. Candidate properties and their exchange counts appear in the white panel of the top bar, and a property such as <em>edition</em>, <em>category</em> or <em>minutes</em>, the duration rounded to the nearest minute, becomes clickable once exchanged often enough.</li>
 							<li>Click that property name to let the agents regroup around it.</li>
-							<li><em>reset</em> restarts the system and <em>pause</em> freezes it. The <em>p</em> key toggles the agents' drift.</li>
+							<li><em>reset</em> restarts the system and <em>pause</em> freezes it. The space bar does the same as <em>pause</em>.</li>
 						</ul>
 					</div>
 				</div>
@@ -126,6 +122,14 @@
 						<th>isni</th>
 					</tr>
 				</table>
+			</div>
+			</div>
+			<div id="infos">
+				<div id="cookies"></div>
+				<div id="selection"></div>
+				<div id="isniColumn"></div>
+				<ul id="titles"></ul>
+			</div>
 			</div>
 		</div>
  	</div>

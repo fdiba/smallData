@@ -59,7 +59,7 @@
 					<ul>
 						<li><em>compute all</em> builds the multi-agent system from every composer of the database <strong>who has at least one archived work</strong>. About half of the people recorded in the minutes entered the competition without a recording joining the collection, and an agent with nothing to show has nothing to open. <em>compute traces</em> builds it only from the composers you have consulted in Overview, which is your navigation path.</li>
 						<li>Both buttons can be clicked at any time to restart the simulation.</li>
-						<li><em>pause</em>, or the space bar, freezes the system. The <em>p</em> key toggles the agents' drift.</li>
+						<li><em>pause</em>, or the space bar, freezes the system. The agents slow to a stop instead of jumping, and pick up again the same way.</li>
 					</ul>
 				</div>
 				<div>

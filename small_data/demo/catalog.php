@@ -96,17 +96,13 @@
 				<ul></ul>
 			</div>
 <?php } ?>
+			<div id="page_cols">
+			<div id="left_col">
 			<div id="main_container">
 <?php if($id==1 || $id==2){ ?>				<div id="sma_note"></div>
 <?php } ?>
 				<canvas id="myCanvas" width="500" height="500">Votre navigateur ne supporte pas les canvas.</canvas>
-				<div id="infos">
-					<div id="cookies"></div>
-				    <div id="selection"></div>
-				    <div id="isniColumn"></div>
-				    <ul id="titles"></ul>
-			    </div>
-		    </div>
+			</div>
 <?php if($id==1 || $id==2){ ?>
 			<div id="legend" class="is-collapsed">
 				<button type="button" id="lg_toggle" class="lg-title" aria-expanded="false" aria-controls="lg_body">
@@ -155,7 +151,7 @@
 						<ul>
 							<li>Agents compare their properties as they move. Candidate properties and their exchange counts appear in the white panel of the top bar, and a property such as <em>name</em> or <em>minutes</em>, the duration rounded to the nearest minute, becomes clickable once exchanged often enough.</li>
 							<li>Click that property name to let the agents regroup around it.</li>
-							<li><em>reset</em> restarts the system and <em>pause</em> freezes it. The <em>p</em> key toggles the agents' drift.</li>
+							<li><em>reset</em> restarts the system and <em>pause</em> freezes it. The space bar does the same as <em>pause</em>.</li>
 						</ul>
 					</div>
 				</div>
@@ -181,6 +177,14 @@
 			</table>
 		</div>
 		<div id="listing"></div>
+		</div>
+		<div id="infos">
+			<div id="cookies"></div>
+			<div id="selection"></div>
+			<div id="isniColumn"></div>
+			<ul id="titles"></ul>
+		</div>
+		</div>
 		</div>
 		</div>
  	</div>

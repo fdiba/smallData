@@ -19,7 +19,6 @@ var main_attributes=[];
 var sl_attribute='';
 var attr_treshold=250;
 
-var noiseField=true;
 
 var numberOfNodesOnDisplayMax = 200;
 var activationSpeed = 1;
@@ -98,23 +97,20 @@ window.onload = function() {
 
     getDataV2();
 
-    $(document).keypress(function(e) {
+    $(document).on('keydown', function(e){
 
-        console.log(e.which);
+        if(e.which !== 32) return;
 
-        if(state>=0){
+        var cible = e.target;
+        var nom = (cible && cible.nodeName) ? cible.nodeName.toLowerCase() : '';
 
-            if(e.which == 32) {
-                basculePause();
-            }
-        }
+        if(nom === 'input' || nom === 'textarea' || nom === 'select') return;
+        if(cible && cible.isContentEditable) return;
 
-        if (e.which == 112) {
-            console.log('noiseField:', noiseField);
-            noiseField=!noiseField;
-        }
+        e.preventDefault();
 
-	});
+        if(state>=0) basculePause();
+    });
 
     $("#sma_main_ctrl ul").append('<li>pause</li>');
     $("#sma_main_ctrl ul li:last").css("text-decoration", "underline").on("click", pauseSMA);
@@ -179,7 +175,6 @@ function resetSimulation(){
 
     sl_attribute='';
     main_attributes=[];
-    noiseField=true;
     running=false;
     smaPaused=false;
     SMA_MOTION=1;
@@ -362,7 +357,7 @@ function sma_animation(){
     majMotion();
 
     if(pointer001<composers.length && running
-        && particles.length<numberOfNodesOnDisplayMax && noiseField){
+        && particles.length<numberOfNodesOnDisplayMax){
         addParticleUsing(pointer001);
     }
 
@@ -398,13 +393,11 @@ function shareInformation(){
 
     for (var i=0; i<particles.length; i++) {
 
-        if(noiseField){
-            particles[i].addNoiseField(10.);
+        particles[i].addNoiseField(10.);
 
-            var attributes = particles[i].SearchCommonsAndGetAwayFrom22(i, particles);
+        var attributes = particles[i].SearchCommonsAndGetAwayFrom22(i, particles);
 
-            if(attributes.length>0)checkAttributes(attributes);
-        }
+        if(attributes.length>0)checkAttributes(attributes);
 
         particles[i].checkEdgesV1();
 
@@ -513,7 +506,7 @@ function allowGrouping(){
 
     for (var i=0; i<particles.length; i++) {
 
-        if(noiseField && !particles[i].open)particles[i].addNoiseField(5.);
+        if(!particles[i].open)particles[i].addNoiseField(5.);
         particles[i].update(i, particles);
         particles[i].display();
 

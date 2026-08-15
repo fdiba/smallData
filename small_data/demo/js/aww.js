@@ -206,10 +206,12 @@ function renderSelection(works){
         $("#myCanvas").show();
         $("#infos").show();
         $("#sma_note").hide().empty();
+        majPause(true);
     } else {
         $("#myCanvas").hide();
         $("#infos").hide();
-        $("#sma_note").text('Too few works (' + objects.length + ') for the visualization — table only (needs at least ' + SMA_MIN_WORKS + ').').show();
+        majPause(false);
+        $("#sma_note").text('Too few works (' + objects.length + ') for the visualization. Table only, it needs at least ' + SMA_MIN_WORKS + '.').show();
     }
 }
 
@@ -268,7 +270,7 @@ function masquerColonnesVides(objects){
     var ths = table.getElementsByTagName('th');
     if(ths.length !== COLONNES.length){
         console.log('aww : ' + ths.length + ' en-tetes pour ' +
-                    COLONNES.length + ' colonnes decrites — les deux doivent '
+                    COLONNES.length + ' colonnes decrites : les deux doivent '
                     + 'bouger ensemble (COLONNES ici, <th> dans le PHP)');
     }
 
@@ -326,7 +328,11 @@ function buildTableRows(objects){
             return nomCliquable(c.nom, c.isni);
         }).join(', ');
 
-        html += '<td class="'+memParity+' c-composer">'
+        var misam = objects[j].misam;
+        var infoMisam = (misam && String(misam) !== '0')
+                      ? ' title="MISAM ' + esc(String(misam)) + '"' : '';
+
+        html += '<td class="'+memParity+' c-composer"'+ infoMisam +'>'
               + nomCliquable(fullName, objects[j].isni, fullName) + '</td>'
               + '<td class="'+memParity+' c-coauth">'+ coauth + '</td>'
               + '<td class="'+memParity+' c-ctry">'+ objects[j].ctry + '</td>'

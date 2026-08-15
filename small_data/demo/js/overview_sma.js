@@ -30,7 +30,6 @@
     var records = [];
     var pointer = 0;
     var scale = 1;
-    var noiseField = true;
     var running = true;
     var anim = null;
 
@@ -463,7 +462,7 @@
 
     function loop(){
 
-        if(pointer<records.length && running && noiseField){
+        if(pointer<records.length && running){
             particles.push(createParticle(records[pointer]));
             pointer++;
         }
@@ -471,7 +470,7 @@
         resetCanvas();
 
         for (var i=0; i<particles.length; i++) {
-            if(noiseField)particles[i].addNoiseField(STRENGTH_NOISE*.5);
+            particles[i].addNoiseField(STRENGTH_NOISE*.5);
             particles[i].update(i, particles);
             particles[i].display();
         }
@@ -543,10 +542,6 @@
             cv.width = CANVAS_W;
             resetCanvas();
             cv.addEventListener("click", onCanvasClick);
-
-            $(document).on('keypress', function(e){
-                if(e.which === 112 && !$(e.target).is('input,textarea')) noiseField = !noiseField;
-            });
 
             if(!anim)anim = setInterval(loop, 1000/30);
         },

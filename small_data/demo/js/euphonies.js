@@ -1,6 +1,6 @@
 window.onload = function() {
 
-    initSMA(800, 600);
+    initSMA(1210, 300);
 
     retrieveEuphonies(3, 14);
 
@@ -41,7 +41,10 @@ function retrieveEuphonies(cat, numOfElements){
                 if(idx == 4){
                     var pre = $.trim(arr[i+4] || ''), nom = $.trim(arr[i+5] || '');
                     var cle = clePatronyme(nom, pre);
-                    tr.append('<td data-sort="' + cle.replace(/"/g, '&quot;') + '">'
+                    var mis = $.trim(arr[i+3] || '');
+                    var infoMisam = (mis && mis !== '0')
+                                  ? ' title="MISAM ' + mis.replace(/"/g, '&quot;') + '"' : '';
+                    tr.append('<td data-sort="' + cle.replace(/"/g, '&quot;') + '"' + infoMisam + '>'
                               + $.trim(pre + ' ' + nom) + '</td>');
                     continue;
                 }
@@ -191,7 +194,7 @@ function bnfRender(d, who, rowTitle){
     var h = [], n = d.works.length;
 
     h.push('<div class="bnf-panel"><div class="bnf-hd">'
-         + '<span class="bnf-hd-t">data.bnf.fr records — <span class="bnf-hd-n">' + esc(who) + '</span></span>');
+         + '<span class="bnf-hd-t">data.bnf.fr records for <span class="bnf-hd-n">' + esc(who) + '</span></span>');
     if(d.author) h.push('<a href="' + esc(d.author) + '" target="_blank" rel="noopener">authority record</a>');
     h.push('<span class="bnf-count">' + n + (n > 1 ? ' works listed' : ' work listed') + '</span>');
     h.push('<span class="bnf-close" title="close">&times;</span></div>');
@@ -211,7 +214,7 @@ function bnfRender(d, who, rowTitle){
         var match = rt && bnfNorm(w.title) === rt;
 
         h.push('<li class="bnf-work' + (match ? ' is-match' : '') + '">'
-             + '<span class="bnf-y">' + esc(w.year || '—') + '</span>'
+             + '<span class="bnf-y">' + esc(w.year || '') + '</span>'
              + '<a class="bnf-t" href="' + esc(w.uri) + '" target="_blank" rel="noopener">' + esc(w.title) + '</a>');
 
         var years = [];
@@ -226,7 +229,7 @@ function bnfRender(d, who, rowTitle){
                                   + (years.length > 1 ? 'editions' : 'edition') + '</li>');
 
             for (var q = 0; q < w.named.length; q++) {
-                h.push('<li><span class="bnf-y2">' + esc(w.named[q].year || '—') + '</span>'
+                h.push('<li><span class="bnf-y2">' + esc(w.named[q].year || '') + '</span>'
                      + '<a href="' + esc(w.named[q].uri) + '" target="_blank" rel="noopener">'
                      + esc(w.named[q].title) + '</a></li>');
             }

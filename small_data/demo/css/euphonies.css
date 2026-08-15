@@ -1,3 +1,32 @@
+#middle > #page_cols{
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: flex-start;
+}
+#page_cols > #left_col{
+	flex: 0 0 1210px;
+	width: 1210px;
+	max-width: 1210px;
+	min-width: 0;
+}
+#page_cols > #infos{
+	flex: 0 0 300px;
+	width: 300px;
+	max-width: none;
+	float: none;
+	margin-left: 2px;
+	word-wrap: break-word;
+}
+#page_cols > #infos > #isniColumn{
+	box-sizing: border-box;
+	width: 100%;
+}
+#page_cols > #infos > #isniColumn .isni-box.open{
+	margin-bottom: 10px;
+}
+#left_col > #main_container{
+	margin-top: 0;
+}
 table{
 	background: #16A085;
 	border-collapse: collapse;
@@ -29,7 +58,7 @@ th{
 	padding: 0 7px;
 }
 #euphonies_table{
-	width: 1200px;
+	width: 1210px;
 }
 #listing{
 	padding: 0;
@@ -49,7 +78,7 @@ th{
 #listing ul li{
 	padding: 0 5px;
 }
-#main_container{
+#page_cols{
 	margin-top: calc(var(--sd-bar-h) + 8px);
 }
 #middle{
@@ -92,8 +121,8 @@ th{
 }
 #legend{
 	box-sizing: border-box;
-	width: 1200px;
-	max-width: 1200px;
+	width: 1210px;
+	max-width: 1210px;
 }
 #euphonies_table a.isni-link{
 	border-bottom: 1px dotted rgba(0, 0, 0, .55);

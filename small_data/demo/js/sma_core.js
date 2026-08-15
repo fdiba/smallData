@@ -5,12 +5,13 @@ var scale = 1;
 var animation01;
 
 var running=true;
+var smaPaused=false;
+var MOTION_EASE = .06;
 var numberOfNodesOnDisplayMax = 200;
 var pointer001=0;
 var particles=[];
 var sl_attribute='';
 var counter001=0;
-var noiseField=true;
 var attributes_count=[];
 var attr_treshold=150;
 var activationSpeed=1;
@@ -89,14 +90,18 @@ function initSMA(w, h){
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.stroke();
 
-    $(document).keypress(function(e) {
+    $(document).on('keydown', function(e){
 
-        if(e.which == 32) {
+        if(e.which !== 32) return;
 
-        } else if(e.which == 112){
-            noiseField =!noiseField;
-            console.log('noiseField:', noiseField);
-        }
+        var cible = e.target;
+        var nom = (cible && cible.nodeName) ? cible.nodeName.toLowerCase() : '';
+
+        if(nom === 'input' || nom === 'textarea' || nom === 'select') return;
+        if(cible && cible.isContentEditable) return;
+
+        e.preventDefault();
+        basculePause();
     });
 
     $("#sma_main_ctrl ul").append('<li>reset</li>');
@@ -104,6 +109,8 @@ function initSMA(w, h){
 
     $("#sma_main_ctrl ul li:first").css("text-decoration", "underline").on("click", resetAll);
     $("#sma_main_ctrl ul li:last").css("text-decoration", "underline").on("click", pauseSMA);
+
+    majBoites();
 
 }
 
@@ -148,16 +155,33 @@ function resetAll(){
     sl_attribute = "";
     attributes_count=[];
     $("#commons ul").empty();
-    noiseField=true;
+    smaPaused=false;
+    SMA_MOTION=1;
     $("#sma_main_ctrl ul li:last").text("pause");
+    majBoites();
 
     clearIdentityBoxGN();
     $("#titles").empty();
 }
-function pauseSMA(event){
-    noiseField =!noiseField;
-    if(noiseField) $(event.target).text("pause");
-    else $(event.target).text("play");
+function basculePause(){
+    smaPaused = !smaPaused;
+    $("#sma_main_ctrl ul li:last").text(smaPaused ? "play" : "pause");
+}
+function pauseSMA(){
+    basculePause();
+}
+function majMotion(){
+    var cible = smaPaused ? 0 : 1;
+    SMA_MOTION += (cible - SMA_MOTION) * MOTION_EASE;
+    if(SMA_MOTION < .002) SMA_MOTION = 0;
+    else if(SMA_MOTION > .998) SMA_MOTION = 1;
+}
+function majPause(visible){
+    $("#sma_main_ctrl").css('display', visible ? '' : 'none');
+}
+function majBoites(){
+    $("#commons").css('display', $("#commons ul li").length === 0 ? 'none' : '');
+    $("#calculations").css('display', $("#calculations ul li").length === 0 ? 'none' : '');
 }
 
 function getParticleInfos(evt){
@@ -220,15 +244,12 @@ function shareInformation(){
 
     for (var i=0; i<particles.length; i++) {
 
-        if(noiseField){
-            particles[i].addNoiseField(strength_noise_field);
+        particles[i].addNoiseField(strength_noise_field);
 
-            var attributes = particles[i].SearchCommonsAttrAndGetAwayFrom(particles, i);
+        var attributes = particles[i].SearchCommonsAttrAndGetAwayFrom(particles, i);
 
-            var numOfCommonAttr = Object.keys(attributes).length;
-            if(numOfCommonAttr>0)checkAttributes(attributes);
-
-        }
+        var numOfCommonAttr = Object.keys(attributes).length;
+        if(numOfCommonAttr>0)checkAttributes(attributes);
 
         if(particles[i].records.length===1)particles[i].separateFromLoners(i, particles);
 
@@ -291,8 +312,11 @@ function checkAttributes(attributes){
 
     }
 
+    majBoites();
 }
 function setCommonAttr(event){
+
+    if(smaPaused) basculePause();
 
     var attr = event.target.innerText;
 
@@ -332,8 +356,10 @@ function breakConnections(){
 }
 function sma_animation(){
 
+    majMotion();
+
     if(pointer001<records.length && running
-        && particles.length<numberOfNodesOnDisplayMax && noiseField){
+        && particles.length<numberOfNodesOnDisplayMax){
         addParticleUsing(pointer001);
     }
 
@@ -363,7 +389,7 @@ function allowGrouping(){
 
     for (var i=0; i<particles.length; i++) {
 
-        if(noiseField && !particles[i].open)particles[i].addNoiseField(strength_noise_field*.5);
+        if(!particles[i].open)particles[i].addNoiseField(strength_noise_field*.5);
         particles[i].update(i, particles);
         particles[i].display();
     }
