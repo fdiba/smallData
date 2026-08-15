@@ -314,8 +314,9 @@ Particle.prototype.update = function(i, particles){
 
 	this.checkEdgesV2();
 
-	this.velocity.x /= this.records.length;
-    this.velocity.y /= this.records.length;
+	var masse = this.records.length || 1;
+	this.velocity.x /= masse;
+    this.velocity.y /= masse;
 
 	if(this.mHas){
 		var mdx=this.mTX-this.x, mdy=this.mTY-this.y, mdl=Math.sqrt(mdx*mdx+mdy*mdy);
@@ -714,8 +715,14 @@ Particle.prototype.deplacer = function(){
 	if(sn > SEP_MAX){ sx = sx/sn*SEP_MAX; sy = sy/sn*SEP_MAX; }
 	var dx = this.velocity.x*m + sx*(1-m);
 	var dy = this.velocity.y*m + sy*(1-m);
-	this.x += dx;
-	this.y += dy;
+	if(isFinite(dx) && isFinite(dy)){
+		this.x += dx;
+		this.y += dy;
+	} else {
+		this.velocity.x = 0; this.velocity.y = 0;
+		this.sep.x = 0; this.sep.y = 0;
+		dx = 0; dy = 0;
+	}
 	this.sep.x *= .9;
 	this.sep.y *= .9;
 	this.dx = dx;

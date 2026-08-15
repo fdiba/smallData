@@ -377,8 +377,10 @@ function sma_animation(){
 
             if(state===0){
 
-                particles[counter002%particles.length].on = true;
-                counter002++;
+                if(particles.length>0){
+                    particles[counter002%particles.length].on = true;
+                    counter002++;
+                }
 
             } else if(state===1){
 
@@ -510,6 +512,8 @@ function allowGrouping(){
     buildSMAGrid();
 
     for (var i=0; i<particles.length; i++) {
+
+        if(particles[i].ids.length<1)continue;
 
         if(!particles[i].open)particles[i].addNoiseField(5.);
         particles[i].update(i, particles);

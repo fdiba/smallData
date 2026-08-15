@@ -389,6 +389,8 @@ function allowGrouping(){
 
     for (var i=0; i<particles.length; i++) {
 
+        if(particles[i].records.length<1)continue;
+
         if(!particles[i].open)particles[i].addNoiseField(strength_noise_field*.5);
         particles[i].update(i, particles);
         particles[i].display();
