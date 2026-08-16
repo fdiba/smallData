@@ -137,6 +137,8 @@ Particle.prototype.openOrCloseIt = function(){
 
 		this.childs=[];
 
+		this.opening=false;
+
 	 	this.extra_rad=0.;
 	 	this.lastHit=-999;
 
@@ -283,7 +285,7 @@ Particle.prototype.update = function(i, particles){
 
 			var memberSelected = false;
 			for (var c=0; c<this.childs.length; c++) {
-				if(this.childs[c].lastNodeSelected){ memberSelected = true; break; }
+				if(this.childs[c].lastNodeSelected || this.childs[c].lastNodeHovered){ memberSelected = true; break; }
 			}
 
 			if(!memberSelected) setSelectionTextGN(this.records.length+' elements');
@@ -307,8 +309,8 @@ Particle.prototype.update = function(i, particles){
 
 	} else if(!this.open){
 		var target = this.setSmallRadius();
-		if(this.radius>target)this.radius=Math.max(target, this.radius-3.*SMA_MOTION);
-		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25*SMA_MOTION);
+		if(this.radius>target)this.radius=Math.max(target, this.radius-3.);
+		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25);
 	}
 
 	for (var j=0; j<this.childs.length; j++) {

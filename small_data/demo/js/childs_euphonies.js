@@ -6,7 +6,7 @@ function Child(config){
 
 	this.scale = config.scale;
 
-	this.colors=["#3498db", "#800000"];
+	this.colors=["#3498db", "#800000", "#2C3E50"];
 
 	this.x=config.x;
 	this.y=config.y;
@@ -37,6 +37,9 @@ function Child(config){
 	this.alpha=.5;
 
 	this.lastNodeSelected=false;
+	this.lastNodeHovered=false;
+
+	this.hoverAmp=0;
 }
 Child.prototype.getAwayFromCenter = function(t_x, t_y, t_radius){
 
@@ -115,7 +118,11 @@ Child.prototype.display = function(){
 	if(this.appearAlpha<1)this.appearAlpha=Math.min(1, this.appearAlpha+.05);
 	ctx.globalAlpha=this.appearAlpha;
 
+	var h = this.hoverAmp || 0;
+
 	if(this.lastNodeSelected)ctx.fillStyle=this.colors[1];
+	else if(h && typeof lerpHexColor === 'function')
+		ctx.fillStyle=lerpHexColor(this.colors[0], this.colors[2], HOVER_DARK*h);
 	else ctx.fillStyle=this.colors[0];
 
 	if(this.breathT===undefined){ this.breathT=Math.random()*6.28; this.breathS=.02+Math.random()*.02; }
@@ -124,7 +131,7 @@ Child.prototype.display = function(){
 	var breath = (s>.6) ? 1-((s-.6)/.4)*.3 : 1;
 
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius*2*breath, 0, 2*Math.PI);
+    ctx.arc(this.x, this.y, this.radius*2*breath*(1 + HOVER_GROW*h), 0, 2*Math.PI);
     ctx.fill();
     ctx.closePath();
 

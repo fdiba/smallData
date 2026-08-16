@@ -114,6 +114,8 @@ Particle.prototype.openOrCloseIt = function(){
 
 		this.childs=[];
 
+		this.opening=false;
+
 	 	this.extra_radius=0.;
 	 	this.lastHit=-999;
 
@@ -439,7 +441,7 @@ Particle.prototype.update = function(index, particles){
 
 			var memberSelected = false;
 			for (var c=0; c<this.childs.length; c++) {
-				if(this.childs[c].lastNodeSelected){ memberSelected = true; break; }
+				if(this.childs[c].lastNodeSelected || this.childs[c].lastNodeHovered){ memberSelected = true; break; }
 			}
 
 			if(!memberSelected) setSelectionTextGN(this.ids.length+' composers');
@@ -471,8 +473,8 @@ Particle.prototype.update = function(index, particles){
 	} else if(!this.open){
 
 		var target = this.radVar+1.*this.scale + 30.*(1.-Math.exp(-Math.sqrt(this.ids.length-1)/8.))*this.scale;
-		if(this.radius>target)this.radius=Math.max(target, this.radius-1.*SMA_MOTION);
-		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25*SMA_MOTION);
+		if(this.radius>target)this.radius=Math.max(target, this.radius-1.);
+		else if(this.radius<target)this.radius=Math.min(target, this.radius+.25);
 	}
 
 	for (var i = this.childs.length-1; i >= 0; i--) {
