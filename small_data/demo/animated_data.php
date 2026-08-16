@@ -32,6 +32,16 @@
 	// ?count=0 : all entrants (defaut) ; ?count=1 : only those with a work
 	$count = (isset($_GET['count']) && $_GET['count'] === '1') ? 'works' : 'all';
 
+	// Deux etats litteraux, et non un ternaire dans le corps de la legende :
+	// docs/how_to_read.py releve les affectations, pas les expressions.
+	if($chart === 'matrix'){
+		$leg_matrix = "the chart the page opens on";
+		$leg_line   = "the other view";
+	}else{
+		$leg_matrix = "the other view";
+		$leg_line   = "the chart the page opens on";
+	}
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -116,7 +126,7 @@
 						<li>So Czechoslovakia, the GDR and the USSR never appear, though addresses in the base name all three. A chart drawn on addresses would show the other answer, and both are true.</li>
 						<li><em>Unknown</em> is a country row like any other, and it holds <?php echo nb($n_inconnu) ?> people.</li>
 					</ul>
-					<p><strong>Matrix</strong>: <?php echo $chart === 'matrix' ? 'the chart the page opens on' : 'the other view' ?></p>
+					<p><strong>Matrix</strong>: <?php echo $leg_matrix ?></p>
 					<ul>
 						<li>There is one row per country and one column per edition. The colour counts the entrants, on the authority the strip above names.</li>
 						<li>The scale is square-root and runs through the colour, so one entrant stays visible next to a hundred. The key sits at the top right.</li>
@@ -137,7 +147,7 @@
 						<li>The gap between the two is the subject of this database. Two countries can send the same number of entrants and leave very different amounts of music behind.</li>
 						<li>Hover for figures, click to list that country&rsquo;s composers, and click again to clear.</li>
 					</ul>
-					<p><strong>Line chart</strong>: <?php echo $chart === 'line' ? 'the chart the page opens on' : 'the other view' ?></p>
+					<p><strong>Line chart</strong>: <?php echo $leg_line ?></p>
 					<ul>
 						<li>There is one line per country, on a square-root axis with gridlines at 1, 2, 5, 10, 20, 50, 100&hellip;</li>
 						<li>It has no provenance strip of its own. The one on the edition squares sits just above and is read with it.</li>

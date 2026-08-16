@@ -40,6 +40,14 @@
 	// ?d=1 : year -> category (defaut) ; ?d=2 : year -> category -> composer
 	$vue = (isset($_GET['d']) && $_GET['d'] === '2') ? 'full' : 'light';
 
+	// Deux etats litteraux, et non un ternaire dans le corps de la legende :
+	// docs/how_to_read.py releve les affectations, pas les expressions.
+	if($vue === 'light'){
+		$leg_ouvre = "The page opens on the short one.";
+	}else{
+		$leg_ouvre = "The page opens on the full one.";
+	}
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -77,7 +85,7 @@
 						<p><strong>The diagram</strong></p>
 						<ul>
 							<li>It follows the prize list from left to right: the <em>year</em> of the award, the <em>category</em> it was given in, and the <em>composer</em> who received it. It gathers <?php echo nb($n_recompenses) ?> awards to <?php echo nb($n_compositeurs) ?> composers under <?php echo nb($n_nommes) ?> labels, across the <?php echo nb($n_editions) ?> editions of 1973 to 2009. No competition was held in 1995.</li>
-							<li>The <em>diagram</em> switch above gives two views of the same data. <em>year &rarr; category</em> fits one screen<?php echo $vue === 'light' ? ' and is where the page opens' : '' ?>. <em>year &rarr; category &rarr; composer</em> adds the <?php echo nb($n_compositeurs) ?> composers and is some ten times taller<?php echo $vue === 'full' ? ', and is where the page opens' : '' ?>.</li>
+							<li>The <em>diagram</em> switch above gives two views of the same data. <em>year &rarr; category</em> fits one screen. <em>year &rarr; category &rarr; composer</em> adds the <?php echo nb($n_compositeurs) ?> composers and is some ten times taller. <?php echo $leg_ouvre ?></li>
 							<li>Both views share their first two columns, and every total is the same in both. The short view holds <?php echo nb($n_noeuds_court) ?> nodes and <?php echo nb($n_flux_g) ?> flows, the full one <?php echo nb($n_noeuds_plein) ?> and <?php echo nb($n_flux_plein) ?>.</li>
 						</ul>
 						<p><strong>The two years</strong></p>
