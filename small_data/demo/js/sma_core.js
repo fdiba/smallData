@@ -27,6 +27,21 @@ var smaGridReady = false;
 var smaMaxRadius = 1;
 var _smaScratch = [];
 
+var SMA_HOVER = true;
+var HOVER_REACH = 26;
+var HOVER_EASE_IN = .16;
+var HOVER_EASE_OUT = .06;
+var HOVER_GROW = .5;
+var HOVER_DARK = .4;
+var HOVER_DWELL = 5;
+
+var smaHoverX = 0;
+var smaHoverY = 0;
+var smaHoverIn = false;
+var smaHoverId = -1;
+var smaHoverKey = null;
+var smaHoverAge = 0;
+
 function SpatialGrid(width, height, cellSize){
     this.cellSize = cellSize;
     this.cols = Math.max(1, Math.ceil(width/cellSize));
@@ -118,6 +133,103 @@ function startSMA(){
     animation01=setInterval(sma_animation, 1000/30);
     document.getElementById('myCanvas').addEventListener("click", getParticleInfos);
     document.getElementById('myCanvas').addEventListener("dblclick", closeParticleOnDblClick);
+    document.getElementById('myCanvas').addEventListener("mousemove", suivrePointeur);
+    document.getElementById('myCanvas').addEventListener("mouseleave", quitterPointeur);
+}
+
+function suivrePointeur(evt){
+
+    var cv = canvas.getBoundingClientRect();
+
+    smaHoverX = evt.clientX - cv.left;
+    smaHoverY = evt.clientY - cv.top;
+    smaHoverIn = true;
+}
+
+function quitterPointeur(){
+    smaHoverIn = false;
+}
+
+function survolActif(){
+    return SMA_HOVER && smaHoverIn && smaPaused && sl_attribute.localeCompare("")===0;
+}
+
+function majSurvol(){
+
+    var id = -1;
+
+    if(survolActif()){
+
+        var best = 1e9;
+
+        for (var i=0; i<particles.length; i++) {
+
+            var p = particles[i];
+            var portee = p.radius*2 + HOVER_REACH;
+            var d = dist(smaHoverX, p.x, smaHoverY, p.y);
+
+            if(d<=portee && d<best){ best=d; id=i; }
+        }
+    }
+
+    for (var j=0; j<particles.length; j++) {
+
+        var q = particles[j];
+        if(q.hoverAmp===undefined)q.hoverAmp=0;
+
+        var cible = (j===id) ? 1 : 0;
+        var pas = (cible>q.hoverAmp) ? HOVER_EASE_IN : HOVER_EASE_OUT;
+
+        q.hoverAmp += (cible - q.hoverAmp)*pas;
+
+        if(q.hoverAmp < .002)q.hoverAmp = 0;
+        else if(q.hoverAmp > .998)q.hoverAmp = 1;
+    }
+
+    if(id!==smaHoverId)smaHoverAge = 0;
+    else if(id>=0)smaHoverAge++;
+
+    smaHoverId = id;
+
+    if(canvas)canvas.style.cursor = (id>=0) ? 'pointer' : '';
+
+    if(id<0 || smaHoverAge<HOVER_DWELL)return;
+
+    var p = particles[id];
+    var cle = (p.records.length===1) ? 'r'+p.records[0].id : 'g'+id+'-'+p.records.length;
+
+    if(cle===smaHoverKey)return;
+    smaHoverKey = cle;
+
+    ecrireBoiteCommuns(id);
+
+    removePreviousSelection();
+
+    if(p.records.length===1){
+        p.getInfoFrom(p.records[0]);
+    } else {
+        setSelectionTextGN(p.records.length+' elements');
+        $("#titles").empty();
+    }
+}
+
+function ecrireBoiteCommuns(id){
+
+    if(typeof particles[id].attributsPartages !== 'function')return;
+
+    var r = particles[id].attributsPartages(particles, id);
+
+    var txt;
+
+    if(r.liens===0){
+        txt = 'no link yet';
+    } else {
+        txt = r.liens + (r.liens>1 ? ' links' : ' link');
+        if(r.noms.length>0)txt += ' | shares: ' + r.noms.join(', ');
+    }
+
+    $("#cookies").empty().append('<p>');
+    $("#cookies p").text(txt);
 }
 
 function closeParticleOnDblClick(evt){
@@ -157,6 +269,9 @@ function resetAll(){
     $("#commons ul").empty();
     smaPaused=false;
     SMA_MOTION=1;
+    smaHoverId=-1;
+    smaHoverKey=null;
+    smaHoverAge=0;
     $("#sma_main_ctrl ul li:last").text("pause");
     majBoites();
 
@@ -165,6 +280,8 @@ function resetAll(){
 }
 function basculePause(){
     smaPaused = !smaPaused;
+    smaHoverKey = null;
+    smaHoverAge = 0;
     $("#sma_main_ctrl ul li:last").text(smaPaused ? "play" : "pause");
 }
 function pauseSMA(){
@@ -198,10 +315,14 @@ function getParticleInfos(evt){
 
             var attrName = particles[i].targetedAttr;
 
-            if(attrName.localeCompare("")===0)attrName="property";
+            if(attrName.localeCompare("")===0)attrName = sl_attribute;
 
-            var txt= attrName + ": " + particles[i][particles[i].targetedAttr];
-            $("#cookies").empty().append('<p>' + txt + '</p>');
+            if(attrName.localeCompare("")===0){
+                ecrireBoiteCommuns(i);
+            } else {
+                var txt= attrName + ": " + particles[i][attrName];
+                $("#cookies").empty().append('<p>' + txt + '</p>');
+            }
 
             var txt_2 = particles[i].records.length+' elements';
 
@@ -364,6 +485,8 @@ function sma_animation(){
     }
 
     resetSMACanvas();
+
+    majSurvol();
 
     if(sl_attribute.localeCompare("")==0){
         shareInformation();

@@ -63,6 +63,11 @@ function Particle(config){
 	this.colors=["#bdc3c7", "#2ecc71", "#f1c40f", "#3498db", "#2C3E50"];
 
 	this.alpha=.2;
+	this.alphaHover=.9;
+	this.rgbLien = [255, 165, 0];
+	this.rgbLienH = [196, 106, 0];
+	this.rgbCommun = [52, 152, 219];
+	this.rgbCommunH = [19, 84, 132];
 	this.color1 = 'rgba(255, 165, 0,'+ this.alpha + ')';
 	this.color2 = 'rgb(52, 152, 219,'+ this.alpha + ')';
 
@@ -95,6 +100,8 @@ function Particle(config){
 
 	this.lastNodeSelected=false;
 
+	this.hoverAmp=0;
+
 }
 Particle.prototype.setSmallRadius = function(){
 
@@ -112,6 +119,7 @@ Particle.prototype.resetIt = function(){
 	this.velocity={x:0, y:0};
 	this.sep={x:0, y:0};
 	this.collMass=0;
+	this.hoverAmp=0;
 }
 Particle.prototype.openOrCloseIt = function(){
 
@@ -429,9 +437,11 @@ Particle.prototype.SearchCommonsAttrAndGetAwayFrom = function (arr, index){
 					}
 				}
 
+				var amp = Math.max(this.hoverAmp || 0, arr[i].hoverAmp || 0);
+
 				this.drawLine(this.x, this.y, arr[i].x, arr[i].y,
-				              atLeastOneAttrInCommonHasBeenFound ? this.color2 : this.color1,
-				              apparition);
+				              this.couleurLien(atLeastOneAttrInCommonHasBeenFound, amp),
+				              apparition + (1-apparition)*amp);
 			}
 
 			if(distance<minDistance){
@@ -515,6 +525,9 @@ Particle.prototype.display = function(){
 
 	var ctx=this.context;
 
+	var h = this.hoverAmp || 0;
+	var grossir = 1 + HOVER_GROW*h;
+
 	if(this.fillAlpha<1) {
 		this.fillAlpha+=.03;
 	}
@@ -522,29 +535,29 @@ Particle.prototype.display = function(){
 	if(this.records.length===1) {
 
 		if(this.fillAlpha<1) ctx.fillStyle='rgba(189,195,199,'+this.fillAlpha+')';
-		else ctx.fillStyle=this.colors[0];
+		else ctx.fillStyle=this.assombrir(this.colors[0], h);
 
 		if(this.lastNodeSelected)ctx.fillStyle=this.colors[4];
 
 		ctx.beginPath();
-	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha, 0, 2*Math.PI);
+	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha*grossir, 0, 2*Math.PI);
 	    ctx.fill();
 	    ctx.closePath();
 
 	} else if(this.open){
 
-		ctx.fillStyle=this.colors[2];
+		ctx.fillStyle=this.assombrir(this.colors[2], h);
 
 		ctx.beginPath();
-	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha, 0, 2*Math.PI);
+	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha*grossir, 0, 2*Math.PI);
 	    ctx.fill();
 	    ctx.closePath();
 
 	} else {
-		ctx.fillStyle=this.colors[1];
+		ctx.fillStyle=this.assombrir(this.colors[1], h);
 
 		ctx.beginPath();
-	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha, 0, 2*Math.PI);
+	    ctx.arc(this.x, this.y, this.radius*2*this.fillAlpha*grossir, 0, 2*Math.PI);
 	    ctx.fill();
 	    ctx.closePath();
 	}
@@ -740,6 +753,55 @@ Particle.prototype.drawLine = function(x1, y1, x2, y2, color, opacite){
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.globalAlpha = memoire;
+}
+
+Particle.prototype.assombrir = function(couleur, h){
+
+	if(!h)return couleur;
+	if(typeof lerpHexColor !== 'function')return couleur;
+
+	return lerpHexColor(couleur, this.colors[4], HOVER_DARK*h);
+}
+
+Particle.prototype.couleurLien = function(commun, amp){
+
+	var base = commun ? this.rgbCommun : this.rgbLien;
+	var haut = commun ? this.rgbCommunH : this.rgbLienH;
+
+	var a = amp || 0;
+
+	var r = Math.round(base[0] + (haut[0]-base[0])*a);
+	var g = Math.round(base[1] + (haut[1]-base[1])*a);
+	var b = Math.round(base[2] + (haut[2]-base[2])*a);
+
+	return 'rgba('+r+','+g+','+b+','+ (this.alpha + (this.alphaHover-this.alpha)*a) +')';
+}
+
+Particle.prototype.attributsPartages = function(arr, index){
+
+	var noms = [], compte = {}, liens = 0;
+
+	for (var i = 0; i < arr.length; i++) {
+
+		if(i===index)continue;
+		if(dist(this.x, arr[i].x, this.y, arr[i].y) >= LINE_DIST)continue;
+
+		liens++;
+
+		for (var j = 0; j < this.attrOfInterest.length; j++) {
+
+			var attr = this.attrOfInterest[j];
+			var mien = this[attr], sien = arr[i][attr];
+
+			if(mien==null || mien==="" || sien==null)continue;
+			if(String(mien).localeCompare(String(sien))!==0)continue;
+
+			if(compte[attr]===undefined){ compte[attr]=0; noms.push(attr); }
+			compte[attr]++;
+		}
+	}
+
+	return {liens:liens, noms:noms, compte:compte};
 }
 
 Particle.prototype.getAwayFromGroups = function(index, particles){
