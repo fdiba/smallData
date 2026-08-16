@@ -89,9 +89,30 @@ function compareComposers(a, b){
     return c !== 0 ? c : fa.localeCompare(fb);
 }
 
+function lireDefaut(idBoite, attribut){
+    var box = document.getElementById(idBoite);
+    return box ? box.getAttribute(attribut) : null;
+}
+
+// L'adresse porte deux commutateurs : ?chart=1|2 et ?count=0|1.
+// v=all, qui sert ailleurs, est conserve tel quel.
+function ecrireVuesDansLUrl(){
+    if(!window.history || !window.history.replaceState) return;
+    var q = [];
+    if(/(^|[?&])v=all([&#]|$)/.test(window.location.search || '')) q.push('v=all');
+    q.push('chart=' + (chartView === 'line' ? '2' : '1'));
+    q.push('count=' + (takeCountIntoAccount ? '1' : '0'));
+    var url = window.location.pathname + '?' + q.join('&');
+    if(url === window.location.pathname + window.location.search) return;
+    try{ window.history.replaceState(null, '', url); }catch(e){}
+}
+
 window.onload = function() {
 
-    takeCountIntoAccount=false;
+    takeCountIntoAccount = (lireDefaut('count', 'data-count-default') === 'works');
+
+    var vueDefaut = lireDefaut('view', 'data-view-default');
+    if(vueDefaut === 'matrix' || vueDefaut === 'line') chartView = vueDefaut;
 
     canvas = document.getElementById('myCanvas');
     context = canvas.getContext('2d');
@@ -669,6 +690,7 @@ function bindViewSwitch(){
 
         chartView = m;
         paint();
+        ecrireVuesDansLUrl();
         hideLineTooltip();
 
         if(init) updateSlData();
@@ -712,6 +734,7 @@ function bindCountSwitch(){
         if(v === !!takeCountIntoAccount) return;
         takeCountIntoAccount = v;
         paint();
+        ecrireVuesDansLUrl();
         hideLineTooltip();
         if(init){
 

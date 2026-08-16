@@ -37,6 +37,9 @@
 	$n_flux_plein   = ($n_flux_g === null || $n_flux_d === null) ? null : $n_flux_g + $n_flux_d;
 	$n_nommes       = ($n_libelles === null) ? null : $n_libelles - 1;
 
+	// ?d=1 : year -> category (defaut) ; ?d=2 : year -> category -> composer
+	$vue = (isset($_GET['d']) && $_GET['d'] === '2') ? 'full' : 'light';
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -55,11 +58,11 @@
 				<h1 id="main">Categories</h1>
 				<p></p>
 			</div>
-			<div id="view">
+			<div id="view" data-view-default="<?php echo $vue ?>">
 				<label>diagram</label>
 				<ul>
-					<li class="b_on" data-view="light" role="button" tabindex="0" aria-pressed="true">year &rarr; category</li>
-					<li class="b_off" data-view="full" role="button" tabindex="0" aria-pressed="false">year &rarr; category &rarr; composer</li>
+					<li class="<?php echo $vue === 'light' ? 'b_on' : 'b_off' ?>" data-view="light" role="button" tabindex="0" aria-pressed="<?php echo $vue === 'light' ? 'true' : 'false' ?>">year &rarr; category</li>
+					<li class="<?php echo $vue === 'full' ? 'b_on' : 'b_off' ?>" data-view="full" role="button" tabindex="0" aria-pressed="<?php echo $vue === 'full' ? 'true' : 'false' ?>">year &rarr; category &rarr; composer</li>
 				</ul>
 			</div>
 			<?php include_once("./php/menus.php") ?>
@@ -74,7 +77,7 @@
 						<p><strong>The diagram</strong></p>
 						<ul>
 							<li>It follows the prize list from left to right: the <em>year</em> of the award, the <em>category</em> it was given in, and the <em>composer</em> who received it. It gathers <?php echo nb($n_recompenses) ?> awards to <?php echo nb($n_compositeurs) ?> composers under <?php echo nb($n_nommes) ?> labels, across the <?php echo nb($n_editions) ?> editions of 1973 to 2009. No competition was held in 1995.</li>
-							<li>The <em>diagram</em> switch above gives two views of the same data. <em>year &rarr; category</em> fits one screen and is where the page opens. <em>year &rarr; category &rarr; composer</em> adds the <?php echo nb($n_compositeurs) ?> composers and is some ten times taller.</li>
+							<li>The <em>diagram</em> switch above gives two views of the same data. <em>year &rarr; category</em> fits one screen<?php echo $vue === 'light' ? ' and is where the page opens' : '' ?>. <em>year &rarr; category &rarr; composer</em> adds the <?php echo nb($n_compositeurs) ?> composers and is some ten times taller<?php echo $vue === 'full' ? ', and is where the page opens' : '' ?>.</li>
 							<li>Both views share their first two columns, and every total is the same in both. The short view holds <?php echo nb($n_noeuds_court) ?> nodes and <?php echo nb($n_flux_g) ?> flows, the full one <?php echo nb($n_noeuds_plein) ?> and <?php echo nb($n_flux_plein) ?>.</li>
 						</ul>
 						<p><strong>The two years</strong></p>

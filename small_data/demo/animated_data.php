@@ -27,6 +27,11 @@
 								  INNER JOIN imeb_country c ON c.id = a.id_country
 								  WHERE c.c_name_en = 'Unknown' OR c.c_name = 'Unknown'");
 
+	// ?chart=1 : matrix (defaut) ; ?chart=2 : line chart
+	$chart = (isset($_GET['chart']) && $_GET['chart'] === '2') ? 'line' : 'matrix';
+	// ?count=0 : all entrants (defaut) ; ?count=1 : only those with a work
+	$count = (isset($_GET['count']) && $_GET['count'] === '1') ? 'works' : 'all';
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -57,18 +62,18 @@
 				<p></p>
 				<p></p>
 			</div>
-			<div id="count">
+			<div id="count" data-count-default="<?php echo $count ?>">
 				<label>count</label>
 				<ul>
-					<li class="b_on" data-count="all" role="button" tabindex="0" aria-pressed="true">all entrants</li>
-					<li class="b_off" data-count="works" role="button" tabindex="0" aria-pressed="false">only those with a work</li>
+					<li class="<?php echo $count === 'all' ? 'b_on' : 'b_off' ?>" data-count="all" role="button" tabindex="0" aria-pressed="<?php echo $count === 'all' ? 'true' : 'false' ?>">all entrants</li>
+					<li class="<?php echo $count === 'works' ? 'b_on' : 'b_off' ?>" data-count="works" role="button" tabindex="0" aria-pressed="<?php echo $count === 'works' ? 'true' : 'false' ?>">only those with a work</li>
 				</ul>
 			</div>
-			<div id="view">
+			<div id="view" data-view-default="<?php echo $chart ?>">
 				<label>chart</label>
 				<ul>
-					<li class="b_on" data-view="matrix" role="button" tabindex="0" aria-pressed="true">matrix &middot; countries &times; editions</li>
-					<li class="b_off" data-view="line" role="button" tabindex="0" aria-pressed="false">line chart &middot; one line per country</li>
+					<li class="<?php echo $chart === 'matrix' ? 'b_on' : 'b_off' ?>" data-view="matrix" role="button" tabindex="0" aria-pressed="<?php echo $chart === 'matrix' ? 'true' : 'false' ?>">matrix &middot; countries &times; editions</li>
+					<li class="<?php echo $chart === 'line' ? 'b_on' : 'b_off' ?>" data-view="line" role="button" tabindex="0" aria-pressed="<?php echo $chart === 'line' ? 'true' : 'false' ?>">line chart &middot; one line per country</li>
 				</ul>
 			</div>
 			<?php include_once("./php/menus.php") ?>
@@ -111,7 +116,7 @@
 						<li>So Czechoslovakia, the GDR and the USSR never appear, though addresses in the base name all three. A chart drawn on addresses would show the other answer, and both are true.</li>
 						<li><em>Unknown</em> is a country row like any other, and it holds <?php echo nb($n_inconnu) ?> people.</li>
 					</ul>
-					<p><strong>Matrix</strong>: the default chart</p>
+					<p><strong>Matrix</strong>: <?php echo $chart === 'matrix' ? 'the chart the page opens on' : 'the other view' ?></p>
 					<ul>
 						<li>There is one row per country and one column per edition. The colour counts the entrants, on the authority the strip above names.</li>
 						<li>The scale is square-root and runs through the colour, so one entrant stays visible next to a hundred. The key sits at the top right.</li>
@@ -132,7 +137,7 @@
 						<li>The gap between the two is the subject of this database. Two countries can send the same number of entrants and leave very different amounts of music behind.</li>
 						<li>Hover for figures, click to list that country&rsquo;s composers, and click again to clear.</li>
 					</ul>
-					<p><strong>Line chart</strong>: the other view</p>
+					<p><strong>Line chart</strong>: <?php echo $chart === 'line' ? 'the chart the page opens on' : 'the other view' ?></p>
 					<ul>
 						<li>There is one line per country, on a square-root axis with gridlines at 1, 2, 5, 10, 20, 50, 100&hellip;</li>
 						<li>It has no provenance strip of its own. The one on the edition squares sits just above and is read with it.</li>

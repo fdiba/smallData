@@ -122,7 +122,16 @@ function bindViewSwitch(){
   var box = document.getElementById('view');
   if(!box) return;
 
+  var defaut = box.getAttribute('data-view-default');
+  if(defaut === VIEW_FULL || defaut === VIEW_LIGHT) mode = defaut;
+
   var items = box.getElementsByTagName('li');
+
+  function majAdresse(){
+    if(!window.history || !window.history.replaceState) return;
+    var d = (mode === VIEW_FULL) ? '2' : '1';
+    window.history.replaceState(null, '', window.location.pathname + '?d=' + d);
+  }
 
   function paint(){
     for(var p = 0; p < items.length; p++){
@@ -137,6 +146,7 @@ function bindViewSwitch(){
     if(!m || m === mode) return;
     mode = m;
     paint();
+    majAdresse();
     hideFlowTip();
     build();
 
