@@ -569,11 +569,10 @@ Particle.prototype.getAwayFrom = function(index, particles){
 		var i = cand ? cand[c] : c;
 
 		var att = smaAttr();
+		var mienne = String(this[att]);
+		var compatible = mienne!=="" && mienne.localeCompare(String(particles[i][att]))===0;
 
-		if(index!==i
-			&& String(this[att]).localeCompare(String(particles[i][att]))!==0
-
-			){
+		if(index!==i && !compatible){
 
 			var minDistance = this.radius*2 + particles[i].radius*2 + 10;
 			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);

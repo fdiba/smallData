@@ -500,8 +500,11 @@ Particle.prototype.getAwayFrom = function(index, particles){
 
 		var i = cand ? cand[c] : c;
 
-		if(index!==i
-			&& this[this.targetedAttr].localeCompare(particles[i][particles[i].targetedAttr])!==0){
+		var sienne = String(particles[i][particles[i].targetedAttr]);
+		var mienne = this.targetedAttr!=="" ? String(this[this.targetedAttr]) : "";
+		var compatible = mienne!=="" && mienne.localeCompare(sienne)===0;
+
+		if(index!==i && !compatible){
 
 			var minDistance = this.radius*2 + particles[i].radius*2 + 10;
 			var distance = dist(this.x, particles[i].x, this.y, particles[i].y);
@@ -855,7 +858,7 @@ Particle.prototype.separateFromLoners = function(index, particles){
 
 		if(index!==i && particles[i].records.length===1){
 
-			if(this.targetedAttr!=="" &&
+			if(this.targetedAttr!=="" && this[this.targetedAttr]!=="" &&
 				String(this[this.targetedAttr]).localeCompare(String(particles[i][particles[i].targetedAttr]))===0) continue;
 
 			var minDistance = this.radius*2 + particles[i].radius*2 + 12;
