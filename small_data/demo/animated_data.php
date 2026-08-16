@@ -48,6 +48,8 @@
 <head>
 	<title>Participation | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Entrants per country and per edition of the Bourges international electroacoustic music competitions, 1973-2009, as a matrix, a line chart or a bar chart.">
+	<?php include_once("./php/canonical.php"); canonique() ?>
 	<?php include_once("./php/asset.php") ?>
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/main.css') ?>">
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/animated_data.css') ?>">

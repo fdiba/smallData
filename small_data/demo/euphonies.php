@@ -26,6 +26,8 @@
 <head>
 	<title><?php echo $title ?> | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="The Euphonies d'Or, honorary distinctions of the Bourges Institute of Electroacoustic Music, awarded in three retrospective rounds since 1992.">
+	<?php include_once("./php/canonical.php"); canonique() ?>
 	<?php include_once("./php/asset.php") ?>
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/main.css') ?>">
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/euphonies.css') ?>">

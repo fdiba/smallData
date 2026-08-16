@@ -1,9 +1,16 @@
 <?php
 	
 	$title = "Sound Archives";
+	$meta_desc = "The sound archives of the Institute of Electroacoustic Music of Bourges, the Fonds MISAME, listed composer by composer and work by work.";
 	$id = isset($_GET["id"]) ? intval($_GET["id"]) : 0;
-	if($id==1)$title = "IMEB International Sound Archives";
-	else if($id==2)$title = "IMEB Sound Archives";
+	if($id==1){
+		$title = "IMEB International Sound Archives";
+		$meta_desc = "The IMEB Phonotheque A, electroacoustic works by outside composers gathered at Bourges under catalogue index 100 000.";
+	}
+	else if($id==2){
+		$title = "IMEB Sound Archives";
+		$meta_desc = "The IMEB Phonotheque B, the electroacoustic works produced in the institute's own studios at Bourges, under catalogue index 200 000.";
+	}
 	else if($id==3)header('Location: '.'euphonies.php');
 
 	require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
@@ -51,6 +58,8 @@
 <head>
 	<title><?php echo $title ?> | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="<?php echo $meta_desc ?>">
+	<?php include_once("./php/canonical.php"); canonique($id ? '?id=' . $id : '') ?>
 	<?php include_once("./php/asset.php") ?>
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/main.css') ?>">
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/catalog.css') ?>">

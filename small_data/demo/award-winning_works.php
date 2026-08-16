@@ -63,6 +63,8 @@
 <head>
 	<title>IMEB Award-winning Works | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="The full prize list of the Bourges international electroacoustic music competitions, 1973-2009, work by work, by edition, category and prize.">
+	<?php include_once("./php/canonical.php"); canonique() ?>
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/aww.css">
 	<link rel="stylesheet" type="text/css" href="css/isni.css">

@@ -54,6 +54,8 @@
 <head>
 	<title>Award-winning composers | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="The prizes of the Bourges international electroacoustic music competitions, 1973-2009, as a flow diagram: year, category and award-winning composer.">
+	<?php include_once("./php/canonical.php"); canonique() ?>
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<link rel="stylesheet" type="text/css" href="css/sankey.css">
 	<link rel="stylesheet" type="text/css" href="css/isni.css">

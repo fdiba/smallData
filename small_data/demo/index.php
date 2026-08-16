@@ -25,6 +25,8 @@
 <head>
 	<title>Overview | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Every composer who entered the Bourges international electroacoustic music competitions, 1973-2009, one square per participation, searchable by name.">
+	<?php include_once("./php/canonical.php"); canonique() ?>
 	<?php include_once("./php/asset.php") ?>
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/main.css') ?>">
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/overview.css') ?>">

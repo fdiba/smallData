@@ -9,6 +9,7 @@ $app = 'demo/';
 <?php include_once($_SERVER["DOCUMENT_ROOT"] . "/analyticstracking.php") ?>
 <title>Small Data | Visualising the IMEB Archives</title>
 <meta name="description" content="A visualisation application for the international electroacoustic music competitions held in Bourges, 1973-2009.">
+<link rel="canonical" href="https://www.webodrome.fr/small_data/">
 <style>
 :root{
 	--midnight:#2c3e50;

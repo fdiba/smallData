@@ -3,6 +3,8 @@
 <head>
 	<title>Network | Small Data</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="A multi-agent visualisation of the composers of the IMEB collection, grouping itself by country or by number of archived works.">
+	<?php include_once("./php/canonical.php"); canonique() ?>
 	<?php include_once("./php/asset.php") ?>
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/main.css') ?>">
 	<link rel="stylesheet" type="text/css" href="<?php echo asset('css/network.css') ?>">
