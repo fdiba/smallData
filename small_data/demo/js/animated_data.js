@@ -626,14 +626,49 @@ function add(a, b) {
     return a + b;
 }
 
+function editionsSansConstat(minY, maxY){
+
+    var manquantes = [];
+
+    for (var a in pvByYear) {
+        var y = parseInt(a, 10);
+        if(isNaN(y) || y < minY || y > maxY) continue;
+        if(pvState(y) !== 'constat') manquantes.push(y);
+    }
+
+    manquantes.sort(function(p, q){ return p - q; });
+    return manquantes;
+}
+
+function texteQualiteDonnees(minY, maxY){
+
+    if(!pvKnown()) return "";
+
+    var etendue = (minY === maxY) ? String(minY) : (minY + "-" + maxY);
+    var m = editionsSansConstat(minY, maxY);
+
+    if(m.length === 0) return etendue + ": complete data";
+    if(minY === maxY)  return etendue + ": incomplete data";
+    if(m.length === 1) return etendue + ": incomplete data, " + m[0];
+
+    return etendue + ": incomplete data, " + m.length + " editions";
+}
+
 function updateDataQualityInfo(){
-    var inf2="";
-    var maxY=Math.max(sl_years[0], sl_years[1]);
-    var minY=Math.min(sl_years[0], sl_years[1]);
-    if(maxY<1996)inf2 = minY.toString() + "-" + maxY.toString() + ": complete data";
-    else if(sl_years.length===2)inf2 = minY.toString() + "-" + maxY.toString() + ": incomplete data";
-    else inf2 = "1973-2009: incomplete data";
-    $("#info p:eq(2)").text(inf2);
+
+    var minY, maxY;
+
+    if(sl_years.length === 2){
+        minY = Math.min(sl_years[0], sl_years[1]);
+        maxY = Math.max(sl_years[0], sl_years[1]);
+    } else if(sl_years.length === 1){
+        minY = maxY = sl_years[0];
+    } else {
+        minY = 1973;
+        maxY = 2009;
+    }
+
+    $("#info p:eq(2)").text(texteQualiteDonnees(minY, maxY));
 }
 
 function generateMatrixChart(data, minYear, maxYear){
@@ -791,10 +826,7 @@ function generateBarChart(data){
 		return String(a.label).localeCompare(String(b.label));
 	});
 
-	var inf2="";
-	if(sl_years[0]<1996)inf2 = sl_years[0] + ": complete data";
-    else inf2 = sl_years[0] + ": incomplete data";
-	$("#info p:eq(2)").text(inf2);
+	$("#info p:eq(2)").text(texteQualiteDonnees(sl_years[0], sl_years[0]));
 
 	var max=0;
 	for (var k=0; k<arr.length; k++) max = Math.max(max, arr[k].value);
@@ -1141,6 +1173,7 @@ function loadPvProvenance(){
         }
         pvLoaded = true;
         drawPvStrip(menu);
+        updateDataQualityInfo();
 
         if(myLineChart && typeof myLineChart.repaint === 'function') myLineChart.repaint();
     });
