@@ -190,9 +190,10 @@ th{
 	max-width: 80ch;
 }
 .works_table td{
-	vertical-align: top;
+	vertical-align: middle;
 }
 .works_table td.composer{
+	vertical-align: top;
 	font-weight: bold;
 }
 .works_table td.composer .composer-ctry{
