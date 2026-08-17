@@ -151,6 +151,15 @@
 #results p.no-index:hover{
 	text-decoration: none;
 }
+#results p.fest-only{
+	color: var(--sd-asbestos);
+	font-style: italic;
+	cursor: pointer;
+}
+#results p.fest-only:hover{
+	color: var(--sd-midnight);
+	text-decoration: underline;
+}
 #selection{
 	margin: 0 0 1px 0;
 }

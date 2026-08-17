@@ -269,8 +269,13 @@ function selectionHtml(arr){
         if(etat === '2' || etat === '3') nFest++;
     }
 
-    var edLabel = nComp + ' edition' + (nComp === 1 ? '' : 's');
-    if(nFest > 0) edLabel += ', ' + nFest + ' at the festival';
+    var edLabel;
+    if(nComp === 0 && nFest > 0){
+        edLabel = nFest + ' at the festival';
+    } else {
+        edLabel = nComp + ' edition' + (nComp === 1 ? '' : 's');
+        if(nFest > 0) edLabel += ', ' + nFest + ' at the festival';
+    }
 
     var head = $.trim(esc(who) + ' ' + where) + ' \u00b7 ' + edLabel;
 
@@ -770,7 +775,7 @@ function createComposersListing(num){
 
         var str;
         if(count<0 && festOnly){
-            str = '<p class="no-index" data-id="' + id + '">' +
+            str = '<p class="fest-only" data-id="' + id + '">' +
                 composers[i+1] + ' ' + composers[i+2] +
                 ' played at the festival, never entered the competition.</p>';
         } else if(count<0){
@@ -813,8 +818,43 @@ function createComposersListing(num){
             ' with no archived work, names not listed.</p>');
     }
 
-    $("#results p").not(".no-index").click(function() {
+    $("#results p").not(".no-index").not(".fest-only").click(function() {
         showAndHighlightComposer($(this).attr('data-id'));
+    });
+
+    $("#results p.fest-only").click(function() {
+        showFestivalComposer($(this).attr('data-id'));
+    });
+
+}
+
+function showFestivalComposer(composerId){
+
+    $.ajax({
+        url: 'php/retrieve_data.php',
+        type: "POST",
+        data: { aId: composerId, case:5 }
+    }).done(function(str) {
+
+        renderSelection(str.split("%"));
+
+    });
+
+    $.ajax({
+        url: 'php/retrieve_data.php',
+        type: "POST",
+        data: { aId: composerId, case:1 }
+    }).done(function(str) {
+
+        var arr=str.split("%");
+        titles=[];
+
+        for (var i=0; i<arr.length-4; i+=5) {
+            titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
+        }
+
+        displayTitlesInfosGN(titles);
+
     });
 
 }

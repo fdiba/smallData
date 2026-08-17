@@ -55,7 +55,6 @@
 
 		$req = 'SELECT a.id, a.firstName, a.name,
 					(NOT EXISTS(SELECT 1 FROM imeb_participation p WHERE p.id_artist = a.id)
-					 AND NOT EXISTS(SELECT 1 FROM imeb_music m WHERE m.id_artist = a.id)
 					 AND EXISTS(SELECT 1 FROM imeb_festival_participation f WHERE f.id_artist = a.id)
 					) AS fest
 				FROM imeb_artist a WHERE '
