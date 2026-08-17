@@ -125,7 +125,7 @@
 					<ul>
 						<li>There are <?php echo nb($n_pays) ?> countries. Each person is charted under the state they are attached to <em>today</em>, not the one on the envelope they posted in.</li>
 						<li>So Czechoslovakia, the GDR and the USSR never appear, though addresses in the base name all three. A chart drawn on addresses would show the other answer, and both are true.</li>
-						<li><em>Unknown</em> is not a country. It is the row for the <?php echo nb($n_inconnu) ?> entrants whose country no source gives: the entrants list leaves the column blank, or names two countries at once, and nothing else in the archive settles it. The base records that as no country at all rather than as a country called Unknown.</li>
+						<li><em>Unknown</em> is not a country. It is the row for the <?php echo nb($n_inconnu) ?> entrants whose country no source gives: the entrants list leaves the column blank, or names two countries at once, and nothing else in the archive settles it.</li>
 					</ul>
 					<p><strong>Matrix</strong>: <?php echo $leg_matrix ?></p>
 					<ul>
