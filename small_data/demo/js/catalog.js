@@ -31,10 +31,10 @@ window.onload = function() {
         initSMA(1210, SMA_H_FULL);
         startSMA();
         buildCountryMenu();
-        retrieveData(cat, 16, '');
+        retrieveData(cat, 17, '');
 
     } else {
-        retrieveData(-999, 16);
+        retrieveData(-999, 17);
     }
 
 };
@@ -71,7 +71,8 @@ function retrieveData(cat, numOfElements, country){
                         isni: arr[k+8], editions: arr[k+9], award: arr[k+10],
                         festival: arr[k+11], composed: arr[k+12],
                         publisher: arr[k+13],
-                        annees: arr[k+14], prov: arr[k+15]});
+                        annees: arr[k+14], prov: arr[k+15],
+                        concours: arr[k+16]});
         }
         var total = works.length;
 
@@ -185,22 +186,27 @@ function retrieveData(cat, numOfElements, country){
                               + w.award + ' competition">&#9733;</span>';
                 }
 
-                var editionsCell = w.editions ? w.editions.replace(/\s*,\s*/g, ', ') : '';
+                var compCell = (_catId === 1 || _catId === 2)
+                             ? (w.concours ? w.concours.replace(/\s*,\s*/g, ', ') : '')
+                             : (w.editions ? w.editions.replace(/\s*,\s*/g, ', ') : '');
 
                 row += '<td class="' + memParity + '">' + titleCell + '</td>';
 
-                if(_catId === 2){
+                if(_catId === 1 || _catId === 2){
                     row += '<td class="' + memParity + ' work-comp">'
                          + (w.composed || '') + '</td>';
                 }
 
                 row += '<td class="' + memParity + ' work-dur">' + w.duration + '</td>'
-                      + '<td class="' + memParity + ' work-ed">' + editionsCell + '</td>';
+                      + '<td class="' + memParity + ' work-ed">' + compCell + '</td>';
+
+                if(_catId === 1 || _catId === 2){
+                    var festCell = w.festival ? w.festival.replace(/\s*,\s*/g, ', ') : '';
+                    row += '<td class="' + memParity + ' work-fest">' + festCell + '</td>';
+                }
 
                 if(_catId === 2){
-                    var festCell = w.festival ? w.festival.replace(/\s*,\s*/g, ', ') : '';
-                    row += '<td class="' + memParity + ' work-fest">' + festCell + '</td>'
-                         + '<td class="' + memParity + ' work-pub">'
+                    row += '<td class="' + memParity + ' work-pub">'
                          + (w.publisher || '') + '</td>';
                 }
 
@@ -311,7 +317,7 @@ function selectCountry(cid, name, liEl){
     $("#countries ul li").css("font-weight", "normal");
     if(liEl) liEl.css("font-weight", "bold");
     $("#cookies").empty().append('<p>country: ' + name + '</p>');
-    retrieveData(_catId, 16, cid);
+    retrieveData(_catId, 17, cid);
     ecrirePaysDansLUrl(liEl ? liEl.attr('data-iso') : isoDuCid(cid));
 }
 
@@ -358,6 +364,6 @@ function showFullTable(){
     clearCatalogTable();
     $("#countries ul li").css("font-weight", "normal");
     $("#countries ul li.all-works").css("font-weight", "bold");
-    retrieveData(_catId, 16, '');
+    retrieveData(_catId, 17, '');
     ecrirePaysDansLUrl(null);
 }

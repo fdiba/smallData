@@ -164,7 +164,8 @@
 		if($where !== '') $where .= ' AND imeb_music.statut <> \'hors_repertoire\'';
 
 		$ordre = ' ORDER BY imeb_artist.name ASC, imeb_artist.firstName ASC, imeb_artist.id ASC, '
-			   . ($cat==2 ? 'imeb_music.annee_composition DESC, imeb_music.annee_composition_fin DESC, ' : '')
+			   . 'imeb_music.annee_composition IS NULL ASC, '
+			   . 'imeb_music.annee_composition DESC, imeb_music.annee_composition_fin DESC, '
 			   . 'imeb_music.title ASC';
 
 		if(($cat==1 || $cat==2) && $country !== null){
@@ -190,6 +191,9 @@
 							(SELECT GROUP_CONCAT(mf.annee ORDER BY mf.annee SEPARATOR \',\')
 							   FROM imeb_music_festival mf
 							  WHERE mf.id_music = imeb_music.id) AS festival,
+							(SELECT GROUP_CONCAT(DISTINCT mc.annee ORDER BY mc.annee SEPARATOR \',\')
+							   FROM imeb_music_concours mc
+							  WHERE mc.id_music = imeb_music.id) AS concours,
 							(SELECT CONCAT(
 										UPPER(SUBSTRING(COALESCE(c.libelle, r.edition_brut), 1, 1)),
 										SUBSTRING(COALESCE(c.libelle, r.edition_brut), 2))
@@ -219,6 +223,8 @@
 
 			$festival = $row['festival'] ? $row['festival'] : '';
 
+			$concours = $row['concours'] ? $row['concours'] : '';
+
 			$compose = $row['compose'] ? $row['compose'] : '';
 
 			$editeur = $row['editeur'] ? $row['editeur'] : '';
@@ -229,7 +235,7 @@
 			array_push($arr, $row['misam'], $row['firstName'], $row['name'],
 						$row['id_artist'], $row['title'], $row['duration'], $row['id'],
 						$ctry, $isni, $editions, $award, $festival, $compose, $editeur,
-						$annees, $codes);
+						$annees, $codes, $concours);
 
 		}
 

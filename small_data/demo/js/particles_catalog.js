@@ -93,7 +93,7 @@ function Particle(config){
 	this.childs=[];
 
 	this.attrOfInterest = ['name', 'minutes'];
-	if(typeof _catId !== 'undefined' && _catId === 2) this.attrOfInterest.push('composed');
+	if(typeof _catId !== 'undefined' && (_catId === 1 || _catId === 2)) this.attrOfInterest.push('composed');
 	this.targetedAttr="";
 	this.on = false;
 
