@@ -24,8 +24,7 @@
 								  WHERE a.id_country IS NOT NULL");
 	$n_inconnu    = compte($dbh, "SELECT COUNT(DISTINCT p.id_artist) FROM imeb_participation p
 								  INNER JOIN imeb_artist a ON a.id = p.id_artist
-								  INNER JOIN imeb_country c ON c.id = a.id_country
-								  WHERE c.c_name_en = 'Unknown' OR c.c_name = 'Unknown'");
+								  WHERE a.id_country IS NULL");
 
 	// ?chart=1 : matrix (defaut) ; ?chart=2 : line chart
 	$chart = (isset($_GET['chart']) && $_GET['chart'] === '2') ? 'line' : 'matrix';
@@ -126,7 +125,7 @@
 					<ul>
 						<li>There are <?php echo nb($n_pays) ?> countries. Each person is charted under the state they are attached to <em>today</em>, not the one on the envelope they posted in.</li>
 						<li>So Czechoslovakia, the GDR and the USSR never appear, though addresses in the base name all three. A chart drawn on addresses would show the other answer, and both are true.</li>
-						<li><em>Unknown</em> is a country row like any other, and it holds <?php echo nb($n_inconnu) ?> people.</li>
+						<li><em>Unknown</em> is not a country. It is the row for the <?php echo nb($n_inconnu) ?> entrants whose country no source gives: the entrants list leaves the column blank, or names two countries at once, and nothing else in the archive settles it. The base records that as no country at all rather than as a country called Unknown.</li>
 					</ul>
 					<p><strong>Matrix</strong>: <?php echo $leg_matrix ?></p>
 					<ul>

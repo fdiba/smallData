@@ -107,6 +107,7 @@
 						<li>The <em>num of records &gt;=</em> field rebuilds the index with only the composers having at least that many archived works.</li>
 						<li id="lg-archived-only">The search lists only composers with <strong>at least one archived work</strong>. An application is not a publication.</li>
 						<li>A result marked <em>not in this index</em> has no square to highlight, no participation having been recorded for them in the minutes entered so far. Their works are still listed on the catalogue and award pages.</li>
+						<li>A result marked <em>played at the festival, never entered the competition</em> is a different case. The Bourges festival programmed them, John Cage across fifteen editions from 1972 to 2006, but they never entered the competition and the archive holds none of their works. This grid counts entries, so they have no square here and nothing to show on the other pages.</li>
 					</ul>
 				</div>
 				<div>

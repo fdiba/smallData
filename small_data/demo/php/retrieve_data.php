@@ -46,14 +46,19 @@
 
 		foreach($terms as $term){
 			if($term==='') continue;
-			$conditions[] = '(name LIKE ? OR firstName LIKE ?)';
+			$conditions[] = '(a.name LIKE ? OR a.firstName LIKE ?)';
 			$params[] = '%' . $term . '%';
 			$params[] = '%' . $term . '%';
 		}
 
 		if(sizeof($conditions)<1) return;
 
-		$req = 'SELECT id, firstName, name FROM imeb_artist WHERE '
+		$req = 'SELECT a.id, a.firstName, a.name,
+					(NOT EXISTS(SELECT 1 FROM imeb_participation p WHERE p.id_artist = a.id)
+					 AND NOT EXISTS(SELECT 1 FROM imeb_music m WHERE m.id_artist = a.id)
+					 AND EXISTS(SELECT 1 FROM imeb_festival_participation f WHERE f.id_artist = a.id)
+					) AS fest
+				FROM imeb_artist a WHERE '
 				. implode(' OR ', $conditions);
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
@@ -68,7 +73,8 @@
 			$id=$row['id'];
 			$firstName=$row['firstName'];
 			$name=$row['name'];
-			array_push($arr, $id, $firstName, $name);
+			$fest=(int)$row['fest'];
+			array_push($arr, $id, $firstName, $name, $fest);
 		}
 
 		if(sizeof($arr)>0){
@@ -130,13 +136,14 @@
 		$numResults;
 
 		$sth = $dbh->query('SELECT imeb_artist.id AS artist_id,
-								COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry, imeb_country.id AS c_id,
-								COALESCE(NULLIF(imeb_country.iso3, \'\'), NULLIF(imeb_country.iso2, \'\'), NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS iso,
+								COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name, \'Unknown\') AS ctry,
+								COALESCE(imeb_country.id, 0) AS c_id,
+								COALESCE(NULLIF(imeb_country.iso3, \'\'), NULLIF(imeb_country.iso2, \'\'), NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name, \'UNK\') AS iso,
 								GROUP_CONCAT(imeb_participation.annee
 											 ORDER BY imeb_participation.annee) AS editions
 
 							FROM imeb_artist
-							INNER JOIN imeb_country
+							LEFT JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id
 							INNER JOIN imeb_participation
 							ON imeb_participation.id_artist = imeb_artist.id
@@ -350,11 +357,11 @@
 									WHERE p.id_artist = imeb_artist.id
 									  AND p.annee = ?) AS ed
 							FROM imeb_artist
-							INNER JOIN imeb_country
+							LEFT JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id
 							LEFT JOIN imeb_country AS orig
 							ON imeb_artist.id_country_origin = orig.id
-							WHERE imeb_country.id = ?
+							WHERE COALESCE(imeb_country.id, 0) = ?
 							AND EXISTS(SELECT 1 FROM imeb_participation p2
 										WHERE p2.id_artist = imeb_artist.id)');
 

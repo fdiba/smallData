@@ -706,7 +706,7 @@ function getSearchTerms(){
 
             composers = str.split("%");
 
-            var numOfElements = 3;
+            var numOfElements = 4;
 
             if(composers.length<numOfElements+1){
 
@@ -747,11 +747,20 @@ function createComposersListing(num){
 
         if(!resultIsListed(count)){ nonListes++; continue; }
 
-        var str = (count<0)
-            ? '<p class="no-index" data-id="' + id + '">' +
-                composers[i+1] + ' ' + composers[i+2] + ' &mdash; not in this index</p>'
-            : '<p data-id="' + id + '">' +
+        var festOnly = (composers[i+3] === '1' || composers[i+3] === 1);
+
+        var str;
+        if(count<0 && festOnly){
+            str = '<p class="no-index" data-id="' + id + '">' +
+                composers[i+1] + ' ' + composers[i+2] +
+                ' played at the festival, never entered the competition.</p>';
+        } else if(count<0){
+            str = '<p class="no-index" data-id="' + id + '">' +
+                composers[i+1] + ' ' + composers[i+2] + ' (not in this index)</p>';
+        } else {
+            str = '<p data-id="' + id + '">' +
                 composers[i+1] + ' ' + composers[i+2] + ' ' + count + '</p>';
+        }
 
         if(arr.length<1){
             arr.push([count, str]);
@@ -782,7 +791,7 @@ function createComposersListing(num){
     if(arr.length<1 && nonListes>0){
         $("#results").append('<p class="no-index">' + nonListes +
             ' entrant' + (nonListes>1 ? 's' : '') +
-            ' &mdash; no archived work, name not listed</p>');
+            ' (no archived work, name not listed)</p>');
     }
 
     $("#results p").not(".no-index").click(function() {
