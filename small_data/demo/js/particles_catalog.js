@@ -47,6 +47,7 @@ function Particle(config){
 	this.minutes = config.minutes;
 
 	this.editions = config.editions;
+	this.composed = config.composed;
 
 	this.isni = config.isni;
 
@@ -56,6 +57,7 @@ function Particle(config){
 					imeb_id:this.imeb_id, fn:this.fn, name:this.name, ctry:this.ctry,
 					title:this.title,
 					duration:this.duration, minutes:this.minutes, editions:this.editions,
+					composed:this.composed,
 					cat:this.cat, sub_cat:this.sub_cat,
 					isni:this.isni, id:this.id}];
 
@@ -88,7 +90,8 @@ function Particle(config){
 	this.open=false;
 	this.childs=[];
 
-	this.attrOfInterest = ['name', 'minutes', 'title'];
+	this.attrOfInterest = ['name', 'minutes'];
+	if(typeof _catId !== 'undefined' && _catId === 2) this.attrOfInterest.push('composed');
 	this.targetedAttr="";
 	this.on = false;
 
@@ -217,7 +220,7 @@ Particle.prototype.getInfoFrom=function(target){
 	var duration = val(target.duration);
 	if(duration) work = work ? work + ' (' + duration + ')' : '(' + duration + ')';
 	var editions = val(target.editions);
-	if(editions) editions = '<span class="sma-lbl">programmed in</span> '
+	if(editions) editions = '<span class="sma-lbl">competition</span> '
 						  + editions.replace(/\s*,\s*/g, ', ');
 	blocks.push([work, editions]);
 

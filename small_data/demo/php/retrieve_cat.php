@@ -127,13 +127,27 @@
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
 		$where = '';
-		if($cat==1){
-			$where = ' WHERE imeb_music.misam > 0 AND imeb_music.misam < 200000';
-		} else if($cat==2){
-			$where = ' WHERE imeb_music.misam >= 200000';
+		$champ_misam = 'imeb_music.misam';
+
+		if($cat==1 || $cat==2){
+
+			$borne = ($cat==2)
+				   ? 'imeb_music.misam >= 200000'
+				   : 'imeb_music.misam > 0 AND imeb_music.misam < 200000';
+
+			$fusion = '(SELECT f.misam FROM imeb_music_fusion f
+						WHERE f.id_music = imeb_music.id AND f.serie = ' . intval($cat) . '
+						  AND f.misam_repris = 0 AND f.statut_brut = \'repertoire\' LIMIT 1)';
+
+			$where = ' WHERE ((' . $borne . ') OR ' . $fusion . ' IS NOT NULL)';
+			$champ_misam = 'CASE WHEN ' . $borne . ' THEN imeb_music.misam ELSE ' . $fusion . ' END';
 		}
 
 		if($where !== '') $where .= ' AND imeb_music.statut <> \'hors_repertoire\'';
+
+		$ordre = ' ORDER BY imeb_artist.name ASC, imeb_artist.firstName ASC, imeb_artist.id ASC, '
+			   . ($cat==2 ? 'imeb_music.annee_composition DESC, imeb_music.annee_composition_fin DESC, ' : '')
+			   . 'imeb_music.title ASC';
 
 		if(($cat==1 || $cat==2) && $country !== null){
 			$where .= ($country > 0)
@@ -141,19 +155,36 @@
 					: ' AND imeb_artist.id_country IS NULL';
 		}
 
-		$sth = $dbh->query('SELECT imeb_music.title, imeb_music.duration, imeb_music.misam,
+		$sth = $dbh->query('SELECT imeb_music.title, imeb_music.duration, '
+							. $champ_misam . ' AS misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
 							imeb_artist.id AS id_artist,
 							imeb_artist.isni AS isni,
 							imeb_music.editions, imeb_music.award_year,
+							CASE
+								WHEN imeb_music.annee_composition IS NULL THEN NULL
+								WHEN imeb_music.annee_composition_fin IS NULL
+								  OR imeb_music.annee_composition_fin = imeb_music.annee_composition
+									THEN imeb_music.annee_composition
+								ELSE CONCAT(imeb_music.annee_composition, \'-\',
+											imeb_music.annee_composition_fin)
+							END AS compose,
+							(SELECT GROUP_CONCAT(mf.annee ORDER BY mf.annee SEPARATOR \',\')
+							   FROM imeb_music_festival mf
+							  WHERE mf.id_music = imeb_music.id) AS festival,
+							(SELECT CONCAT(
+										UPPER(SUBSTRING(COALESCE(c.libelle, r.edition_brut), 1, 1)),
+										SUBSTRING(COALESCE(c.libelle, r.edition_brut), 2))
+							   FROM imeb_music_registre r
+							   LEFT JOIN imeb_code_b1 c ON c.id = r.id_edition
+							  WHERE r.id_music = imeb_music.id LIMIT 1) AS editeur,
 							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry
 							FROM imeb_music
 							INNER JOIN imeb_artist
 							ON imeb_music.id_artist = imeb_artist.id
 							LEFT JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id'
-							. $where . '
-							ORDER BY imeb_artist.name ASC, imeb_artist.firstName ASC, imeb_artist.id ASC, imeb_music.title ASC');
+							. $where . $ordre);
 
 		$arr= array();
 		while($row = $sth->fetch()) {
@@ -166,9 +197,15 @@
 
 			$award = $row['award_year'] ? $row['award_year'] : '';
 
+			$festival = $row['festival'] ? $row['festival'] : '';
+
+			$compose = $row['compose'] ? $row['compose'] : '';
+
+			$editeur = $row['editeur'] ? $row['editeur'] : '';
+
 			array_push($arr, $row['misam'], $row['firstName'], $row['name'],
 						$row['id_artist'], $row['title'], $row['duration'], $row['id'],
-						$ctry, $isni, $editions, $award);
+						$ctry, $isni, $editions, $award, $festival, $compose, $editeur);
 
 		}
 

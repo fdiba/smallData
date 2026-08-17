@@ -18,7 +18,16 @@
 	$phono_a       = 'imeb_music.misam > 0 AND imeb_music.misam < 200000';
 	$phono_b       = 'imeb_music.misam >= 200000';
 	$au_repertoire = "imeb_music.statut <> 'hors_repertoire'";
-	$plage         = ($id == 2) ? $phono_b : $phono_a;
+
+	function misam_fusionne($serie){
+		return "(SELECT f.misam FROM imeb_music_fusion f
+				 WHERE f.id_music = imeb_music.id AND f.serie = " . intval($serie) . "
+				   AND f.misam_repris = 0 AND f.statut_brut = 'repertoire' LIMIT 1)";
+	}
+
+	$serie_a = '((' . $phono_a . ') OR ' . misam_fusionne(1) . ' IS NOT NULL)';
+	$serie_b = '((' . $phono_b . ') OR ' . misam_fusionne(2) . ' IS NOT NULL)';
+	$plage   = ($id == 2) ? $serie_b : $serie_a;
 
 	function compte($dbh, $sql){
 		try {
@@ -32,10 +41,13 @@
 	}
 	function nb($n){ return ($n === null) ? '?' : number_format($n, 0, ',', '&thinsp;'); }
 
-	$oeuvres_a = compte($dbh, "SELECT COUNT(*) FROM imeb_music WHERE $phono_a AND $au_repertoire");
-	$oeuvres_b = compte($dbh, "SELECT COUNT(*) FROM imeb_music WHERE $phono_b AND $au_repertoire");
+	$oeuvres_a = compte($dbh, "SELECT COUNT(*) FROM imeb_music WHERE $serie_a AND $au_repertoire");
+	$oeuvres_b = compte($dbh, "SELECT COUNT(*) FROM imeb_music WHERE $serie_b AND $au_repertoire");
 
-	$n_oeuvres      = nb(($oeuvres_a === null || $oeuvres_b === null) ? null : $oeuvres_a + $oeuvres_b);
+	$oeuvres_tot  = compte($dbh, "SELECT COUNT(*) FROM imeb_music
+								   WHERE imeb_music.misam > 0 AND $au_repertoire");
+
+	$n_oeuvres      = nb($oeuvres_tot);
 	$n_oeuvres_ici  = nb(($id == 2) ? $oeuvres_b : $oeuvres_a);
 
 	$n_compositeurs = nb(compte($dbh, "SELECT COUNT(DISTINCT imeb_music.id_artist) FROM imeb_music
@@ -128,10 +140,10 @@
 						<p class="lg-intro">This page shows the <strong>IMEB Sound Archives</strong>, the IMEB's <em>Phonoth&egrave;que B</em>: works produced in the institute's own studios, under catalogue index 200&thinsp;000.</p>
 						<?php } ?>
 						<?php if($id==1){ ?>
-						<p class="lg-note"><strong>Coverage.</strong> The <em>edition(s)</em> column is knowingly incomplete. The <em>R&eacute;pertoire g&eacute;n&eacute;ral</em> records a programming year for <?php echo $n_datees ?> of the <?php echo $n_oeuvres_ici ?> works in this collection, and the cell is left empty for the others. An empty cell means the repertoire holds no record of a performance, not that the work was never played. <?php echo $n_sans_part ?> works here are by composers who appear at no edition in our participation index either. That index is drawn from the competition minutes, which have been fully entered only for 1973 to 1994 and are still partially processed from 1996 to 2009, so their absence is a gap in what has been read, not a statement about what happened. No competition was held in 1995, so no work carries that year.</p>
+						<p class="lg-note">The <em>edition(s)</em> column is knowingly incomplete. The <em>R&eacute;pertoire g&eacute;n&eacute;ral</em> records a competition year for <?php echo $n_datees ?> of the <?php echo $n_oeuvres_ici ?> works in this collection, and the cell is left empty for the others. An empty cell means the repertoire holds no record of an entry, not that the work was never entered. <?php echo $n_sans_part ?> works here are by composers who appear at no edition in our participation index either. That index is drawn from the competition minutes, which have been fully entered only for 1973 to 1994 and are still partially processed from 1996 to 2009, so their absence is a gap in what has been read, not a statement about what happened. No competition was held in 1995, so no work carries that year.</p>
 						<?php } ?>
 						<?php if($id==2){ ?>
-						<p class="lg-note"><strong>Coverage.</strong> The <em>edition(s)</em> column is knowingly incomplete: a programming year is recorded for <?php echo $n_datees ?> of this collection's <?php echo $n_oeuvres_ici ?> works. These works were produced in the institute's own studios, and an entry in the archive does not imply a festival performance. An empty cell means the repertoire holds no record of one. No competition was held in 1995, so no work carries that year.</p>
+						<p class="lg-note">The <em>competition</em> column is knowingly incomplete: a year is recorded for <?php echo $n_datees ?> of this collection's <?php echo $n_oeuvres_ici ?> works. These works were produced in the institute's own studios, and being held here does not imply that the work was ever entered in the competition. An empty cell means the repertoire holds no record of an entry. No competition was held in 1995, so no work carries that year, and the <em>festival</em> column is the one to read for that edition.</p>
 						<?php } ?>
 						</div>
 					<div>
@@ -167,16 +179,21 @@
 				</div>
 			</div>
 			<?php } ?>
-		<div id="main_table">
+		<div id="main_table"<?php if($id==2){ ?> class="is-single"<?php } ?>>
 			<table id="works_table" class="works_table">
 				<tr>
 					<th>composer</th>
 					<th>title</th>
+<?php if($id==2){ ?>					<th>composed</th>
 					<th>duration</th>
+					<th>competition</th>
+					<th>festival</th>
+					<th>publisher</th>
+<?php } else { ?>					<th>duration</th>
 					<th>edition(s)</th>
-				</tr>
+<?php } ?>				</tr>
 			</table>
-			<table id="works_table_2" class="works_table">
+<?php if($id!=2){ ?>			<table id="works_table_2" class="works_table">
 				<tr>
 					<th>composer</th>
 					<th>title</th>
@@ -184,7 +201,7 @@
 					<th>edition(s)</th>
 				</tr>
 			</table>
-		</div>
+<?php } ?>		</div>
 		<div id="listing"></div>
 		</div>
 		<div id="infos">

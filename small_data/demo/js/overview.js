@@ -438,84 +438,87 @@ function selectRect(x, y){
         if(x>=rectangles[i].x && x<=rectangles[i].x+rWidth &&
            y>=rectangles[i].y && y<=rectangles[i].y+rHeight) {
 
-            if(pAId>=0){
-                resetAllRectWhithId(pAId);
-            }
+            if(pAId>=0) resetAllRectWhithId(pAId);
 
-            if(rectangles[i].id != pAId){
-
-                $("#results").empty();
-
-                nAId = rectangles[i].id;
-                count002=rectangles[i].count;
-
-                processAllRectWhithId(nAId);
-
-                $.ajax({
-                    url: 'php/retrieve_data.php',
-                    type: "POST",
-                    data: {aId: nAId, case:5}
-                }).done(function(str) {
-
-                    var arr  = str.split("%");
-                    var ctry = arr[2];
-
-                    renderSelection(arr);
-
-                    var is_new=true;
-
-                    if(cookies.length>0){
-
-                        for (var i=0; i<cookies.length; i++) {
-                            if(cookies[i].id===nAId){
-
-                                is_new=false;
-                                break;
-                            }
-                        }
-                    }
-
-                    if(is_new){
-
-                        cookies.push({id:nAId, count:count002});
-
-                        var str="";
-
-                        for (var i = 0; i < cookies.length; i++) {
-                            if(i>0)str+='%';
-                            str+=cookies[i].id+'%'+cookies[i].count;
-                        }
-
-                        $.cookie('ids', str);
-
-                        OverviewSMA.addComposer({country: ctry, fn: arr[0], ln: arr[1], id: nAId, count: count002});
-
-                    }
-                });
-
-                $.ajax({
-                    url: 'php/retrieve_data.php',
-                    type: "POST",
-                    data: { aId: nAId, case:1 }
-                }).done(function(str) {
-
-                    var arr=str.split("%");
-                    titles=[];
-
-                    for (var i=0; i<arr.length-4; i+=5) {
-                        titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
-                    }
-
-                    displayTitlesInfosGN(titles);
-
-                });
-            }
-
-            pAId = nAId;
+            selectComposerById(rectangles[i].id, rectangles[i].count, true);
 
             break;
         }
     }
+}
+
+function selectComposerById(artistId, count, clearResults){
+
+    if(artistId != pAId){
+
+        if(clearResults) $("#results").empty();
+
+        nAId = artistId;
+        count002 = count;
+
+        $.ajax({
+            url: 'php/retrieve_data.php',
+            type: "POST",
+            data: {aId: nAId, case:5}
+        }).done(function(str) {
+
+            var arr  = str.split("%");
+            var ctry = arr[2];
+
+            renderSelection(arr);
+
+            var is_new=true;
+
+            if(cookies.length>0){
+
+                for (var i=0; i<cookies.length; i++) {
+                    if(cookies[i].id===nAId){
+
+                        is_new=false;
+                        break;
+                    }
+                }
+            }
+
+            if(is_new){
+
+                cookies.push({id:nAId, count:count002});
+
+                var str="";
+
+                for (var i = 0; i < cookies.length; i++) {
+                    if(i>0)str+='%';
+                    str+=cookies[i].id+'%'+cookies[i].count;
+                }
+
+                $.cookie('ids', str);
+
+                OverviewSMA.addComposer({country: ctry, fn: arr[0], ln: arr[1], id: nAId, count: count002});
+
+            }
+        });
+
+        $.ajax({
+            url: 'php/retrieve_data.php',
+            type: "POST",
+            data: { aId: nAId, case:1 }
+        }).done(function(str) {
+
+            var arr=str.split("%");
+            titles=[];
+
+            for (var i=0; i<arr.length-4; i+=5) {
+                titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
+            }
+
+            displayTitlesInfosGN(titles);
+
+        });
+    }
+
+    processAllRectWhithId(artistId);
+
+    pAId = nAId;
 }
 
 function drawGridHeader(){
@@ -832,6 +835,9 @@ function createComposersListing(num){
 
 function showFestivalComposer(composerId){
 
+    pAId = -1;
+    repaintAllRects();
+
     $.ajax({
         url: 'php/retrieve_data.php',
         type: "POST",
@@ -863,9 +869,9 @@ function showFestivalComposer(composerId){
 
 function showAndHighlightComposer(composerId){
 
-    var present = false;
+    var present = false, count = -1;
     for(var j=0; j<rectangles.length; j++){
-        if(rectangles[j].id===composerId){ present = true; break; }
+        if(rectangles[j].id===composerId){ present = true; count = rectangles[j].count; break; }
     }
 
     if(!present){
@@ -873,9 +879,15 @@ function showAndHighlightComposer(composerId){
         $('#numOfRecords').val(plancher);
         processData002(plancher);
         updateCoverageNote(plancher);
+
+        for(var k=0; k<rectangles.length; k++){
+            if(rectangles[k].id===composerId){ count = rectangles[k].count; break; }
+        }
     }
 
     editRectanglesColorBasedOnQueryWithComposerId(composerId);
+
+    selectComposerById(composerId, count, false);
 }
 
 function editRectanglesColorBasedOnQueryWithComposerId(composerId){

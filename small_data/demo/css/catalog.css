@@ -168,6 +168,11 @@ th{
 	flex: 1 1 480px;
 	max-width: 600px;
 }
+#main_table.is-single .works_table{
+	width: 1210px;
+	max-width: 1210px;
+	flex: 1 1 100%;
+}
 .works_table.is-empty{
 	display: none;
 }
@@ -182,8 +187,7 @@ th{
 }
 #legend .lg-note{
 	margin: 0 0 10px 0;
-	padding: 4px 0 4px 10px;
-	border-left: 3px solid var(--sd-amethyst);
+	max-width: 80ch;
 }
 .works_table td{
 	vertical-align: top;
@@ -204,13 +208,20 @@ th{
 	line-height: 0;
 	cursor: help;
 }
-.works_table td.work-ed{
+.works_table td.work-ed,
+.works_table td.work-fest,
+.works_table td.work-comp{
 	white-space: nowrap;
 	font-variant-numeric: tabular-nums;
 }
 .works_table td.work-dur,
-.works_table td.work-ed{
+.works_table td.work-ed,
+.works_table td.work-fest,
+.works_table td.work-comp{
 	text-align: center;
+}
+.works_table td.work-pub{
+	white-space: nowrap;
 }
 .works_table .grp-cell.grp-cell-a{
 	background: #C1C1C1;
