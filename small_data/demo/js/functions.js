@@ -128,10 +128,13 @@ function minutesGN(duration){
     var d = (duration == null ? '' : String(duration)).trim();
     if(!d) return '';
 
-    var m = /^(\d{1,3}):(\d{2})$/.exec(d);
+    var m = /^(?:(\d{1,2}):)?(\d{1,3}):(\d{2})$/.exec(d);
     if(!m) return d;
 
-    var sec = parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+    var sec = (m[1] ? parseInt(m[1], 10) * 3600 : 0)
+            + parseInt(m[2], 10) * 60
+            + parseInt(m[3], 10);
+
     var min = Math.round(sec / 60);
     return min < 1 ? '< 1 min' : min + ' min';
 }
