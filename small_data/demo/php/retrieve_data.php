@@ -190,11 +190,11 @@
 										 ORDER BY imeb_participation.annee) AS editions
 
 						FROM imeb_artist
-						INNER JOIN imeb_country
+						LEFT JOIN imeb_country
 						ON imeb_artist.id_country = imeb_country.id
 						LEFT JOIN imeb_country AS orig
 						ON imeb_artist.id_country_origin = orig.id
-						INNER JOIN imeb_participation
+						LEFT JOIN imeb_participation
 						ON imeb_participation.id_artist = imeb_artist.id
 						WHERE imeb_artist.id = ?
 						GROUP BY imeb_artist.id, imeb_artist.firstName,
@@ -215,21 +215,23 @@
 
 			$str_editions = implode(", ", $editions);
 
-			$sthP = $dbh->prepare('SELECT award_year, editions FROM imeb_music
-									WHERE id_artist = ?');
+			$sthP = $dbh->prepare('SELECT award_year FROM imeb_music WHERE id_artist = ?');
 			$sthP->execute(array((int)$aId));
 			$sthP->setFetchMode(PDO::FETCH_ASSOC);
 
 			$aw = array();
-			$fe = array();
 			while($w = $sthP->fetch()){
 				$y = trim((string)$w['award_year']);
 				if(ctype_digit($y)) $aw[$y] = true;
-				foreach(explode(',', (string)$w['editions']) as $y2){
-					$y2 = trim($y2);
-					if(ctype_digit($y2)) $fe[$y2] = true;
-				}
 			}
+
+			$sthF = $dbh->prepare('SELECT DISTINCT annee FROM imeb_festival_participation
+									WHERE id_artist = ?');
+			$sthF->execute(array((int)$aId));
+			$sthF->setFetchMode(PDO::FETCH_ASSOC);
+
+			$fe = array();
+			while($f = $sthF->fetch()) $fe[(string)$f['annee']] = true;
 
 			$sthQ = $dbh->prepare('SELECT annee, source, cite_par_liste, cite_par_oeuvre
 									FROM imeb_participation WHERE id_artist = ?');
@@ -261,8 +263,20 @@
 				$prov[$y] = $c . $p;
 			}
 
+			foreach($fe as $y => $v){
+				if(!isset($prov[$y])) $prov[$y] = '3o';
+			}
+
+			$annees = array();
+			foreach($editions as $y) $annees[(string)$y] = true;
+			foreach($fe as $y => $v) $annees[(string)$y] = true;
+			$annees = array_keys($annees);
+			sort($annees, SORT_NUMERIC);
+
+			$str_editions = implode(", ", $annees);
+
 			$classes = array();
-			foreach($editions as $y){
+			foreach($annees as $y){
 				$y = (string)$y;
 				$classes[] = $y . '=' . (isset($prov[$y]) ? $prov[$y] : '1l');
 			}

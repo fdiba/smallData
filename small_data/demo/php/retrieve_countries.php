@@ -7,13 +7,13 @@
 		? 'imeb_music.misam >= 200000'
 		: 'imeb_music.misam > 0 AND imeb_music.misam < 200000';
 
-	$sth = $dbh->query('SELECT imeb_country.id,
-							   COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS label,
+	$sth = $dbh->query('SELECT COALESCE(imeb_country.id, 0) AS id,
+							   COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name, \'Unknown\') AS label,
 							   COUNT(*) AS n,
 							   COALESCE(imeb_country.iso3, \'\') AS iso3
 						FROM imeb_music
 						INNER JOIN imeb_artist  ON imeb_music.id_artist  = imeb_artist.id
-						INNER JOIN imeb_country ON imeb_artist.id_country = imeb_country.id
+						LEFT JOIN  imeb_country ON imeb_artist.id_country = imeb_country.id
 						WHERE ' . $range . '
 						  AND imeb_music.statut <> \'hors_repertoire\'
 						GROUP BY imeb_country.id, imeb_country.c_name_en, imeb_country.c_name, imeb_country.iso3

@@ -244,14 +244,33 @@ function selectionHtml(arr){
     var origin = esc($.trim(arr[5] || ''));
     var where  = (origin && ctry) ? (origin + ' / ' + ctry) : (origin || ctry);
 
+    var cls = {};
+    var brutProv = $.trim(arr[6] || '');
+    if(brutProv){
+        var lp = brutProv.split(',');
+        for(var kp = 0; kp < lp.length; kp++){
+            var pp = lp[kp].split('=');
+            if(pp.length === 2) cls[$.trim(pp[0])] = $.trim(pp[1]);
+        }
+    }
+
     var ans = [];
     var brut = ('' + eds).split(',');
     for(var i = 0; i < brut.length; i++){
         var a = $.trim(brut[i]);
         if(a) ans.push(a);
     }
-    var n       = ans.length;
-    var edLabel = n + ' edition' + (n === 1 ? '' : 's');
+
+    var nComp = 0, nFest = 0;
+    for(var ic = 0; ic < ans.length; ic++){
+        var code = cls[ans[ic]] || '1l';
+        var etat = code.charAt(0);
+        if(etat !== '3') nComp++;
+        if(etat === '2' || etat === '3') nFest++;
+    }
+
+    var edLabel = nComp + ' edition' + (nComp === 1 ? '' : 's');
+    if(nFest > 0) edLabel += ', ' + nFest + ' at the festival';
 
     var head = $.trim(esc(who) + ' ' + where) + ' \u00b7 ' + edLabel;
 
@@ -756,7 +775,7 @@ function createComposersListing(num){
                 ' played at the festival, never entered the competition.</p>';
         } else if(count<0){
             str = '<p class="no-index" data-id="' + id + '">' +
-                composers[i+1] + ' ' + composers[i+2] + ' (not in this index)</p>';
+                composers[i+1] + ' ' + composers[i+2] + ' is not in this index.</p>';
         } else {
             str = '<p data-id="' + id + '">' +
                 composers[i+1] + ' ' + composers[i+2] + ' ' + count + '</p>';
@@ -791,7 +810,7 @@ function createComposersListing(num){
     if(arr.length<1 && nonListes>0){
         $("#results").append('<p class="no-index">' + nonListes +
             ' entrant' + (nonListes>1 ? 's' : '') +
-            ' (no archived work, name not listed)</p>');
+            ' with no archived work, names not listed.</p>');
     }
 
     $("#results p").not(".no-index").click(function() {

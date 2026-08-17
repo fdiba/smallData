@@ -31,7 +31,7 @@ window.onload = function() {
         initSMA(1210, SMA_H_FULL);
         startSMA();
         buildCountryMenu();
-        retrieveData(cat, 11, 0);
+        retrieveData(cat, 11, '');
 
     } else {
         retrieveData(-999, 11);
@@ -53,7 +53,7 @@ function retrieveData(cat, numOfElements, country){
     $.ajax({
         url: 'php/retrieve_cat.php',
         type: "POST",
-        data: {cat: cat, country: country || 0}
+        data: {cat: cat, country: (country === undefined || country === null) ? '' : country}
 
     }).done(function(str) {
 
@@ -72,7 +72,7 @@ function retrieveData(cat, numOfElements, country){
         }
         var total = works.length;
 
-        var showCtry = !((+country) > 0);
+        var showCtry = (country === '' || country === undefined || country === null);
 
         var showSMA = doSMA;
 
@@ -338,6 +338,6 @@ function showFullTable(){
     clearCatalogTable();
     $("#countries ul li").css("font-weight", "normal");
     $("#countries ul li.all-works").css("font-weight", "bold");
-    retrieveData(_catId, 11, 0);
+    retrieveData(_catId, 11, '');
     ecrirePaysDansLUrl(null);
 }

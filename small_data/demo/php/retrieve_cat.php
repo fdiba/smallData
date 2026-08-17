@@ -2,7 +2,7 @@
 
 	$cat=$_POST['cat'];
 
-	$country = isset($_POST['country']) ? intval($_POST['country']) : 0;
+	$country = (isset($_POST['country']) && $_POST['country'] !== '') ? intval($_POST['country']) : null;
 
 	if($cat==1 || $cat==2){
 		retrieve_cat($cat, $country);
@@ -122,7 +122,7 @@
 
 	}
 
-	function retrieve_cat($cat, $country=0){
+	function retrieve_cat($cat, $country=null){
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
@@ -135,7 +135,11 @@
 
 		if($where !== '') $where .= ' AND imeb_music.statut <> \'hors_repertoire\'';
 
-		if(($cat==1 || $cat==2) && $country>0) $where .= ' AND imeb_artist.id_country = ' . intval($country);
+		if(($cat==1 || $cat==2) && $country !== null){
+			$where .= ($country > 0)
+					? ' AND imeb_artist.id_country = ' . intval($country)
+					: ' AND imeb_artist.id_country IS NULL';
+		}
 
 		$sth = $dbh->query('SELECT imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
