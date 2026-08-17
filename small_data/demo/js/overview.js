@@ -444,6 +444,8 @@ function selectRect(x, y){
 
             if(rectangles[i].id != pAId){
 
+                $("#results").empty();
+
                 nAId = rectangles[i].id;
                 count002=rectangles[i].count;
 
