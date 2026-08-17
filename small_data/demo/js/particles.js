@@ -161,11 +161,12 @@ Particle.prototype.getTitlesFrom=function(artist_id){
         var arr=str.split("%");
         this.titles=[];
 
-        for (var i=0; i<arr.length-9; i+=10) {
+        for (var i=0; i<arr.length-11; i+=12) {
 
-        	if(i===0)displayFirstnameAndNameGN({fn:arr[i+5], n:arr[i+6], isni:arr[i+7],
-                                                ctry:arr[i+8], origin:arr[i+9]});
-            this.titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
+        	if(i===0)displayFirstnameAndNameGN({fn:arr[i+7], n:arr[i+8], isni:arr[i+9],
+                                                ctry:arr[i+10], origin:arr[i+11]});
+            this.titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3],
+                              y:arr[i+4], ed:arr[i+5], pv:arr[i+6]});
         }
 
         if(this.titles.length<1)clearIdentityBoxGN();

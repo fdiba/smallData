@@ -45,13 +45,16 @@ function displayTitlesInfosGN(arr){
             var misam = (obj.m == null) ? '' : String(obj.m).replace(/^\s+|\s+$/g, '');
             var tip = misam ? ' title="MISAM ' + misam.replace(/"/g, '&quot;') + '"' : '';
 
-            var div='<li class="'+(i%2===0 ? 't-a' : 't-b')+'"'+tip+'>'+obj.t;
-            if(obj.d) div += ' ('+obj.d+')';
-            var eds = editionYears(obj.ed);
-            if(eds.length){
-                div += ' | ' + (eds.length === 1 ? 'edition' : 'editions')
-                     + ': ' + eds.join(', ');
-            }
+            var tete = [escGN(obj.t)];
+            if(obj.d) tete.push(escGN(obj.d));
+            if(obj.y) tete.push(escGN(obj.y));
+
+            var div = '<li class="' + (i%2===0 ? 't-a' : 't-b') + '">'
+                    + '<span class="t-work"' + tip + '>' + tete.join(' · ') + '</span>';
+
+            var eds = workYearsHtml(obj.ed, obj.pv);
+            if(eds) div += ' | ' + eds;
+
             div += '</li>';
             box.append(div);
         }
@@ -73,6 +76,64 @@ function editionYears(ed){
         out.push(y);
     }
     return out.sort();
+}
+
+function escGN(s){
+    if(typeof esc === 'function') return esc(s);
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+var WORK_MARQUE = {'1':'', '2':'+', '3':'°', '4':'*'};
+var WORK_CLASSE = {'1':'ed-comp', '2':'ed-both', '3':'ed-fest', '4':'ed-loose'};
+
+var WORK_ETAT = {
+    '1': 'competition',
+    '2': 'competition + festival',
+    '3': 'festival only',
+    '4': 'competition, no document'
+};
+var WORK_PIECE = {
+    'a': 'prize awarded',
+    'r': 'Phonothèque A repertoire',
+    'g': 'Phonothèque B register',
+    'd': 'both phonothèque inventories',
+    'n': 'no document names it'
+};
+
+function workYearsHtml(annees, provenance){
+
+    var cls = {};
+    var brut = ('' + (provenance || '')).replace(/^\s+|\s+$/g, '');
+    if(brut){
+        var l = brut.split(',');
+        for(var k=0; k<l.length; k++){
+            var p = l[k].split('=');
+            if(p.length === 2) cls[p[0].replace(/^\s+|\s+$/g, '')]
+                             = p[1].replace(/^\s+|\s+$/g, '');
+        }
+    }
+
+    var out = [];
+    var ans = editionYears(annees);
+
+    for(var i=0; i<ans.length; i++){
+
+        var a = ans[i];
+        var code = cls[a] || '4n';
+        var c = code.charAt(0), q = code.charAt(1) || 'n';
+        if(!WORK_MARQUE.hasOwnProperty(c)) c = '1';
+        if(!WORK_PIECE.hasOwnProperty(q))  q = 'n';
+
+        var redite = (c === '4' && q === 'n');
+        var titre  = WORK_ETAT[c] + (redite ? '' : ' · ' + WORK_PIECE[q]);
+
+        out.push('<span class="' + WORK_CLASSE[c] + '" title="' + escGN(titre) + '">'
+                 + escGN(a) + WORK_MARQUE[c] + '</span>');
+    }
+
+    return out.join(', ');
 }
 
 var titlesFoldBound = false;

@@ -490,7 +490,7 @@ LineChart.prototype.drawLegend = function(){
 
     if(placees < arr.length && typeof console !== 'undefined' && console.warn){
         console.warn('[linechart] legende : ' + placees + ' pays nommes sur ' +
-                     arr.length + ' traces — ' + (arr.length - placees) +
+                     arr.length + ' traces · ' + (arr.length - placees) +
                      ' hors de la toile (' + toile + ' px, ' + nbCols + ' colonnes).');
     }
 }
@@ -636,8 +636,8 @@ LineChart.prototype.handleHover = function(mx, my){
         lbl += " · " + (this.minYear+bj) + " · " +
                (v>0 ? v + (v>1 ? " entrants" : " entrant") : "no entrant recorded");
     }
-    return lbl + (this.selectedIndexOf(i)>=0 ? " — click to move the marker"
-                                             : " — click to list them");
+    return lbl + (this.selectedIndexOf(i)>=0 ? " · click to move the marker"
+                                             : " · click to list them");
 };
 LineChart.prototype.clearHover = function(){
     if(this.hoverIdx !== -1){

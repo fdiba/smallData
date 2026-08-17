@@ -308,6 +308,14 @@ ul{
 	overflow-y: auto;
 	overscroll-behavior: contain;
 }
+#titles .ed-fest,
+#titles .ed-both,
+#titles .ed-loose{
+	border-bottom: 1px dotted currentColor;
+	cursor: help;
+}
+#titles .ed-comp{ cursor: help; }
+#titles .t-work[title]{ cursor: help; }
 #titles.t-boxed.t-hd-on{
 	padding-top: 0;
 }

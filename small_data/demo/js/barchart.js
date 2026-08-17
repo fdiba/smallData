@@ -253,7 +253,7 @@ BarChart.prototype.drawProvenance = function(){
 		ctx.fillStyle = pvColor(this.year);
 		ctx.fillRect(this.padding, y-4, 22, 3);
 		ctx.fillStyle = this.inkMuted;
-		ctx.fillText(this.year + " — " + pvLabel(this.year), this.padding + 28, y);
+		ctx.fillText(this.year + " · " + pvLabel(this.year), this.padding + 28, y);
 	}
 	ctx.restore();
 };
@@ -491,11 +491,11 @@ BarChart.prototype.handleHover = function(mx, my){
 
 	if(z.zone==='label'){
 		return d.label + " · " + t + (t>1?" entrants":" entrant") + " in " + this.year
-		     + " — click to isolate";
+		     + " · click to isolate";
 	}
 	return d.label + " · " + this.year + " · " + t + (t>1?" entrants":" entrant")
 	     + " · " + c + " with a work in the collection"
-	     + (this.selectedIndexOf(i)>=0 ? " — click again to clear" : " — click to list them");
+	     + (this.selectedIndexOf(i)>=0 ? " · click again to clear" : " · click to list them");
 };
 
 BarChart.prototype.clearHover = function(){

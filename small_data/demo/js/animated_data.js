@@ -248,8 +248,9 @@ function retrieveAllTitleFrom(aId){
         var arr=str.split("%");
         titles=[];
 
-        for (var i=0; i<arr.length-4; i+=5) {
-            titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
+        for (var i=0; i<arr.length-6; i+=7) {
+            titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3],
+                         y:arr[i+4], ed:arr[i+5], pv:arr[i+6]});
         }
 
         displayTitlesInfos();
@@ -337,9 +338,9 @@ function appendComposerLi(obj, count, inSelectedEdition){
 
     var tip = '';
     if(inSelectedEdition) tip += 'took part in the selected edition';
-    if(count>0)           tip += (tip ? ' · ' : '') + count + ' archived work(s) — click to list them';
+    if(count>0)           tip += (tip ? ' · ' : '') + count + ' archived work(s) · click to list them';
     if(!tip)              tip  = 'no archived work';
-    if(masked)            tip += ' — name withheld';
+    if(masked)            tip += ' · name withheld';
     li.attr('title', tip);
 
     if(!masked){
@@ -550,7 +551,7 @@ function updateSlData(){
 
         $("#selection").empty();
         $("#selection").append($('<p>').text(
-            sl_years[0] + " selected — pick a second year to chart the period between them"));
+            sl_years[0] + " selected · pick a second year to chart the period between them"));
         $("#selection").append($('<p>').text(
             "or turn the span toggle off to get a bar chart of that single edition"));
     }
@@ -1119,9 +1120,9 @@ var pvLoaded = false;
 
 var PV_COLORS = {constat:'#2ecc71', depouillement:'#e67e22', liste:'#5dade2', inconnu:'#7f8c8d'};
 var PV_LABELS = {
-    constat:       "transcribed in full from the bailiff's record — every entry attested",
+    constat:       "transcribed in full from the bailiff's record · every entry attested",
     depouillement: "minutes transcribed, but not attested by a bailiff's record",
-    liste:         "counted from the entrants list and from archived works — second-hand",
+    liste:         "counted from the entrants list and from archived works · second-hand",
     inconnu:       "provenance not loaded"
 };
 
@@ -1245,7 +1246,7 @@ function getData(){
 
         }
 
-    	var txt = "no selection — click the chart to list the composers of a country";
+    	var txt = "no selection · click the chart to list the composers of a country";
         $("#selection").empty().append('<p>');
         $("#selection p").append(txt);
 

@@ -169,7 +169,7 @@ function showIsniBox(isni, label){
 
     box.find('.isni-hd-t').html(
         '<button type="button" class="isni-toggle" aria-expanded="false">'
-        + esc(lbl ? lbl + ' — ' + head : head)
+        + esc(lbl ? lbl + ' · ' + head : head)
         + '<span class="isni-caret" aria-hidden="true"></span></button>');
 
     box.addClass('open').addClass('is-folded');
@@ -266,7 +266,7 @@ function openIsniBox(anchor){
 
     var label = String(anchor.attr('data-label') || '').trim();
     var head  = 'ISNI ' + isni.replace(/(.{4})(?=.)/g, '$1 ');
-    box.find('.isni-hd-t').text(label ? label + ' — ' + head : head);
+    box.find('.isni-hd-t').text(label ? label + ' · ' + head : head);
     box.addClass('open');
 
     if(isniCache[isni]){
@@ -320,8 +320,8 @@ function isniBodyHtml(d){
 
     if(d.links){
         h.push('<p class="isni-sec">Record</p><ul class="isni-list">');
-        if(d.links.isni_org)  h.push('<li>' + lnk(d.links.isni_org, 'isni.org — public record') + '</li>');
-        if(d.links.isni_oclc) h.push('<li>' + lnk(d.links.isni_oclc, 'isni.oclc.org — full data') + '</li>');
+        if(d.links.isni_org)  h.push('<li>' + lnk(d.links.isni_org, 'isni.org · public record') + '</li>');
+        if(d.links.isni_oclc) h.push('<li>' + lnk(d.links.isni_oclc, 'isni.oclc.org · full data') + '</li>');
         h.push('</ul>');
     }
 
@@ -419,7 +419,7 @@ function showIsniFiche(isni, label){
 
     isniFiche.box.find('.isni-hd-t').html(
         '<button type="button" class="isni-toggle" aria-expanded="false">'
-        + esc(lbl ? lbl + ' — ' + head : head)
+        + esc(lbl ? lbl + ' · ' + head : head)
         + '<span class="isni-caret" aria-hidden="true"></span></button>');
 
     isniFiche.box.addClass('open').addClass('is-folded');

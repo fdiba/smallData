@@ -98,7 +98,7 @@
 				<div>
 					<p><strong>Selection</strong></p>
 					<ul>
-						<li>Click a square to select a composer, and the boxes on the right fill up. They arrive <strong>folded</strong>. The orange one names the composer, their country code and how many editions they entered; the purple one counts their archived works. Click a header to unfold it, and again to fold it back.</li>
+						<li>Click a square to select a composer, and the boxes on the right fill up. They arrive <strong>folded</strong>. The orange one names the composer, their country code and how many festivals and competitions they appear in; the purple one counts their archived works. Click a header to unfold it, and again to fold it back.</li>
 						<li>A third box appears between them <strong>only for composers who have an ISNI</strong>, and its header is that identifier. Unfold it to load the international identity record: name forms, dates and external links. Nothing is requested before that.</li>
 					</ul>
 					<p><strong>Search</strong></p>
@@ -111,13 +111,14 @@
 					</ul>
 				</div>
 				<div>
-					<p><strong>Year markers</strong> in the orange box</p>
+					<p><strong>Year markers</strong> in the orange and the purple box</p>
 					<ul>
 						<li>A bare year, <em>1984</em>, is an entry to the competition attested by a document.</li>
 						<li>A plus, <em>1984+</em>, is that same entry <em>and</em> a work programmed at the <em>Synth&egrave;se</em> festival the same year.</li>
-						<li>A degree sign, <em>1984&deg;</em>, is the festival alone. No entry to the competition is attested, and the year was inferred from the work.</li>
-						<li>An asterisk, <em>1984*</em>, is a participation recorded with no document attached to it.</li>
-						<li>Hover a year for the document the claim rests on: <em>bailiff&rsquo;s record</em>, <em>IMEB list of entrants</em>, <em>prize awarded</em>, <em>festival programme</em>, or <em>transcription only</em>.</li>
+						<li>A degree sign, <em>1984&deg;</em>, is the festival alone. No entry to the competition is attested.</li>
+						<li>An asterisk, <em>1984*</em>, is a year recorded with no document attached to it.</li>
+						<li>Hover a year in the orange box for the document the claim rests on: <em>bailiff&rsquo;s record</em>, <em>IMEB list of entrants</em>, <em>prize awarded</em>, <em>festival programme</em>, or <em>transcription only</em>.</li>
+						<li>The purple box marks the years of the work rather than those of the composer, and it rests on other documents: <em>prize awarded</em>, the <em>Phonoth&egrave;que A repertoire</em>, the <em>Phonoth&egrave;que B register</em>, or both.</li>
 					</ul>
 					<p><strong>Navigation trace</strong></p>
 					<ul>

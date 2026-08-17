@@ -107,10 +107,10 @@
 						</ul>
 						<p><strong>Hovering and clicking</strong></p>
 						<ul>
-							<li>Hover a flow on the left for what a category received that year: <em>Programme, 1988 &mdash; 7 awards</em>.</li>
+							<li>Hover a flow on the left for what a category received that year: <em>Programme, 1988 &middot; 7 awards</em>.</li>
 							<li>Hover a node for what the diagram does <em>not</em> show. A year reads <em>31 awards in 6 categories</em>, a composer <em>9 awards in 6 categories</em>.</li>
-							<li>A category opens with <strong>the period it covers</strong>, as in <em>1977-1998 &mdash; 79 awards to 66 composers, across 20 editions</em>. That period is the one the competition declared, and <em>editions</em> counts the years in which it actually distinguished something. The two need not agree.</li>
-							<li>In the full view, hover a flow on the right for the composer, the category and the years concerned: <em>Robert Normandeau &mdash; 2 awards in Programme (awarded 1988, 1993 &middot; festival 1988, 1993)</em>.</li>
+							<li>A category opens with <strong>the period it covers</strong>, as in <em>1977-1998 &middot; 79 awards to 66 composers, across 20 editions</em>. That period is the one the competition declared, and <em>editions</em> counts the years in which it actually distinguished something. The two need not agree.</li>
+							<li>In the full view, hover a flow on the right for the composer, the category and the years concerned: <em>Robert Normandeau &middot; 2 awards in Programme (awarded 1988, 1993 &middot; festival 1988, 1993)</em>.</li>
 							<li>In the full view, a name with a dotted underline has an ISNI, <?php echo nb($n_isni) ?> of the <?php echo nb($n_compositeurs) ?>. Click it to open the public authority record.</li>
 						</ul>
 					</div>

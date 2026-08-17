@@ -86,7 +86,7 @@ function sd_label_for_url($url){
 
 	if(preg_match('/^([a-z\-]+)\.wikipedia\.org$/', $host, $w)) return 'Wikipedia (' . $w[1] . ')';
 	$map = array(
-		'brahms.ircam.fr'    => 'Ircam — Brahms',
+		'brahms.ircam.fr'    => 'Ircam · Brahms',
 		'discogs.com'        => 'Discogs',
 		'musicbrainz.org'    => 'MusicBrainz',
 		'viaf.org'           => 'VIAF',
@@ -119,7 +119,7 @@ function sd_known_labels(){
 	return array('Discogs','MusicBrainz','Wikidata','Wikipedia (fr)','Wikipedia (en)',
 	             'VIAF','data.bnf.fr','Catalogue BnF','GND (DNB)','Library of Congress',
 	             'IdRef','IMSLP','AllMusic','Bandcamp','SoundCloud','Site officiel',
-	             'Ircam — Brahms','Ircam','ORCID','WorldCat','IMDb','Last.fm');
+	             'Ircam · Brahms','Ircam','ORCID','WorldCat','IMDb','Last.fm');
 }
 function sd_label_rank($label){
 	$i = array_search($label, sd_known_labels(), true);

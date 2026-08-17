@@ -239,10 +239,10 @@ function plural(n, word){
 function linkTitle(d){
 
   if(d.target.type !== 'composer'){
-    return d.target.name + ", " + d.source.name + " — " + plural(d.value, "award");
+    return d.target.name + ", " + d.source.name + " · " + plural(d.value, "award");
   }
 
-  var txt = d.target.fullName + " — " + plural(d.value, "award") +
+  var txt = d.target.fullName + " · " + plural(d.value, "award") +
             " in " + d.source.name;
 
   var parts = [];
@@ -272,16 +272,16 @@ function nodeTitle(d){
   } else if(d.type === 'category' && d.distinction){
 
     var dcomp = catComposers.hasOwnProperty(d.name) ? catComposers[d.name] : to;
-    out = "✦ a DISTINCTION, not a category — awarded across categories · "
+    out = "✦ a DISTINCTION, not a category · awarded across categories · "
         + out + " to " + plural(dcomp, "composer")
         + ", across " + plural(from, "edition");
-    if(catPeriode[d.name]){ out = catPeriode[d.name] + " — " + out; }
+    if(catPeriode[d.name]){ out = catPeriode[d.name] + " · " + out; }
   } else if(d.type === 'category'){
 
     var comp = catComposers.hasOwnProperty(d.name) ? catComposers[d.name] : to;
     out += " to " + plural(comp, "composer") +
            ", across " + plural(from, "edition");
-    if(catPeriode[d.name]){ out = catPeriode[d.name] + " — " + out; }
+    if(catPeriode[d.name]){ out = catPeriode[d.name] + " · " + out; }
   } else {
     out += " in " + plural(from, "category");
   }

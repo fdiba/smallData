@@ -678,13 +678,13 @@ MatrixChart.prototype.handleHover = function(mx,my){
     if(c){
         row=c.i; col=c.j;
         var year=this.minYear+c.j;
-        if(this.isSkipped(c.j)) label = "1995 — no competition was held";
+        if(this.isSkipped(c.j)) label = "1995 · no competition was held";
         else {
             var v=this.data[c.i].arr[c.j]||0;
             label = this.data[c.i].ctry + " · " + year + " · " +
                     (v>0 ? (v + (v>1?" entrants":" entrant")) : "no entrant recorded") +
                     (this.selectedIndexOf(c.i)>=0 && this.selectedCells[this.selectedIndexOf(c.i)].yearId===c.j
-                        ? " — click again to clear" : " — click to list them");
+                        ? " · click again to clear" : " · click to list them");
         }
     } else {
         var g=this.hitRowGutter(mx,my);
@@ -696,12 +696,12 @@ MatrixChart.prototype.handleHover = function(mx,my){
             var etendue = this.isFullSpan() ? "" : " in " + this.minYear + "–" + this.maxYear;
             label = this.data[g].ctry + " · " + this.rowTotal[g] + " entrants" + etendue
                   + (cc ? " · " + cc.c + " of " + cc.t + " with archived works, all editions" : "")
-                  + " — click to isolate";
+                  + " · click to isolate";
         } else if(my>=this.bandY && my<=this.bandY+this.bandH && mx>=this.matX && mx<=this.matX+this.matW){
             col=Math.floor((mx-this.matX)/this.colW);
             if(col>=0 && col<this.nCols){
                 var yy=this.minYear+col;
-                label = this.isSkipped(col) ? "1995 — no competition was held"
+                label = this.isSkipped(col) ? "1995 · no competition was held"
                                             : (yy + " · " + this.totals[col] + " entrants in all");
             }
         }

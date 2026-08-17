@@ -269,15 +269,12 @@ function selectionHtml(arr){
         if(etat === '2' || etat === '3') nFest++;
     }
 
-    var edLabel;
-    if(nComp === 0 && nFest > 0){
-        edLabel = nFest + ' at the festival';
-    } else {
-        edLabel = nComp + ' edition' + (nComp === 1 ? '' : 's');
-        if(nFest > 0) edLabel += ', ' + nFest + ' at the festival';
-    }
+    var parts = [];
+    if(nFest > 0) parts.push(nFest + ' festival' + (nFest === 1 ? '' : 's'));
+    if(nComp > 0) parts.push(nComp + ' competition' + (nComp === 1 ? '' : 's'));
 
-    var head = $.trim(esc(who) + ' ' + where) + ' \u00b7 ' + edLabel;
+    var head = $.trim(esc(who) + ' ' + where);
+    if(parts.length) head += ' \u00b7 ' + parts.join(' \u00b7 ');
 
     return '<p class="s-hd"><button type="button" class="s-toggle" aria-expanded="false">'
          + head + '<span class="s-caret" aria-hidden="true"></span></button></p>'
@@ -507,8 +504,9 @@ function selectComposerById(artistId, count, clearResults){
             var arr=str.split("%");
             titles=[];
 
-            for (var i=0; i<arr.length-4; i+=5) {
-                titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
+            for (var i=0; i<arr.length-6; i+=7) {
+                titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3],
+                             y:arr[i+4], ed:arr[i+5], pv:arr[i+6]});
             }
 
             displayTitlesInfosGN(titles);
@@ -641,7 +639,7 @@ function getData(){
             if(numTitles>0)numComposersInCapsules++;
         }
 
-        clearSelection("no selection — click a square to display a composer");
+        clearSelection("no selection · click a square to display a composer");
 
         var num = allData.length / 6;
         var txt2 = numComposersInCapsules+ " / " + num + " composers with archived works";
@@ -857,8 +855,9 @@ function showFestivalComposer(composerId){
         var arr=str.split("%");
         titles=[];
 
-        for (var i=0; i<arr.length-4; i+=5) {
-            titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3], ed:arr[i+4]});
+        for (var i=0; i<arr.length-6; i+=7) {
+            titles.push({id:arr[i], t:arr[i+1], d:arr[i+2], m:arr[i+3],
+                         y:arr[i+4], ed:arr[i+5], pv:arr[i+6]});
         }
 
         displayTitlesInfosGN(titles);
