@@ -26,6 +26,10 @@ function Child(config){
 	this.degree = config.degree;
 	this.category = config.category;
 	this.isni = config.isni;
+
+	this.composed = config.composed;
+	this.annees = config.annees;
+	this.prov = config.prov;
 	this.ctry = config.ctry;
 
 	this.id=config.id;

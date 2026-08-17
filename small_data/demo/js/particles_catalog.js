@@ -48,6 +48,8 @@ function Particle(config){
 
 	this.editions = config.editions;
 	this.composed = config.composed;
+	this.annees = config.annees;
+	this.prov = config.prov;
 
 	this.isni = config.isni;
 
@@ -57,7 +59,7 @@ function Particle(config){
 					imeb_id:this.imeb_id, fn:this.fn, name:this.name, ctry:this.ctry,
 					title:this.title,
 					duration:this.duration, minutes:this.minutes, editions:this.editions,
-					composed:this.composed,
+					composed:this.composed, annees:this.annees, prov:this.prov,
 					cat:this.cat, sub_cat:this.sub_cat,
 					isni:this.isni, id:this.id}];
 
@@ -177,6 +179,10 @@ Particle.prototype.createNewChild=function(obj){
         sub_cat: obj.sub_cat,
         isni: obj.isni,
 
+        composed: obj.composed,
+        annees: obj.annees,
+        prov: obj.prov,
+
         id: obj.id,
 
         x:this.x-radius+Math.random()*(radius*2),
@@ -216,13 +222,15 @@ Particle.prototype.getInfoFrom=function(target){
 	$("#titles").empty();
 	var blocks = [];
 
-	var work = val(target.title);
-	var duration = val(target.duration);
-	if(duration) work = work ? work + ' (' + duration + ')' : '(' + duration + ')';
-	var editions = val(target.editions);
-	if(editions) editions = '<span class="sma-lbl">competition</span> '
-						  + editions.replace(/\s*,\s*/g, ', ');
-	blocks.push([work, editions]);
+	var tete = [];
+	if(val(target.title))    tete.push(escGN(val(target.title)));
+	if(val(target.duration)) tete.push(escGN(val(target.duration)));
+	if(val(target.composed)) tete.push(escGN(val(target.composed)));
+	var work = tete.join(' \u00b7 ');
+
+	var annees = workYearsHtml(val(target.annees), val(target.prov));
+	if(annees) annees = '<span class="sma-lbl">competition and festival</span> ' + annees;
+	blocks.push([work, annees]);
 
 	var misam = val(target.imeb_id);
 	var infoMisam = (misam && misam !== '0')

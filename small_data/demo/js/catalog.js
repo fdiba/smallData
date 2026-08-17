@@ -31,10 +31,10 @@ window.onload = function() {
         initSMA(1210, SMA_H_FULL);
         startSMA();
         buildCountryMenu();
-        retrieveData(cat, 14, '');
+        retrieveData(cat, 16, '');
 
     } else {
-        retrieveData(-999, 14);
+        retrieveData(-999, 16);
     }
 
 };
@@ -70,7 +70,8 @@ function retrieveData(cat, numOfElements, country){
                         duration: arr[k+5], id: arr[k+6], ctry: arr[k+7],
                         isni: arr[k+8], editions: arr[k+9], award: arr[k+10],
                         festival: arr[k+11], composed: arr[k+12],
-                        publisher: arr[k+13]});
+                        publisher: arr[k+13],
+                        annees: arr[k+14], prov: arr[k+15]});
         }
         var total = works.length;
 
@@ -147,7 +148,8 @@ function retrieveData(cat, numOfElements, country){
                                   minutes: minutesGN(w.duration),
                                   ctry: w.ctry, isni: w.isni,
                                   editions: w.editions,
-                                  composed: w.composed});
+                                  composed: w.composed,
+                                  annees: w.annees, prov: w.prov});
                 }
 
                 var newGroup = (w.id_artist !== prevArtist);
@@ -309,7 +311,7 @@ function selectCountry(cid, name, liEl){
     $("#countries ul li").css("font-weight", "normal");
     if(liEl) liEl.css("font-weight", "bold");
     $("#cookies").empty().append('<p>country: ' + name + '</p>');
-    retrieveData(_catId, 14, cid);
+    retrieveData(_catId, 16, cid);
     ecrirePaysDansLUrl(liEl ? liEl.attr('data-iso') : isoDuCid(cid));
 }
 
@@ -356,6 +358,6 @@ function showFullTable(){
     clearCatalogTable();
     $("#countries ul li").css("font-weight", "normal");
     $("#countries ul li.all-works").css("font-weight", "bold");
-    retrieveData(_catId, 14, '');
+    retrieveData(_catId, 16, '');
     ecrirePaysDansLUrl(null);
 }

@@ -53,11 +53,16 @@ function Particle(config){
 	this.isni = config.isni;
 	this.ctry = config.ctry;
 
+	this.composed = config.composed;
+	this.annees = config.annees;
+	this.prov = config.prov;
+
 	this.id = config.id;
 
 	this.records = [{edition:this.edition, year:this.year, price:this.price,
 					imeb_id:this.imeb_id, fn:this.fn, name:this.name, title:this.title,
 					duration:this.duration, minutes:this.minutes, degree:this.degree, category:this.category,
+					composed:this.composed, annees:this.annees, prov:this.prov,
 					isni:this.isni, ctry:this.ctry, id:this.id}];
 
 	this.colors=["#bdc3c7", "#2ecc71", "#f1c40f", "#3498db", "#2C3E50"];
@@ -174,6 +179,10 @@ Particle.prototype.createNewChild=function(obj){
         isni: obj.isni,
         ctry: obj.ctry,
 
+        composed: obj.composed,
+        annees: obj.annees,
+        prov: obj.prov,
+
         id: obj.id,
 
         x:this.x-radius+Math.random()*(radius*2),
@@ -213,9 +222,14 @@ Particle.prototype.getInfoFrom=function(target){
 
 	var blocks = [];
 
-	var work = val(target.title);
-	var duration = val(target.duration);
-	if(duration) work = work ? work + ' (' + duration + ')' : '(' + duration + ')';
+	var tete = [];
+	if(val(target.title))    tete.push(escGN(val(target.title)));
+	if(val(target.duration)) tete.push(escGN(val(target.duration)));
+	if(val(target.composed)) tete.push(escGN(val(target.composed)));
+	var work = tete.join(' \u00b7 ');
+
+	var annees = workYearsHtml(val(target.annees), val(target.prov));
+	if(annees) annees = '<span class="sma-lbl">competition and festival</span> ' + annees;
 	blocks.push([work]);
 
 	var misam = val(target.imeb_id);
@@ -223,10 +237,9 @@ Particle.prototype.getInfoFrom=function(target){
 	              ? ' title="MISAM ' + misam.replace(/"/g, '&quot;') + '"' : '';
 
 	blocks.push([val(target.price), val(target.degree) ?
-	             'Degré ' + val(target.degree) : '', val(target.category)]);
+	             'Degree ' + val(target.degree) : '', val(target.category)]);
 
-	var ed = val(target.edition);
-	blocks.push([/^[0-9]{4}$/.test(ed) ? 'Concours ' + ed : '']);
+	blocks.push([annees]);
 
 	for (var b = 0; b < blocks.length; b++) {
 

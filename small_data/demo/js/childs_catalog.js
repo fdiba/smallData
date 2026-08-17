@@ -24,6 +24,10 @@ function Child(config){
 
 	this.isni = config.isni;
 
+	this.composed = config.composed;
+	this.annees = config.annees;
+	this.prov = config.prov;
+
 	this.id=config.id;
 
 	this.radius=3.5*this.scale+Math.random()*1.5;

@@ -153,9 +153,6 @@ th{
 #titles p.sma-blk {
 	margin-top: .9em;
 }
-#titles p .sma-lbl {
-	color: rgba(255, 255, 255, .68);
-}
 #main_table{
 	clear: both;
 	display: flex;

@@ -20,11 +20,21 @@ function compareTitres(a, b){
     }
     return ta < tb ? -1 : (ta > tb ? 1 : 0);
 }
+
+function compareOeuvres(a, b){
+    var ya = parseInt((a && a.y != null) ? a.y : '', 10);
+    var yb = parseInt((b && b.y != null) ? b.y : '', 10);
+    var oka = isFinite(ya), okb = isFinite(yb);
+    if(oka && okb && ya !== yb) return yb - ya;
+    if(oka !== okb) return oka ? -1 : 1;
+    return compareTitres(a, b);
+}
+
 function displayTitlesInfosGN(arr){
 
     var box = $("#titles");
 
-    arr = (arr || []).slice().sort(compareTitres);
+    arr = (arr || []).slice().sort(compareOeuvres);
 
     bindTitlesFold();
     box.empty();

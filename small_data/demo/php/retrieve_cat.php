@@ -1,5 +1,7 @@
 <?php
 
+	require_once(dirname(__FILE__) . '/provenance.php');
+
 	$cat=$_POST['cat'];
 
 	$country = (isset($_POST['country']) && $_POST['country'] !== '') ? intval($_POST['country']) : null;
@@ -35,6 +37,15 @@
 							imeb_music.award_label, imeb_music.award_rank,
 							imeb_music.award_label_2,
 							imeb_music.award_cat, imeb_music.euphonies,
+							imeb_music.editions,
+							CASE
+								WHEN imeb_music.annee_composition IS NULL THEN NULL
+								WHEN imeb_music.annee_composition_fin IS NULL
+								  OR imeb_music.annee_composition_fin = imeb_music.annee_composition
+									THEN imeb_music.annee_composition
+								ELSE CONCAT(imeb_music.annee_composition, \'-\',
+											imeb_music.annee_composition_fin)
+							END AS compose,
 							imeb_music.title, imeb_music.duration, imeb_music.misam,
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
 							imeb_artist.isni AS isni,
@@ -53,6 +64,8 @@
 							ON imeb_artist.id_country = imeb_country.id
 							LEFT JOIN imeb_categorie AS cat
 							ON cat.id = imeb_music.id_categorie');
+
+		list($conc, $fest) = provenanceTout($dbh);
 
 		$arr= array();
 		$rows= array();
@@ -93,7 +106,12 @@
 				else if($euphonies==2)$year=2004;
 				else if($euphonies==3)$year=2010;
 
-				array_push($rows, array($year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni, $ctry, $degre));
+				list($annees, $codes) = provenanceOeuvre((int)$id, $row['editions'],
+														 $row['award_year'], $conc, $fest);
+
+				$compose = $row['compose'] !== null ? $row['compose'] : '';
+
+				array_push($rows, array($year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni, $ctry, $degre, $compose, $annees, $codes));
 
 			}
 
@@ -186,6 +204,8 @@
 							ON imeb_artist.id_country = imeb_country.id'
 							. $where . $ordre);
 
+		list($conc, $fest) = provenanceTout($dbh);
+
 		$arr= array();
 		while($row = $sth->fetch()) {
 
@@ -203,9 +223,13 @@
 
 			$editeur = $row['editeur'] ? $row['editeur'] : '';
 
+			list($annees, $codes) = provenanceOeuvre((int)$row['id'], $row['editions'],
+													 $row['award_year'], $conc, $fest);
+
 			array_push($arr, $row['misam'], $row['firstName'], $row['name'],
 						$row['id_artist'], $row['title'], $row['duration'], $row['id'],
-						$ctry, $isni, $editions, $award, $festival, $compose, $editeur);
+						$ctry, $isni, $editions, $award, $festival, $compose, $editeur,
+						$annees, $codes);
 
 		}
 

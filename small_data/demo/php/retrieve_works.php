@@ -1,5 +1,7 @@
 <?php
 
+	require_once(dirname(__FILE__) . '/provenance.php');
+
 	retrieve_works();
 
 function retrieve_works(){
@@ -20,6 +22,15 @@ function retrieve_works(){
 							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry,
 							co.coauteurs AS coauteurs,
 							imeb_music.award_ordre AS award_ordre,
+							imeb_music.editions AS editions,
+							CASE
+								WHEN imeb_music.annee_composition IS NULL THEN NULL
+								WHEN imeb_music.annee_composition_fin IS NULL
+								  OR imeb_music.annee_composition_fin = imeb_music.annee_composition
+									THEN imeb_music.annee_composition
+								ELSE CONCAT(imeb_music.annee_composition, \'-\',
+											imeb_music.annee_composition_fin)
+							END AS compose,
 							\'concours\' AS evenement,
 							CASE
 								WHEN imeb_music.award_cat = \'Résidence\' THEN \'I\'
@@ -64,6 +75,7 @@ function retrieve_works(){
 							COALESCE(NULLIF(pays.c_name_en, \'\'), pays.c_name),
 							cod.coauteurs,
 							NULL,
+							NULL, NULL,
 							COALESCE(catd.evenement, \'concours\'),
 							CASE
 								WHEN d.type = \'residence\'   THEN \'I\'
@@ -110,12 +122,15 @@ function retrieve_works(){
 							NULL,
 							NULL,
 							NULL,
+							NULL, NULL,
 							COALESCE(cat.evenement, \'concours\'),
 							CASE WHEN c.annee >= 1988 THEN \'II\' ELSE NULL END
 							FROM imeb_non_attribution n
 							INNER JOIN imeb_pv p2 ON p2.id = n.id_pv
 							INNER JOIN imeb_concours c ON c.id = p2.id_concours
 							LEFT JOIN imeb_categorie cat ON cat.id = n.id_categorie');
+
+		list($conc, $fest) = provenanceTout($dbh);
 
 		$arr= array();
 		while($row = $sth->fetch()) {
@@ -156,9 +171,15 @@ function retrieve_works(){
 
 			if($award_year!=null){
 
+				list($annees, $codes) = provenanceOeuvre((int)$id, $row['editions'],
+														 $award_year, $conc, $fest);
+
+				$compose = $row['compose'] !== null ? $row['compose'] : '';
+
 				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat,
 							$award_cat2, $ctry, $isni, $award_label, $award_rank, $award_label2,
-							$coauteurs, $award_ordre, $evenement, $degre);
+							$coauteurs, $award_ordre, $evenement, $degre,
+							$compose, $annees, $codes);
 
 			}
 

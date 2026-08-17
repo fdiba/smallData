@@ -316,6 +316,9 @@ ul{
 }
 #titles .ed-comp{ cursor: help; }
 #titles .t-work[title]{ cursor: help; }
+#titles p .sma-lbl{
+	color: rgba(255, 255, 255, .68);
+}
 #titles.t-boxed.t-hd-on{
 	padding-top: 0;
 }
