@@ -248,8 +248,14 @@ function linkTitle(d){
   var parts = [];
   var yrs = sortedKeys(d.years || {});
   var eds = sortedKeys(d.editions || {});
-  if(yrs.length) parts.push("awarded " + yrs.join(", "));
-  if(eds.length) parts.push("festival " + eds.join(", "));
+
+  var autres = [];
+  for(var k = 0; k < eds.length; k++){
+    if(yrs.indexOf(eds[k]) < 0) autres.push(eds[k]);
+  }
+
+  if(yrs.length)    parts.push("awarded " + yrs.join(", "));
+  if(autres.length) parts.push("also entered " + autres.join(", "));
   if(parts.length) txt += " (" + parts.join(" · ") + ")";
 
   return txt;
