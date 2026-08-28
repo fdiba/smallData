@@ -141,9 +141,10 @@ LineChart.prototype.retrieveData = function(cId, year, value){
         var arr=str.split("%");
         composers=[];
 
-        for (var i=0; i<arr.length-5; i+=6) {
+        for (var i=0; i<arr.length-7; i+=8) {
             composers.push({id:arr[i], fn:arr[i+1], n:arr[i+2], y:arr[i+3],
-                            isni:arr[i+4], origin:arr[i+5], ctry:sl_ctry});
+                            isni:arr[i+4], origin:arr[i+5], ctry:sl_ctry,
+                            ne:arr[i+6], mo:arr[i+7]});
         }
 
         getNumComposersInCapsulesAndTitles(cId, year, composers);

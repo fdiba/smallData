@@ -65,6 +65,8 @@ var yearSelection=false;
 var lastComposerSelected="";
 var lastComposerCtry='';
 var lastComposerOrigin='';
+var lastComposerNe='';
+var lastComposerMo='';
 
 var numTitlesByArtist=[];
 var maxChartWidth;
@@ -282,7 +284,11 @@ function displayComposerBox(){
         return;
     }
 
-    box.html('<p>'+(typeof esc === 'function' ? esc(who) : who)+'</p>');
+    var vie = (typeof datesDeVieGN === 'function')
+              ? datesDeVieGN(lastComposerNe, lastComposerMo) : '';
+    var tete = who + (vie ? ' \u00b7 ' + vie : '');
+
+    box.html('<p>'+(typeof esc === 'function' ? esc(tete) : tete)+'</p>');
 
     if(typeof countryLineHtml === 'function'){
         box.append(countryLineHtml(lastComposerOrigin, lastComposerCtry));
@@ -350,6 +356,8 @@ function appendComposerLi(obj, count, inSelectedEdition){
 
         if(obj.ctry)   li.attr('data-ctry', obj.ctry);
         if(obj.origin) li.attr('data-origin', obj.origin);
+        if(obj.ne)     li.attr('data-ne', obj.ne);
+        if(obj.mo)     li.attr('data-mo', obj.mo);
 
         li.click(function(event) {
             var el = $(event.target);
@@ -359,6 +367,8 @@ function appendComposerLi(obj, count, inSelectedEdition){
             lastComposerIsni = el.attr('data-isni') || '';
             lastComposerCtry = el.attr('data-ctry') || '';
             lastComposerOrigin = el.attr('data-origin') || '';
+            lastComposerNe = el.attr('data-ne') || '';
+            lastComposerMo = el.attr('data-mo') || '';
         });
     }
 
@@ -396,6 +406,8 @@ function clearWorkPanel(){
     lastComposerIsni     = '';
     lastComposerCtry     = '';
     lastComposerOrigin   = '';
+    lastComposerNe       = '';
+    lastComposerMo       = '';
     titles = [];
 
     $('#composers').empty();

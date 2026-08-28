@@ -151,6 +151,13 @@
 #results p.no-index:hover{
 	text-decoration: none;
 }
+#results p.no-index[data-id]{
+	cursor: pointer;
+}
+#results p.no-index[data-id]:hover{
+	color: var(--sd-midnight);
+	text-decoration: underline;
+}
 #results p.fest-only{
 	color: var(--sd-asbestos);
 	font-style: italic;

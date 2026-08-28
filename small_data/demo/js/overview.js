@@ -273,9 +273,7 @@ function selectionHtml(arr){
     if(nFest > 0) parts.push(nFest + ' festival' + (nFest === 1 ? '' : 's'));
     if(nComp > 0) parts.push(nComp + ' competition' + (nComp === 1 ? '' : 's'));
 
-    var ne = $.trim(arr[7] || ''), mo = $.trim(arr[8] || '');
-    var vie = (ne && mo) ? (ne + '-' + mo)
-            : (ne ? ('b. ' + ne) : (mo ? ('d. ' + mo) : ''));
+    var vie = datesDeVieGN(arr[7], arr[8]);
 
     var head = $.trim(esc(who) + ' ' + where);
     if(vie) head += ' \u00b7 ' + esc(vie);
@@ -750,7 +748,10 @@ function getSearchTerms(){
                 createComposersListing(numOfElements);
 
                 var c0 = indexCountFor(composers[0]);
-                if(c0>=0 && resultIsListed(c0)) showAndHighlightComposer(composers[0]);
+                if(resultIsListed(c0)){
+                    if(c0>=0) showAndHighlightComposer(composers[0]);
+                    else      showFestivalComposer(composers[0]);
+                }
 
             } else {
 
@@ -835,7 +836,7 @@ function createComposersListing(num){
         showAndHighlightComposer($(this).attr('data-id'));
     });
 
-    $("#results p.fest-only").click(function() {
+    $("#results p.fest-only, #results p.no-index[data-id]").click(function() {
         showFestivalComposer($(this).attr('data-id'));
     });
 

@@ -95,6 +95,15 @@ function escGN(s){
         .replace(/"/g, '&quot;');
 }
 
+function datesDeVieGN(ne, mo){
+    ne = (typeof $ !== 'undefined' && $.trim) ? $.trim(ne || '') : String(ne || '');
+    mo = (typeof $ !== 'undefined' && $.trim) ? $.trim(mo || '') : String(mo || '');
+    if(ne && mo) return ne + '-' + mo;
+    if(ne)       return 'b. ' + ne;
+    if(mo)       return 'd. ' + mo;
+    return '';
+}
+
 var WORK_MARQUE = {'1':'', '2':'+', '3':'°', '4':'*', '5':''};
 var WORK_CLASSE = {'1':'ed-comp', '2':'ed-both', '3':'ed-fest', '4':'ed-loose', '5':'ed-post'};
 
@@ -166,6 +175,8 @@ function displayFirstnameAndNameGN(obj){
 
     var txt = obj.fn+' '+obj.n;
     var isni = obj.isni ? $.trim(obj.isni) : '';
+    var vie  = datesDeVieGN(obj.ne, obj.mo);
+    if(vie) txt += ' \u00b7 ' + vie;
 
     $("#selection").empty().append('<p>');
     $("#selection p").text(txt);

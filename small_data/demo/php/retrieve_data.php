@@ -312,6 +312,7 @@
 		list($conc, $fest, $deces) = provenanceParArtiste($dbh, $aId);
 
 		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name, imeb_artist.isni,
+							imeb_artist.annee_naissance, imeb_artist.annee_deces,
 							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS \'ctry\',
 							COALESCE(NULLIF(orig.c_name_en, \'\'), orig.c_name) AS \'origin\',
 							imeb_music.id, imeb_music.title, imeb_music.duration,
@@ -339,7 +340,7 @@
 													 $row['award_year'], $conc, $fest, $deces);
 
 			if(strlen($str_all)>0) $str_all .=  "%";
-			$str_all .= $row['id'] . "%" . $row['title'] . "%" . $row['duration'] . "%" . $row['misam'] . "%" . $row['annee_composition'] . "%" . $annees . "%" . $codes . "%" . $row['firstName'] . "%" . $row['name'] . "%" . ($row['isni'] === null ? '' : $row['isni']) . "%" . ($row['ctry'] === null ? '' : $row['ctry']) . "%" . ($row['origin'] === null ? '' : $row['origin']);
+			$str_all .= $row['id'] . "%" . $row['title'] . "%" . $row['duration'] . "%" . $row['misam'] . "%" . $row['annee_composition'] . "%" . $annees . "%" . $codes . "%" . $row['firstName'] . "%" . $row['name'] . "%" . ($row['isni'] === null ? '' : $row['isni']) . "%" . ($row['ctry'] === null ? '' : $row['ctry']) . "%" . ($row['origin'] === null ? '' : $row['origin']) . "%" . ($row['annee_naissance'] === null ? '' : $row['annee_naissance']) . "%" . ($row['annee_deces'] === null ? '' : $row['annee_deces']);
 		}
 
 		echo $str_all;
@@ -391,6 +392,7 @@
 
 		$sth = $dbh->prepare('SELECT imeb_artist.id AS a_id, imeb_artist.firstName,
 							imeb_artist.name, imeb_artist.isni,
+							imeb_artist.annee_naissance, imeb_artist.annee_deces,
 							COALESCE(NULLIF(orig.c_name_en, \'\'), orig.c_name) AS \'origin\',
 							(SELECT COUNT(*) FROM imeb_music m
 								WHERE m.id_artist = imeb_artist.id
@@ -422,6 +424,8 @@
 			$name      = $row['name'];
 			$isni      = ($row['isni']   === null ? '' : $row['isni']);
 			$origin    = ($row['origin'] === null ? '' : $row['origin']);
+			$ne        = ($row['annee_naissance'] === null ? '' : $row['annee_naissance']);
+			$mo        = ($row['annee_deces']     === null ? '' : $row['annee_deces']);
 
 			if(!$tout && (int)$row['nb'] < 1){
 				$a_id      = '';
@@ -429,10 +433,12 @@
 				$name      = maskName($name);
 				$isni      = '';
 				$origin    = '';
+				$ne        = '';
+				$mo        = '';
 			}
 
 			if(strlen($str_all)>0) $str_all .=  "%";
-			$str_all .= $a_id . "%" . $firstName . "%" . $name . "%" . $row['ed'] . "%" . $isni . "%" . $origin;
+			$str_all .= $a_id . "%" . $firstName . "%" . $name . "%" . $row['ed'] . "%" . $isni . "%" . $origin . "%" . $ne . "%" . $mo;
 		}
 
 		echo $str_all;
