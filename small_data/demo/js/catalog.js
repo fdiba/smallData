@@ -31,10 +31,10 @@ window.onload = function() {
         initSMA(1210, SMA_H_FULL);
         startSMA();
         buildCountryMenu();
-        retrieveData(cat, 17, '');
+        retrieveData(cat, 19, '');
 
     } else {
-        retrieveData(-999, 17);
+        retrieveData(-999, 19);
     }
 
 };
@@ -72,7 +72,8 @@ function retrieveData(cat, numOfElements, country){
                         festival: arr[k+11], composed: arr[k+12],
                         publisher: arr[k+13],
                         annees: arr[k+14], prov: arr[k+15],
-                        concours: arr[k+16]});
+                        concours: arr[k+16],
+                        ne: arr[k+17], mo: arr[k+18]});
         }
         var total = works.length;
 
@@ -148,6 +149,7 @@ function retrieveData(cat, numOfElements, country){
                                   title: w.title, duration: w.duration,
                                   minutes: minutesGN(w.duration),
                                   ctry: w.ctry, isni: w.isni,
+                                  ne: w.ne, mo: w.mo,
                                   editions: w.editions,
                                   composed: w.composed,
                                   annees: w.annees, prov: w.prov});
@@ -317,7 +319,7 @@ function selectCountry(cid, name, liEl){
     $("#countries ul li").css("font-weight", "normal");
     if(liEl) liEl.css("font-weight", "bold");
     $("#cookies").empty().append('<p>country: ' + name + '</p>');
-    retrieveData(_catId, 17, cid);
+    retrieveData(_catId, 19, cid);
     ecrirePaysDansLUrl(liEl ? liEl.attr('data-iso') : isoDuCid(cid));
 }
 
@@ -364,6 +366,6 @@ function showFullTable(){
     clearCatalogTable();
     $("#countries ul li").css("font-weight", "normal");
     $("#countries ul li.all-works").css("font-weight", "bold");
-    retrieveData(_catId, 17, '');
+    retrieveData(_catId, 19, '');
     ecrirePaysDansLUrl(null);
 }

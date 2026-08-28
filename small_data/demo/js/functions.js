@@ -231,6 +231,8 @@ function displaySmaIdentityGN(target){
     var t   = function(v){ return $.trim(v == null ? '' : String(v)); };
 
     var who = $.trim(t(target.fn) + ' ' + t(target.name));
+    var vie = datesDeVieGN(target.ne, target.mo);
+    if(vie) who += ' \u00b7 ' + vie;
 
     $("#selection").empty().append('<p>');
     $("#selection p").text(who);

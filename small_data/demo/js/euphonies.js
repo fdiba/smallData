@@ -2,7 +2,7 @@ window.onload = function() {
 
     initSMA(1210, 300);
 
-    retrieveEuphonies(3, 17);
+    retrieveEuphonies(3, 19);
 
 };
 function retrieveEuphonies(cat, numOfElements){
@@ -25,7 +25,8 @@ function retrieveEuphonies(cat, numOfElements){
                         minutes:minutesGN(arr[i+7]), id:arr[i+8],
                         degree:arr[i+13], category:arr[i+10], isni:arr[i+11],
                         ctry:arr[i+12],
-                        composed:arr[i+14], annees:arr[i+15], prov:arr[i+16]};
+                        composed:arr[i+14], annees:arr[i+15], prov:arr[i+16],
+                        ne:arr[i+17], mo:arr[i+18]};
 
             records.push(obj);
 

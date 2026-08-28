@@ -34,7 +34,7 @@ function parseWorks(str){
 
     var arr = str.split("%");
 
-    var numOfElements = 22;
+    var numOfElements = 24;
     var objects = [];
 
     for (var i = 0; i < arr.length-(numOfElements-1); i+=numOfElements) {
@@ -66,6 +66,7 @@ function parseWorks(str){
                        degre:arr[i+18], duration:arr[i+6], id:arr[i+7],
                        ctry:arr[i+10], isni:arr[i+11],
                        composed:arr[i+19], annees:arr[i+20], prov:arr[i+21],
+                       ne:arr[i+22], mo:arr[i+23],
                        coauth:parseCoauteurs(arr[i+15]) });
     }
     return objects;
@@ -203,7 +204,8 @@ function renderSelection(works){
                            imeb_id:o.misam, fn:o.fn, name:o.name, title:o.title,
                            duration:o.duration, minutes:minutesGN(o.duration),
                            composed:o.composed, annees:o.annees, prov:o.prov,
-                           ctry:o.ctry, isni:o.isni, id:o.id });
+                           ctry:o.ctry, isni:o.isni, id:o.id,
+                           ne:o.ne, mo:o.mo });
         }
         $("#myCanvas").show();
         $("#infos").show();

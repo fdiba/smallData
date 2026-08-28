@@ -36,7 +36,9 @@ function retrieve_works(){
 								WHEN imeb_music.award_cat = \'Résidence\' THEN \'I\'
 								WHEN imeb_music.award_cat = \'Magistère\' THEN \'III\'
 								WHEN imeb_music.award_year >= 1988        THEN \'II\'
-								ELSE NULL END AS degre
+								ELSE NULL END AS degre,
+							imeb_artist.annee_naissance AS ne,
+							imeb_artist.annee_deces AS mo
 							FROM imeb_music
 							INNER JOIN imeb_artist
 							ON imeb_music.id_artist = imeb_artist.id
@@ -81,7 +83,8 @@ function retrieve_works(){
 								WHEN d.type = \'residence\'   THEN \'I\'
 								WHEN d.type = \'magisterium\' THEN \'III\'
 								WHEN c.annee >= 1988          THEN \'II\'
-								ELSE NULL END
+								ELSE NULL END,
+							a.annee_naissance, a.annee_deces
 							FROM imeb_distinction d
 							INNER JOIN imeb_bande b ON b.id = d.id_bande
 							INNER JOIN imeb_pv p ON p.id = b.id_pv
@@ -124,7 +127,8 @@ function retrieve_works(){
 							NULL,
 							NULL, NULL,
 							COALESCE(cat.evenement, \'concours\'),
-							CASE WHEN c.annee >= 1988 THEN \'II\' ELSE NULL END
+							CASE WHEN c.annee >= 1988 THEN \'II\' ELSE NULL END,
+							NULL, NULL
 							FROM imeb_non_attribution n
 							INNER JOIN imeb_pv p2 ON p2.id = n.id_pv
 							INNER JOIN imeb_concours c ON c.id = p2.id_concours
@@ -169,6 +173,9 @@ function retrieve_works(){
 
 			$degre = $row['degre'] !== null ? $row['degre'] : '';
 
+			$ne = $row['ne'] !== null ? $row['ne'] : '';
+			$mo = $row['mo'] !== null ? $row['mo'] : '';
+
 			if($award_year!=null){
 
 				list($annees, $codes) = provenanceOeuvre((int)$id, $row['editions'],
@@ -179,7 +186,7 @@ function retrieve_works(){
 				array_push($arr, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat,
 							$award_cat2, $ctry, $isni, $award_label, $award_rank, $award_label2,
 							$coauteurs, $award_ordre, $evenement, $degre,
-							$compose, $annees, $codes);
+							$compose, $annees, $codes, $ne, $mo);
 
 			}
 

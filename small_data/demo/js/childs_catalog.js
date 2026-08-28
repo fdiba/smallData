@@ -27,6 +27,8 @@ function Child(config){
 	this.composed = config.composed;
 	this.annees = config.annees;
 	this.prov = config.prov;
+	this.ne = config.ne;
+	this.mo = config.mo;
 
 	this.id=config.id;
 

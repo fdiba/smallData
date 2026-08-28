@@ -50,6 +50,8 @@ function Particle(config){
 	this.composed = config.composed;
 	this.annees = config.annees;
 	this.prov = config.prov;
+	this.ne = config.ne;
+	this.mo = config.mo;
 
 	this.isni = config.isni;
 
@@ -61,7 +63,7 @@ function Particle(config){
 					duration:this.duration, minutes:this.minutes, editions:this.editions,
 					composed:this.composed, annees:this.annees, prov:this.prov,
 					cat:this.cat, sub_cat:this.sub_cat,
-					isni:this.isni, id:this.id}];
+					isni:this.isni, id:this.id, ne:this.ne, mo:this.mo}];
 
 	this.colors=["#bdc3c7", "#2ecc71", "#f1c40f", "#3498db", "#2C3E50"];
 
@@ -182,6 +184,8 @@ Particle.prototype.createNewChild=function(obj){
         composed: obj.composed,
         annees: obj.annees,
         prov: obj.prov,
+        ne: obj.ne,
+        mo: obj.mo,
 
         id: obj.id,
 

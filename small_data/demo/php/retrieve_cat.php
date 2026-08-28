@@ -50,6 +50,8 @@
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
 							imeb_artist.isni AS isni,
 							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry,
+							imeb_artist.annee_naissance AS ne,
+							imeb_artist.annee_deces AS mo,
 							cat.libelle AS sous_cat,
 							CASE
 								WHEN imeb_music.award_cat = \'Résidence\' THEN \'I\'
@@ -111,7 +113,9 @@
 
 				$compose = $row['compose'] !== null ? $row['compose'] : '';
 
-				array_push($rows, array($year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni, $ctry, $degre, $compose, $annees, $codes));
+				array_push($rows, array($year, $award_year, $award_price, $misam, $firstName, $name, $title, $duration, $id, $award_cat, $award_sub_cat, $isni, $ctry, $degre, $compose, $annees, $codes,
+									($row['ne'] === null ? '' : $row['ne']),
+									($row['mo'] === null ? '' : $row['mo'])));
 
 			}
 
@@ -179,6 +183,8 @@
 							imeb_artist.firstName, imeb_artist.name, imeb_music.id,
 							imeb_artist.id AS id_artist,
 							imeb_artist.isni AS isni,
+							imeb_artist.annee_naissance AS ne,
+							imeb_artist.annee_deces AS mo,
 							imeb_music.editions, imeb_music.award_year,
 							CASE
 								WHEN imeb_music.annee_composition IS NULL THEN NULL
@@ -235,7 +241,9 @@
 			array_push($arr, $row['misam'], $row['firstName'], $row['name'],
 						$row['id_artist'], $row['title'], $row['duration'], $row['id'],
 						$ctry, $isni, $editions, $award, $festival, $compose, $editeur,
-						$annees, $codes, $concours);
+						$annees, $codes, $concours,
+						($row['ne'] === null ? '' : $row['ne']),
+						($row['mo'] === null ? '' : $row['mo']));
 
 		}
 
