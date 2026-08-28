@@ -174,7 +174,8 @@
 #titles li.t-b{ background: #8145a0; }
 #selection .ed-fest,
 #selection .ed-both,
-#selection .ed-loose{
+#selection .ed-loose,
+#selection .ed-post{
 	border-bottom: 1px dotted currentColor;
 	cursor: help;
 }

@@ -310,7 +310,8 @@ ul{
 }
 #titles .ed-fest,
 #titles .ed-both,
-#titles .ed-loose{
+#titles .ed-loose,
+#titles .ed-post{
 	border-bottom: 1px dotted currentColor;
 	cursor: help;
 }

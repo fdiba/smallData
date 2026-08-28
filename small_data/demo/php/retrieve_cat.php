@@ -65,7 +65,7 @@
 							LEFT JOIN imeb_categorie AS cat
 							ON cat.id = imeb_music.id_categorie');
 
-		list($conc, $fest) = provenanceTout($dbh);
+		list($conc, $fest, $deces) = provenanceTout($dbh);
 
 		$arr= array();
 		$rows= array();
@@ -107,7 +107,7 @@
 				else if($euphonies==3)$year=2010;
 
 				list($annees, $codes) = provenanceOeuvre((int)$id, $row['editions'],
-														 $row['award_year'], $conc, $fest);
+														 $row['award_year'], $conc, $fest, $deces);
 
 				$compose = $row['compose'] !== null ? $row['compose'] : '';
 
@@ -208,7 +208,7 @@
 							ON imeb_artist.id_country = imeb_country.id'
 							. $where . $ordre);
 
-		list($conc, $fest) = provenanceTout($dbh);
+		list($conc, $fest, $deces) = provenanceTout($dbh);
 
 		$arr= array();
 		while($row = $sth->fetch()) {
@@ -230,7 +230,7 @@
 			$editeur = $row['editeur'] ? $row['editeur'] : '';
 
 			list($annees, $codes) = provenanceOeuvre((int)$row['id'], $row['editions'],
-													 $row['award_year'], $conc, $fest);
+													 $row['award_year'], $conc, $fest, $deces);
 
 			array_push($arr, $row['misam'], $row['firstName'], $row['name'],
 						$row['id_artist'], $row['title'], $row['duration'], $row['id'],

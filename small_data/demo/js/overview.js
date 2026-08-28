@@ -265,15 +265,20 @@ function selectionHtml(arr){
     for(var ic = 0; ic < ans.length; ic++){
         var code = cls[ans[ic]] || '1l';
         var etat = code.charAt(0);
-        if(etat !== '3') nComp++;
-        if(etat === '2' || etat === '3') nFest++;
+        if(etat !== '3' && etat !== '5') nComp++;
+        if(etat === '2' || etat === '3' || etat === '5') nFest++;
     }
 
     var parts = [];
     if(nFest > 0) parts.push(nFest + ' festival' + (nFest === 1 ? '' : 's'));
     if(nComp > 0) parts.push(nComp + ' competition' + (nComp === 1 ? '' : 's'));
 
+    var ne = $.trim(arr[7] || ''), mo = $.trim(arr[8] || '');
+    var vie = (ne && mo) ? (ne + '-' + mo)
+            : (ne ? ('b. ' + ne) : (mo ? ('d. ' + mo) : ''));
+
     var head = $.trim(esc(who) + ' ' + where);
+    if(vie) head += ' \u00b7 ' + esc(vie);
     if(parts.length) head += ' \u00b7 ' + parts.join(' \u00b7 ');
 
     return '<p class="s-hd"><button type="button" class="s-toggle" aria-expanded="false">'
@@ -323,8 +328,10 @@ function editionsHtml(eds, provenance){
         }
     }
 
-    var MARQUE = {'1':'', '2':'+', '3':'°', '4':'*'};
-    var CLASSE = {'1':'ed-comp', '2':'ed-both', '3':'ed-fest', '4':'ed-loose'};
+    var MARQUE = {'1':'', '2':'+', '3':'°', '4':'*', '5':''};
+    var CLASSE = {'1':'ed-comp', '2':'ed-both', '3':'ed-fest', '4':'ed-loose', '5':'ed-post'};
+
+    var AVANT = {'5':'†'};
 
     var PIECE = {
         'c': "bailiff's record",
@@ -337,7 +344,8 @@ function editionsHtml(eds, provenance){
         '1': 'competition',
         '2': 'competition + festival',
         '3': 'festival only',
-        '4': 'competition, no document'
+        '4': 'competition, no document',
+        '5': 'festival only · posthumous'
     };
 
     var out = [];
@@ -350,11 +358,12 @@ function editionsHtml(eds, provenance){
         var c = code.charAt(0), p = code.charAt(1) || 'l';
         if(!MARQUE.hasOwnProperty(c)) c = '1';
 
-        var redite = (c === '3' && p === 'o') || (c === '4' && p === 't');
+        var redite = (c === '3' && p === 'o') || (c === '4' && p === 't')
+                  || (c === '5' && p === 'o');
         var titre = ETAT[c] + ((PIECE[p] && !redite) ? ' · ' + PIECE[p] : '');
 
         out.push('<span class="' + CLASSE[c] + '" title="' + esc(titre) + '">'
-                 + esc(a) + MARQUE[c] + '</span>');
+                 + (AVANT[c] || '') + esc(a) + MARQUE[c] + '</span>');
     }
     return out.join(', ');
 }
@@ -706,13 +715,14 @@ function getSearchTerms(){
 
     var terms = $('#searchTerms').val();
 
+    pAId = -1;
+    newResults = false;
     clearSelection('no selection');
     $("#titles").empty();
+    repaintAllRects();
 
     if(terms==""){
         $("#results").empty();
-        repaintAllRects();
-        newResults=false;
         return;
     }
 

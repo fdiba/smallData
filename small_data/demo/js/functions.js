@@ -95,14 +95,17 @@ function escGN(s){
         .replace(/"/g, '&quot;');
 }
 
-var WORK_MARQUE = {'1':'', '2':'+', '3':'°', '4':'*'};
-var WORK_CLASSE = {'1':'ed-comp', '2':'ed-both', '3':'ed-fest', '4':'ed-loose'};
+var WORK_MARQUE = {'1':'', '2':'+', '3':'°', '4':'*', '5':''};
+var WORK_CLASSE = {'1':'ed-comp', '2':'ed-both', '3':'ed-fest', '4':'ed-loose', '5':'ed-post'};
+
+var WORK_AVANT = {'5':'†'};
 
 var WORK_ETAT = {
     '1': 'competition',
     '2': 'competition + festival',
     '3': 'festival only',
-    '4': 'competition, no document'
+    '4': 'competition, no document',
+    '5': 'festival only · posthumous'
 };
 var WORK_PIECE = {
     'a': 'prize awarded',
@@ -140,7 +143,7 @@ function workYearsHtml(annees, provenance){
         var titre  = WORK_ETAT[c] + (redite ? '' : ' · ' + WORK_PIECE[q]);
 
         out.push('<span class="' + WORK_CLASSE[c] + '" title="' + escGN(titre) + '">'
-                 + escGN(a) + WORK_MARQUE[c] + '</span>');
+                 + (WORK_AVANT[c] || '') + escGN(a) + WORK_MARQUE[c] + '</span>');
     }
 
     return out.join(', ');

@@ -130,7 +130,7 @@ function retrieve_works(){
 							INNER JOIN imeb_concours c ON c.id = p2.id_concours
 							LEFT JOIN imeb_categorie cat ON cat.id = n.id_categorie');
 
-		list($conc, $fest) = provenanceTout($dbh);
+		list($conc, $fest, $deces) = provenanceTout($dbh);
 
 		$arr= array();
 		while($row = $sth->fetch()) {
@@ -172,7 +172,7 @@ function retrieve_works(){
 			if($award_year!=null){
 
 				list($annees, $codes) = provenanceOeuvre((int)$id, $row['editions'],
-														 $award_year, $conc, $fest);
+														 $award_year, $conc, $fest, $deces);
 
 				$compose = $row['compose'] !== null ? $row['compose'] : '';
 

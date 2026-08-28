@@ -185,6 +185,7 @@
 		$result = "no result";
 
 		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name, imeb_artist.isni,
+							imeb_artist.annee_naissance, imeb_artist.annee_deces,
 							COALESCE(NULLIF(imeb_country.iso3, \'\'), NULLIF(imeb_country.iso2, \'\'), NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS \'ctry\',
 							COALESCE(NULLIF(orig.iso3, \'\'), NULLIF(orig.iso2, \'\'), NULLIF(orig.c_name_en, \'\'), orig.c_name) AS \'origin\',
 							GROUP_CONCAT(imeb_participation.annee
@@ -200,6 +201,7 @@
 						WHERE imeb_artist.id = ?
 						GROUP BY imeb_artist.id, imeb_artist.firstName,
 								 imeb_artist.name, imeb_artist.isni,
+								 imeb_artist.annee_naissance, imeb_artist.annee_deces,
 								 imeb_country.id, imeb_country.c_name_en,
 								 imeb_country.c_name, imeb_country.iso3,
 								 imeb_country.iso2, orig.c_name_en,
@@ -239,6 +241,9 @@
 			$sthQ->execute(array((int)$aId));
 			$sthQ->setFetchMode(PDO::FETCH_ASSOC);
 
+			$mort = ($row['annee_deces'] === null || $row['annee_deces'] === '')
+					? null : (int)$row['annee_deces'];
+
 			$prov = array();
 			while($q = $sthQ->fetch()){
 				$y = (string)$q['annee'];
@@ -255,17 +260,21 @@
 				elseif($festival)               $c = 3;
 				else                            $c = 4;
 
+				if($c === 3 && $mort !== null && (int)$y > $mort) $c = 5;
+
 				if($q['source'] === 'constat')                             $p = 'c';
 				elseif(isset($aw[$y]))                                     $p = 'a';
 				elseif($q['source'] === 'liste' || (int)$q['cite_par_liste'] === 1) $p = 'l';
-				elseif($c === 3)                                           $p = 'o';
+				elseif($c === 3 || $c === 5)                               $p = 'o';
 				else                                                       $p = 't';
 
 				$prov[$y] = $c . $p;
 			}
 
 			foreach($fe as $y => $v){
-				if(!isset($prov[$y])) $prov[$y] = '3o';
+				if(!isset($prov[$y])){
+					$prov[$y] = (($mort !== null && (int)$y > $mort) ? '5o' : '3o');
+				}
 			}
 
 			$annees = array();
@@ -287,7 +296,9 @@
 					  . '%' . $str_editions
 					  . '%' . ($row['isni'] === null ? '' : $row['isni'])
 					  . '%' . ($row['origin'] === null ? '' : $row['origin'])
-					  . '%' . $str_festival;
+					  . '%' . $str_festival
+					  . '%' . ($row['annee_naissance'] === null ? '' : $row['annee_naissance'])
+					  . '%' . ($row['annee_deces'] === null ? '' : $row['annee_deces']);
 
 		}
 
@@ -298,7 +309,7 @@
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
-		list($conc, $fest) = provenanceParArtiste($dbh, $aId);
+		list($conc, $fest, $deces) = provenanceParArtiste($dbh, $aId);
 
 		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name, imeb_artist.isni,
 							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS \'ctry\',
@@ -325,7 +336,7 @@
 		while($row = $sth->fetch()) {
 
 			list($annees, $codes) = provenanceOeuvre((int)$row['id'], $row['editions'],
-													 $row['award_year'], $conc, $fest);
+													 $row['award_year'], $conc, $fest, $deces);
 
 			if(strlen($str_all)>0) $str_all .=  "%";
 			$str_all .= $row['id'] . "%" . $row['title'] . "%" . $row['duration'] . "%" . $row['misam'] . "%" . $row['annee_composition'] . "%" . $annees . "%" . $codes . "%" . $row['firstName'] . "%" . $row['name'] . "%" . ($row['isni'] === null ? '' : $row['isni']) . "%" . ($row['ctry'] === null ? '' : $row['ctry']) . "%" . ($row['origin'] === null ? '' : $row['origin']);
@@ -338,7 +349,7 @@
 
 		require(dirname($_SERVER['DOCUMENT_ROOT']) . '/access/connexion.php');
 
-		list($conc, $fest) = provenanceParArtiste($dbh, $aId);
+		list($conc, $fest, $deces) = provenanceParArtiste($dbh, $aId);
 
 		$sth = $dbh->prepare('SELECT imeb_artist.firstName, imeb_artist.name,
 							imeb_music.id, imeb_music.title, imeb_music.duration,
@@ -359,7 +370,7 @@
 		while($row = $sth->fetch()) {
 
 			list($annees, $codes) = provenanceOeuvre((int)$row['id'], $row['editions'],
-													 $row['award_year'], $conc, $fest);
+													 $row['award_year'], $conc, $fest, $deces);
 
 			if(strlen($str_all)>0) $str_all .=  "%";
 			$str_all .= $row['id'] . "%" . $row['title'] . "%" . $row['duration']

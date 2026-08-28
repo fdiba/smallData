@@ -30,15 +30,34 @@
 		return array($conc, $fest);
 	}
 
+	function decesCharger($dbh, $clause = '', $params = array()){
+
+		$deces = array();
+
+		$sth = $dbh->prepare('SELECT m.id AS id_music, a.annee_deces
+								FROM imeb_music m
+								INNER JOIN imeb_artist a ON a.id = m.id_artist
+								WHERE a.annee_deces IS NOT NULL' . $clause);
+		$sth->execute($params);
+		$sth->setFetchMode(PDO::FETCH_ASSOC);
+		while($r = $sth->fetch()){
+			$deces[(int)$r['id_music']] = (int)$r['annee_deces'];
+		}
+
+		return $deces;
+	}
+
 	function provenanceParArtiste($dbh, $aId){
-		return provenanceCharger($dbh, ' WHERE m.id_artist = ?', array((int)$aId));
+		list($conc, $fest) = provenanceCharger($dbh, ' WHERE m.id_artist = ?', array((int)$aId));
+		return array($conc, $fest, decesCharger($dbh, ' AND m.id_artist = ?', array((int)$aId)));
 	}
 
 	function provenanceTout($dbh){
-		return provenanceCharger($dbh);
+		list($conc, $fest) = provenanceCharger($dbh);
+		return array($conc, $fest, decesCharger($dbh));
 	}
 
-	function provenanceOeuvre($id, $editions, $award, $conc, $fest){
+	function provenanceOeuvre($id, $editions, $award, $conc, $fest, $deces){
 
 		$c = isset($conc[$id]) ? $conc[$id] : array();
 		$f = isset($fest[$id]) ? $fest[$id] : array();
@@ -72,6 +91,8 @@
 			elseif($concours)               $etat = 1;
 			elseif($festival)               $etat = 3;
 			else                            $etat = 4;
+
+			if($etat === 3 && isset($deces[$id]) && (int)$y > $deces[$id]) $etat = 5;
 
 			$src = array();
 			if(isset($c[$y])) foreach($c[$y] as $k => $v) $src[$k] = true;
