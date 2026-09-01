@@ -23,12 +23,14 @@ $sth = $dbh->prepare(
 	        award_year, award_price, award_cat, euphonies, statut
 	   FROM imeb_music
 	  WHERE id_artist = ?
+	     OR id IN (SELECT ma.id_music FROM imeb_music_artiste ma
+	                WHERE ma.id_artist = ?)
 	  ORDER BY (misam IS NULL), misam ASC, title ASC"
 );
 
 $works = array();
 
-if($sth && $sth->execute(array($id))){
+if($sth && $sth->execute(array($id, $id))){
 	while($row = $sth->fetch()){
 		$works[] = array(
 			'id'          => (int)$row['id'],

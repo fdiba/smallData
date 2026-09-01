@@ -134,6 +134,19 @@
 			else $arr[$id]=1;
 		}
 
+		$sth = $dbh->query('SELECT ma.id_artist
+							FROM imeb_music_artiste ma
+							INNER JOIN imeb_music m ON m.id = ma.id_music
+							WHERE ma.id_artist IS NOT NULL
+							AND ma.id_artist <> m.id_artist
+							AND m.statut <> \'hors_repertoire\'');
+
+		while($row = $sth->fetch()) {
+			$id=$row['id_artist'];
+			if(isset($arr[$id]))$arr[$id]+=1;
+			else $arr[$id]=1;
+		}
+
 		$numResults;
 
 		$sth = $dbh->query('SELECT imeb_artist.id AS artist_id,
@@ -218,8 +231,11 @@
 
 			$str_editions = implode(", ", $editions);
 
-			$sthP = $dbh->prepare('SELECT award_year FROM imeb_music WHERE id_artist = ?');
-			$sthP->execute(array((int)$aId));
+			$sthP = $dbh->prepare('SELECT award_year FROM imeb_music
+									WHERE id_artist = ?
+									   OR id IN (SELECT ma.id_music FROM imeb_music_artiste ma
+												  WHERE ma.id_artist = ?)');
+			$sthP->execute(array((int)$aId, (int)$aId));
 			$sthP->setFetchMode(PDO::FETCH_ASSOC);
 
 			$aw = array();
@@ -320,7 +336,10 @@
 							imeb_music.annee_composition, imeb_music.award_year
 							FROM imeb_artist
 							INNER JOIN imeb_music
-							ON imeb_artist.id = imeb_music.id_artist
+							ON (imeb_music.id_artist = imeb_artist.id
+								OR EXISTS(SELECT 1 FROM imeb_music_artiste ma
+											WHERE ma.id_music = imeb_music.id
+											  AND ma.id_artist = imeb_artist.id))
 							LEFT JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id
 							LEFT JOIN imeb_country AS orig
@@ -358,7 +377,10 @@
 							imeb_music.annee_composition, imeb_music.award_year
 							FROM imeb_artist
 							INNER JOIN imeb_music
-							ON imeb_artist.id = imeb_music.id_artist
+							ON (imeb_music.id_artist = imeb_artist.id
+								OR EXISTS(SELECT 1 FROM imeb_music_artiste ma
+											WHERE ma.id_music = imeb_music.id
+											  AND ma.id_artist = imeb_artist.id))
 							WHERE imeb_artist.id = ?
 							AND imeb_music.statut <> \'hors_repertoire\'');
 
@@ -395,7 +417,10 @@
 							imeb_artist.annee_naissance, imeb_artist.annee_deces,
 							COALESCE(NULLIF(orig.c_name_en, \'\'), orig.c_name) AS \'origin\',
 							(SELECT COUNT(*) FROM imeb_music m
-								WHERE m.id_artist = imeb_artist.id
+								WHERE (m.id_artist = imeb_artist.id
+										OR EXISTS(SELECT 1 FROM imeb_music_artiste ma
+													WHERE ma.id_music = m.id
+													  AND ma.id_artist = imeb_artist.id))
 								  AND m.statut <> \'hors_repertoire\') AS nb,
 							EXISTS(SELECT 1 FROM imeb_participation p
 									WHERE p.id_artist = imeb_artist.id

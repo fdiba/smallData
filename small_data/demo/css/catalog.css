@@ -239,3 +239,8 @@ th{
 #legend .sq{
 	border-radius: 50%;
 }
+
+.works_table td .work-coauth{
+	font-size: 12px;
+	color: #5a6b6b;
+}

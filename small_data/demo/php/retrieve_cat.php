@@ -206,7 +206,15 @@
 							   FROM imeb_music_registre r
 							   LEFT JOIN imeb_code_b1 c ON c.id = r.id_edition
 							  WHERE r.id_music = imeb_music.id LIMIT 1) AS editeur,
-							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry
+							COALESCE(NULLIF(imeb_country.c_name_en, \'\'), imeb_country.c_name) AS ctry,
+							(SELECT GROUP_CONCAT(CONCAT(
+										TRIM(CONCAT(COALESCE(a9.firstName, \'\'), \' \', a9.name)),
+										\'|\', COALESCE(a9.isni, \'\'))
+									ORDER BY ma9.rang SEPARATOR \';\')
+							   FROM imeb_music_artiste ma9
+							   INNER JOIN imeb_artist a9 ON a9.id = ma9.id_artist
+							  WHERE ma9.id_music = imeb_music.id
+							    AND ma9.id_artist <> imeb_music.id_artist) AS coauteurs
 							FROM imeb_music
 							INNER JOIN imeb_artist
 							ON imeb_music.id_artist = imeb_artist.id
@@ -243,7 +251,8 @@
 						$ctry, $isni, $editions, $award, $festival, $compose, $editeur,
 						$annees, $codes, $concours,
 						($row['ne'] === null ? '' : $row['ne']),
-						($row['mo'] === null ? '' : $row['mo']));
+						($row['mo'] === null ? '' : $row['mo']),
+						($row['coauteurs'] === null ? '' : $row['coauteurs']));
 
 		}
 

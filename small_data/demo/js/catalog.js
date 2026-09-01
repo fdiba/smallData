@@ -19,6 +19,25 @@ function setCanvasHeight(h){
     context.stroke();
 }
 
+function coauthHtml(champ){
+    var brut = $.trim(champ || '');
+    if(!brut) return '';
+    var parts = brut.split(';');
+    var noms = [];
+    for(var k = 0; k < parts.length; k++){
+        if(!$.trim(parts[k])) continue;
+        var t = parts[k].split('|');
+        var nom = $.trim(t[0]);
+        var isni = $.trim(t[1] || '');
+        noms.push(isni
+            ? '<span class="composer-isni" role="button" tabindex="0" data-isni="'
+              + esc(isni) + '" data-label="' + esc(nom) + '">' + nom + '</span>'
+            : nom);
+    }
+    if(!noms.length) return '';
+    return ' <span class="work-coauth">with ' + noms.join(', ') + '</span>';
+}
+
 var _catId = 0;
 
 window.onload = function() {
@@ -31,10 +50,10 @@ window.onload = function() {
         initSMA(1210, SMA_H_FULL);
         startSMA();
         buildCountryMenu();
-        retrieveData(cat, 19, '');
+        retrieveData(cat, 20, '');
 
     } else {
-        retrieveData(-999, 19);
+        retrieveData(-999, 20);
     }
 
 };
@@ -73,7 +92,8 @@ function retrieveData(cat, numOfElements, country){
                         publisher: arr[k+13],
                         annees: arr[k+14], prov: arr[k+15],
                         concours: arr[k+16],
-                        ne: arr[k+17], mo: arr[k+18]});
+                        ne: arr[k+17], mo: arr[k+18],
+                        coauth: arr[k+19]});
         }
         var total = works.length;
 
@@ -187,6 +207,7 @@ function retrieveData(cat, numOfElements, country){
                     titleCell += ' <span class="work-award" title="awarded at the '
                               + w.award + ' competition">&#9733;</span>';
                 }
+                titleCell += coauthHtml(w.coauth);
 
                 var compCell = (_catId === 1 || _catId === 2)
                              ? (w.concours ? w.concours.replace(/\s*,\s*/g, ', ') : '')
@@ -319,7 +340,7 @@ function selectCountry(cid, name, liEl){
     $("#countries ul li").css("font-weight", "normal");
     if(liEl) liEl.css("font-weight", "bold");
     $("#cookies").empty().append('<p>country: ' + name + '</p>');
-    retrieveData(_catId, 19, cid);
+    retrieveData(_catId, 20, cid);
     ecrirePaysDansLUrl(liEl ? liEl.attr('data-iso') : isoDuCid(cid));
 }
 
@@ -366,6 +387,6 @@ function showFullTable(){
     clearCatalogTable();
     $("#countries ul li").css("font-weight", "normal");
     $("#countries ul li.all-works").css("font-weight", "bold");
-    retrieveData(_catId, 19, '');
+    retrieveData(_catId, 20, '');
     ecrirePaysDansLUrl(null);
 }

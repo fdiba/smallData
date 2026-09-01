@@ -45,17 +45,34 @@ function retrieve_works(){
 							LEFT JOIN imeb_country
 							ON imeb_artist.id_country = imeb_country.id
 							LEFT JOIN (
-								SELECT b2.id_music AS m_id,
-									GROUP_CONCAT(CONCAT(
-											TRIM(CONCAT(COALESCE(a2.firstName, \'\'), \' \', a2.name)),
-											\'|\', COALESCE(a2.isni, \'\'))
-										ORDER BY ba2.rang SEPARATOR \';\') AS coauteurs
-								FROM imeb_bande b2
-								INNER JOIN imeb_bande_artiste ba2
-									ON ba2.id_bande = b2.id AND ba2.rang > 1
-								INNER JOIN imeb_artist a2 ON a2.id = ba2.id_artist
-								WHERE b2.id_music IS NOT NULL
-								GROUP BY b2.id_music
+								SELECT t.m_id,
+									GROUP_CONCAT(t.entry ORDER BY t.rang SEPARATOR \';\') AS coauteurs
+								FROM (
+									SELECT u.m_id AS m_id, u.entry AS entry, MIN(u.rang) AS rang
+									FROM (
+										SELECT b2.id_music AS m_id, ba2.rang AS rang,
+											CONCAT(
+												TRIM(CONCAT(COALESCE(a2.firstName, \'\'), \' \', a2.name)),
+												\'|\', COALESCE(a2.isni, \'\')) AS entry
+										FROM imeb_bande b2
+										INNER JOIN imeb_bande_artiste ba2
+											ON ba2.id_bande = b2.id AND ba2.rang > 1
+										INNER JOIN imeb_artist a2 ON a2.id = ba2.id_artist
+										INNER JOIN imeb_music mm ON mm.id = b2.id_music
+										WHERE ba2.id_artist <> mm.id_artist
+										UNION
+										SELECT ma2.id_music, ma2.rang,
+											CONCAT(
+												TRIM(CONCAT(COALESCE(a5.firstName, \'\'), \' \', a5.name)),
+												\'|\', COALESCE(a5.isni, \'\'))
+										FROM imeb_music_artiste ma2
+										INNER JOIN imeb_artist a5 ON a5.id = ma2.id_artist
+										INNER JOIN imeb_music mm2 ON mm2.id = ma2.id_music
+										WHERE ma2.id_artist <> mm2.id_artist
+									) u
+									GROUP BY u.m_id, u.entry
+								) t
+								GROUP BY t.m_id
 							) co ON co.m_id = imeb_music.id
 							LEFT JOIN imeb_categorie AS cat
 							ON cat.id = imeb_music.id_categorie
