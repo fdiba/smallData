@@ -164,6 +164,8 @@ window.onload = function() {
 
     $("#titles").css({"clear": "both"});
 
+    if(SHOW_ALL_NAMES) $('#numOfRecords').val(NUM_RECORDS_MIN);
+
     updateCoverageNote(readNumOfRecords());
 
     if(SHOW_ALL_NAMES) $('#lg-archived-only').hide();
